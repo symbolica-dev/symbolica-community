@@ -7,23 +7,26 @@ use pyo3::{PyObject, PyResult};
 use symbolica::api::python::PythonExpression;
 use symbolica::atom::{Atom, Symbol};
 use symbolica::domains::float::{Complex, Float, RealNumberLike};
-use symbolica::state::State;
 use vakint::{
-    EvaluationMethod, EvaluationOrder, FMFTOptions, LoopNormalizationFactor, MATADOptions,
-    NumericalEvaluationResult, PySecDecOptions, Vakint, VakintError, VakintExpression,
-    VakintSettings,
+    vakint_symbol, EvaluationMethod, EvaluationOrder, FMFTOptions, LoopNormalizationFactor,
+    MATADOptions, NumericalEvaluationResult, PySecDecOptions, Vakint, VakintError,
+    VakintExpression, VakintSettings,
 };
 
 fn vakint_to_python_error(vakint_error: VakintError) -> PyErr {
     exceptions::PyValueError::new_err(format!("Vakint error | {vakint_error}"))
 }
 
-#[pyclass(name = "Vakint", module = "symbolica_community",subclass)]
+#[pyclass(name = "Vakint", module = "symbolica_community", subclass)]
 pub struct VakintWrapper {
     pub vakint: Vakint,
 }
 
-#[pyclass(name = "VakintNumericalResult", module = "symbolica_community", subclass)]
+#[pyclass(
+    name = "VakintNumericalResult",
+    module = "symbolica_community",
+    subclass
+)]
 pub struct NumericalEvaluationResultWrapper {
     pub value: NumericalEvaluationResult,
 }
@@ -126,7 +129,11 @@ impl VakintExpressionWrapper {
     }
 }
 
-#[pyclass(name = "VakintEvaluationMethod", module = "symbolica_community", subclass)]
+#[pyclass(
+    name = "VakintEvaluationMethod",
+    module = "symbolica_community",
+    subclass
+)]
 pub struct VakintEvaluationMethodWrapper {
     pub method: EvaluationMethod,
 }
@@ -315,7 +322,7 @@ impl VakintWrapper {
     ) -> PyResult<NumericalEvaluationResultWrapper> {
         let value = NumericalEvaluationResult::from_atom(
             expr.expr.as_view(),
-            State::get_symbol(self.vakint.settings.epsilon_symbol.clone()),
+            vakint_symbol!(&self.vakint.settings.epsilon_symbol),
             &self.vakint.settings,
         )
         .map_err(vakint_to_python_error)?;
@@ -352,9 +359,9 @@ impl VakintWrapper {
         &self,
         res: PyRef<NumericalEvaluationResultWrapper>,
     ) -> PyResult<PythonExpression> {
-        let value = res.value.to_atom(State::get_symbol(
-            self.vakint.settings.epsilon_symbol.clone(),
-        ));
+        let value = res
+            .value
+            .to_atom(vakint_symbol!(&self.vakint.settings.epsilon_symbol));
         Ok(value.into())
     }
 

@@ -1,22 +1,12 @@
-
-use pyo3::{
-    exceptions::PyRuntimeError,
-    prelude::*,
-};
+use pyo3::{exceptions::PyRuntimeError, prelude::*};
 
 use spenso::{
     network::TensorNetwork,
     parametric::MixedTensor,
-    structure::{
-        representation::Rep,
-        AtomStructure,
-    },
+    structure::{representation::Rep, AtomStructure},
     symbolica_utils::SerializableAtom,
 };
-use symbolica::{
-    api::python::PythonExpression,
-    atom::Atom,
-};
+use symbolica::{api::python::PythonExpression, atom::Atom};
 
 use super::{structure::PossiblyIndexed, ModuleInit, Spensor};
 use pyo3_stub_gen::derive::*;
@@ -61,8 +51,9 @@ impl SpensoNet {
     }
 
     fn contract(&mut self) -> PyResult<()> {
-        self.network.contract();
-        Ok(())
+        self.network
+            .contract()
+            .map_err(|s| PyRuntimeError::new_err(s.to_string()))
     }
 
     fn result(&self) -> PyResult<Spensor> {

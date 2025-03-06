@@ -5,6 +5,7 @@ use pyo3::{
     prelude::*,
     pybacked::PyBackedStr,
     types::PyTuple,
+    IntoPyObjectExt,
 };
 use spenso::{
     shadowing::ExplicitKey,
@@ -18,7 +19,7 @@ use spenso::{
     },
     symbolica_utils::{SerializableAtom, SerializableSymbol},
 };
-use symbolica::{api::python::PythonExpression, atom::AtomView, state::State};
+use symbolica::{api::python::PythonExpression, atom::AtomView, symbol};
 use thiserror::Error;
 
 use super::{ModuleInit, SliceOrIntOrExpanded};
@@ -121,7 +122,7 @@ impl SpensoIndices {
         self.structure.size().unwrap()
     }
 
-    fn __getitem__(&self, item: SliceOrIntOrExpanded) -> PyResult<Py<PyAny>> {
+    fn __getitem__<'py>(&self, item: SliceOrIntOrExpanded, py: Python<'_>) -> PyResult<Py<PyAny>> {
         match item {
             SliceOrIntOrExpanded::Int(i) => {
                 let out: Vec<_> = self
@@ -130,7 +131,7 @@ impl SpensoIndices {
                     .map_err(|s| PyIndexError::new_err(s.to_string()))?
                     .into();
 
-                Ok(Python::with_gil(|py| out.into_py(py)))
+                out.into_py_any(py)
             }
             SliceOrIntOrExpanded::Expanded(idxs) => {
                 let out: usize = self
@@ -139,7 +140,7 @@ impl SpensoIndices {
                     .map_err(|s| PyIndexError::new_err(s.to_string()))?
                     .into();
 
-                Ok(Python::with_gil(|py| out.into_py(py)))
+                out.into_py_any(py)
             }
             SliceOrIntOrExpanded::Slice(s) => {
                 let r = s.indices(self.structure.size().unwrap() as isize)?;
@@ -172,7 +173,7 @@ impl SpensoIndices {
                     .collect();
 
                 match slice {
-                    Ok(slice) => Ok(Python::with_gil(|py| slice.into_py(py))),
+                    Ok(slice) => slice.into_py_any(py),
                     Err(e) => Err(PyIndexError::new_err(e.to_string())),
                 }
             }
@@ -315,47 +316,48 @@ impl HasName for PossiblyIndexed {
 impl StructureContract for PossiblyIndexed {
     #[must_use]
     fn merge_at(&self, other: &Self, positions: (usize, usize)) -> Self {
-        match self {
-            PossiblyIndexed::Indexed(i) => {
-                if let PossiblyIndexed::Indexed(j) = other {
-                    i.structure.merge_at(&j.structure, positions).into()
-                } else {
-                    panic!("Cannot merge indexed and unindexed structures")
-                }
-            }
-            PossiblyIndexed::Unindexed(_) => {
-                panic!("Cannot merge indexed and unindexed structures")
+        if let PossiblyIndexed::Indexed(i) = self {
+            if let PossiblyIndexed::Indexed(j) = other {
+                return i.structure.merge_at(&j.structure, positions).into();
             }
         }
+
+        panic!("Cannot merge indexed and unindexed structures")
     }
 
     fn merge(&mut self, other: &Self) -> Option<usize> {
-        match self {
-            PossiblyIndexed::Indexed(i) => {
-                if let PossiblyIndexed::Indexed(j) = other {
-                    i.structure.merge(&j.structure)
-                } else {
-                    panic!("Cannot merge indexed and unindexed structures")
-                }
-            }
-            PossiblyIndexed::Unindexed(_) => {
-                panic!("Cannot merge indexed and unindexed structures")
+        if let PossiblyIndexed::Indexed(i) = self {
+            if let PossiblyIndexed::Indexed(j) = other {
+                return i.structure.merge(&j.structure);
             }
         }
+
+        panic!("Cannot merge indexed and unindexed structures")
     }
 
     fn trace(&mut self, i: usize, j: usize) {
         match self {
             PossiblyIndexed::Indexed(s) => s.structure.trace(i, j),
-            PossiblyIndexed::Unindexed(_) => panic!("cannot trace unindexed"),
+            PossiblyIndexed::Unindexed(_) => panic!("Cannot trace unindexed structure"),
         }
     }
 
     fn trace_out(&mut self) {
         match self {
             PossiblyIndexed::Indexed(s) => s.structure.trace_out(),
-            PossiblyIndexed::Unindexed(_) => panic!("cannot trace uninidexed"),
+            PossiblyIndexed::Unindexed(_) => panic!("Cannot trace uninidexed structure"),
         }
+    }
+
+    fn concat(&mut self, other: &Self) {
+        if let PossiblyIndexed::Indexed(i) = self {
+            if let PossiblyIndexed::Indexed(j) = other {
+                i.structure.concat(&j.structure);
+                return;
+            }
+        }
+
+        panic!("Cannot concatenate indexed and unindexed structures")
     }
 }
 
@@ -464,7 +466,7 @@ impl SpensoStucture {
         self.structure.size().unwrap()
     }
 
-    fn __getitem__(&self, item: SliceOrIntOrExpanded) -> PyResult<Py<PyAny>> {
+    fn __getitem__<'py>(&self, item: SliceOrIntOrExpanded, py: Python<'py>) -> PyResult<Py<PyAny>> {
         match item {
             SliceOrIntOrExpanded::Int(i) => {
                 let out: Vec<_> = self
@@ -473,7 +475,7 @@ impl SpensoStucture {
                     .map_err(|s| PyIndexError::new_err(s.to_string()))?
                     .into();
 
-                Ok(Python::with_gil(|py| out.into_py(py)))
+                out.into_py_any(py)
             }
             SliceOrIntOrExpanded::Expanded(idxs) => {
                 let out: usize = self
@@ -482,7 +484,7 @@ impl SpensoStucture {
                     .map_err(|s| PyIndexError::new_err(s.to_string()))?
                     .into();
 
-                Ok(Python::with_gil(|py| out.into_py(py)))
+                out.into_py_any(py)
             }
             SliceOrIntOrExpanded::Slice(s) => {
                 let r = s.indices(self.structure.size().unwrap() as isize)?;
@@ -515,7 +517,7 @@ impl SpensoStucture {
                     .collect();
 
                 match slice {
-                    Ok(slice) => Ok(Python::with_gil(|py| slice.into_py(py))),
+                    Ok(slice) => slice.into_py_any(py),
                     Err(e) => Err(PyIndexError::new_err(e.to_string())),
                 }
             }
@@ -591,7 +593,7 @@ impl SpensoRepresentation {
                 slot: self.representation.new_slot(aind),
             })
         } else if let Ok(s) = aind.extract::<PyBackedStr>() {
-            let id = State::get_symbol(&s);
+            let id = symbol!(&s);
 
             Ok(SpensoSlot {
                 slot: self
@@ -676,7 +678,7 @@ impl SpensoSlot {
                 slot: rep.new_slot(aind),
             })
         } else if let Ok(s) = aind.extract::<PyBackedStr>() {
-            let id = State::get_symbol(&s);
+            let id = symbol!(&s);
 
             Ok(SpensoSlot {
                 slot: rep.new_slot(AbstractIndex::Symbol(id.into())),

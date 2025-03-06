@@ -9,7 +9,7 @@ name = "symbolica"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.73"
-version = "0.1.0"
+version = "0.2.0"
 
 [features]
 default = ["vakint", "spenso"]
@@ -33,12 +33,12 @@ name = "symbolica_community"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-symbolica = { version = "0.13.0", features = ["python_no_module"] }
-pyo3 = { version = "0.22.0", features = ["abi3-py37", "anyhow", "num-complex"] }
+symbolica = { version = "0.15.1", features = ["python_no_module"] }
+pyo3 = { version = "0.23.0", features = ["abi3-py37", "anyhow", "num-complex"] }
 
 anyhow = "*"
 vakint = { git = "https://github.com/alphal00p/vakint", branch = "main", optional = true }
-spenso = { version = "0.4.1", optional = true, features = ["shadowing"] }
+spenso = { git = "https://github.com/alphal00p/spenso", optional = true, branch = "master", features = ["shadowing"] }
 itertools = "0.13.0"
 delegate = "0.13.1"
 auto_enums = "0.8.6"

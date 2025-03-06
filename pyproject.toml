@@ -15,7 +15,7 @@ name = "symbolica-community"
 summary = "Community-enhanced version of Symbolica: a blazing fast computer algebra system"
 description = "Community-enhanced version of Symbolica: a blazing fast computer algebra system"
 keywords = ["math", "algebra", "polynomial", "expression", "manipulation"]
-version = "0.1.0"
+version = "0.2.0"
 readme = "Readme.md"
 requires-python = ">=3.7"
 classifiers = [

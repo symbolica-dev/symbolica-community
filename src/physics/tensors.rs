@@ -7,15 +7,18 @@ use pyo3::{
     exceptions::{self, PyIndexError, PyOverflowError, PyRuntimeError, PyTypeError},
     prelude::*,
     types::{PyComplex, PyFloat, PySlice, PyType},
-    PyClass,
+    IntoPyObjectExt, PyClass,
 };
 
 use spenso::{
     complex::{RealOrComplex, RealOrComplexTensor},
-    data::{DataTensor, DenseTensor, GetTensorData, SetTensorData, SparseOrDense, SparseTensor},
+    data::{
+        DataTensor, DenseTensor, GetTensorData, SetTensorData, SparseOrDense, SparseTensor,
+        StorageTensor,
+    },
     parametric::{
-        CompiledEvalTensor, ConcreteOrParam, LinearizedEvalTensor, MixedTensor, ParamOrConcrete,
-        ParamTensor,
+        atomcore::TensorAtomOps, CompiledEvalTensor, ConcreteOrParam, LinearizedEvalTensor,
+        MixedTensor, ParamOrConcrete, ParamTensor,
     },
     shadowing::{ExplicitKey, EXPLICIT_TENSOR_MAP},
     structure::{representation::Rep, AtomStructure, HasStructure, TensorStructure},
@@ -45,7 +48,7 @@ trait ModuleInit: PyClass {
 }
 
 pub(crate) fn initialize_spenso(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    let child_module = PyModule::new_bound(m.py(), "tensors")?;
+    let child_module = PyModule::new(m.py(), "tensors")?;
 
     SpensoNet::init(&child_module)?;
     SpensoNet::append_to_symbolica(m)?;
@@ -56,7 +59,7 @@ pub(crate) fn initialize_spenso(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_submodule(&child_module)?;
 
     m.py()
-        .import_bound("sys")?
+        .import("sys")?
         .getattr("modules")?
         .set_item("symbolica_community.tensors", child_module)
 }
@@ -76,7 +79,7 @@ impl ModuleInit for Spensor {
         m.add_class::<Self>()?;
         m.add_function(wrap_pyfunction!(sparse_empty, m)?)?;
         m.add_function(wrap_pyfunction!(dense, m)?)?;
-        m.add_function(wrap_pyfunction!(register,m)?)
+        m.add_function(wrap_pyfunction!(register, m)?)
     }
 }
 
@@ -140,13 +143,12 @@ pub fn dense(structure: Bound<'_, PyAny>, data: Bound<'_, PyAny>) -> PyResult<Sp
     }
 }
 
-
-
 #[gen_stub_pyfunction(module = "symbolica_community.tensors")]
 #[pyfunction]
-pub fn register(tensor:Spensor)->PyResult<()>{
+pub fn register(tensor: Spensor) -> PyResult<()> {
     EXPLICIT_TENSOR_MAP.write().unwrap().insert_explicit(
-        tensor.tensor
+        tensor
+            .tensor
             .clone()
             .map_structure_fallible(ExplicitKey::try_from)
             .map_err(|s| PyTypeError::new_err(s.to_string()))?,
@@ -167,12 +169,16 @@ pub enum TensorElements {
     Symbolica(PythonExpression),
 }
 
-impl IntoPy<PyObject> for TensorElements {
-    fn into_py(self, py: Python<'_>) -> PyObject {
+impl<'py> IntoPyObject<'py> for TensorElements {
+    type Target = PyAny;
+    type Output = Bound<'py, Self::Target>;
+    type Error = PyErr;
+
+    fn into_pyobject(self, py: Python<'py>) -> Result<Self::Output, Self::Error> {
         match self {
-            TensorElements::Real(f) => f.into_py(py),
-            TensorElements::Complex(c) => c.into_py(py),
-            TensorElements::Symbolica(s) => s.into_py(py),
+            TensorElements::Real(f) => f.into_bound_py_any(py),
+            TensorElements::Complex(c) => c.into_bound_py_any(py),
+            TensorElements::Symbolica(s) => s.into_bound_py_any(py),
         }
     }
 }
@@ -182,12 +188,12 @@ impl From<ConcreteOrParam<RealOrComplex<f64>>> for TensorElements {
         match value {
             ConcreteOrParam::Concrete(RealOrComplex::Real(f)) => {
                 TensorElements::Real(Python::with_gil(|py| {
-                    PyFloat::new_bound(py, f).as_unbound().to_owned()
+                    PyFloat::new(py, f).as_unbound().to_owned()
                 }))
             }
             ConcreteOrParam::Concrete(RealOrComplex::Complex(c)) => {
                 TensorElements::Complex(Python::with_gil(|py| {
-                    PyComplex::from_doubles_bound(py, c.re, c.im)
+                    PyComplex::from_doubles(py, c.re, c.im)
                         .as_unbound()
                         .to_owned()
                 }))
@@ -200,10 +206,10 @@ impl From<ConcreteOrParam<RealOrComplex<f64>>> for TensorElements {
 // #[gen_stub_pymethods]
 #[pymethods]
 impl Spensor {
-    pub fn structure(&self) -> Py<PyAny> {
+    pub fn structure<'py>(&self, py: Python<'py>) -> PyResult<Py<PyAny>> {
         match self.tensor.structure() {
-            PossiblyIndexed::Indexed(a) => Python::with_gil(|py| a.clone().into_py(py)),
-            PossiblyIndexed::Unindexed(a) => Python::with_gil(|py| a.clone().into_py(py)),
+            PossiblyIndexed::Indexed(a) => a.clone().into_py_any(py),
+            PossiblyIndexed::Unindexed(a) => a.clone().into_py_any(py),
         }
     }
 
@@ -229,7 +235,7 @@ impl Spensor {
         self.tensor.size().unwrap()
     }
 
-    fn __getitem__(&self, item: SliceOrIntOrExpanded) -> PyResult<Py<PyAny>> {
+    fn __getitem__<'py>(&self, item: SliceOrIntOrExpanded, py: Python<'py>) -> PyResult<Py<PyAny>> {
         let out = match item {
             SliceOrIntOrExpanded::Int(i) => self
                 .tensor
@@ -270,14 +276,14 @@ impl Spensor {
                     .collect();
 
                 if let Some(slice) = slice {
-                    return Ok(Python::with_gil(|py| slice.into_py(py)));
+                    return slice.into_py_any(py);
                 } else {
                     return Err(PyIndexError::new_err("slice out of bounds"));
                 }
             }
         };
 
-        Ok(Python::with_gil(|py| TensorElements::from(out).into_py(py)))
+        TensorElements::from(out).into_py_any(py)
     }
 
     fn __setitem__<'py>(
@@ -321,9 +327,9 @@ impl Spensor {
     ) -> PyResult<SpensoExpressionEvaluator> {
         let mut fn_map = FunctionMap::new();
 
-        for (k, v) in &constants {
+        for (k, v) in constants {
             if let Ok(r) = v.expr.clone().try_into() {
-                fn_map.add_constant(k.expr.as_view(), r);
+                fn_map.add_constant(k.expr, r);
             } else {
                 Err(exceptions::PyValueError::new_err(
                                "Constants must be rationals. If this is not possible, pass the value as a parameter",
@@ -331,7 +337,7 @@ impl Spensor {
             }
         }
 
-        for ((symbol, rename, args), body) in &funs {
+        for ((symbol, rename, args), body) in funs {
             let symbol = symbol
                 .to_id()
                 .ok_or(exceptions::PyValueError::new_err(format!(
@@ -349,7 +355,7 @@ impl Spensor {
                 .collect::<Result<_, _>>()?;
 
             fn_map
-                .add_function(symbol, rename.clone(), args, body.expr.as_view())
+                .add_function(symbol, rename.clone(), args, body.expr)
                 .map_err(|e| {
                     exceptions::PyValueError::new_err(format!("Could not add function: {}", e))
                 })?;
@@ -365,7 +371,7 @@ impl Spensor {
         let params: Vec<_> = params.iter().map(|x| x.expr.clone()).collect();
 
         let mut evaltensor = match &self.tensor {
-            ParamOrConcrete::Param(s) => s.eval_tree(&fn_map, &params).map_err(|e| {
+            ParamOrConcrete::Param(s) => s.to_evaluation_tree(&fn_map, &params).map_err(|e| {
                 exceptions::PyValueError::new_err(format!("Could not create evaluator: {}", e))
             })?,
             ParamOrConcrete::Concrete(_) => return Err(PyRuntimeError::new_err("not atom")),
