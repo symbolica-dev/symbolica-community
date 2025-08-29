@@ -9,3 +9,7 @@ flake.lock
 *.cpp
 *.so
 *.pyc
+/.devenv
+.devenv*
+devenv*
+uv.lock

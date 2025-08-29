@@ -8,7 +8,7 @@ authors = [
     { name = "Lucien Huber", email = "mail@lucien.ch" },
     { name = "Valentin Hirschi", email = "valentin.hirschi@gmail.com" },
 ]
-name = "symbolica-community"
+name = "symbolica"
 description = "Community-enhanced version of Symbolica: a blazing fast computer algebra system"
 keywords = ["math", "algebra", "polynomial", "expression", "manipulation"]
 version = "0.18.0"
