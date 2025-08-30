@@ -24,7 +24,6 @@ fn register_extension<T: SymbolicaCommunityModule>(m: &Bound<'_, PyModule>) -> P
 fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     create_symbolica_module(m)?;
 
-    register_extension::<example::CommunityModule>(m)?;
     register_extension::<idenso::python::IdensoModule>(m)?;
     register_extension::<spynso3::SpensoModule>(m)?;
 

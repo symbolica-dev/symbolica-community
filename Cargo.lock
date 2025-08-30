@@ -618,15 +618,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "example"
-version = "0.1.0"
-dependencies = [
- "pyo3",
- "pyo3-stub-gen",
- "symbolica 0.18.0 (git+https://github.com/benruijl/symbolica?branch=modules)",
-]
-
-[[package]]
 name = "fastrand"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -764,7 +755,7 @@ dependencies = [
  "pyo3-stub-gen",
  "spenso",
  "spenso-macros",
- "symbolica 0.18.0 (git+https://github.com/benruijl/symbolica?branch=modules)",
+ "symbolica 0.18.0",
 ]
 
 [[package]]
@@ -1787,7 +1778,7 @@ dependencies = [
  "serde_json",
  "slotmap",
  "spenso-macros",
- "symbolica 0.18.0 (git+https://github.com/benruijl/symbolica?branch=modules)",
+ "symbolica 0.18.0",
  "tabled",
  "thiserror 1.0.69",
 ]
@@ -1833,7 +1824,7 @@ dependencies = [
  "spenso",
  "spenso-hep-lib",
  "spenso-macros",
- "symbolica 0.18.0 (git+https://github.com/benruijl/symbolica?branch=modules)",
+ "symbolica 0.18.0",
  "thiserror 2.0.16",
  "xpct",
 ]
@@ -1874,18 +1865,6 @@ dependencies = [
 [[package]]
 name = "symbolica"
 version = "0.18.0"
-dependencies = [
- "example",
- "idenso",
- "pyo3",
- "pyo3-stub-gen",
- "spynso3",
- "symbolica 0.18.0 (git+https://github.com/benruijl/symbolica?branch=modules)",
-]
-
-[[package]]
-name = "symbolica"
-version = "0.18.0"
 source = "git+https://github.com/benruijl/symbolica?branch=modules#289a659fa84f94bad6cb04a396a6f3c421a43714"
 dependencies = [
  "ahash",
@@ -1912,6 +1891,17 @@ dependencies = [
  "tinyjson",
  "tracing",
  "wide",
+]
+
+[[package]]
+name = "symbolica_community"
+version = "0.18.0"
+dependencies = [
+ "idenso",
+ "pyo3",
+ "pyo3-stub-gen",
+ "spynso3",
+ "symbolica 0.18.0",
 ]
 
 [[package]]
