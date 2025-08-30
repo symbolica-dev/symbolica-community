@@ -33,11 +33,11 @@ symbolica = { version = "0.18", features = ["python_export"] }
 pyo3 = "0.25"
 pyo3-stub-gen = { version = "0.13", default-features = false }
 example = { path = "example" }
-spynso3 = { git = "https://github.com/alphal00p/spenso" ,package="spynso3",rev="77b4d86bfeacef54bfc5dc053127c1cdbbdf91e0"}
+spynso3 = { git = "https://github.com/alphal00p/spenso" ,package="spynso3",rev="66843203a8eb3ef473d91d31fc37ad8c43ea9f20"}
 
 [patch.crates-io]
 
-idenso = { git = "https://github.com/alphal00p/spenso" ,rev="77b4d86bfeacef54bfc5dc053127c1cdbbdf91e0"}
-spenso = { git = "https://github.com/alphal00p/spenso" ,rev="77b4d86bfeacef54bfc5dc053127c1cdbbdf91e0"}
+idenso = { git = "https://github.com/alphal00p/spenso" ,rev="66843203a8eb3ef473d91d31fc37ad8c43ea9f20"}
+spenso = { git = "https://github.com/alphal00p/spenso" ,rev="66843203a8eb3ef473d91d31fc37ad8c43ea9f20"}
 symbolica = { git = "https://github.com/benruijl/symbolica", branch = "modules" }
 pyo3-stub-gen = { git = "https://github.com/benruijl/pyo3-stub-gen", branch = "patched" }
