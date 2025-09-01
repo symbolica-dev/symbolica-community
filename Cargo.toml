@@ -24,6 +24,7 @@ python_stubgen = [
     "symbolica/python_stubgen",
     "spynso3/python_stubgen",
     "idenso/python_stubgen",
+    "vakint/python_stubgen",
 ]
 
 [dependencies]
@@ -32,6 +33,10 @@ symbolica = { version = "0.18", features = ["python_export"] }
 pyo3 = "0.25"
 pyo3-stub-gen = { version = "0.13", default-features = false }
 spynso3 = { git = "https://github.com/alphal00p/spenso", package = "spynso3", rev = "66843203a8eb3ef473d91d31fc37ad8c43ea9f20" }
+vakint = { git = "https://github.com/alphal00p/vakint", rev = "5877366f652a397924fd5b6d77ef690941ac2881", features = [
+    "symbolica_community_module",
+    "python_stubgen",
+] }
 
 [patch.crates-io]
 
@@ -39,3 +44,6 @@ idenso = { git = "https://github.com/alphal00p/spenso", rev = "66843203a8eb3ef47
 spenso = { git = "https://github.com/alphal00p/spenso", rev = "66843203a8eb3ef473d91d31fc37ad8c43ea9f20" }
 symbolica = { git = "https://github.com/benruijl/symbolica", branch = "modules" }
 pyo3-stub-gen = { git = "https://github.com/benruijl/pyo3-stub-gen", branch = "patched" }
+
+[build-dependencies]
+pyo3-build-config = "*"

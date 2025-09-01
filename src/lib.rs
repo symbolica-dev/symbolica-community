@@ -26,6 +26,7 @@ fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     register_extension::<idenso::python::IdensoModule>(m)?;
     register_extension::<spynso3::SpensoModule>(m)?;
+    register_extension::<vakint::symbolica_community_module::VakintWrapper>(m)?;
 
     Ok(())
 }
