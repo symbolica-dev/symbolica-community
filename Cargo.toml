@@ -29,11 +29,11 @@ python_stubgen = [
 ]
 
 [dependencies]
-idenso = { version = "0.2.2", features = ["bincode", "python"] }
+idenso = { version = "0.2.3", features = ["bincode", "python"] }
 symbolica = { version = "0.18", features = ["python_export"] }
 pyo3 = "0.25"
 pyo3-stub-gen = { version = "0.13", optional = true, default-features = false }
-spynso3 = { git = "https://github.com/alphal00p/spenso", package = "spynso3", rev = "8d42cc1cca8891294433676b6fdfad9a8d7bdd05" }
+spynso3 = { version = "0.1" }
 vakint = { git = "https://github.com/alphal00p/vakint", rev = "5877366f652a397924fd5b6d77ef690941ac2881", features = [
     "symbolica_community_module",
 ] }
@@ -42,8 +42,6 @@ gmp-mpfr-sys = { version = "=1.6.5" } # work around long long patch issue
 
 [patch.crates-io]
 
-idenso = { git = "https://github.com/alphal00p/spenso", rev = "8d42cc1cca8891294433676b6fdfad9a8d7bdd05" }
-spenso = { git = "https://github.com/alphal00p/spenso", rev = "8d42cc1cca8891294433676b6fdfad9a8d7bdd05" }
 symbolica = { git = "https://github.com/benruijl/symbolica", branch = "modules" }
 pyo3-stub-gen = { git = "https://github.com/benruijl/pyo3-stub-gen", branch = "patched" }
 
