@@ -30,3 +30,8 @@ package-mode = false
 
 [tool.uv]
 cache-keys = [{ file = "pyproject.toml" }, { file = "src/*.rs" }]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.16.2",
+]

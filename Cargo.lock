@@ -751,7 +751,7 @@ dependencies = [
 [[package]]
 name = "idenso"
 version = "0.2.2"
-source = "git+https://github.com/alphal00p/spenso?rev=66843203a8eb3ef473d91d31fc37ad8c43ea9f20#66843203a8eb3ef473d91d31fc37ad8c43ea9f20"
+source = "git+https://github.com/alphal00p/spenso?rev=8d42cc1cca8891294433676b6fdfad9a8d7bdd05#8d42cc1cca8891294433676b6fdfad9a8d7bdd05"
 dependencies = [
  "anyhow",
  "bincode",
@@ -1825,7 +1825,7 @@ dependencies = [
 [[package]]
 name = "spenso"
 version = "0.5.3"
-source = "git+https://github.com/alphal00p/spenso?rev=66843203a8eb3ef473d91d31fc37ad8c43ea9f20#66843203a8eb3ef473d91d31fc37ad8c43ea9f20"
+source = "git+https://github.com/alphal00p/spenso?rev=8d42cc1cca8891294433676b6fdfad9a8d7bdd05#8d42cc1cca8891294433676b6fdfad9a8d7bdd05"
 dependencies = [
  "ahash",
  "anyhow",
@@ -1894,7 +1894,7 @@ dependencies = [
 [[package]]
 name = "spynso3"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/spenso?rev=66843203a8eb3ef473d91d31fc37ad8c43ea9f20#66843203a8eb3ef473d91d31fc37ad8c43ea9f20"
+source = "git+https://github.com/alphal00p/spenso?rev=8d42cc1cca8891294433676b6fdfad9a8d7bdd05#8d42cc1cca8891294433676b6fdfad9a8d7bdd05"
 dependencies = [
  "ahash",
  "anyhow",

@@ -18,13 +18,13 @@ class AtomTree:
     r"""
     A Python representation of a Symbolica expression.
     The type of the atom is provided in `atom_type`.
-    
+
     The `head` contains the string representation of:
     - a number if the type is `Num`
     - the variable if the type is `Var`
     - the function name if the type is `Fn`
     - otherwise it is `None`.
-    
+
     The tail contains the child atoms:
     - the summand for type `Add`
     - the factors for type `Mul`
@@ -52,16 +52,26 @@ class CompiledComplexEvaluator:
     A compiled and optimized evaluator for expressions.
     """
     @classmethod
-    def load(cls, filename:builtins.str, function_name:builtins.str, input_len:builtins.int, output_len:builtins.int) -> CompiledComplexEvaluator:
+    def load(
+        cls,
+        filename: builtins.str,
+        function_name: builtins.str,
+        input_len: builtins.int,
+        output_len: builtins.int,
+    ) -> CompiledComplexEvaluator:
         r"""
         Load a compiled library, previously generated with `compile`.
         """
-    def evaluate_flat(self, inputs:typing.Sequence[complex]) -> builtins.list[complex]:
+    def evaluate_flat(
+        self, inputs: typing.Sequence[complex]
+    ) -> builtins.list[complex]:
         r"""
         Evaluate the expression for multiple inputs that are flattened and return the flattened result.
         This method has less overhead than `evaluate_complex`.
         """
-    def evaluate(self, inputs:typing.Sequence[typing.Sequence[complex]]) -> builtins.list[builtins.list[complex]]:
+    def evaluate(
+        self, inputs: typing.Sequence[typing.Sequence[complex]]
+    ) -> builtins.list[builtins.list[complex]]:
         r"""
         Evaluate the expression for multiple inputs and return the results.
         """
@@ -71,16 +81,28 @@ class CompiledCudaComplexEvaluator:
     A compiled and optimized evaluator for expressions.
     """
     @classmethod
-    def load(cls, filename:builtins.str, function_name:builtins.str, input_len:builtins.int, output_len:builtins.int, number_of_evaluations:builtins.int, block_size:builtins.int=512) -> CompiledCudaComplexEvaluator:
+    def load(
+        cls,
+        filename: builtins.str,
+        function_name: builtins.str,
+        input_len: builtins.int,
+        output_len: builtins.int,
+        number_of_evaluations: builtins.int,
+        block_size: builtins.int = 512,
+    ) -> CompiledCudaComplexEvaluator:
         r"""
         Load a compiled library, previously generated with `compile`.
         """
-    def evaluate_flat(self, inputs:typing.Sequence[complex]) -> builtins.list[complex]:
+    def evaluate_flat(
+        self, inputs: typing.Sequence[complex]
+    ) -> builtins.list[complex]:
         r"""
         Evaluate the expression for multiple inputs that are flattened and return the flattened result.
         This method has less overhead than `evaluate_complex`.
         """
-    def evaluate(self, inputs:typing.Sequence[typing.Sequence[complex]]) -> builtins.list[builtins.list[complex]]:
+    def evaluate(
+        self, inputs: typing.Sequence[typing.Sequence[complex]]
+    ) -> builtins.list[builtins.list[complex]]:
         r"""
         Evaluate the expression for multiple inputs and return the results.
         """
@@ -90,16 +112,28 @@ class CompiledCudaRealEvaluator:
     A compiled and optimized evaluator for expressions.
     """
     @classmethod
-    def load(cls, filename:builtins.str, function_name:builtins.str, input_len:builtins.int, output_len:builtins.int, number_of_evaluations:builtins.int, block_size:builtins.int=512) -> CompiledCudaRealEvaluator:
+    def load(
+        cls,
+        filename: builtins.str,
+        function_name: builtins.str,
+        input_len: builtins.int,
+        output_len: builtins.int,
+        number_of_evaluations: builtins.int,
+        block_size: builtins.int = 512,
+    ) -> CompiledCudaRealEvaluator:
         r"""
         Load a compiled library, previously generated with `compile`.
         """
-    def evaluate_flat(self, inputs:typing.Sequence[builtins.float]) -> builtins.list[builtins.float]:
+    def evaluate_flat(
+        self, inputs: typing.Sequence[builtins.float]
+    ) -> builtins.list[builtins.float]:
         r"""
         Evaluate the expression for multiple inputs that are flattened and return the flattened result.
         This method has less overhead than `evaluate`.
         """
-    def evaluate(self, inputs:typing.Sequence[typing.Sequence[builtins.float]]) -> builtins.list[builtins.list[builtins.float]]:
+    def evaluate(
+        self, inputs: typing.Sequence[typing.Sequence[builtins.float]]
+    ) -> builtins.list[builtins.list[builtins.float]]:
         r"""
         Evaluate the expression for multiple inputs and return the results.
         """
@@ -109,16 +143,26 @@ class CompiledRealEvaluator:
     A compiled and optimized evaluator for expressions.
     """
     @classmethod
-    def load(cls, filename:builtins.str, function_name:builtins.str, input_len:builtins.int, output_len:builtins.int) -> CompiledRealEvaluator:
+    def load(
+        cls,
+        filename: builtins.str,
+        function_name: builtins.str,
+        input_len: builtins.int,
+        output_len: builtins.int,
+    ) -> CompiledRealEvaluator:
         r"""
         Load a compiled library, previously generated with `compile`.
         """
-    def evaluate_flat(self, inputs:typing.Sequence[builtins.float]) -> builtins.list[builtins.float]:
+    def evaluate_flat(
+        self, inputs: typing.Sequence[builtins.float]
+    ) -> builtins.list[builtins.float]:
         r"""
         Evaluate the expression for multiple inputs that are flattened and return the flattened result.
         This method has less overhead than `evaluate`.
         """
-    def evaluate(self, inputs:typing.Sequence[typing.Sequence[builtins.float]]) -> builtins.list[builtins.list[builtins.float]]:
+    def evaluate(
+        self, inputs: typing.Sequence[typing.Sequence[builtins.float]]
+    ) -> builtins.list[builtins.list[builtins.float]]:
         r"""
         Evaluate the expression for multiple inputs and return the results.
         """
@@ -143,11 +187,11 @@ class Condition:
         r"""
         Return the boolean value of the condition.
         """
-    def __and__(self, other:Condition) -> Condition:
+    def __and__(self, other: Condition) -> Condition:
         r"""
         Create a new pattern restriction that is the logical 'and' operation between two restrictions (i.e., both should hold).
         """
-    def __or__(self, other:Condition) -> Condition:
+    def __or__(self, other: Condition) -> Condition:
         r"""
         Create a new pattern restriction that is the logical 'or' operation between two restrictions (i.e., one of the two should hold).
         """
@@ -164,18 +208,20 @@ class Evaluator:
     r"""
     An optimized evaluator for expressions.
     """
-    def get_instructions(self) -> tuple[builtins.list[tuple], builtins.int, builtins.list[Expression]]:
+    def get_instructions(
+        self,
+    ) -> tuple[builtins.list[tuple], builtins.int, builtins.list[Expression]]:
         r"""
         Return the instructions for efficiently evaluating the expression, the length of the list
         of temporary variables, and the list of constants. This can be used to generate
         code for the expression evaluation in any programming language.
-        
+
         There are four lists that are used in the evaluation instructions:
         - `param`: the list of input parameters.
         - `temp`: the list of temporary slots. The size of it is provided as the second return value.
         - `const`: the list of constants.
         - `out`: the list of outputs.
-        
+
         The instructions are of the form:
         - `('add', ('out', 0), [('const', 1), ('param', 0)])` which means `out[0] = const[1] + param[0]`.
         - `('mul', ('out', 0), [('temp', 0), ('param', 0)])` which means `out[0] = temp[0] * param[0]`.
@@ -183,10 +229,10 @@ class Evaluator:
         - `('powf', ('out', 0), ('param', 0), ('param', 1))` which means `out[0] = param[0]^param[1]`.
         - `('fun', ('temp', 1), cos, ('param', 0))` which means `temp[1] = cos(param[0])`.
         - `('assign', ('out', 1), ('const', 2))` which means `out[1] = const[2]`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import *
         >>> (ins, m, c) = E('x^2+5/3+cos(x)').evaluator({}, {}, [S('x')]).get_instructions()
         >>>
@@ -194,9 +240,9 @@ class Evaluator:
         >>>     print(x)
         >>> print('temp list length:', m)
         >>> print('constants:', c)
-        
+
         yields
-        
+
         ```log
         ('mul', ('out', 0), [('param', 0), ('param', 0)])
         ('fun', ('temp', 1), cos, ('param', 0))
@@ -205,21 +251,29 @@ class Evaluator:
         constants: [5/3]
         ```
         """
-    def evaluate_flat(self, inputs:typing.Sequence[builtins.float]) -> builtins.list[builtins.float]:
+    def evaluate_flat(
+        self, inputs: typing.Sequence[builtins.float]
+    ) -> builtins.list[builtins.float]:
         r"""
         Evaluate the expression for multiple inputs that are flattened and return the flattened result.
         This method has less overhead than `evaluate`.
         """
-    def evaluate_complex_flat(self, inputs:typing.Sequence[complex]) -> builtins.list[complex]:
+    def evaluate_complex_flat(
+        self, inputs: typing.Sequence[complex]
+    ) -> builtins.list[complex]:
         r"""
         Evaluate the expression for multiple inputs that are flattened and return the flattened result.
         This method has less overhead than `evaluate_complex`.
         """
-    def evaluate(self, inputs:typing.Sequence[typing.Sequence[builtins.float]]) -> builtins.list[builtins.list[builtins.float]]:
+    def evaluate(
+        self, inputs: typing.Sequence[typing.Sequence[builtins.float]]
+    ) -> builtins.list[builtins.list[builtins.float]]:
         r"""
         Evaluate the expression for multiple inputs and return the results.
         """
-    def evaluate_complex(self, inputs:typing.Sequence[typing.Sequence[complex]]) -> builtins.list[builtins.list[complex]]:
+    def evaluate_complex(
+        self, inputs: typing.Sequence[typing.Sequence[complex]]
+    ) -> builtins.list[builtins.list[complex]]:
         r"""
         Evaluate the expression for multiple inputs and return the results.
         """
@@ -227,16 +281,16 @@ class Evaluator:
 class Expression:
     r"""
     A Symbolica expression.
-    
+
     Supports standard arithmetic operations, such
     as addition and multiplication.
-    
+
     Examples
     --------
     >>> x = S('x')
     >>> e = x**2 + 2 - x + 1 / x**4
     >>> print(e)
-    
+
     Attributes
     ----------
     E: Expression
@@ -256,6 +310,7 @@ class Expression:
     LOG: Expression
         The built-in logarithm function.
     """
+
     e: Expression
     r"""
     Euler's number `e`.
@@ -291,10 +346,21 @@ class Expression:
     """
     @typing.overload
     @classmethod
-    def compile(cls, function_name:builtins.str, filename:builtins.str, library_name:builtins.str, number_type:typing.Literal['real'], inline_asm:builtins.str="default", optimization_level:typing.Optional[builtins.int]=3, compiler_path:typing.Optional[builtins.str]=None, compiler_flags:typing.Optional[typing.Sequence[builtins.str]]=None, custom_header:typing.Optional[builtins.str]=None) -> CompiledRealEvaluator:
+    def compile(
+        cls,
+        function_name: builtins.str,
+        filename: builtins.str,
+        library_name: builtins.str,
+        number_type: typing.Literal["real"],
+        inline_asm: builtins.str = "default",
+        optimization_level: typing.Optional[builtins.int] = 3,
+        compiler_path: typing.Optional[builtins.str] = None,
+        compiler_flags: typing.Optional[typing.Sequence[builtins.str]] = None,
+        custom_header: typing.Optional[builtins.str] = None,
+    ) -> CompiledRealEvaluator:
         r"""
         Compile the evaluator to a shared library using C++ and optionally inline assembly and load it.
-        
+
         Parameters
         ----------
         function_name : str
@@ -319,10 +385,21 @@ class Expression:
         """
     @typing.overload
     @classmethod
-    def compile(cls, function_name:builtins.str, filename:builtins.str, library_name:builtins.str, number_type:typing.Literal['complex'], inline_asm:builtins.str="default", optimization_level:typing.Optional[builtins.int]=3, compiler_path:typing.Optional[builtins.str]=None, compiler_flags:typing.Optional[typing.Sequence[builtins.str]]=None, custom_header:typing.Optional[builtins.str]=None) -> CompiledComplexEvaluator:
+    def compile(
+        cls,
+        function_name: builtins.str,
+        filename: builtins.str,
+        library_name: builtins.str,
+        number_type: typing.Literal["complex"],
+        inline_asm: builtins.str = "default",
+        optimization_level: typing.Optional[builtins.int] = 3,
+        compiler_path: typing.Optional[builtins.str] = None,
+        compiler_flags: typing.Optional[typing.Sequence[builtins.str]] = None,
+        custom_header: typing.Optional[builtins.str] = None,
+    ) -> CompiledComplexEvaluator:
         r"""
         Compile the evaluator to a shared library using C++ and optionally inline assembly and load it.
-        
+
         Parameters
         ----------
         function_name : str
@@ -347,13 +424,26 @@ class Expression:
         """
     @typing.overload
     @classmethod
-    def compile(cls, function_name:builtins.str, filename:builtins.str, library_name:builtins.str, number_type:typing.Literal['cuda_real'], inline_asm:builtins.str="default", optimization_level:typing.Optional[builtins.int]=3, compiler_path:typing.Optional[builtins.str]=None, compiler_flags:typing.Optional[typing.Sequence[builtins.str]]=None, custom_header:typing.Optional[builtins.str]=None, cuda_number_of_evaluations:typing.Optional[builtins.int]=1, cuda_block_size:typing.Optional[builtins.int]=256) -> CompiledCudaRealEvaluator:
+    def compile(
+        cls,
+        function_name: builtins.str,
+        filename: builtins.str,
+        library_name: builtins.str,
+        number_type: typing.Literal["cuda_real"],
+        inline_asm: builtins.str = "default",
+        optimization_level: typing.Optional[builtins.int] = 3,
+        compiler_path: typing.Optional[builtins.str] = None,
+        compiler_flags: typing.Optional[typing.Sequence[builtins.str]] = None,
+        custom_header: typing.Optional[builtins.str] = None,
+        cuda_number_of_evaluations: typing.Optional[builtins.int] = 1,
+        cuda_block_size: typing.Optional[builtins.int] = 256,
+    ) -> CompiledCudaRealEvaluator:
         r"""
         Compile the evaluator to a shared library using C++ and optionally inline assembly and load it.
-        
+
         You may have to specify `-code=sm_XY` for your architecture `XY` in the compiler flags to prevent a potentially long
         JIT compilation upon the first evaluation.
-        
+
         Parameters
         ----------
         function_name : str
@@ -376,20 +466,33 @@ class Expression:
         custom_header : Optional[str]
             The custom header to include in the generated code.
         cuda_number_of_evaluations: Optional[int]
-            The number of parallel evaluations to perform on the CUDA device. The input to evaluate must 
+            The number of parallel evaluations to perform on the CUDA device. The input to evaluate must
             have the length `cuda_number_of_evaluations * arg_len`.
         cuda_block_size: Optional[int]
             The block size to use for CUDA kernel launches.
         """
     @typing.overload
     @classmethod
-    def compile(cls, function_name:builtins.str, filename:builtins.str, library_name:builtins.str, number_type:typing.Literal['cuda_complex'], inline_asm:builtins.str="default", optimization_level:typing.Optional[builtins.int]=3, compiler_path:typing.Optional[builtins.str]=None, compiler_flags:typing.Optional[typing.Sequence[builtins.str]]=None, custom_header:typing.Optional[builtins.str]=None, cuda_number_of_evaluations:typing.Optional[builtins.int]=1, cuda_block_size:typing.Optional[builtins.int]=256) -> CompiledCudaComplexEvaluator:
+    def compile(
+        cls,
+        function_name: builtins.str,
+        filename: builtins.str,
+        library_name: builtins.str,
+        number_type: typing.Literal["cuda_complex"],
+        inline_asm: builtins.str = "default",
+        optimization_level: typing.Optional[builtins.int] = 3,
+        compiler_path: typing.Optional[builtins.str] = None,
+        compiler_flags: typing.Optional[typing.Sequence[builtins.str]] = None,
+        custom_header: typing.Optional[builtins.str] = None,
+        cuda_number_of_evaluations: typing.Optional[builtins.int] = 1,
+        cuda_block_size: typing.Optional[builtins.int] = 256,
+    ) -> CompiledCudaComplexEvaluator:
         r"""
         Compile the evaluator to a shared library using C++ and optionally inline assembly and load it.
-        
+
         You may have to specify `-code=sm_XY` for your architecture `XY` in the compiler flags to prevent a potentially long
         JIT compilation upon the first evaluation.
-        
+
         Parameters
         ----------
         function_name : str
@@ -412,16 +515,18 @@ class Expression:
         custom_header : Optional[str]
             The custom header to include in the generated code.
         cuda_number_of_evaluations: Optional[int]
-            The number of parallel evaluations to perform on the CUDA device. The input to evaluate must 
+            The number of parallel evaluations to perform on the CUDA device. The input to evaluate must
             have the length `cuda_number_of_evaluations * arg_len`.
         cuda_block_size: Optional[int]
             The block size to use for CUDA kernel launches.
         """
     @typing.overload
-    def __call__(self, *args:Expression | int | str | float | complex) -> Expression:
+    def __call__(
+        self, *args: Expression | int | str | float | complex
+    ) -> Expression:
         r"""
         Create a Symbolica expression by calling the function with appropriate arguments.
-        
+
         Examples
         -------
         >>> x, f = S('x', 'f')
@@ -430,10 +535,12 @@ class Expression:
         f(3,x)
         """
     @typing.overload
-    def __call__(self, *args:HeldExpression | Expression | int | str | float | complex) -> HeldExpression:
+    def __call__(
+        self, *args: HeldExpression | Expression | int | str | float | complex
+    ) -> HeldExpression:
         r"""
         Create a Symbolica held expression by calling the function with appropriate arguments.
-        
+
         Examples
         -------
         >>> x, f = S('x', 'f')
@@ -442,41 +549,67 @@ class Expression:
         f(3,x)
         """
     @typing.overload
-    def to_polynomial(self, vars:typing.Optional[typing.Sequence[Expression]]=None) -> Polynomial:
+    def to_polynomial(
+        self, vars: typing.Optional[typing.Sequence[Expression]] = None
+    ) -> Polynomial:
         r"""
         Convert the expression to a polynomial, optionally, with the variable ordering specified in `vars`.
         All non-polynomial parts will be converted to new, independent variables.
         """
     @typing.overload
-    def to_polynomial(self, minimal_poly:Expression, vars:typing.Optional[typing.Sequence[Expression]]=None) -> NumberFieldPolynomial:
+    def to_polynomial(
+        self,
+        minimal_poly: Expression,
+        vars: typing.Optional[typing.Sequence[Expression]] = None,
+    ) -> NumberFieldPolynomial:
         r"""
         Convert the expression to a polynomial, optionally, with the variables and the ordering specified in `vars`.
         All non-polynomial elements will be converted to new independent variables.
-        
+
         The coefficients will be converted to a number field with the minimal polynomial `minimal_poly`.
         The minimal polynomial must be a monic, irreducible univariate polynomial.
         """
     @typing.overload
-    def to_polynomial(self, modulus:builtins.int, power:typing.Optional[typing.Tuple[int, Expression]], minimal_poly:typing.Optional[Expression]=None, vars:typing.Optional[typing.Sequence[Expression]]=None) -> FiniteFieldPolynomial:
+    def to_polynomial(
+        self,
+        modulus: builtins.int,
+        power: typing.Optional[typing.Tuple[int, Expression]],
+        minimal_poly: typing.Optional[Expression] = None,
+        vars: typing.Optional[typing.Sequence[Expression]] = None,
+    ) -> FiniteFieldPolynomial:
         r"""
         Convert the expression to a polynomial, optionally, with the variables and the ordering specified in `vars`.
         All non-polynomial elements will be converted to new independent variables.
-        
+
         The coefficients will be converted to finite field elements modulo `modulus`.
         If on top an `extension` is provided, for example `(2, a)`, the polynomial will be converted to the Galois field
         `GF(modulus^2)` where `a` is the variable of the minimal polynomial of the field.
-        
+
         If a `minimal_poly` is provided, the Galois field will be created with `minimal_poly` as the minimal polynomial.
         """
     @typing.overload
     @classmethod
-    def symbol(cls, name:builtins.str, is_symmetric:typing.Optional[builtins.bool]=None, is_antisymmetric:typing.Optional[builtins.bool]=None, is_cyclesymmetric:typing.Optional[builtins.bool]=None, is_linear:typing.Optional[builtins.bool]=None, custom_normalization:typing.Optional[Transformer]=None, custom_print:typing.Optional[typing.Callable[..., typing.Optional[str]]]=None, custom_derivative:typing.Optional[typing.Callable[[Expression, int], Expression]]=None) -> Expression:
+    def symbol(
+        cls,
+        name: builtins.str,
+        is_symmetric: typing.Optional[builtins.bool] = None,
+        is_antisymmetric: typing.Optional[builtins.bool] = None,
+        is_cyclesymmetric: typing.Optional[builtins.bool] = None,
+        is_linear: typing.Optional[builtins.bool] = None,
+        custom_normalization: typing.Optional[Transformer] = None,
+        custom_print: typing.Optional[
+            typing.Callable[..., typing.Optional[str]]
+        ] = None,
+        custom_derivative: typing.Optional[
+            typing.Callable[[Expression, int], Expression]
+        ] = None,
+    ) -> Expression:
         r"""
         Create new symbols from `names`. Symbols can have attributes,
         such as symmetries. If no attributes
         are specified and the symbol was previously defined, the attributes are inherited.
         Once attributes are defined on a symbol, they cannot be redefined later.
-        
+
         Examples
         --------
         Define a regular symbol and use it as a variable:
@@ -484,31 +617,31 @@ class Expression:
         >>> e = x**2 + 5
         >>> print(e)
         x**2 + 5
-        
+
         Define a regular symbol and use it as a function:
         >>> f = S('f')
         >>> e = f(1,2)
         >>> print(e)
         f(1,2)
-        
-        
+
+
         Define a symmetric function:
         >>> f = S('f', is_symmetric=True)
         >>> e = f(2,1)
         >>> print(e)
         f(1,2)
-        
-        
+
+
         Define a linear and symmetric function:
         >>> p1, p2, p3, p4 = ES('p1', 'p2', 'p3', 'p4')
         >>> dot = S('dot', is_symmetric=True, is_linear=True)
         >>> e = dot(p2+2*p3,p1+3*p2-p3)
         dot(p1,p2)+2*dot(p1,p3)+3*dot(p2,p2)-dot(p2,p3)+6*dot(p2,p3)-2*dot(p3,p3)
-        
+
         Define a custom normalization function:
         >>> e = S('real_log', custom_normalization=T().replace(E("x_(exp(x1_))"), E("x1_")))
         >>> E("real_log(exp(x)) + real_log(5)")
-        
+
         Define a custom print function:
         >>> def print_mu(mu: Expression, mode: PrintMode, **kwargs) -> str | None:
         >>>     if mode == PrintMode.Latex:
@@ -519,14 +652,14 @@ class Expression:
         >>> mu = S("mu", custom_print=print_mu)
         >>> expr = E("mu + mu(1,2)")
         >>> print(expr.to_latex())
-        
+
         If the function returns `None`, the default print function is used.
-        
+
         Define a custom derivative function:
         >>> tag = S('tag', custom_derivative=lambda f, index: f)
         >>> x = S('x')
         >>> tag(3, x).derivative(x)
-        
+
         Parameters
         ----------
         name : str
@@ -552,13 +685,20 @@ class Expression:
         """
     @typing.overload
     @classmethod
-    def symbol(cls, *names:str, is_symmetric:typing.Optional[builtins.bool]=None, is_antisymmetric:typing.Optional[builtins.bool]=None, is_cyclesymmetric:typing.Optional[builtins.bool]=None, is_linear:typing.Optional[builtins.bool]=None) -> typing.Sequence[Expression]:
+    def symbol(
+        cls,
+        *names: str,
+        is_symmetric: typing.Optional[builtins.bool] = None,
+        is_antisymmetric: typing.Optional[builtins.bool] = None,
+        is_cyclesymmetric: typing.Optional[builtins.bool] = None,
+        is_linear: typing.Optional[builtins.bool] = None,
+    ) -> typing.Sequence[Expression]:
         r"""
         Create new symbols from `names`. Symbols can have attributes,
         such as symmetries. If no attributes
         are specified and the symbol was previously defined, the attributes are inherited.
         Once attributes are defined on a symbol, they cannot be redefined later.
-        
+
         Examples
         --------
         Define a regular symbol and use it as a variable:
@@ -566,27 +706,27 @@ class Expression:
         >>> e = x**2 + 5
         >>> print(e)
         x**2 + 5
-        
+
         Define a regular symbol and use it as a function:
         >>> f = S('f')
         >>> e = f(1,2)
         >>> print(e)
         f(1,2)
-        
-        
+
+
         Define a symmetric function:
         >>> f = S('f', is_symmetric=True)
         >>> e = f(2,1)
         >>> print(e)
         f(1,2)
-        
-        
+
+
         Define a linear and symmetric function:
         >>> p1, p2, p3, p4 = ES('p1', 'p2', 'p3', 'p4')
         >>> dot = S('dot', is_symmetric=True, is_linear=True)
         >>> e = dot(p2+2*p3,p1+3*p2-p3)
         dot(p1,p2)+2*dot(p1,p3)+3*dot(p2,p2)-dot(p2,p3)+6*dot(p2,p3)-2*dot(p3,p3)
-        
+
         Parameters
         ----------
         name : str
@@ -601,18 +741,22 @@ class Expression:
             Set to true if the symbol is linear.
         """
     @classmethod
-    def num(cls, num:int | float | complex | str | decimal.Decimal, relative_error:typing.Optional[builtins.float]=None) -> Expression:
+    def num(
+        cls,
+        num: int | float | complex | str | decimal.Decimal,
+        relative_error: typing.Optional[builtins.float] = None,
+    ) -> Expression:
         r"""
         Create a new Symbolica number from an int, a float, a Decimal, or a string.
         A floating point number is kept as a float with the same precision as the input,
         but it can also be converted to the smallest rational number given a `relative_error`.
-        
+
         Examples
         --------
         >>> e = Expression.num(1) / 2
         >>> print(e)
         1/2
-        
+
         >>> print(Expression.num(1/3))
         >>> print(Expression.num(0.33, 0.1))
         >>> print(Expression.num('0.333`3'))
@@ -628,21 +772,23 @@ class Expression:
         Return all defined symbol names (function names and variables).
         """
     @classmethod
-    def parse(cls, input:builtins.str, default_namespace:builtins.str='python') -> Expression:
+    def parse(
+        cls, input: builtins.str, default_namespace: builtins.str = "python"
+    ) -> Expression:
         r"""
         Parse a Symbolica expression from a string.
-        
+
         Parameters
         ----------
         input:
             str An input string. UTF-8 character are allowed.
-        
+
         Examples
         --------
         >>> e = E('x^2+y+y*4')
         >>> print(e)
         x^2+5*y
-        
+
         Raises
         ------
         ValueError
@@ -652,7 +798,7 @@ class Expression:
         r"""
         Create a new expression that represents 0.
         """
-    def __setstate__(self, state:typing.Sequence[builtins.int]) -> None:
+    def __setstate__(self, state: typing.Sequence[builtins.int]) -> None:
         r"""
         Construct an expression from a serialized state.
         """
@@ -682,15 +828,33 @@ class Expression:
         is independent on the order of the variables and other
         implementation details.
         """
-    def __contains__(self, expr:Expression) -> builtins.bool: ...
+    def __contains__(self, expr: Expression) -> builtins.bool: ...
     def get_byte_size(self) -> builtins.int:
         r"""
         Get the number of bytes that this expression takes up in memory.
         """
-    def format(self, mode:PrintMode=PrintMode.Symbolica, terms_on_new_line:builtins.bool=False, color_top_level_sum:builtins.bool=True, color_builtin_symbols:builtins.bool=True, print_finite_field:builtins.bool=True, symmetric_representation_for_finite_field:builtins.bool=False, explicit_rational_polynomial:builtins.bool=False, number_thousands_separator:typing.Optional[builtins.str]=None, multiplication_operator:builtins.str='*', double_star_for_exponentiation:builtins.bool=False, square_brackets_for_function:builtins.bool=False, num_exp_as_superscript:builtins.bool=True, precision:typing.Optional[builtins.int]=None, show_namespaces:builtins.bool=False, max_terms:typing.Optional[builtins.int]=100, custom_print_mode:typing.Optional[builtins.int]=None) -> builtins.str:
+    def format(
+        self,
+        mode: PrintMode = PrintMode.Symbolica,
+        terms_on_new_line: builtins.bool = False,
+        color_top_level_sum: builtins.bool = True,
+        color_builtin_symbols: builtins.bool = True,
+        print_finite_field: builtins.bool = True,
+        symmetric_representation_for_finite_field: builtins.bool = False,
+        explicit_rational_polynomial: builtins.bool = False,
+        number_thousands_separator: typing.Optional[builtins.str] = None,
+        multiplication_operator: builtins.str = "*",
+        double_star_for_exponentiation: builtins.bool = False,
+        square_brackets_for_function: builtins.bool = False,
+        num_exp_as_superscript: builtins.bool = True,
+        precision: typing.Optional[builtins.int] = None,
+        show_namespaces: builtins.bool = False,
+        max_terms: typing.Optional[builtins.int] = 100,
+        custom_print_mode: typing.Optional[builtins.int] = None,
+    ) -> builtins.str:
         r"""
         Convert the expression into a human-readable string, with tunable settings.
-        
+
         Examples
         --------
         >>> a = E('128378127123 z^(2/3)*w^2/x/y + y^4 + z^34 + x^(x+2)+3/5+f(x,x^2)')
@@ -699,29 +863,29 @@ class Expression:
     def format_plain(self) -> builtins.str:
         r"""
         Convert the expression into a plain string, useful for importing and exporting.
-        
+
         Examples
         --------
         >>> a = E('5 + x^2')
         >>> print(a.to_plain())
-        
+
         Yields `5 + x^2`, without any coloring.
         """
     def to_latex(self) -> builtins.str:
         r"""
         Convert the expression into a LaTeX string.
-        
+
         Examples
         --------
         >>> a = E('128378127123 z^(2/3)*w^2/x/y + y^4 + z^34 + x^(x+2)+3/5+f(x,x^2)')
         >>> print(a.to_latex())
-        
+
         Yields `$$z^{34}+x^{x+2}+y^{4}+f(x,x^{2})+128378127123 z^{\\frac{2}{3}} w^{2} \\frac{1}{x} \\frac{1}{y}+\\frac{3}{5}$$`.
         """
     def to_sympy(self) -> builtins.str:
         r"""
         Convert the expression into a sympy-parsable string.
-        
+
         Examples
         --------
         >>> from sympy import *
@@ -731,47 +895,53 @@ class Expression:
         r"""
         Hash the expression.
         """
-    def save(self, filename:builtins.str, compression_level:builtins.int=9) -> None:
+    def save(
+        self, filename: builtins.str, compression_level: builtins.int = 9
+    ) -> None:
         r"""
         Save the expression and its state to a binary file.
         The data is compressed and the compression level can be set between 0 and 11.
-        
+
         The expression can be loaded using `Expression.load`.
-        
+
         Examples
         --------
         >>> e = E("f(x)+f(y)").expand()
         >>> e.save('export.dat')
         """
     @classmethod
-    def load(cls, filename:builtins.str, conflict_fn:typing.Optional[typing.Callable[[str], str]]=None) -> Expression:
+    def load(
+        cls,
+        filename: builtins.str,
+        conflict_fn: typing.Optional[typing.Callable[[str], str]] = None,
+    ) -> Expression:
         r"""
         Load an expression and its state from a file. The state will be merged
         with the current one. If a symbol has conflicting attributes, the conflict
         can be resolved using the renaming function `conflict_fn`.
-        
+
         Expressions can be saved using `Expression.save`.
-        
+
         Examples
         --------
         If `export.dat` contains a serialized expression: `f(x)+f(y)`:
         >>> e = Expression.load('export.dat')
-        
+
         whill yield `f(x)+f(y)`.
-        
+
         If we have defined symbols in a different order:
         >>> y, x = S('y', 'x')
         >>> e = Expression.load('export.dat')
-        
+
         we get `f(y)+f(x)`.
-        
+
         If we define a symbol with conflicting attributes, we can resolve the conflict
         using a renaming function:
-        
+
         >>> x = S('x', is_symmetric=True)
         >>> e = Expression.load('export.dat', lambda x: x + '_new')
         print(e)
-        
+
         will yield `f(x_new)+f(y)`.
         """
     def get_type(self) -> AtomType:
@@ -787,51 +957,75 @@ class Expression:
         Get the name of a variable or function if the current atom
         is a variable or function.
         """
-    def __add__(self, rhs:Expression | int | str | float | complex) -> Expression:
+    def __add__(
+        self, rhs: Expression | int | str | float | complex
+    ) -> Expression:
         r"""
         Add this expression to `other`, returning the result.
         """
-    def __radd__(self, rhs:Expression | int | str | float | complex) -> Expression:
+    def __radd__(
+        self, rhs: Expression | int | str | float | complex
+    ) -> Expression:
         r"""
         Add this expression to `other`, returning the result.
         """
-    def __sub__(self, rhs:Expression | int | str | float | complex) -> Expression:
+    def __sub__(
+        self, rhs: Expression | int | str | float | complex
+    ) -> Expression:
         r"""
         Subtract `other` from this expression, returning the result.
         """
-    def __rsub__(self, rhs:Expression | int | str | float | complex) -> Expression:
+    def __rsub__(
+        self, rhs: Expression | int | str | float | complex
+    ) -> Expression:
         r"""
         Subtract this expression from `other`, returning the result.
         """
-    def __mul__(self, rhs:Expression | int | str | float | complex) -> Expression:
+    def __mul__(
+        self, rhs: Expression | int | str | float | complex
+    ) -> Expression:
         r"""
         Add this expression to `other`, returning the result.
         """
-    def __rmul__(self, rhs:Expression | int | str | float | complex) -> Expression:
+    def __rmul__(
+        self, rhs: Expression | int | str | float | complex
+    ) -> Expression:
         r"""
         Add this expression to `other`, returning the result.
         """
-    def __truediv__(self, rhs:Expression | int | str | float | complex) -> Expression:
+    def __truediv__(
+        self, rhs: Expression | int | str | float | complex
+    ) -> Expression:
         r"""
         Divide this expression by `other`, returning the result.
         """
-    def __rtruediv__(self, rhs:Expression | int | str | float | complex) -> Expression:
+    def __rtruediv__(
+        self, rhs: Expression | int | str | float | complex
+    ) -> Expression:
         r"""
         Divide `other` by this expression, returning the result.
         """
-    def __pow__(self, exponent:Expression | int | str | float | complex, modulo:typing.Optional[builtins.int]=None) -> Expression:
+    def __pow__(
+        self,
+        exponent: Expression | int | str | float | complex,
+        modulo: typing.Optional[builtins.int] = None,
+    ) -> Expression:
         r"""
         Take `self` to power `exp`, returning the result.
         """
-    def __rpow__(self, base:Expression | int | str | float | complex, modulo:typing.Optional[builtins.int]=None) -> Expression:
+    def __rpow__(
+        self,
+        base: Expression | int | str | float | complex,
+        modulo: typing.Optional[builtins.int] = None,
+    ) -> Expression:
         r"""
         Take `base` to power `self`, returning the result.
         """
-    def __xor__(self, _rhs:typing.Any) -> Expression:
+    def __xor__(self, _rhs: typing.Any) -> Expression:
         r"""
         Returns a warning that `**` should be used instead of `^` for taking a power.
         """
-    def __rxor__(self, _rhs:typing.Any) -> Expression:
+    def __rxor__(self, _rhs: typing.Any) -> Expression:
         r"""
         Returns a warning that `**` should be used instead of `^` for taking a power.
         """
@@ -843,27 +1037,36 @@ class Expression:
         r"""
         Return the length of the atom.
         """
-    def hold(self, t:Transformer) -> HeldExpression:
+    def hold(self, t: Transformer) -> HeldExpression:
         r"""
         Create a held expression that delays the execution of the transformer `t` until the
         resulting held expression is called. Held expressions can be composed like regular expressions
         and are useful for the right-hand side of pattern matching, to act a transformer
         on a wildcard *after* it has been substituted.
-        
+
         Examples
         -------
         >>> f, x, x_ = S('f', 'x', 'x_')
         >>> e = f((x+1)**2)
         >>> e = e.replace(f(x_), f(x_.hold(T().expand())))
         """
-    def __getitem__(self, idx:builtins.int) -> Expression:
+    def __getitem__(self, idx: builtins.int) -> Expression:
         r"""
         Get the `idx`th component of the expression.
         """
-    def contains(self, s:Expression | int | str | float | complex | HeldExpression | Transformer) -> Condition:
+    def contains(
+        self,
+        s: Expression
+        | int
+        | str
+        | float
+        | complex
+        | HeldExpression
+        | Transformer,
+    ) -> Condition:
         r"""
         Returns true iff `self` contains `a` literally.
-        
+
         Examples
         --------
         >>> from symbolica import *
@@ -873,17 +1076,21 @@ class Expression:
         >>> e.contains(x*y*z) # True
         >>> e.contains(x*y) # False
         """
-    def get_all_symbols(self, include_function_symbols:builtins.bool=True) -> builtins.list[Expression]:
+    def get_all_symbols(
+        self, include_function_symbols: builtins.bool = True
+    ) -> builtins.list[Expression]:
         r"""
         Get all symbols in the current expression, optionally including function symbols.
         The symbols are sorted in Symbolica's internal ordering.
         """
-    def get_all_indeterminates(self, enter_functions:builtins.bool=True) -> builtins.list[Expression]:
+    def get_all_indeterminates(
+        self, enter_functions: builtins.bool = True
+    ) -> builtins.list[Expression]:
         r"""
         Get all symbols and functions in the current expression, optionally considering function arguments as well.
         The symbols are sorted in Symbolica's internal ordering.
         """
-    def coefficients_to_float(self, decimal_prec:builtins.int) -> Expression:
+    def coefficients_to_float(self, decimal_prec: builtins.int) -> Expression:
         r"""
         Convert all coefficients to floats with a given precision `decimal_prec`.
         The precision of floating point coefficients in the input will be truncated to `decimal_prec`.
@@ -892,19 +1099,25 @@ class Expression:
         r"""
         Complex conjugate all complex numbers in the expression.
         """
-    def rationalize_coefficients(self, relative_error:builtins.float) -> Expression:
+    def rationalize_coefficients(
+        self, relative_error: builtins.float
+    ) -> Expression:
         r"""
         Map all floating point and rational coefficients to the best rational approximation
         in the interval `[self*(1-relative_error),self*(1+relative_error)]`.
         """
-    def req_len(self, min_length:builtins.int, max_length:typing.Optional[builtins.int]=None) -> PatternRestriction:
+    def req_len(
+        self,
+        min_length: builtins.int,
+        max_length: typing.Optional[builtins.int] = None,
+    ) -> PatternRestriction:
         r"""
         Create a pattern restriction based on the wildcard length before downcasting.
         """
-    def req_type(self, atom_type:AtomType) -> PatternRestriction:
+    def req_type(self, atom_type: AtomType) -> PatternRestriction:
         r"""
         Create a pattern restriction that tests the type of the atom.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, AtomType
@@ -913,10 +1126,10 @@ class Expression:
         >>> e = f(x)*f(2)*f(f(3))
         >>> e = e.replace(f(x_), 1, x_.req_type(AtomType.Num))
         >>> print(e)
-        
+
         Yields `f(x)*f(1)`.
         """
-    def req_contains(self, a:Expression) -> PatternRestriction:
+    def req_contains(self, a: Expression) -> PatternRestriction:
         r"""
         Create a pattern restriction that filters for expressions that contain `a`.
         """
@@ -925,24 +1138,32 @@ class Expression:
         Create a pattern restriction that treats the wildcard as a literal variable,
         so that it only matches to itself.
         """
-    def is_type(self, atom_type:AtomType) -> Condition:
+    def is_type(self, atom_type: AtomType) -> Condition:
         r"""
         Test if the expression is of a certain type.
         """
-    def __richcmp__(self, other:Expression | int | str | float | complex | HeldExpression, op:int) -> Condition:
+    def __richcmp__(
+        self,
+        other: Expression | int | str | float | complex | HeldExpression,
+        op: int,
+    ) -> Condition:
         r"""
         Compare two expressions. If one of the expressions is not a number, an
         internal ordering will be used.
         """
-    def req_lt(self, other:Expression | int | str | float | complex, cmp_any_atom:builtins.bool=False) -> PatternRestriction:
+    def req_lt(
+        self,
+        other: Expression | int | str | float | complex,
+        cmp_any_atom: builtins.bool = False,
+    ) -> PatternRestriction:
         r"""
         Create a pattern restriction that passes when the wildcard is smaller than a number `num`.
         If the matched wildcard is not a number, the pattern fails.
-        
+
         When the option `cmp_any_atom` is set to `True`, this function compares atoms
         of any type. The result depends on the internal ordering and may change between
         different Symbolica versions.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -951,15 +1172,19 @@ class Expression:
         >>> e = f(1)*f(2)*f(3)
         >>> e = e.replace(f(x_), 1, x_.req_lt(2))
         """
-    def req_gt(self, other:Expression | int | str | float | complex, cmp_any_atom:builtins.bool=False) -> PatternRestriction:
+    def req_gt(
+        self,
+        other: Expression | int | str | float | complex,
+        cmp_any_atom: builtins.bool = False,
+    ) -> PatternRestriction:
         r"""
         Create a pattern restriction that passes when the wildcard is greater than a number `num`.
         If the matched wildcard is not a number, the pattern fails.
-        
+
         When the option `cmp_any_atom` is set to `True`, this function compares atoms
         of any type. The result depends on the internal ordering and may change between
         different Symbolica versions.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -968,15 +1193,19 @@ class Expression:
         >>> e = f(1)*f(2)*f(3)
         >>> e = e.replace(f(x_), 1, x_.req_gt(2))
         """
-    def req_le(self, other:Expression | int | str | float | complex, cmp_any_atom:builtins.bool=False) -> PatternRestriction:
+    def req_le(
+        self,
+        other: Expression | int | str | float | complex,
+        cmp_any_atom: builtins.bool = False,
+    ) -> PatternRestriction:
         r"""
         Create a pattern restriction that passes when the wildcard is smaller than or equal to a number `num`.
         If the matched wildcard is not a number, the pattern fails.
-        
+
         When the option `cmp_any_atom` is set to `True`, this function compares atoms
         of any type. The result depends on the internal ordering and may change between
         different Symbolica versions.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -985,15 +1214,19 @@ class Expression:
         >>> e = f(1)*f(2)*f(3)
         >>> e = e.replace(f(x_), 1, x_.req_le(2))
         """
-    def req_ge(self, other:Expression | int | str | float | complex, cmp_any_atom:builtins.bool=False) -> PatternRestriction:
+    def req_ge(
+        self,
+        other: Expression | int | str | float | complex,
+        cmp_any_atom: builtins.bool = False,
+    ) -> PatternRestriction:
         r"""
         Create a pattern restriction that passes when the wildcard is greater than or equal to a number `num`.
         If the matched wildcard is not a number, the pattern fails.
-        
+
         When the option `cmp_any_atom` is set to `True`, this function compares atoms
         of any type. The result depends on the internal ordering and may change between
         different Symbolica versions.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -1002,11 +1235,13 @@ class Expression:
         >>> e = f(1)*f(2)*f(3)
         >>> e = e.replace(f(x_), 1, x_.req_ge(2))
         """
-    def req(self, filter_fn:typing.Callable[[Expression], bool | Condition]) -> PatternRestriction:
+    def req(
+        self, filter_fn: typing.Callable[[Expression], bool | Condition]
+    ) -> PatternRestriction:
         r"""
         Create a new pattern restriction that calls the function `filter_fn` with the matched
         atom that should return a boolean. If true, the pattern matches.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -1015,15 +1250,17 @@ class Expression:
         >>> e = f(1)*f(2)*f(3)
         >>> e = e.replace(f(x_), 1, x_.req(lambda m: m == 2 or m == 3))
         """
-    def req_cmp_lt(self, other:Expression, cmp_any_atom:builtins.bool=False) -> PatternRestriction:
+    def req_cmp_lt(
+        self, other: Expression, cmp_any_atom: builtins.bool = False
+    ) -> PatternRestriction:
         r"""
         Create a pattern restriction that passes when the wildcard is smaller than another wildcard.
         If the matched wildcards are not a numbers, the pattern fails.
-        
+
         When the option `cmp_any_atom` is set to `True`, this function compares atoms
         of any type. The result depends on the internal ordering and may change between
         different Symbolica versions.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -1032,15 +1269,17 @@ class Expression:
         >>> e = f(1,2)
         >>> e = e.replace(f(x_,y_), 1, x_.req_cmp_lt(y_))
         """
-    def req_cmp_gt(self, other:Expression, cmp_any_atom:builtins.bool=False) -> PatternRestriction:
+    def req_cmp_gt(
+        self, other: Expression, cmp_any_atom: builtins.bool = False
+    ) -> PatternRestriction:
         r"""
         Create a pattern restriction that passes when the wildcard is greater than another wildcard.
         If the matched wildcards are not a numbers, the pattern fails.
-        
+
         When the option `cmp_any_atom` is set to `True`, this function compares atoms
         of any type. The result depends on the internal ordering and may change between
         different Symbolica versions.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -1049,15 +1288,17 @@ class Expression:
         >>> e = f(2,1)
         >>> e = e.replace(f(x_,y_), 1, x_.req_cmp_gt(y_))
         """
-    def req_cmp_le(self, other:Expression, cmp_any_atom:builtins.bool=False) -> PatternRestriction:
+    def req_cmp_le(
+        self, other: Expression, cmp_any_atom: builtins.bool = False
+    ) -> PatternRestriction:
         r"""
         Create a pattern restriction that passes when the wildcard is less than or equal to another wildcard.
         If the matched wildcards are not a numbers, the pattern fails.
-        
+
         When the option `cmp_any_atom` is set to `True`, this function compares atoms
         of any type. The result depends on the internal ordering and may change between
         different Symbolica versions.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -1066,15 +1307,17 @@ class Expression:
         >>> e = f(1,2)
         >>> e = e.replace(f(x_,y_), 1, x_.req_cmp_le(y_))
         """
-    def req_cmp_ge(self, other:Expression, cmp_any_atom:builtins.bool=False) -> PatternRestriction:
+    def req_cmp_ge(
+        self, other: Expression, cmp_any_atom: builtins.bool = False
+    ) -> PatternRestriction:
         r"""
         Create a pattern restriction that passes when the wildcard is greater than or equal to another wildcard.
         If the matched wildcards are not a numbers, the pattern fails.
-        
+
         When the option `cmp_any_atom` is set to `True`, this function compares atoms
         of any type. The result depends on the internal ordering and may change between
         different Symbolica versions.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -1083,11 +1326,15 @@ class Expression:
         >>> e = f(2,1)
         >>> e = e.replace(f(x_,y_), 1, x_.req_cmp_ge(y_))
         """
-    def req_cmp(self, other:Expression, cmp_fn:typing.Callable[[Expression, Expression], bool | Condition]) -> PatternRestriction:
+    def req_cmp(
+        self,
+        other: Expression,
+        cmp_fn: typing.Callable[[Expression, Expression], bool | Condition],
+    ) -> PatternRestriction:
         r"""
         Create a new pattern restriction that calls the function `cmp_fn` with another the matched
         atom and the match atom of the `other` wildcard that should return a boolean. If true, the pattern matches.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -1100,11 +1347,16 @@ class Expression:
         r"""
         Create an iterator over all atoms in the expression.
         """
-    def map(self, op:Transformer, n_cores:typing.Optional[builtins.int]=None, stats_to_file:typing.Optional[builtins.str]=None) -> Expression:
+    def map(
+        self,
+        op: Transformer,
+        n_cores: typing.Optional[builtins.int] = None,
+        stats_to_file: typing.Optional[builtins.str] = None,
+    ) -> Expression:
         r"""
         Map the transformations to every term in the expression.
         The execution happens in parallel, using `n_cores`.
-        
+
         Examples
         --------
         >>> x, x_ = S('x', 'x_')
@@ -1112,17 +1364,23 @@ class Expression:
         >>> r = e.map(Transformer().expand().replace(x, 6))
         >>> print(r)
         """
-    def set_coefficient_ring(self, vars:typing.Sequence[Expression]) -> Expression:
+    def set_coefficient_ring(
+        self, vars: typing.Sequence[Expression]
+    ) -> Expression:
         r"""
         Set the coefficient ring to contain the variables in the `vars` list.
         This will move all variables into a rational polynomial function.
-        
+
         Parameters
         ----------
         vars: List[Expression]
             A list of variables
         """
-    def expand(self, var:typing.Optional[Expression | int | str | float | complex]=None, via_poly:typing.Optional[builtins.bool]=None) -> Expression:
+    def expand(
+        self,
+        var: typing.Optional[Expression | int | str | float | complex] = None,
+        via_poly: typing.Optional[builtins.bool] = None,
+    ) -> Expression:
         r"""
         Expand the expression. Optionally, expand in `var` only.
         """
@@ -1130,85 +1388,103 @@ class Expression:
         r"""
         Distribute numbers in the expression, for example:
         `2*(x+y)` -> `2*x+2*y`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x, y = S('x', 'y')
         >>> e = 3*(x+y)*(4*x+5*y)
         >>> print(e.expand_num())
-        
+
         yields
-        
+
         ```log
         (3*x+3*y)*(4*x+5*y)
         ```
         """
-    def collect(self, *x, key_map:typing.Optional[typing.Callable[[Expression], Expression]]=None, coeff_map:typing.Optional[typing.Callable[[Expression], Expression]]=None) -> Expression:
+    def collect(
+        self,
+        *x,
+        key_map: typing.Optional[
+            typing.Callable[[Expression], Expression]
+        ] = None,
+        coeff_map: typing.Optional[
+            typing.Callable[[Expression], Expression]
+        ] = None,
+    ) -> Expression:
         r"""
         Collect terms involving the same power of `x`, where `x` is an indeterminate.
         Return the list of key-coefficient pairs and the remainder that matched no key.
-        
+
         Both the *key* (the quantity collected in) and its coefficient can be mapped using
         `key_map` and `coeff_map` respectively.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x, y = S('x', 'y')
         >>> e = 5*x + x * y + x**2 + 5
         >>>
         >>> print(e.collect(x))
-        
+
         yields `x^2+x*(y+5)+5`.
-        
+
         >>> from symbolica import Expression
         >>> x, y = S('x', 'y')
         >>> exp, coeff = Expression.funs('var', 'coeff')
         >>> e = 5*x + x * y + x**2 + 5
         >>>
         >>> print(e.collect(x, key_map=lambda x: exp(x), coeff_map=lambda x: coeff(x)))
-        
+
         yields `var(1)*coeff(5)+var(x)*coeff(y+5)+var(x^2)*coeff(1)`.
         """
-    def collect_symbol(self, x:Expression, key_map:typing.Optional[typing.Callable[[Expression], Expression]]=None, coeff_map:typing.Optional[typing.Callable[[Expression], Expression]]=None) -> Expression:
+    def collect_symbol(
+        self,
+        x: Expression,
+        key_map: typing.Optional[
+            typing.Callable[[Expression], Expression]
+        ] = None,
+        coeff_map: typing.Optional[
+            typing.Callable[[Expression], Expression]
+        ] = None,
+    ) -> Expression:
         r"""
         Collect terms involving the same power of variables or functions with the name `x`, e.g.
-        
+
         ```math
         collect_symbol(f(1,2) + x*f*(1,2), f) = (1+x)*f(1,2)
         ```
-        
-        
+
+
         Both the *key* (the quantity collected in) and its coefficient can be mapped using
         `key_map` and `coeff_map` respectively.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x, f = S('x', 'f')
         >>> e = f(1,2) + x*f(1,2)
         >>>
         >>> print(e.collect_symbol(f))
-        
+
         yields `(1+x)*f(1,2)`.
         """
     def collect_factors(self) -> Expression:
         r"""
         Collect common factors from (nested) sums.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import *
         >>> e = E('x*(x+y*x+x^2+y*(x+x^2))')
         >>> e.collect_factors()
-        
+
         yields
-        
+
         ```log
         v1^2*(1+v1+v2+v2*(1+v1))
         ```
@@ -1217,51 +1493,55 @@ class Expression:
         r"""
         Collect numerical factors by removing the numerical content from additions.
         For example, `-2*x + 4*x^2 + 6*x^3` will be transformed into `-2*(x - 2*x^2 - 3*x^3)`.
-        
+
         The first argument of the addition is normalized to a positive quantity.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>>
         >>> x, y = S('x', 'y')
         >>> e = (-3*x+6*y)(2*x+2*y)
         >>> print(e.collect_num())
-        
+
         yields
-        
+
         ```log
         -6*(x-2*y)*(x+y)
         ```
         """
-    def coefficient(self, x:Expression | int | str | float | complex) -> Expression:
+    def coefficient(
+        self, x: Expression | int | str | float | complex
+    ) -> Expression:
         r"""
         Collect terms involving the literal occurrence of `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>>
         >>> x, y = S('x', 'y')
         >>> e = 5*x + x * y + x**2 + y*x**2
         >>> print(e.coefficient(x**2))
-        
+
         yields
-        
+
         ```log
         y + 1
         ```
         """
-    def coefficient_list(self, *x) -> builtins.list[tuple[Expression, Expression]]:
+    def coefficient_list(
+        self, *x
+    ) -> builtins.list[tuple[Expression, Expression]]:
         r"""
         Collect terms involving the same power of `x`, where `x` is an indeterminate.
         Return the list of key-coefficient pairs and the remainder that matched no key.
-        
+
         Examples
         --------
-        
+
         from symbolica import Expression
         >>>
         >>> x, y = S('x', 'y')
@@ -1269,23 +1549,32 @@ class Expression:
         >>>
         >>> for a in e.coefficient_list(x):
         >>>     print(a[0], a[1])
-        
+
         yields
-        
+
         ```log
         x y+5
         x^2 1
         1 5
         ```
         """
-    def derivative(self, x:Expression | int | str | float | complex) -> Expression:
+    def derivative(
+        self, x: Expression | int | str | float | complex
+    ) -> Expression:
         r"""
         Derive the expression w.r.t the variable `x`.
         """
-    def series(self, x:Expression | int | str | float | complex, expansion_point:Expression | int | str | float | complex, depth:builtins.int, depth_denom:builtins.int=1, depth_is_absolute:builtins.bool=True) -> Series:
+    def series(
+        self,
+        x: Expression | int | str | float | complex,
+        expansion_point: Expression | int | str | float | complex,
+        depth: builtins.int,
+        depth_denom: builtins.int = 1,
+        depth_is_absolute: builtins.bool = True,
+    ) -> Series:
         r"""
         Series expand in `x` around `expansion_point` to depth `depth`.
-        
+
         Examples
         -------
         >>> from symbolica import Expression
@@ -1296,22 +1585,22 @@ class Expression:
         >>> e = e.series(x, 0, 2)
         >>>
         >>> print(e)
-        
+
         yields `f(0)+x*der(1,f(0))+1/2*x^2*(der(2,f(0))+4*y)`.
         """
-    def apart(self, x:typing.Optional[Expression]=None) -> Expression:
+    def apart(self, x: typing.Optional[Expression] = None) -> Expression:
         r"""
         Compute the partial fraction decomposition in `x`.
-        
+
         If `None` is passed, the expression will be decomposed in all variables
         which involves a potentially expensive Groebner basis computation.
-        
+
         Examples
         --------
-        
+
         >>> p = E('1/((x+y)*(x^2+x*y+1)(x+1))')
         >>> print(p.apart(S('x')))
-        
+
         Multivariate partial fractioning
         >>> p = E('(2y-x)/(y*(x+y)*(y-x))')
         >>> print(p.apart())
@@ -1319,10 +1608,10 @@ class Expression:
     def together(self) -> Expression:
         r"""
         Write the expression over a common denominator.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('v1^2/2+v1^3/v4*v2+v3/(1+v4)')
         >>> print(p.together())
@@ -1331,10 +1620,10 @@ class Expression:
         r"""
         Cancel common factors between numerators and denominators.
         Any non-canceling parts of the expression will not be rewritten.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('1+(y+1)^10*(x+1)/(x^2+2x+1)')
         >>> print(p.cancel())
@@ -1343,36 +1632,47 @@ class Expression:
     def factor(self) -> Expression:
         r"""
         Factor the expression over the rationals.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('(6 + x)/(7776 + 6480*x + 2160*x^2 + 360*x^3 + 30*x^4 + x^5)')
         >>> print(p.factor())
         (x+6)**-4
         """
-    def to_rational_polynomial(self, vars:typing.Optional[typing.Sequence[Expression]]=None) -> RationalPolynomial:
+    def to_rational_polynomial(
+        self, vars: typing.Optional[typing.Sequence[Expression]] = None
+    ) -> RationalPolynomial:
         r"""
         Convert the expression to a rational polynomial, optionally, with the variable ordering specified in `vars`.
         The latter is useful if it is known in advance that more variables may be added in the future to the
         rational polynomial through composition with other rational polynomials.
-        
+
         All non-rational polynomial parts will automatically be converted to new independent variables.
-        
+
         Examples
         --------
         >>> a = E('(1 + 3*x1 + 5*x2 + 7*x3 + 9*x4 + 11*x5 + 13*x6 + 15*x7)^2 - 1').to_rational_polynomial()
         >>> print(a)
         """
-    def match(self, lhs:Expression | int | str | float | complex, cond:typing.Optional[PatternRestriction | Condition]=None, level_range:typing.Optional[tuple[builtins.int, typing.Optional[builtins.int]]]=None, level_is_tree_depth:typing.Optional[builtins.bool]=None, allow_new_wildcards_on_rhs:typing.Optional[builtins.bool]=None) -> MatchIterator:
+    def match(
+        self,
+        lhs: Expression | int | str | float | complex,
+        cond: typing.Optional[PatternRestriction | Condition] = None,
+        level_range: typing.Optional[
+            tuple[builtins.int, typing.Optional[builtins.int]]
+        ] = None,
+        level_is_tree_depth: typing.Optional[builtins.bool] = None,
+        allow_new_wildcards_on_rhs: typing.Optional[builtins.bool] = None,
+    ) -> MatchIterator:
         r"""
         Return an iterator over the pattern `self` matching to `lhs`.
         Restrictions on the pattern can be supplied through `cond`.
-        
+
         Examples
         --------
-        
+
         >>> x, x_ = S('x','x_')
         >>> f = S('f')
         >>> e = f(x)*f(1)*f(2)*f(3)
@@ -1380,37 +1680,66 @@ class Expression:
         >>>    for map in match:
         >>>        print(map[0],'=', map[1])
         """
-    def matches(self, lhs:Expression | int | str | float | complex, cond:typing.Optional[PatternRestriction | Condition]=None, level_range:typing.Optional[tuple[builtins.int, typing.Optional[builtins.int]]]=None, level_is_tree_depth:typing.Optional[builtins.bool]=None, allow_new_wildcards_on_rhs:typing.Optional[builtins.bool]=None) -> Condition:
+    def matches(
+        self,
+        lhs: Expression | int | str | float | complex,
+        cond: typing.Optional[PatternRestriction | Condition] = None,
+        level_range: typing.Optional[
+            tuple[builtins.int, typing.Optional[builtins.int]]
+        ] = None,
+        level_is_tree_depth: typing.Optional[builtins.bool] = None,
+        allow_new_wildcards_on_rhs: typing.Optional[builtins.bool] = None,
+    ) -> Condition:
         r"""
         Test whether the pattern is found in the expression.
         Restrictions on the pattern can be supplied through `cond`.
-        
+
         Examples
         --------
-        
+
         >>> f = S('f')
         >>> if f(1).matches(f(2)):
         >>>    print('match')
         """
-    def replace_iter(self, lhs:Expression | int | str | float | complex, rhs:Expression | int | str | float | complex | HeldExpression | typing.Callable[[dict[Expression, Expression]], Expression] | int | float | complex | decimal.Decimal, cond:typing.Optional[PatternRestriction | Condition]=None, level_range:typing.Optional[tuple[builtins.int, typing.Optional[builtins.int]]]=None, level_is_tree_depth:typing.Optional[builtins.bool]=None, allow_new_wildcards_on_rhs:typing.Optional[builtins.bool]=None) -> ReplaceIterator:
+    def replace_iter(
+        self,
+        lhs: Expression | int | str | float | complex,
+        rhs: Expression
+        | int
+        | str
+        | float
+        | complex
+        | HeldExpression
+        | typing.Callable[[dict[Expression, Expression]], Expression]
+        | int
+        | float
+        | complex
+        | decimal.Decimal,
+        cond: typing.Optional[PatternRestriction | Condition] = None,
+        level_range: typing.Optional[
+            tuple[builtins.int, typing.Optional[builtins.int]]
+        ] = None,
+        level_is_tree_depth: typing.Optional[builtins.bool] = None,
+        allow_new_wildcards_on_rhs: typing.Optional[builtins.bool] = None,
+    ) -> ReplaceIterator:
         r"""
         Return an iterator over the replacement of the pattern `self` on `lhs` by `rhs`.
         Restrictions on pattern can be supplied through `cond`.
-        
+
         The `level_range` specifies the `[min,max]` level at which the pattern is allowed to match.
         The first level is 0 and the level is increased when going into a function or one level deeper in the expression tree,
         depending on `level_is_tree_depth`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x_ = S('x_')
         >>> f = S('f')
         >>> e = f(1)*f(2)*f(3)
         >>> for r in e.replace(f(x_), f(x_ + 1)):
         >>>     print(r)
-        
+
         Yields:
         ```log
         f(2)*f(2)*f(3)
@@ -1418,26 +1747,51 @@ class Expression:
         f(1)*f(2)*f(4)
         ```
         """
-    def replace(self, pattern:Expression | int | str | float | complex, rhs:Expression | int | str | float | complex | HeldExpression | typing.Callable[[dict[Expression, Expression]], Expression] | int | float | complex | decimal.Decimal, cond:typing.Optional[PatternRestriction | Condition]=None, non_greedy_wildcards:typing.Optional[typing.Sequence[Expression]]=None, level_range:typing.Optional[tuple[builtins.int, typing.Optional[builtins.int]]]=None, level_is_tree_depth:typing.Optional[builtins.bool]=None, allow_new_wildcards_on_rhs:typing.Optional[builtins.bool]=None, rhs_cache_size:typing.Optional[builtins.int]=None, repeat:typing.Optional[builtins.bool]=None) -> Expression:
+    def replace(
+        self,
+        pattern: Expression | int | str | float | complex,
+        rhs: Expression
+        | int
+        | str
+        | float
+        | complex
+        | HeldExpression
+        | typing.Callable[[dict[Expression, Expression]], Expression]
+        | int
+        | float
+        | complex
+        | decimal.Decimal,
+        cond: typing.Optional[PatternRestriction | Condition] = None,
+        non_greedy_wildcards: typing.Optional[
+            typing.Sequence[Expression]
+        ] = None,
+        level_range: typing.Optional[
+            tuple[builtins.int, typing.Optional[builtins.int]]
+        ] = None,
+        level_is_tree_depth: typing.Optional[builtins.bool] = None,
+        allow_new_wildcards_on_rhs: typing.Optional[builtins.bool] = None,
+        rhs_cache_size: typing.Optional[builtins.int] = None,
+        repeat: typing.Optional[builtins.bool] = None,
+    ) -> Expression:
         r"""
         Replace all atoms matching the pattern `pattern` by the right-hand side `rhs`.
         Restrictions on pattern can be supplied through `cond`.
-        
+
         The `level_range` specifies the `[min,max]` level at which the pattern is allowed to match.
         The first level is 0 and the level is increased when going into a function or one level deeper in the expression tree,
         depending on `level_is_tree_depth`.
-        
+
         The entire operation can be repeated until there are no more matches using `repeat=True`.
-        
+
         Examples
         --------
-        
+
         >>> x, w1_, w2_ = S('x','w1_','w2_')
         >>> f = S('f')
         >>> e = f(3,x)
         >>> r = e.replace(f(w1_,w2_), f(w1_ - 1, w2_**2), (w1_ >= 1) & w2_.is_var())
         >>> print(r)
-        
+
         Parameters
         ----------
         pattern: Transformer | Expression | int
@@ -1458,21 +1812,25 @@ class Expression:
         repeat: bool, optional
             If set to `True`, the entire operation will be repeated until there are no more matches.
         """
-    def replace_multiple(self, replacements:typing.Sequence[Replacement], repeat:typing.Optional[builtins.bool]=None) -> Expression:
+    def replace_multiple(
+        self,
+        replacements: typing.Sequence[Replacement],
+        repeat: typing.Optional[builtins.bool] = None,
+    ) -> Expression:
         r"""
         Replace all atoms matching the patterns. See `replace` for more information.
-        
+
         The entire operation can be repeated until there are no more matches using `repeat=True`.
-        
+
         Examples
         --------
-        
+
         >>> x, y, f = S('x', 'y', 'f')
         >>> e = f(x,y)
         >>> r = e.replace_multiple([Replacement(x, y), Replacement(y, x)])
         >>> print(r)
         f(y,x)
-        
+
         Parameters
         ----------
         replacements: Sequence[Replacement]
@@ -1480,16 +1838,22 @@ class Expression:
         repeat: bool, optional
             If set to `True`, the entire operation will be repeated until there are no more matches.
         """
-    def replace_wildcards(self, replacements:typing.Mapping[Expression, Expression]) -> Expression:
+    def replace_wildcards(
+        self, replacements: typing.Mapping[Expression, Expression]
+    ) -> Expression:
         r"""
         Replace all wildcards in the expression with the given replacements.
         """
     @classmethod
-    def solve_linear_system(cls, system:typing.Sequence[Expression | int | str | float | complex], variables:typing.Sequence[Expression]) -> builtins.list[Expression]:
+    def solve_linear_system(
+        cls,
+        system: typing.Sequence[Expression | int | str | float | complex],
+        variables: typing.Sequence[Expression],
+    ) -> builtins.list[Expression]:
         r"""
         Solve a linear system in the variables `variables`, where each expression
         in the system is understood to yield 0.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -1498,11 +1862,17 @@ class Expression:
         >>> x_r, y_r = Expression.solve_linear_system([f(c)*x + y/c - 1, y-c/2], [x, y])
         >>> print('x =', x_r, ', y =', y_r)
         """
-    def nsolve(self, variable:Expression, init:builtins.float | decimal.Decimal, prec:builtins.float=0.0001, max_iterations:builtins.int=1000) -> decimal.Decimal:
+    def nsolve(
+        self,
+        variable: Expression,
+        init: builtins.float | decimal.Decimal,
+        prec: builtins.float = 0.0001,
+        max_iterations: builtins.int = 1000,
+    ) -> decimal.Decimal:
         r"""
         Find the root of an expression in `x` numerically over the reals using Newton's method.
         Use `init` as the initial guess for the root.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -1512,11 +1882,18 @@ class Expression:
         >>> print('x =', x_r, ', y =', y_r)
         """
     @classmethod
-    def nsolve_system(cls, system:typing.Sequence[Expression | int | str | float | complex], variables:typing.Sequence[Expression], init:typing.Sequence[builtins.float | decimal.Decimal], prec:builtins.float=0.0001, max_iterations:builtins.int=1000) -> decimal.Decimal:
+    def nsolve_system(
+        cls,
+        system: typing.Sequence[Expression | int | str | float | complex],
+        variables: typing.Sequence[Expression],
+        init: typing.Sequence[builtins.float | decimal.Decimal],
+        prec: builtins.float = 0.0001,
+        max_iterations: builtins.int = 1000,
+    ) -> decimal.Decimal:
         r"""
         Find a common root of multiple expressions in `variables` numerically over the reals using Newton's method.
         Use `init` as the initial guess for the root.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -1525,11 +1902,17 @@ class Expression:
         >>> x_r, y_r = Expression.solve_linear_system([f(c)*x + y/c - 1, y-c/2], [x, y])
         >>> print('x =', x_r, ', y =', y_r)
         """
-    def evaluate(self, constants:typing.Mapping[Expression, builtins.float], functions:dict[Expression, typing.Callable[[typing.Sequence[float]], float]]) -> builtins.float:
+    def evaluate(
+        self,
+        constants: typing.Mapping[Expression, builtins.float],
+        functions: dict[
+            Expression, typing.Callable[[typing.Sequence[float]], float]
+        ],
+    ) -> builtins.float:
         r"""
         Evaluate the expression, using a map of all the constants and
         user functions to a float.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -1538,13 +1921,24 @@ class Expression:
         >>> e = E('cos(x)')*3 + f(x,2)
         >>> print(e.evaluate({x: 1}, {f: lambda args: args[0]+args[1]}))
         """
-    def evaluate_with_prec(self, constants:typing.Mapping[Expression, builtins.float | decimal.Decimal], functions:dict[Expression, typing.Callable[[typing.Sequence[decimal.Decimal]], float | str | decimal.Decimal]], decimal_digit_precision:builtins.int) -> decimal.Decimal:
+    def evaluate_with_prec(
+        self,
+        constants: typing.Mapping[Expression, builtins.float | decimal.Decimal],
+        functions: dict[
+            Expression,
+            typing.Callable[
+                [typing.Sequence[decimal.Decimal]],
+                float | str | decimal.Decimal,
+            ],
+        ],
+        decimal_digit_precision: builtins.int,
+    ) -> decimal.Decimal:
         r"""
         Evaluate the expression, using a map of all the constants and
         user functions using arbitrary precision arithmetic.
         The user has to specify the number of decimal digits of precision
         and provide all input numbers as floats, strings or `decimal`.
-        
+
         Examples
         --------
         >>> from symbolica import *
@@ -1555,11 +1949,20 @@ class Expression:
         >>> a = e.evaluate_with_prec({x: Decimal('1.123456789')}, {
         >>>                         f: lambda args: args[0] + args[1]}, 100)
         """
-    def evaluate_complex(self, constants:typing.Mapping[Expression, complex], functions:dict[Expression, typing.Callable[[typing.Sequence[float | complex]], float | complex]]) -> complex:
+    def evaluate_complex(
+        self,
+        constants: typing.Mapping[Expression, complex],
+        functions: dict[
+            Expression,
+            typing.Callable[
+                [typing.Sequence[float | complex]], float | complex
+            ],
+        ],
+    ) -> complex:
         r"""
         Evaluate the expression, using a map of all the variables and
         user functions to a complex number.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -1567,15 +1970,33 @@ class Expression:
         >>> e = E('sqrt(x)')*y
         >>> print(e.evaluate_complex({x: 1 + 2j, y: 4 + 3j}, {}))
         """
-    def evaluator(self, constants:typing.Mapping[Expression, Expression], functions:typing.Mapping[tuple[Expression, builtins.str, typing.Sequence[Expression]], Expression], params:typing.Sequence[Expression], iterations:builtins.int=100, n_cores:builtins.int=4, verbose:builtins.bool=False, external_functions:typing.Optional[dict[tuple[Expression, str], typing.Callable[[
-            typing.Sequence[float | complex]], float | complex]]]=None) -> Evaluator:
+    def evaluator(
+        self,
+        constants: typing.Mapping[Expression, Expression],
+        functions: typing.Mapping[
+            tuple[Expression, builtins.str, typing.Sequence[Expression]],
+            Expression,
+        ],
+        params: typing.Sequence[Expression],
+        iterations: builtins.int = 100,
+        n_cores: builtins.int = 4,
+        verbose: builtins.bool = False,
+        external_functions: typing.Optional[
+            dict[
+                tuple[Expression, str],
+                typing.Callable[
+                    [typing.Sequence[float | complex]], float | complex
+                ],
+            ]
+        ] = None,
+    ) -> Evaluator:
         r"""
         Create an evaluator that can evaluate (nested) expressions in an optimized fashion.
         All constants and functions should be provided as dictionaries, where the function
         dictionary has a key `(name, printable name, arguments)` and the value is the function
         body. For example the function `f(x,y)=x^2+y` should be provided as
         `{(f, "f", (x, y)): x**2 + y}`. All free parameters should be provided in the `params` list.
-        
+
         Examples
         --------
         >>> from symbolica import *
@@ -1592,12 +2013,31 @@ class Expression:
         >>> print(res)
         """
     @classmethod
-    def evaluator_multiple(cls, exprs:typing.Sequence[Expression], constants:typing.Mapping[Expression, Expression], functions:typing.Mapping[tuple[Expression, builtins.str, typing.Sequence[Expression]], Expression], params:typing.Sequence[Expression], iterations:builtins.int=100, n_cores:builtins.int=4, verbose:builtins.bool=False, external_functions:typing.Optional[dict[tuple[Expression, str], typing.Callable[[
-            typing.Sequence[float | complex]], float | complex]]]=None) -> Evaluator:
+    def evaluator_multiple(
+        cls,
+        exprs: typing.Sequence[Expression],
+        constants: typing.Mapping[Expression, Expression],
+        functions: typing.Mapping[
+            tuple[Expression, builtins.str, typing.Sequence[Expression]],
+            Expression,
+        ],
+        params: typing.Sequence[Expression],
+        iterations: builtins.int = 100,
+        n_cores: builtins.int = 4,
+        verbose: builtins.bool = False,
+        external_functions: typing.Optional[
+            dict[
+                tuple[Expression, str],
+                typing.Callable[
+                    [typing.Sequence[float | complex]], float | complex
+                ],
+            ]
+        ] = None,
+    ) -> Evaluator:
         r"""
         Create an evaluator that can jointly evaluate (nested) expressions in an optimized fashion.
         See `Expression.evaluator()` for more information.
-        
+
         Examples
         --------
         >>> from symbolica import *
@@ -1605,20 +2045,28 @@ class Expression:
         >>> e1 = E("x^2 + 1")
         >>> e2 = E("x^2 + 2)
         >>> ev = Expression.evaluator_multiple([e1, e2], {}, {}, [x])
-        
+
         will recycle the `x^2`
         """
-    def canonize_tensors(self, contracted_indices:typing.Sequence[tuple[Expression | int | str | float | complex, Expression | int | str | float | complex]]) -> Expression:
+    def canonize_tensors(
+        self,
+        contracted_indices: typing.Sequence[
+            tuple[
+                Expression | int | str | float | complex,
+                Expression | int | str | float | complex,
+            ]
+        ],
+    ) -> Expression:
         r"""
         Canonize (products of) tensors in the expression by relabeling repeated indices.
         The tensors must be written as functions, with its indices as the arguments.
         Subexpressions, constants and open indices are supported.
-        
+
         If the contracted indices are distinguishable (for example in their dimension),
         you can provide a group marker as the second element in the tuple of the index
         specification.
         This makes sure that an index will not be renamed to an index from a different group.
-        
+
         Examples
         --------
         g = S('g', is_symmetric=True)
@@ -1635,7 +2083,9 @@ class FiniteFieldPolynomial:
     r"""
     A Symbolica polynomial over finite fields.
     """
-    def __richcmp__(self, other:FiniteFieldPolynomial, op:int) -> builtins.bool:
+    def __richcmp__(
+        self, other: FiniteFieldPolynomial, op: int
+    ) -> builtins.bool:
         r"""
         Compare two polynomials.
         """
@@ -1643,10 +2093,28 @@ class FiniteFieldPolynomial:
         r"""
         Copy the polynomial.
         """
-    def format(self, mode:PrintMode=PrintMode.Symbolica, terms_on_new_line:builtins.bool=False, color_top_level_sum:builtins.bool=True, color_builtin_symbols:builtins.bool=True, print_finite_field:builtins.bool=True, symmetric_representation_for_finite_field:builtins.bool=False, explicit_rational_polynomial:builtins.bool=False, number_thousands_separator:typing.Optional[builtins.str]=None, multiplication_operator:builtins.str='*', double_star_for_exponentiation:builtins.bool=False, square_brackets_for_function:builtins.bool=False, num_exp_as_superscript:builtins.bool=True, precision:typing.Optional[builtins.int]=None, show_namespaces:builtins.bool=False, max_terms:typing.Optional[builtins.int]=None, custom_print_mode:typing.Optional[builtins.int]=None) -> builtins.str:
+    def format(
+        self,
+        mode: PrintMode = PrintMode.Symbolica,
+        terms_on_new_line: builtins.bool = False,
+        color_top_level_sum: builtins.bool = True,
+        color_builtin_symbols: builtins.bool = True,
+        print_finite_field: builtins.bool = True,
+        symmetric_representation_for_finite_field: builtins.bool = False,
+        explicit_rational_polynomial: builtins.bool = False,
+        number_thousands_separator: typing.Optional[builtins.str] = None,
+        multiplication_operator: builtins.str = "*",
+        double_star_for_exponentiation: builtins.bool = False,
+        square_brackets_for_function: builtins.bool = False,
+        num_exp_as_superscript: builtins.bool = True,
+        precision: typing.Optional[builtins.int] = None,
+        show_namespaces: builtins.bool = False,
+        max_terms: typing.Optional[builtins.int] = None,
+        custom_print_mode: typing.Optional[builtins.int] = None,
+    ) -> builtins.str:
         r"""
         Convert the polynomial into a human-readable string, with tunable settings.
-        
+
         Examples
         --------
         >>> p = FiniteFieldPolynomial.parse("3*x^2+2*x+7*x^3", ['x'], 11)
@@ -1660,7 +2128,11 @@ class FiniteFieldPolynomial:
         r"""
         Print the polynomial in a human-readable format.
         """
-    def __pow__(self, exponent:builtins.int, modulo:typing.Optional[builtins.int]=None) -> FiniteFieldPolynomial: ...
+    def __pow__(
+        self,
+        exponent: builtins.int,
+        modulo: typing.Optional[builtins.int] = None,
+    ) -> FiniteFieldPolynomial: ...
     def to_latex(self) -> builtins.str:
         r"""
         Convert the polynomial into a LaTeX string.
@@ -1673,32 +2145,34 @@ class FiniteFieldPolynomial:
         r"""
         Get the list of variables in the internal ordering of the polynomial.
         """
-    def __add__(self, rhs:FiniteFieldPolynomial) -> FiniteFieldPolynomial:
+    def __add__(self, rhs: FiniteFieldPolynomial) -> FiniteFieldPolynomial:
         r"""
         Add two polynomials `self and `rhs`, returning the result.
         """
-    def __sub__(self, rhs:FiniteFieldPolynomial) -> FiniteFieldPolynomial:
+    def __sub__(self, rhs: FiniteFieldPolynomial) -> FiniteFieldPolynomial:
         r"""
         Subtract polynomials `rhs` from `self`, returning the result.
         """
-    def __mul__(self, rhs:FiniteFieldPolynomial) -> FiniteFieldPolynomial:
+    def __mul__(self, rhs: FiniteFieldPolynomial) -> FiniteFieldPolynomial:
         r"""
         Multiply two polynomials `self and `rhs`, returning the result.
         """
-    def __truediv__(self, rhs:FiniteFieldPolynomial) -> FiniteFieldPolynomial:
+    def __truediv__(self, rhs: FiniteFieldPolynomial) -> FiniteFieldPolynomial:
         r"""
         Divide the polynomial `self` by `rhs` if possible, returning the result.
         """
-    def unify_variables(self, other:FiniteFieldPolynomial) -> None: ...
-    def __contains__(self, var:Expression) -> builtins.bool: ...
-    def contains(self, var:Expression) -> builtins.bool: ...
-    def degree(self, var:Expression) -> builtins.int: ...
-    def reorder(self, order:typing.Sequence[Expression]) -> None:
+    def unify_variables(self, other: FiniteFieldPolynomial) -> None: ...
+    def __contains__(self, var: Expression) -> builtins.bool: ...
+    def contains(self, var: Expression) -> builtins.bool: ...
+    def degree(self, var: Expression) -> builtins.int: ...
+    def reorder(self, order: typing.Sequence[Expression]) -> None:
         r"""
         Set a new variable ordering for the polynomial.
         This can be used to introduce new variables as well.
         """
-    def quot_rem(self, rhs:FiniteFieldPolynomial) -> tuple[FiniteFieldPolynomial, FiniteFieldPolynomial]:
+    def quot_rem(
+        self, rhs: FiniteFieldPolynomial
+    ) -> tuple[FiniteFieldPolynomial, FiniteFieldPolynomial]:
         r"""
         Divide `self` by `rhs`, returning the quotient and remainder.
         """
@@ -1706,68 +2180,80 @@ class FiniteFieldPolynomial:
         r"""
         Negate the polynomial.
         """
-    def __mod__(self, rhs:FiniteFieldPolynomial) -> FiniteFieldPolynomial:
+    def __mod__(self, rhs: FiniteFieldPolynomial) -> FiniteFieldPolynomial:
         r"""
         Compute the remainder `self % rhs.
         """
-    def gcd(self, rhs:FiniteFieldPolynomial) -> FiniteFieldPolynomial:
+    def gcd(self, rhs: FiniteFieldPolynomial) -> FiniteFieldPolynomial:
         r"""
         Compute the greatest common divisor (GCD) of two polynomials.
         """
-    def extended_gcd(self, rhs:FiniteFieldPolynomial) -> tuple[FiniteFieldPolynomial, FiniteFieldPolynomial, FiniteFieldPolynomial]:
+    def extended_gcd(
+        self, rhs: FiniteFieldPolynomial
+    ) -> tuple[
+        FiniteFieldPolynomial, FiniteFieldPolynomial, FiniteFieldPolynomial
+    ]:
         r"""
         Compute the extended GCD of two polynomials, yielding the GCD and the Bezout coefficients `s` and `t`
         such that `self * s + rhs * t = gcd(self, rhs)`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import *
         >>> E('(1+x)(20+x)').to_polynomial(modulus=5).extended_gcd(E('x^2+2').to_polynomial(modulus=5))
-        
+
         yields `(1, 3+4*x, 3+x)`.
         """
-    def to_integer_polynomial(self, symmetric_representation:builtins.bool=True) -> Polynomial:
+    def to_integer_polynomial(
+        self, symmetric_representation: builtins.bool = True
+    ) -> Polynomial:
         r"""
         Convert the finite field polynomial to a polynomial with integer coefficients.
         """
-    def resultant(self, rhs:FiniteFieldPolynomial, var:Expression) -> FiniteFieldPolynomial:
+    def resultant(
+        self, rhs: FiniteFieldPolynomial, var: Expression
+    ) -> FiniteFieldPolynomial:
         r"""
         Compute the resultant of two polynomials with respect to the variable `var`.
         """
-    def factor_square_free(self) -> builtins.list[tuple[FiniteFieldPolynomial, builtins.int]]:
+    def factor_square_free(
+        self,
+    ) -> builtins.list[tuple[FiniteFieldPolynomial, builtins.int]]:
         r"""
         Compute the square-free factorization of the polynomial.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('3*(2*x^2+y)(x^3+y)^2(1+4*y)^2(1+x)').expand().to_polynomial()
         >>> print('Square-free factorization of {}:'.format(p))
         >>> for f, exp in p.factor_square_free():
         >>>     print('\t({})^{}'.format(f, exp))
         """
-    def factor(self) -> builtins.list[tuple[FiniteFieldPolynomial, builtins.int]]:
+    def factor(
+        self,
+    ) -> builtins.list[tuple[FiniteFieldPolynomial, builtins.int]]:
         r"""
         Factorize the polynomial.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('(x+1)(x+2)(x+3)(x+4)(x+5)(x^2+6)(x^3+7)(x+8)(x^4+9)(x^5+x+10)').expand().to_polynomial()
         >>> print('Factorization of {}:'.format(p))
         >>> for f, exp in p.factor():
         >>>     print('\t({})^{}'.format(f, exp))
         """
-    def derivative(self, x:Expression) -> FiniteFieldPolynomial:
+    def derivative(self, x: Expression) -> FiniteFieldPolynomial:
         r"""
         Take a derivative in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x^2+2').to_polynomial()
@@ -1776,34 +2262,41 @@ class FiniteFieldPolynomial:
     def content(self) -> FiniteFieldPolynomial:
         r"""
         Get the content, i.e., the GCD of the coefficients.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('3x^2+6x+9').to_polynomial()
         >>> print(p.content())
         """
-    def coefficient_list(self, vars:typing.Optional[Expression | typing.Sequence[Expression]]=None) -> builtins.list[tuple[builtins.list[builtins.int], FiniteFieldPolynomial]]:
+    def coefficient_list(
+        self,
+        vars: typing.Optional[Expression | typing.Sequence[Expression]] = None,
+    ) -> builtins.list[
+        tuple[builtins.list[builtins.int], FiniteFieldPolynomial]
+    ]:
         r"""
         Get the coefficient list, optionally in the variables `vars`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x*y+2*x+x^2').to_polynomial()
         >>> for n, pp in p.coefficient_list(x):
         >>>     print(n, pp)
         """
-    def replace(self, x:Expression, v:FiniteFieldPolynomial) -> FiniteFieldPolynomial:
+    def replace(
+        self, x: Expression, v: FiniteFieldPolynomial
+    ) -> FiniteFieldPolynomial:
         r"""
         Replace the variable `x` with a polynomial `v`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x*y+2*x+x^2').to_polynomial()
@@ -1811,46 +2304,61 @@ class FiniteFieldPolynomial:
         >>> p.replace(x, r)
         """
     @classmethod
-    def groebner_basis(cls, system:typing.Sequence[FiniteFieldPolynomial], grevlex:builtins.bool=True, print_stats:builtins.bool=False) -> builtins.list[FiniteFieldPolynomial]:
+    def groebner_basis(
+        cls,
+        system: typing.Sequence[FiniteFieldPolynomial],
+        grevlex: builtins.bool = True,
+        print_stats: builtins.bool = False,
+    ) -> builtins.list[FiniteFieldPolynomial]:
         r"""
         Compute the Groebner basis of a polynomial system.
-        
+
         If `grevlex=True`, reverse graded lexicographical ordering is used,
         otherwise the ordering is lexicographical.
-        
+
         If `print_stats=True` intermediate statistics will be printed.
         """
-    def reduce(self, system:typing.Sequence[FiniteFieldPolynomial], grevlex:builtins.bool=True) -> FiniteFieldPolynomial:
+    def reduce(
+        self,
+        system: typing.Sequence[FiniteFieldPolynomial],
+        grevlex: builtins.bool = True,
+    ) -> FiniteFieldPolynomial:
         r"""
         Completely reduce the polynomial w.r.t the polynomials `gs`.
         For example reducing `f=y^2+x` by `g=[x]` yields `y^2`.
         """
-    def integrate(self, x:Expression) -> FiniteFieldPolynomial:
+    def integrate(self, x: Expression) -> FiniteFieldPolynomial:
         r"""
         Integrate the polynomial in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x^2+2').to_polynomial()
         >>> print(p.integrate(x))
         """
     @classmethod
-    def parse(cls, arg:builtins.str, vars:typing.Sequence[str], prime:builtins.int, default_namespace:builtins.str='python') -> FiniteFieldPolynomial:
+    def parse(
+        cls,
+        arg: builtins.str,
+        vars: typing.Sequence[str],
+        prime: builtins.int,
+        default_namespace: builtins.str = "python",
+    ) -> FiniteFieldPolynomial:
         r"""
         Parse a polynomial with integer coefficients from a string.
         The input must be written in an expanded format and a list of all
         the variables must be provided.
-        
+
         If these requirements are too strict, use `Expression.to_polynomial()` or
         `RationalPolynomial.parse()` instead.
-        
+
         Examples
         --------
         >>> e = Polynomial.parse('3*x^2+y+y*4', ['x', 'y'], 5)
-        
+
         Raises
         ------
         ValueError
@@ -1869,7 +2377,9 @@ class FiniteFieldRationalPolynomial:
         r"""
         Copy the rational polynomial.
         """
-    def __richcmp__(self, other:FiniteFieldRationalPolynomial, op:int) -> builtins.bool:
+    def __richcmp__(
+        self, other: FiniteFieldRationalPolynomial, op: int
+    ) -> builtins.bool:
         r"""
         Compare two polynomials.
         """
@@ -1889,19 +2399,27 @@ class FiniteFieldRationalPolynomial:
         r"""
         Convert the rational polynomial into a LaTeX string.
         """
-    def __add__(self, rhs:FiniteFieldRationalPolynomial) -> FiniteFieldRationalPolynomial:
+    def __add__(
+        self, rhs: FiniteFieldRationalPolynomial
+    ) -> FiniteFieldRationalPolynomial:
         r"""
         Add two rational polynomials `self and `rhs`, returning the result.
         """
-    def __sub__(self, rhs:FiniteFieldRationalPolynomial) -> FiniteFieldRationalPolynomial:
+    def __sub__(
+        self, rhs: FiniteFieldRationalPolynomial
+    ) -> FiniteFieldRationalPolynomial:
         r"""
         Subtract rational polynomials `rhs` from `self`, returning the result.
         """
-    def __mul__(self, rhs:FiniteFieldRationalPolynomial) -> FiniteFieldRationalPolynomial:
+    def __mul__(
+        self, rhs: FiniteFieldRationalPolynomial
+    ) -> FiniteFieldRationalPolynomial:
         r"""
         Multiply two rational polynomials `self and `rhs`, returning the result.
         """
-    def __truediv__(self, rhs:FiniteFieldRationalPolynomial) -> FiniteFieldRationalPolynomial:
+    def __truediv__(
+        self, rhs: FiniteFieldRationalPolynomial
+    ) -> FiniteFieldRationalPolynomial:
         r"""
         Divide the rational polynomial `self` by `rhs` if possible, returning the result.
         """
@@ -1909,29 +2427,33 @@ class FiniteFieldRationalPolynomial:
         r"""
         Negate the rational polynomial.
         """
-    def gcd(self, rhs:FiniteFieldRationalPolynomial) -> FiniteFieldRationalPolynomial:
+    def gcd(
+        self, rhs: FiniteFieldRationalPolynomial
+    ) -> FiniteFieldRationalPolynomial:
         r"""
         Compute the greatest common divisor (GCD) of two rational polynomials.
         """
-    def derivative(self, x:Expression) -> FiniteFieldRationalPolynomial:
+    def derivative(self, x: Expression) -> FiniteFieldRationalPolynomial:
         r"""
         Take a derivative in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('1/((x+y)*(x^2+x*y+1)(x+1))').to_rational_polynomial()
         >>> print(p.derivative(x))
         """
-    def apart(self, x:Expression) -> builtins.list[FiniteFieldRationalPolynomial]:
+    def apart(
+        self, x: Expression
+    ) -> builtins.list[FiniteFieldRationalPolynomial]:
         r"""
         Compute the partial fraction decomposition in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('1/((x+y)*(x^2+x*y+1)(x+1))').to_rational_polynomial()
@@ -1939,18 +2461,24 @@ class FiniteFieldRationalPolynomial:
         >>>     print(pp)
         """
     @classmethod
-    def parse(cls, arg:builtins.str, vars:typing.Sequence[str], prime:builtins.int, default_namespace:builtins.str='python') -> FiniteFieldRationalPolynomial:
+    def parse(
+        cls,
+        arg: builtins.str,
+        vars: typing.Sequence[str],
+        prime: builtins.int,
+        default_namespace: builtins.str = "python",
+    ) -> FiniteFieldRationalPolynomial:
         r"""
         Parse a rational polynomial from a string.
         The list of all the variables must be provided.
-        
+
         If this requirements is too strict, use `Expression.to_polynomial()` instead.
-        
-        
+
+
         Examples
         --------
         >>> e = Polynomial.parse('3/4*x^2+y+y*4', ['x', 'y'])
-        
+
         Raises
         ------
         ValueError
@@ -1961,7 +2489,9 @@ class GaloisFieldPolynomial:
     r"""
     A Symbolica polynomial over Galois fields.
     """
-    def __richcmp__(self, other:GaloisFieldPolynomial, op:int) -> builtins.bool:
+    def __richcmp__(
+        self, other: GaloisFieldPolynomial, op: int
+    ) -> builtins.bool:
         r"""
         Compare two polynomials.
         """
@@ -1969,10 +2499,28 @@ class GaloisFieldPolynomial:
         r"""
         Copy the polynomial.
         """
-    def format(self, mode:PrintMode=PrintMode.Symbolica, terms_on_new_line:builtins.bool=False, color_top_level_sum:builtins.bool=True, color_builtin_symbols:builtins.bool=True, print_finite_field:builtins.bool=True, symmetric_representation_for_finite_field:builtins.bool=False, explicit_rational_polynomial:builtins.bool=False, number_thousands_separator:typing.Optional[builtins.str]=None, multiplication_operator:builtins.str='*', double_star_for_exponentiation:builtins.bool=False, square_brackets_for_function:builtins.bool=False, num_exp_as_superscript:builtins.bool=True, precision:typing.Optional[builtins.int]=None, show_namespaces:builtins.bool=False, max_terms:typing.Optional[builtins.int]=None, custom_print_mode:typing.Optional[builtins.int]=None) -> builtins.str:
+    def format(
+        self,
+        mode: PrintMode = PrintMode.Symbolica,
+        terms_on_new_line: builtins.bool = False,
+        color_top_level_sum: builtins.bool = True,
+        color_builtin_symbols: builtins.bool = True,
+        print_finite_field: builtins.bool = True,
+        symmetric_representation_for_finite_field: builtins.bool = False,
+        explicit_rational_polynomial: builtins.bool = False,
+        number_thousands_separator: typing.Optional[builtins.str] = None,
+        multiplication_operator: builtins.str = "*",
+        double_star_for_exponentiation: builtins.bool = False,
+        square_brackets_for_function: builtins.bool = False,
+        num_exp_as_superscript: builtins.bool = True,
+        precision: typing.Optional[builtins.int] = None,
+        show_namespaces: builtins.bool = False,
+        max_terms: typing.Optional[builtins.int] = None,
+        custom_print_mode: typing.Optional[builtins.int] = None,
+    ) -> builtins.str:
         r"""
         Convert the polynomial into a human-readable string, with tunable settings.
-        
+
         Examples
         --------
         >>> p = FiniteFieldPolynomial.parse("3*x^2+2*x+7*x^3", ['x'], 11)
@@ -1986,7 +2534,11 @@ class GaloisFieldPolynomial:
         r"""
         Print the polynomial in a human-readable format.
         """
-    def __pow__(self, exponent:builtins.int, modulo:typing.Optional[builtins.int]=None) -> GaloisFieldPolynomial: ...
+    def __pow__(
+        self,
+        exponent: builtins.int,
+        modulo: typing.Optional[builtins.int] = None,
+    ) -> GaloisFieldPolynomial: ...
     def to_latex(self) -> builtins.str:
         r"""
         Convert the polynomial into a LaTeX string.
@@ -1999,32 +2551,34 @@ class GaloisFieldPolynomial:
         r"""
         Get the list of variables in the internal ordering of the polynomial.
         """
-    def __add__(self, rhs:GaloisFieldPolynomial) -> GaloisFieldPolynomial:
+    def __add__(self, rhs: GaloisFieldPolynomial) -> GaloisFieldPolynomial:
         r"""
         Add two polynomials `self and `rhs`, returning the result.
         """
-    def __sub__(self, rhs:GaloisFieldPolynomial) -> GaloisFieldPolynomial:
+    def __sub__(self, rhs: GaloisFieldPolynomial) -> GaloisFieldPolynomial:
         r"""
         Subtract polynomials `rhs` from `self`, returning the result.
         """
-    def __mul__(self, rhs:GaloisFieldPolynomial) -> GaloisFieldPolynomial:
+    def __mul__(self, rhs: GaloisFieldPolynomial) -> GaloisFieldPolynomial:
         r"""
         Multiply two polynomials `self and `rhs`, returning the result.
         """
-    def __truediv__(self, rhs:GaloisFieldPolynomial) -> GaloisFieldPolynomial:
+    def __truediv__(self, rhs: GaloisFieldPolynomial) -> GaloisFieldPolynomial:
         r"""
         Divide the polynomial `self` by `rhs` if possible, returning the result.
         """
-    def unify_variables(self, other:GaloisFieldPolynomial) -> None: ...
-    def __contains__(self, var:Expression) -> builtins.bool: ...
-    def contains(self, var:Expression) -> builtins.bool: ...
-    def degree(self, var:Expression) -> builtins.int: ...
-    def reorder(self, order:typing.Sequence[Expression]) -> None:
+    def unify_variables(self, other: GaloisFieldPolynomial) -> None: ...
+    def __contains__(self, var: Expression) -> builtins.bool: ...
+    def contains(self, var: Expression) -> builtins.bool: ...
+    def degree(self, var: Expression) -> builtins.int: ...
+    def reorder(self, order: typing.Sequence[Expression]) -> None:
         r"""
         Set a new variable ordering for the polynomial.
         This can be used to introduce new variables as well.
         """
-    def quot_rem(self, rhs:GaloisFieldPolynomial) -> tuple[GaloisFieldPolynomial, GaloisFieldPolynomial]:
+    def quot_rem(
+        self, rhs: GaloisFieldPolynomial
+    ) -> tuple[GaloisFieldPolynomial, GaloisFieldPolynomial]:
         r"""
         Divide `self` by `rhs`, returning the quotient and remainder.
         """
@@ -2032,51 +2586,57 @@ class GaloisFieldPolynomial:
         r"""
         Negate the polynomial.
         """
-    def __mod__(self, rhs:GaloisFieldPolynomial) -> GaloisFieldPolynomial:
+    def __mod__(self, rhs: GaloisFieldPolynomial) -> GaloisFieldPolynomial:
         r"""
         Compute the remainder `self % rhs.
         """
-    def gcd(self, rhs:GaloisFieldPolynomial) -> GaloisFieldPolynomial:
+    def gcd(self, rhs: GaloisFieldPolynomial) -> GaloisFieldPolynomial:
         r"""
         Compute the greatest common divisor (GCD) of two polynomials.
         """
-    def resultant(self, rhs:GaloisFieldPolynomial, var:Expression) -> GaloisFieldPolynomial:
+    def resultant(
+        self, rhs: GaloisFieldPolynomial, var: Expression
+    ) -> GaloisFieldPolynomial:
         r"""
         Compute the resultant of two polynomials with respect to the variable `var`.
         """
-    def factor_square_free(self) -> builtins.list[tuple[GaloisFieldPolynomial, builtins.int]]:
+    def factor_square_free(
+        self,
+    ) -> builtins.list[tuple[GaloisFieldPolynomial, builtins.int]]:
         r"""
         Compute the square-free factorization of the polynomial.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('3*(2*x^2+y)(x^3+y)^2(1+4*y)^2(1+x)').expand().to_polynomial()
         >>> print('Square-free factorization of {}:'.format(p))
         >>> for f, exp in p.factor_square_free():
         >>>     print('\t({})^{}'.format(f, exp))
         """
-    def factor(self) -> builtins.list[tuple[GaloisFieldPolynomial, builtins.int]]:
+    def factor(
+        self,
+    ) -> builtins.list[tuple[GaloisFieldPolynomial, builtins.int]]:
         r"""
         Factorize the polynomial.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('(x+1)(x+2)(x+3)(x+4)(x+5)(x^2+6)(x^3+7)(x+8)(x^4+9)(x^5+x+10)').expand().to_polynomial()
         >>> print('Factorization of {}:'.format(p))
         >>> for f, exp in p.factor():
         >>>     print('\t({})^{}'.format(f, exp))
         """
-    def derivative(self, x:Expression) -> GaloisFieldPolynomial:
+    def derivative(self, x: Expression) -> GaloisFieldPolynomial:
         r"""
         Take a derivative in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x^2+2').to_polynomial()
@@ -2085,34 +2645,41 @@ class GaloisFieldPolynomial:
     def content(self) -> GaloisFieldPolynomial:
         r"""
         Get the content, i.e., the GCD of the coefficients.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('3x^2+6x+9').to_polynomial()
         >>> print(p.content())
         """
-    def coefficient_list(self, vars:typing.Optional[Expression | typing.Sequence[Expression]]=None) -> builtins.list[tuple[builtins.list[builtins.int], GaloisFieldPolynomial]]:
+    def coefficient_list(
+        self,
+        vars: typing.Optional[Expression | typing.Sequence[Expression]] = None,
+    ) -> builtins.list[
+        tuple[builtins.list[builtins.int], GaloisFieldPolynomial]
+    ]:
         r"""
         Get the coefficient list, optionally in the variables `vars`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x*y+2*x+x^2').to_polynomial()
         >>> for n, pp in p.coefficient_list(x):
         >>>     print(n, pp)
         """
-    def replace(self, x:Expression, v:GaloisFieldPolynomial) -> GaloisFieldPolynomial:
+    def replace(
+        self, x: Expression, v: GaloisFieldPolynomial
+    ) -> GaloisFieldPolynomial:
         r"""
         Replace the variable `x` with a polynomial `v`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x*y+2*x+x^2').to_polynomial()
@@ -2120,27 +2687,36 @@ class GaloisFieldPolynomial:
         >>> p.replace(x, r)
         """
     @classmethod
-    def groebner_basis(cls, system:typing.Sequence[GaloisFieldPolynomial], grevlex:builtins.bool=True, print_stats:builtins.bool=False) -> builtins.list[GaloisFieldPolynomial]:
+    def groebner_basis(
+        cls,
+        system: typing.Sequence[GaloisFieldPolynomial],
+        grevlex: builtins.bool = True,
+        print_stats: builtins.bool = False,
+    ) -> builtins.list[GaloisFieldPolynomial]:
         r"""
         Compute the Groebner basis of a polynomial system.
-        
+
         If `grevlex=True`, reverse graded lexicographical ordering is used,
         otherwise the ordering is lexicographical.
-        
+
         If `print_stats=True` intermediate statistics will be printed.
         """
-    def reduce(self, system:typing.Sequence[GaloisFieldPolynomial], grevlex:builtins.bool=True) -> GaloisFieldPolynomial:
+    def reduce(
+        self,
+        system: typing.Sequence[GaloisFieldPolynomial],
+        grevlex: builtins.bool = True,
+    ) -> GaloisFieldPolynomial:
         r"""
         Completely reduce the polynomial w.r.t the polynomials `gs`.
         For example reducing `f=y^2+x` by `g=[x]` yields `y^2`.
         """
-    def integrate(self, x:Expression) -> GaloisFieldPolynomial:
+    def integrate(self, x: Expression) -> GaloisFieldPolynomial:
         r"""
         Integrate the polynomial in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x^2+2').to_polynomial()
@@ -2155,7 +2731,9 @@ class GaloisFieldPrimeTwoPolynomial:
     r"""
     A Symbolica polynomial over Z2 Galois fields.
     """
-    def __richcmp__(self, other:GaloisFieldPrimeTwoPolynomial, op:int) -> builtins.bool:
+    def __richcmp__(
+        self, other: GaloisFieldPrimeTwoPolynomial, op: int
+    ) -> builtins.bool:
         r"""
         Compare two polynomials.
         """
@@ -2163,10 +2741,28 @@ class GaloisFieldPrimeTwoPolynomial:
         r"""
         Copy the polynomial.
         """
-    def format(self, mode:PrintMode=PrintMode.Symbolica, terms_on_new_line:builtins.bool=False, color_top_level_sum:builtins.bool=True, color_builtin_symbols:builtins.bool=True, print_finite_field:builtins.bool=True, symmetric_representation_for_finite_field:builtins.bool=False, explicit_rational_polynomial:builtins.bool=False, number_thousands_separator:typing.Optional[builtins.str]=None, multiplication_operator:builtins.str='*', double_star_for_exponentiation:builtins.bool=False, square_brackets_for_function:builtins.bool=False, num_exp_as_superscript:builtins.bool=True, precision:typing.Optional[builtins.int]=None, show_namespaces:builtins.bool=False, max_terms:typing.Optional[builtins.int]=None, custom_print_mode:typing.Optional[builtins.int]=None) -> builtins.str:
+    def format(
+        self,
+        mode: PrintMode = PrintMode.Symbolica,
+        terms_on_new_line: builtins.bool = False,
+        color_top_level_sum: builtins.bool = True,
+        color_builtin_symbols: builtins.bool = True,
+        print_finite_field: builtins.bool = True,
+        symmetric_representation_for_finite_field: builtins.bool = False,
+        explicit_rational_polynomial: builtins.bool = False,
+        number_thousands_separator: typing.Optional[builtins.str] = None,
+        multiplication_operator: builtins.str = "*",
+        double_star_for_exponentiation: builtins.bool = False,
+        square_brackets_for_function: builtins.bool = False,
+        num_exp_as_superscript: builtins.bool = True,
+        precision: typing.Optional[builtins.int] = None,
+        show_namespaces: builtins.bool = False,
+        max_terms: typing.Optional[builtins.int] = None,
+        custom_print_mode: typing.Optional[builtins.int] = None,
+    ) -> builtins.str:
         r"""
         Convert the polynomial into a human-readable string, with tunable settings.
-        
+
         Examples
         --------
         >>> p = FiniteFieldPolynomial.parse("3*x^2+2*x+7*x^3", ['x'], 11)
@@ -2180,7 +2776,11 @@ class GaloisFieldPrimeTwoPolynomial:
         r"""
         Print the polynomial in a human-readable format.
         """
-    def __pow__(self, exponent:builtins.int, modulo:typing.Optional[builtins.int]=None) -> GaloisFieldPrimeTwoPolynomial: ...
+    def __pow__(
+        self,
+        exponent: builtins.int,
+        modulo: typing.Optional[builtins.int] = None,
+    ) -> GaloisFieldPrimeTwoPolynomial: ...
     def to_latex(self) -> builtins.str:
         r"""
         Convert the polynomial into a LaTeX string.
@@ -2193,32 +2793,42 @@ class GaloisFieldPrimeTwoPolynomial:
         r"""
         Get the list of variables in the internal ordering of the polynomial.
         """
-    def __add__(self, rhs:GaloisFieldPrimeTwoPolynomial) -> GaloisFieldPrimeTwoPolynomial:
+    def __add__(
+        self, rhs: GaloisFieldPrimeTwoPolynomial
+    ) -> GaloisFieldPrimeTwoPolynomial:
         r"""
         Add two polynomials `self and `rhs`, returning the result.
         """
-    def __sub__(self, rhs:GaloisFieldPrimeTwoPolynomial) -> GaloisFieldPrimeTwoPolynomial:
+    def __sub__(
+        self, rhs: GaloisFieldPrimeTwoPolynomial
+    ) -> GaloisFieldPrimeTwoPolynomial:
         r"""
         Subtract polynomials `rhs` from `self`, returning the result.
         """
-    def __mul__(self, rhs:GaloisFieldPrimeTwoPolynomial) -> GaloisFieldPrimeTwoPolynomial:
+    def __mul__(
+        self, rhs: GaloisFieldPrimeTwoPolynomial
+    ) -> GaloisFieldPrimeTwoPolynomial:
         r"""
         Multiply two polynomials `self and `rhs`, returning the result.
         """
-    def __truediv__(self, rhs:GaloisFieldPrimeTwoPolynomial) -> GaloisFieldPrimeTwoPolynomial:
+    def __truediv__(
+        self, rhs: GaloisFieldPrimeTwoPolynomial
+    ) -> GaloisFieldPrimeTwoPolynomial:
         r"""
         Divide the polynomial `self` by `rhs` if possible, returning the result.
         """
-    def unify_variables(self, other:GaloisFieldPrimeTwoPolynomial) -> None: ...
-    def __contains__(self, var:Expression) -> builtins.bool: ...
-    def contains(self, var:Expression) -> builtins.bool: ...
-    def degree(self, var:Expression) -> builtins.int: ...
-    def reorder(self, order:typing.Sequence[Expression]) -> None:
+    def unify_variables(self, other: GaloisFieldPrimeTwoPolynomial) -> None: ...
+    def __contains__(self, var: Expression) -> builtins.bool: ...
+    def contains(self, var: Expression) -> builtins.bool: ...
+    def degree(self, var: Expression) -> builtins.int: ...
+    def reorder(self, order: typing.Sequence[Expression]) -> None:
         r"""
         Set a new variable ordering for the polynomial.
         This can be used to introduce new variables as well.
         """
-    def quot_rem(self, rhs:GaloisFieldPrimeTwoPolynomial) -> tuple[GaloisFieldPrimeTwoPolynomial, GaloisFieldPrimeTwoPolynomial]:
+    def quot_rem(
+        self, rhs: GaloisFieldPrimeTwoPolynomial
+    ) -> tuple[GaloisFieldPrimeTwoPolynomial, GaloisFieldPrimeTwoPolynomial]:
         r"""
         Divide `self` by `rhs`, returning the quotient and remainder.
         """
@@ -2226,64 +2836,80 @@ class GaloisFieldPrimeTwoPolynomial:
         r"""
         Negate the polynomial.
         """
-    def __mod__(self, rhs:GaloisFieldPrimeTwoPolynomial) -> GaloisFieldPrimeTwoPolynomial:
+    def __mod__(
+        self, rhs: GaloisFieldPrimeTwoPolynomial
+    ) -> GaloisFieldPrimeTwoPolynomial:
         r"""
         Compute the remainder `self % rhs.
         """
-    def gcd(self, rhs:GaloisFieldPrimeTwoPolynomial) -> GaloisFieldPrimeTwoPolynomial:
+    def gcd(
+        self, rhs: GaloisFieldPrimeTwoPolynomial
+    ) -> GaloisFieldPrimeTwoPolynomial:
         r"""
         Compute the greatest common divisor (GCD) of two polynomials.
         """
-    def extended_gcd(self, rhs:GaloisFieldPrimeTwoPolynomial) -> tuple[GaloisFieldPrimeTwoPolynomial, GaloisFieldPrimeTwoPolynomial, GaloisFieldPrimeTwoPolynomial]:
+    def extended_gcd(
+        self, rhs: GaloisFieldPrimeTwoPolynomial
+    ) -> tuple[
+        GaloisFieldPrimeTwoPolynomial,
+        GaloisFieldPrimeTwoPolynomial,
+        GaloisFieldPrimeTwoPolynomial,
+    ]:
         r"""
         Compute the extended GCD of two polynomials, yielding the GCD and the Bezout coefficients `s` and `t`
         such that `self * s + rhs * t = gcd(self, rhs)`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import *
         >>> E('(1+x)(20+x)').to_polynomial(modulus=5).extended_gcd(E('x^2+2').to_polynomial(modulus=5))
-        
+
         yields `(1, 3+4*x, 3+x)`.
         """
-    def resultant(self, rhs:GaloisFieldPrimeTwoPolynomial, var:Expression) -> GaloisFieldPrimeTwoPolynomial:
+    def resultant(
+        self, rhs: GaloisFieldPrimeTwoPolynomial, var: Expression
+    ) -> GaloisFieldPrimeTwoPolynomial:
         r"""
         Compute the resultant of two polynomials with respect to the variable `var`.
         """
-    def factor_square_free(self) -> builtins.list[tuple[GaloisFieldPrimeTwoPolynomial, builtins.int]]:
+    def factor_square_free(
+        self,
+    ) -> builtins.list[tuple[GaloisFieldPrimeTwoPolynomial, builtins.int]]:
         r"""
         Compute the square-free factorization of the polynomial.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('3*(2*x^2+y)(x^3+y)^2(1+4*y)^2(1+x)').expand().to_polynomial()
         >>> print('Square-free factorization of {}:'.format(p))
         >>> for f, exp in p.factor_square_free():
         >>>     print('\t({})^{}'.format(f, exp))
         """
-    def factor(self) -> builtins.list[tuple[GaloisFieldPrimeTwoPolynomial, builtins.int]]:
+    def factor(
+        self,
+    ) -> builtins.list[tuple[GaloisFieldPrimeTwoPolynomial, builtins.int]]:
         r"""
         Factorize the polynomial.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('(x+1)(x+2)(x+3)(x+4)(x+5)(x^2+6)(x^3+7)(x+8)(x^4+9)(x^5+x+10)').expand().to_polynomial()
         >>> print('Factorization of {}:'.format(p))
         >>> for f, exp in p.factor():
         >>>     print('\t({})^{}'.format(f, exp))
         """
-    def derivative(self, x:Expression) -> GaloisFieldPrimeTwoPolynomial:
+    def derivative(self, x: Expression) -> GaloisFieldPrimeTwoPolynomial:
         r"""
         Take a derivative in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x^2+2').to_polynomial()
@@ -2292,34 +2918,41 @@ class GaloisFieldPrimeTwoPolynomial:
     def content(self) -> GaloisFieldPrimeTwoPolynomial:
         r"""
         Get the content, i.e., the GCD of the coefficients.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('3x^2+6x+9').to_polynomial()
         >>> print(p.content())
         """
-    def coefficient_list(self, vars:typing.Optional[Expression | typing.Sequence[Expression]]=None) -> builtins.list[tuple[builtins.list[builtins.int], GaloisFieldPrimeTwoPolynomial]]:
+    def coefficient_list(
+        self,
+        vars: typing.Optional[Expression | typing.Sequence[Expression]] = None,
+    ) -> builtins.list[
+        tuple[builtins.list[builtins.int], GaloisFieldPrimeTwoPolynomial]
+    ]:
         r"""
         Get the coefficient list, optionally in the variables `vars`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x*y+2*x+x^2').to_polynomial()
         >>> for n, pp in p.coefficient_list(x):
         >>>     print(n, pp)
         """
-    def replace(self, x:Expression, v:GaloisFieldPrimeTwoPolynomial) -> GaloisFieldPrimeTwoPolynomial:
+    def replace(
+        self, x: Expression, v: GaloisFieldPrimeTwoPolynomial
+    ) -> GaloisFieldPrimeTwoPolynomial:
         r"""
         Replace the variable `x` with a polynomial `v`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x*y+2*x+x^2').to_polynomial()
@@ -2327,27 +2960,36 @@ class GaloisFieldPrimeTwoPolynomial:
         >>> p.replace(x, r)
         """
     @classmethod
-    def groebner_basis(cls, system:typing.Sequence[GaloisFieldPrimeTwoPolynomial], grevlex:builtins.bool=True, print_stats:builtins.bool=False) -> builtins.list[GaloisFieldPrimeTwoPolynomial]:
+    def groebner_basis(
+        cls,
+        system: typing.Sequence[GaloisFieldPrimeTwoPolynomial],
+        grevlex: builtins.bool = True,
+        print_stats: builtins.bool = False,
+    ) -> builtins.list[GaloisFieldPrimeTwoPolynomial]:
         r"""
         Compute the Groebner basis of a polynomial system.
-        
+
         If `grevlex=True`, reverse graded lexicographical ordering is used,
         otherwise the ordering is lexicographical.
-        
+
         If `print_stats=True` intermediate statistics will be printed.
         """
-    def reduce(self, system:typing.Sequence[GaloisFieldPrimeTwoPolynomial], grevlex:builtins.bool=True) -> GaloisFieldPrimeTwoPolynomial:
+    def reduce(
+        self,
+        system: typing.Sequence[GaloisFieldPrimeTwoPolynomial],
+        grevlex: builtins.bool = True,
+    ) -> GaloisFieldPrimeTwoPolynomial:
         r"""
         Completely reduce the polynomial w.r.t the polynomials `gs`.
         For example reducing `f=y^2+x` by `g=[x]` yields `y^2`.
         """
-    def integrate(self, x:Expression) -> GaloisFieldPrimeTwoPolynomial:
+    def integrate(self, x: Expression) -> GaloisFieldPrimeTwoPolynomial:
         r"""
         Integrate the polynomial in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x^2+2').to_polynomial()
@@ -2361,7 +3003,7 @@ class GaloisFieldPrimeTwoPolynomial:
 class Graph:
     r"""
     A graph that supported directional edges, parallel edges, self-edges and custom data on the nodes and edges.
-    
+
     Warning: modifying the graph if it is contained in a `dict` or `set` will invalidate the hash.
     """
     def __new__(cls) -> Graph:
@@ -2388,21 +3030,46 @@ class Graph:
         r"""
         Get the number of nodes.
         """
-    def __richcmp__(self, other:Graph, op:int) -> builtins.bool:
+    def __richcmp__(self, other: Graph, op: int) -> builtins.bool:
         r"""
         Compare two graphs.
         """
     @classmethod
-    def generate(cls, external_edges:typing.Sequence[tuple[Expression | int | str | float | complex, tuple[typing.Optional[builtins.bool], Expression | int | str | float | complex]]], vertex_signatures:typing.Sequence[typing.Sequence[tuple[typing.Optional[builtins.bool], Expression | int | str | float | complex]]], max_vertices:typing.Optional[builtins.int]=None, max_loops:typing.Optional[builtins.int]=None, max_bridges:typing.Optional[builtins.int]=None, allow_self_loops:typing.Optional[builtins.bool]=None, allow_zero_flow_edges:typing.Optional[builtins.bool]=None, filter_fn:typing.Optional[typing.Callable[[Graph, int], bool]]=None) -> builtins.dict[Graph, Expression]:
+    def generate(
+        cls,
+        external_edges: typing.Sequence[
+            tuple[
+                Expression | int | str | float | complex,
+                tuple[
+                    typing.Optional[builtins.bool],
+                    Expression | int | str | float | complex,
+                ],
+            ]
+        ],
+        vertex_signatures: typing.Sequence[
+            typing.Sequence[
+                tuple[
+                    typing.Optional[builtins.bool],
+                    Expression | int | str | float | complex,
+                ]
+            ]
+        ],
+        max_vertices: typing.Optional[builtins.int] = None,
+        max_loops: typing.Optional[builtins.int] = None,
+        max_bridges: typing.Optional[builtins.int] = None,
+        allow_self_loops: typing.Optional[builtins.bool] = None,
+        allow_zero_flow_edges: typing.Optional[builtins.bool] = None,
+        filter_fn: typing.Optional[typing.Callable[[Graph, int], bool]] = None,
+    ) -> builtins.dict[Graph, Expression]:
         r"""
         Generate all connected graphs with `external_edges` half-edges and the given allowed list
         of vertex connections. The vertex signatures are given in terms of an edge direction (or `None` if
         there is no direction) and edge data.
-        
+
         Returns the canonical form of the graph and the size of its automorphism group (including edge permutations).
         If `KeyboardInterrupt` is triggered during the generation, the generation will stop and will yield the currently generated
         graphs.
-        
+
         Examples
         --------
         >>> from symbolica import *
@@ -2414,9 +3081,9 @@ class Graph:
         >>> for (g, sym) in graphs.items():
         >>>     print(f'Symmetry factor = 1/{sym}:')
         >>>     print(g.to_dot())
-        
+
         generates all connected graphs up to 2 loops with the specified vertices.
-        
+
         Parameters
         ----------
         external_nodes: Sequence[tuple[Expression | int, Tuple[Optional[bool], Expression | int]]]
@@ -2449,29 +3116,46 @@ class Graph:
         r"""
         Convert the graph to a mermaid string.
         """
-    def add_node(self, data:typing.Optional[Expression | int | str | float | complex]=None) -> builtins.int:
+    def add_node(
+        self,
+        data: typing.Optional[Expression | int | str | float | complex] = None,
+    ) -> builtins.int:
         r"""
         Add a node with data `data` to the graph, returning the index of the node.
         The default data is the number 0.
         """
-    def add_edge(self, source:builtins.int, target:builtins.int, directed:builtins.bool=False, data:typing.Optional[Expression | int | str | float | complex]=None) -> builtins.int:
+    def add_edge(
+        self,
+        source: builtins.int,
+        target: builtins.int,
+        directed: builtins.bool = False,
+        data: typing.Optional[Expression | int | str | float | complex] = None,
+    ) -> builtins.int:
         r"""
         Add an edge between the `source` and `target` nodes, returning the index of the edge.
         Optionally, the edge can be set as directed. The default data is the number 0.
         """
-    def set_node_data(self, index:builtins.int, data:Expression) -> Expression:
+    def set_node_data(
+        self, index: builtins.int, data: Expression
+    ) -> Expression:
         r"""
         Set the data of the node at index `index`, returning the old data.
         """
-    def set_edge_data(self, index:builtins.int, data:Expression) -> Expression:
+    def set_edge_data(
+        self, index: builtins.int, data: Expression
+    ) -> Expression:
         r"""
         Set the data of the edge at index `index`, returning the old data.
         """
-    def set_directed(self, index:builtins.int, directed:builtins.bool) -> builtins.bool:
+    def set_directed(
+        self, index: builtins.int, directed: builtins.bool
+    ) -> builtins.bool:
         r"""
         Set the directed status of the edge at index `index`, returning the old value.
         """
-    def __getitem__(self, idx:builtins.int) -> tuple[builtins.list[builtins.int], Expression]:
+    def __getitem__(
+        self, idx: builtins.int
+    ) -> tuple[builtins.list[builtins.int], Expression]:
         r"""
         Get the `idx`th node.
         """
@@ -2487,23 +3171,40 @@ class Graph:
         r"""
         Get the number of loops.
         """
-    def node(self, idx:builtins.int) -> tuple[builtins.list[builtins.int], Expression]:
+    def node(
+        self, idx: builtins.int
+    ) -> tuple[builtins.list[builtins.int], Expression]:
         r"""
         Get the `idx`th node, consisting of the edge indices and the data.
         """
-    def nodes(self) -> builtins.list[tuple[builtins.list[builtins.int], Expression]]:
+    def nodes(
+        self,
+    ) -> builtins.list[tuple[builtins.list[builtins.int], Expression]]:
         r"""
         Get all nodes, consisting of the edge indices and the data.
         """
-    def edge(self, idx:builtins.int) -> tuple[builtins.int, builtins.int, builtins.bool, Expression]:
+    def edge(
+        self, idx: builtins.int
+    ) -> tuple[builtins.int, builtins.int, builtins.bool, Expression]:
         r"""
         Get the `idx`th edge, consisting of the the source vertex, target vertex, whether the edge is directed, and the data.
         """
-    def edges(self) -> builtins.list[tuple[builtins.int, builtins.int, builtins.bool, Expression]]:
+    def edges(
+        self,
+    ) -> builtins.list[
+        tuple[builtins.int, builtins.int, builtins.bool, Expression]
+    ]:
         r"""
         Get all edges, consisting of the the source vertex, target vertex, whether the edge is directed, and the data.
         """
-    def canonize(self) -> tuple[Graph, builtins.list[builtins.int], Expression, builtins.list[builtins.int]]:
+    def canonize(
+        self,
+    ) -> tuple[
+        Graph,
+        builtins.list[builtins.int],
+        Expression,
+        builtins.list[builtins.int],
+    ]:
         r"""
         Write the graph in a canonical form.
         Returns the canonicalized graph, the vertex map, the automorphism group size, and the orbit.
@@ -2512,7 +3213,7 @@ class Graph:
         r"""
         Sort and relabel the edges of the graph, keeping the vertices fixed.
         """
-    def is_isomorphic(self, other:Graph) -> builtins.bool:
+    def is_isomorphic(self, other: Graph) -> builtins.bool:
         r"""
         Return true `iff` the graph is isomorphic to `other`.
         """
@@ -2525,7 +3226,7 @@ class HeldExpression:
         r"""
         Execute a bound transformer. If the transformer is unbound,
         you can call it with an expression as an argument.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -2534,69 +3235,115 @@ class HeldExpression:
         >>> e = e.transform().expand().execute()
         >>> print(e)
         """
-    def __richcmp__(self, other:Expression | int | str | float | complex | HeldExpression, op:int) -> Condition:
+    def __richcmp__(
+        self,
+        other: Expression | int | str | float | complex | HeldExpression,
+        op: int,
+    ) -> Condition:
         r"""
         Compare two expressions. If one of the expressions is not a number, an
         internal ordering will be used.
         """
-    def is_type(self, atom_type:AtomType) -> Condition:
+    def is_type(self, atom_type: AtomType) -> Condition:
         r"""
         Test if the expression is of a certain type.
         """
-    def contains(self, s:Expression | int | str | float | complex | HeldExpression | Transformer) -> Condition:
+    def contains(
+        self,
+        s: Expression
+        | int
+        | str
+        | float
+        | complex
+        | HeldExpression
+        | Transformer,
+    ) -> Condition:
         r"""
         Returns true iff `self` contains `a` literally.
         """
-    def matches(self, lhs:Expression | int | str | float | complex | HeldExpression, cond:typing.Optional[PatternRestriction | Condition]=None, level_range:typing.Optional[tuple[builtins.int, typing.Optional[builtins.int]]]=None, level_is_tree_depth:typing.Optional[builtins.bool]=None, allow_new_wildcards_on_rhs:typing.Optional[builtins.bool]=None) -> Condition:
+    def matches(
+        self,
+        lhs: Expression | int | str | float | complex | HeldExpression,
+        cond: typing.Optional[PatternRestriction | Condition] = None,
+        level_range: typing.Optional[
+            tuple[builtins.int, typing.Optional[builtins.int]]
+        ] = None,
+        level_is_tree_depth: typing.Optional[builtins.bool] = None,
+        allow_new_wildcards_on_rhs: typing.Optional[builtins.bool] = None,
+    ) -> Condition:
         r"""
         Create a transformer that tests whether the pattern is found in the expression.
         Restrictions on the pattern can be supplied through `cond`.
         """
-    def __add__(self, rhs:Expression | int | str | float | complex | HeldExpression) -> HeldExpression:
+    def __add__(
+        self, rhs: Expression | int | str | float | complex | HeldExpression
+    ) -> HeldExpression:
         r"""
         Add this transformer to `other`, returning the result.
         """
-    def __radd__(self, rhs:Expression | int | str | float | complex | HeldExpression) -> HeldExpression:
+    def __radd__(
+        self, rhs: Expression | int | str | float | complex | HeldExpression
+    ) -> HeldExpression:
         r"""
         Add this transformer to `other`, returning the result.
         """
-    def __sub__(self, rhs:Expression | int | str | float | complex | HeldExpression) -> HeldExpression:
+    def __sub__(
+        self, rhs: Expression | int | str | float | complex | HeldExpression
+    ) -> HeldExpression:
         r"""
         Subtract `other` from this transformer, returning the result.
         """
-    def __rsub__(self, rhs:Expression | int | str | float | complex | HeldExpression) -> HeldExpression:
+    def __rsub__(
+        self, rhs: Expression | int | str | float | complex | HeldExpression
+    ) -> HeldExpression:
         r"""
         Subtract this transformer from `other`, returning the result.
         """
-    def __mul__(self, rhs:Expression | int | str | float | complex | HeldExpression) -> HeldExpression:
+    def __mul__(
+        self, rhs: Expression | int | str | float | complex | HeldExpression
+    ) -> HeldExpression:
         r"""
         Add this transformer to `other`, returning the result.
         """
-    def __rmul__(self, rhs:Expression | int | str | float | complex | HeldExpression) -> HeldExpression:
+    def __rmul__(
+        self, rhs: Expression | int | str | float | complex | HeldExpression
+    ) -> HeldExpression:
         r"""
         Add this transformer to `other`, returning the result.
         """
-    def __truediv__(self, rhs:Expression | int | str | float | complex | HeldExpression) -> HeldExpression:
+    def __truediv__(
+        self, rhs: Expression | int | str | float | complex | HeldExpression
+    ) -> HeldExpression:
         r"""
         Divide this transformer by `other`, returning the result.
         """
-    def __rtruediv__(self, rhs:Expression | int | str | float | complex | HeldExpression) -> HeldExpression:
+    def __rtruediv__(
+        self, rhs: Expression | int | str | float | complex | HeldExpression
+    ) -> HeldExpression:
         r"""
         Divide `other` by this transformer, returning the result.
         """
-    def __pow__(self, exponent:Expression | int | str | float | complex | HeldExpression, modulo:typing.Optional[builtins.int]=None) -> HeldExpression:
+    def __pow__(
+        self,
+        exponent: Expression | int | str | float | complex | HeldExpression,
+        modulo: typing.Optional[builtins.int] = None,
+    ) -> HeldExpression:
         r"""
         Take `self` to power `exp`, returning the result.
         """
-    def __rpow__(self, base:Expression | int | str | float | complex | HeldExpression, modulo:typing.Optional[builtins.int]=None) -> HeldExpression:
+    def __rpow__(
+        self,
+        base: Expression | int | str | float | complex | HeldExpression,
+        modulo: typing.Optional[builtins.int] = None,
+    ) -> HeldExpression:
         r"""
         Take `base` to power `self`, returning the result.
         """
-    def __xor__(self, _rhs:typing.Any) -> HeldExpression:
+    def __xor__(self, _rhs: typing.Any) -> HeldExpression:
         r"""
         Returns a warning that `**` should be used instead of `^` for taking a power.
         """
-    def __rxor__(self, _rhs:typing.Any) -> HeldExpression:
+    def __rxor__(self, _rhs: typing.Any) -> HeldExpression:
         r"""
         Returns a warning that `**` should be used instead of `^` for taking a power.
         """
@@ -2607,60 +3354,69 @@ class HeldExpression:
 
 class Integer:
     @classmethod
-    def prime_iter(cls, start:builtins.int=1) -> PrimeIterator:
+    def prime_iter(cls, start: builtins.int = 1) -> PrimeIterator:
         r"""
         Create an iterator over all 64-bit prime numbers starting from `start`.
         """
     @classmethod
-    def is_prime(cls, n:builtins.int) -> builtins.bool:
+    def is_prime(cls, n: builtins.int) -> builtins.bool:
         r"""
         Check if the 64-bit number `n` is a prime number.
         """
     @classmethod
-    def factor(cls, n:builtins.int) -> builtins.list[tuple[builtins.int, builtins.int]]:
+    def factor(
+        cls, n: builtins.int
+    ) -> builtins.list[tuple[builtins.int, builtins.int]]:
         r"""
         Factor a 64-bit number `n` into primes.
         """
     @classmethod
-    def totient(cls, n:builtins.int) -> builtins.int:
+    def totient(cls, n: builtins.int) -> builtins.int:
         r"""
         Compute the Euler totient function for the number `n`.
         """
     @classmethod
-    def gcd(cls, n1:int, n2:int) -> int:
+    def gcd(cls, n1: int, n2: int) -> int:
         r"""
         Compute the greatest common divisor of the numbers `a` and `b`.
         """
     @classmethod
-    def extended_gcd(cls, n1:int, n2:int) -> tuple[int, int, int]:
+    def extended_gcd(cls, n1: int, n2: int) -> tuple[int, int, int]:
         r"""
         Compute the greatest common divisor of the numbers `a` and `b` and the Bézout coefficients.
         """
     @classmethod
-    def chinese_remainder(cls, n1:int, m1:int, n2:int, m2:int) -> int:
+    def chinese_remainder(cls, n1: int, m1: int, n2: int, m2: int) -> int:
         r"""
         Solve the Chinese remainder theorem for the equations:
         `x = n1 mod m1` and `x = n2 mod m2`.
         """
     @classmethod
-    def lcm(cls, n1:int, n2:int) -> int:
+    def lcm(cls, n1: int, n2: int) -> int:
         r"""
         Compute the least common multiple of the numbers `a` and `b`.
         """
     @classmethod
-    def solve_integer_relation(cls, x:typing.Sequence[builtins.float | decimal.Decimal], tolerance:builtins.float | decimal.Decimal, max_iter:builtins.int=1000, max_coeff:typing.Optional[int]=None, gamma:typing.Optional[builtins.float | decimal.Decimal]=None) -> builtins.list[int]:
+    def solve_integer_relation(
+        cls,
+        x: typing.Sequence[builtins.float | decimal.Decimal],
+        tolerance: builtins.float | decimal.Decimal,
+        max_iter: builtins.int = 1000,
+        max_coeff: typing.Optional[int] = None,
+        gamma: typing.Optional[builtins.float | decimal.Decimal] = None,
+    ) -> builtins.list[int]:
         r"""
         Use the PSLQ algorithm to find a vector of integers `a` that satisfies `a.x = 0`,
         where every element of `a` is less than `max_coeff`, using a specified tolerance and number
         of iterations. The parameter `gamma` must be more than or equal to `2/sqrt(3)`.
-        
+
         Examples
         --------
         Solve a `32.0177=b*pi+c*e` where `b` and `c` are integers:
-        
+
         >>> r = Integer.solve_integer_relation([-32.0177, 3.1416, 2.7183], 1e-5, 100)
         >>> print(r)
-        
+
         yields `[1,5,6]`.
         """
 
@@ -2681,32 +3437,46 @@ class Matrix:
     r"""
     A Symbolica matrix with rational polynomial coefficients.
     """
-    def __new__(cls, nrows:builtins.int, ncols:builtins.int) -> Matrix:
+    def __new__(cls, nrows: builtins.int, ncols: builtins.int) -> Matrix:
         r"""
         Create a new zeroed matrix with `nrows` rows and `ncols` columns.
         """
     @classmethod
-    def identity(cls, nrows:builtins.int) -> Matrix:
+    def identity(cls, nrows: builtins.int) -> Matrix:
         r"""
         Create a new square matrix with `nrows` rows and ones on the main diagonal and zeroes elsewhere.
         """
     @classmethod
-    def eye(cls, diag:typing.Sequence[RationalPolynomial | Expression]) -> Matrix:
+    def eye(
+        cls, diag: typing.Sequence[RationalPolynomial | Expression]
+    ) -> Matrix:
         r"""
         Create a new matrix with the scalars `diag` on the main diagonal and zeroes elsewhere.
         """
     @classmethod
-    def vec(cls, entries:typing.Sequence[RationalPolynomial | Expression]) -> Matrix:
+    def vec(
+        cls, entries: typing.Sequence[RationalPolynomial | Expression]
+    ) -> Matrix:
         r"""
         Create a new column vector from a list of scalars.
         """
     @classmethod
-    def from_linear(cls, nrows:builtins.int, ncols:builtins.int, entries:typing.Sequence[RationalPolynomial | Expression]) -> Matrix:
+    def from_linear(
+        cls,
+        nrows: builtins.int,
+        ncols: builtins.int,
+        entries: typing.Sequence[RationalPolynomial | Expression],
+    ) -> Matrix:
         r"""
         Create a new row vector from a list of scalars.
         """
     @classmethod
-    def from_nested(cls, entries:typing.Sequence[typing.Sequence[RationalPolynomial | Expression]]) -> Matrix:
+    def from_nested(
+        cls,
+        entries: typing.Sequence[
+            typing.Sequence[RationalPolynomial | Expression]
+        ],
+    ) -> Matrix:
         r"""
         Create a new matrix from a 2-dimensional vector of scalars.
         """
@@ -2738,26 +3508,26 @@ class Matrix:
         r"""
         Return the determinant of the matrix.
         """
-    def solve(self, b:Matrix) -> Matrix:
+    def solve(self, b: Matrix) -> Matrix:
         r"""
         Solve `A * x = b` for `x`, where `A` is the current matrix.
         """
-    def solve_any(self, b:Matrix) -> Matrix:
+    def solve_any(self, b: Matrix) -> Matrix:
         r"""
         Solve `A * x = b` for `x`, where `A` is the current matrix and return any solution if the
         system is underdetermined.
         """
-    def row_reduce(self, max_col:builtins.int) -> builtins.int:
+    def row_reduce(self, max_col: builtins.int) -> builtins.int:
         r"""
         Augment the matrix with another matrix, e.g. create `[A B]` from matrix `A` and `B`.
-        
+
         Returns an error when the matrices do not have the same number of rows.
         """
-    def augment(self, b:Matrix) -> Matrix:
+    def augment(self, b: Matrix) -> Matrix:
         r"""
         Solve `A * x = b` for `x`, where `A` is the current matrix.
         """
-    def split_col(self, index:builtins.int) -> tuple[Matrix, Matrix]:
+    def split_col(self, index: builtins.int) -> tuple[Matrix, Matrix]:
         r"""
         Solve `A * x = b` for `x`, where `A` is the current matrix.
         """
@@ -2769,12 +3539,29 @@ class Matrix:
         r"""
         Construct the same matrix, but with the content removed.
         """
-    def map(self, f:typing.Callable[[RationalPolynomial], RationalPolynomial]) -> Matrix:
+    def map(
+        self, f: typing.Callable[[RationalPolynomial], RationalPolynomial]
+    ) -> Matrix:
         r"""
         Apply a function `f` to every entry of the matrix.
         """
-    def __getitem__(self, idx:tuple[builtins.int, builtins.int]) -> RationalPolynomial: ...
-    def format(self, mode:PrintMode=PrintMode.Symbolica, pretty_matrix:builtins.bool=True, number_thousands_separator:typing.Optional[builtins.str]=None, multiplication_operator:builtins.str='*', double_star_for_exponentiation:builtins.bool=False, square_brackets_for_function:builtins.bool=False, num_exp_as_superscript:builtins.bool=True, precision:typing.Optional[builtins.int]=None, show_namespaces:builtins.bool=False, max_terms:typing.Optional[builtins.int]=None, custom_print_mode:typing.Optional[builtins.int]=None) -> builtins.str:
+    def __getitem__(
+        self, idx: tuple[builtins.int, builtins.int]
+    ) -> RationalPolynomial: ...
+    def format(
+        self,
+        mode: PrintMode = PrintMode.Symbolica,
+        pretty_matrix: builtins.bool = True,
+        number_thousands_separator: typing.Optional[builtins.str] = None,
+        multiplication_operator: builtins.str = "*",
+        double_star_for_exponentiation: builtins.bool = False,
+        square_brackets_for_function: builtins.bool = False,
+        num_exp_as_superscript: builtins.bool = True,
+        precision: typing.Optional[builtins.int] = None,
+        show_namespaces: builtins.bool = False,
+        max_terms: typing.Optional[builtins.int] = None,
+        custom_print_mode: typing.Optional[builtins.int] = None,
+    ) -> builtins.str:
         r"""
         Convert the matrix into a human-readable string, with tunable settings.
         """
@@ -2782,7 +3569,7 @@ class Matrix:
         r"""
         Convert the matrix into a LaTeX string.
         """
-    def __richcmp__(self, other:Matrix, op:int) -> builtins.bool:
+    def __richcmp__(self, other: Matrix, op: int) -> builtins.bool:
         r"""
         Compare two matrices.
         """
@@ -2798,39 +3585,41 @@ class Matrix:
         r"""
         Convert the matrix into a human-readable string.
         """
-    def __add__(self, rhs:Matrix) -> Matrix:
+    def __add__(self, rhs: Matrix) -> Matrix:
         r"""
         Add this matrix to `rhs`, returning the result.
         """
-    def __sub__(self, rhs:Matrix) -> Matrix:
+    def __sub__(self, rhs: Matrix) -> Matrix:
         r"""
         Subtract `rhs` from this matrix, returning the result.
         """
-    def __mul__(self, rhs:RationalPolynomial | Expression | Matrix) -> Matrix:
+    def __mul__(self, rhs: RationalPolynomial | Expression | Matrix) -> Matrix:
         r"""
         Matrix multiply `self` and `rhs`, returning the result.
         """
-    def __rmul__(self, rhs:RationalPolynomial | Expression) -> Matrix:
+    def __rmul__(self, rhs: RationalPolynomial | Expression) -> Matrix:
         r"""
         Matrix multiply `rhs` and `self` returning the result.
         """
-    def __matmul__(self, rhs:RationalPolynomial | Expression | Matrix) -> Matrix:
+    def __matmul__(
+        self, rhs: RationalPolynomial | Expression | Matrix
+    ) -> Matrix:
         r"""
         Matrix multiply this matrix and `self`, returning the result.
         """
-    def __rmatmul__(self, rhs:RationalPolynomial | Expression) -> Matrix:
+    def __rmatmul__(self, rhs: RationalPolynomial | Expression) -> Matrix:
         r"""
         Matrix multiply `rhs` and `self`, returning the result.
         """
-    def __truediv__(self, rhs:RationalPolynomial | Expression) -> Matrix:
+    def __truediv__(self, rhs: RationalPolynomial | Expression) -> Matrix:
         r"""
         Divide the matrix by the scalar, returning the result.
         """
-    def __xor__(self, _rhs:typing.Any) -> Matrix:
+    def __xor__(self, _rhs: typing.Any) -> Matrix:
         r"""
         Returns a warning that `**` should be used instead of `^` for taking a power.
         """
-    def __rxor__(self, _rhs:typing.Any) -> Matrix:
+    def __rxor__(self, _rhs: typing.Any) -> Matrix:
         r"""
         Returns a warning that `**` should be used instead of `^` for taking a power.
         """
@@ -2843,7 +3632,9 @@ class NumberFieldPolynomial:
     r"""
     A Symbolica polynomial over number fields.
     """
-    def __richcmp__(self, other:NumberFieldPolynomial, op:int) -> builtins.bool:
+    def __richcmp__(
+        self, other: NumberFieldPolynomial, op: int
+    ) -> builtins.bool:
         r"""
         Compare two polynomials.
         """
@@ -2851,10 +3642,28 @@ class NumberFieldPolynomial:
         r"""
         Copy the polynomial.
         """
-    def format(self, mode:PrintMode=PrintMode.Symbolica, terms_on_new_line:builtins.bool=False, color_top_level_sum:builtins.bool=True, color_builtin_symbols:builtins.bool=True, print_finite_field:builtins.bool=True, symmetric_representation_for_finite_field:builtins.bool=False, explicit_rational_polynomial:builtins.bool=False, number_thousands_separator:typing.Optional[builtins.str]=None, multiplication_operator:builtins.str='*', double_star_for_exponentiation:builtins.bool=False, square_brackets_for_function:builtins.bool=False, num_exp_as_superscript:builtins.bool=True, precision:typing.Optional[builtins.int]=None, show_namespaces:builtins.bool=False, max_terms:typing.Optional[builtins.int]=None, custom_print_mode:typing.Optional[builtins.int]=None) -> builtins.str:
+    def format(
+        self,
+        mode: PrintMode = PrintMode.Symbolica,
+        terms_on_new_line: builtins.bool = False,
+        color_top_level_sum: builtins.bool = True,
+        color_builtin_symbols: builtins.bool = True,
+        print_finite_field: builtins.bool = True,
+        symmetric_representation_for_finite_field: builtins.bool = False,
+        explicit_rational_polynomial: builtins.bool = False,
+        number_thousands_separator: typing.Optional[builtins.str] = None,
+        multiplication_operator: builtins.str = "*",
+        double_star_for_exponentiation: builtins.bool = False,
+        square_brackets_for_function: builtins.bool = False,
+        num_exp_as_superscript: builtins.bool = True,
+        precision: typing.Optional[builtins.int] = None,
+        show_namespaces: builtins.bool = False,
+        max_terms: typing.Optional[builtins.int] = None,
+        custom_print_mode: typing.Optional[builtins.int] = None,
+    ) -> builtins.str:
         r"""
         Convert the polynomial into a human-readable string, with tunable settings.
-        
+
         Examples
         --------
         >>> p = FiniteFieldPolynomial.parse("3*x^2+2*x+7*x^3", ['x'], 11)
@@ -2868,7 +3677,11 @@ class NumberFieldPolynomial:
         r"""
         Print the polynomial in a human-readable format.
         """
-    def __pow__(self, exponent:builtins.int, modulo:typing.Optional[builtins.int]=None) -> NumberFieldPolynomial: ...
+    def __pow__(
+        self,
+        exponent: builtins.int,
+        modulo: typing.Optional[builtins.int] = None,
+    ) -> NumberFieldPolynomial: ...
     def to_latex(self) -> builtins.str:
         r"""
         Convert the polynomial into a LaTeX string.
@@ -2881,32 +3694,34 @@ class NumberFieldPolynomial:
         r"""
         Get the list of variables in the internal ordering of the polynomial.
         """
-    def __add__(self, rhs:NumberFieldPolynomial) -> NumberFieldPolynomial:
+    def __add__(self, rhs: NumberFieldPolynomial) -> NumberFieldPolynomial:
         r"""
         Add two polynomials `self and `rhs`, returning the result.
         """
-    def __sub__(self, rhs:NumberFieldPolynomial) -> NumberFieldPolynomial:
+    def __sub__(self, rhs: NumberFieldPolynomial) -> NumberFieldPolynomial:
         r"""
         Subtract polynomials `rhs` from `self`, returning the result.
         """
-    def __mul__(self, rhs:NumberFieldPolynomial) -> NumberFieldPolynomial:
+    def __mul__(self, rhs: NumberFieldPolynomial) -> NumberFieldPolynomial:
         r"""
         Multiply two polynomials `self and `rhs`, returning the result.
         """
-    def __truediv__(self, rhs:NumberFieldPolynomial) -> NumberFieldPolynomial:
+    def __truediv__(self, rhs: NumberFieldPolynomial) -> NumberFieldPolynomial:
         r"""
         Divide the polynomial `self` by `rhs` if possible, returning the result.
         """
-    def unify_variables(self, other:NumberFieldPolynomial) -> None: ...
-    def __contains__(self, var:Expression) -> builtins.bool: ...
-    def contains(self, var:Expression) -> builtins.bool: ...
-    def degree(self, var:Expression) -> builtins.int: ...
-    def reorder(self, order:typing.Sequence[Expression]) -> None:
+    def unify_variables(self, other: NumberFieldPolynomial) -> None: ...
+    def __contains__(self, var: Expression) -> builtins.bool: ...
+    def contains(self, var: Expression) -> builtins.bool: ...
+    def degree(self, var: Expression) -> builtins.int: ...
+    def reorder(self, order: typing.Sequence[Expression]) -> None:
         r"""
         Set a new variable ordering for the polynomial.
         This can be used to introduce new variables as well.
         """
-    def quot_rem(self, rhs:NumberFieldPolynomial) -> tuple[NumberFieldPolynomial, NumberFieldPolynomial]:
+    def quot_rem(
+        self, rhs: NumberFieldPolynomial
+    ) -> tuple[NumberFieldPolynomial, NumberFieldPolynomial]:
         r"""
         Divide `self` by `rhs`, returning the quotient and remainder.
         """
@@ -2914,51 +3729,57 @@ class NumberFieldPolynomial:
         r"""
         Negate the polynomial.
         """
-    def __mod__(self, rhs:NumberFieldPolynomial) -> NumberFieldPolynomial:
+    def __mod__(self, rhs: NumberFieldPolynomial) -> NumberFieldPolynomial:
         r"""
         Compute the remainder `self % rhs.
         """
-    def gcd(self, rhs:NumberFieldPolynomial) -> NumberFieldPolynomial:
+    def gcd(self, rhs: NumberFieldPolynomial) -> NumberFieldPolynomial:
         r"""
         Compute the greatest common divisor (GCD) of two polynomials.
         """
-    def resultant(self, rhs:NumberFieldPolynomial, var:Expression) -> NumberFieldPolynomial:
+    def resultant(
+        self, rhs: NumberFieldPolynomial, var: Expression
+    ) -> NumberFieldPolynomial:
         r"""
         Compute the resultant of two polynomials with respect to the variable `var`.
         """
-    def factor_square_free(self) -> builtins.list[tuple[NumberFieldPolynomial, builtins.int]]:
+    def factor_square_free(
+        self,
+    ) -> builtins.list[tuple[NumberFieldPolynomial, builtins.int]]:
         r"""
         Compute the square-free factorization of the polynomial.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('3*(2*x^2+y)(x^3+y)^2(1+4*y)^2(1+x)').expand().to_polynomial()
         >>> print('Square-free factorization of {}:'.format(p))
         >>> for f, exp in p.factor_square_free():
         >>>     print('\t({})^{}'.format(f, exp))
         """
-    def factor(self) -> builtins.list[tuple[NumberFieldPolynomial, builtins.int]]:
+    def factor(
+        self,
+    ) -> builtins.list[tuple[NumberFieldPolynomial, builtins.int]]:
         r"""
         Factorize the polynomial.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('(x+1)(x+2)(x+3)(x+4)(x+5)(x^2+6)(x^3+7)(x+8)(x^4+9)(x^5+x+10)').expand().to_polynomial()
         >>> print('Factorization of {}:'.format(p))
         >>> for f, exp in p.factor():
         >>>     print('\t({})^{}'.format(f, exp))
         """
-    def derivative(self, x:Expression) -> NumberFieldPolynomial:
+    def derivative(self, x: Expression) -> NumberFieldPolynomial:
         r"""
         Take a derivative in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x^2+2').to_polynomial()
@@ -2967,34 +3788,41 @@ class NumberFieldPolynomial:
     def content(self) -> NumberFieldPolynomial:
         r"""
         Get the content, i.e., the GCD of the coefficients.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('3x^2+6x+9').to_polynomial()
         >>> print(p.content())
         """
-    def coefficient_list(self, vars:typing.Optional[Expression | typing.Sequence[Expression]]=None) -> builtins.list[tuple[builtins.list[builtins.int], NumberFieldPolynomial]]:
+    def coefficient_list(
+        self,
+        vars: typing.Optional[Expression | typing.Sequence[Expression]] = None,
+    ) -> builtins.list[
+        tuple[builtins.list[builtins.int], NumberFieldPolynomial]
+    ]:
         r"""
         Get the coefficient list, optionally in the variables `vars`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x*y+2*x+x^2').to_polynomial()
         >>> for n, pp in p.coefficient_list(x):
         >>>     print(n, pp)
         """
-    def replace(self, x:Expression, v:NumberFieldPolynomial) -> NumberFieldPolynomial:
+    def replace(
+        self, x: Expression, v: NumberFieldPolynomial
+    ) -> NumberFieldPolynomial:
         r"""
         Replace the variable `x` with a polynomial `v`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x*y+2*x+x^2').to_polynomial()
@@ -3002,27 +3830,36 @@ class NumberFieldPolynomial:
         >>> p.replace(x, r)
         """
     @classmethod
-    def groebner_basis(cls, system:typing.Sequence[NumberFieldPolynomial], grevlex:builtins.bool=True, print_stats:builtins.bool=False) -> builtins.list[NumberFieldPolynomial]:
+    def groebner_basis(
+        cls,
+        system: typing.Sequence[NumberFieldPolynomial],
+        grevlex: builtins.bool = True,
+        print_stats: builtins.bool = False,
+    ) -> builtins.list[NumberFieldPolynomial]:
         r"""
         Compute the Groebner basis of a polynomial system.
-        
+
         If `grevlex=True`, reverse graded lexicographical ordering is used,
         otherwise the ordering is lexicographical.
-        
+
         If `print_stats=True` intermediate statistics will be printed.
         """
-    def reduce(self, system:typing.Sequence[NumberFieldPolynomial], grevlex:builtins.bool=True) -> NumberFieldPolynomial:
+    def reduce(
+        self,
+        system: typing.Sequence[NumberFieldPolynomial],
+        grevlex: builtins.bool = True,
+    ) -> NumberFieldPolynomial:
         r"""
         Completely reduce the polynomial w.r.t the polynomials `gs`.
         For example reducing `f=y^2+x` by `g=[x]` yields `y^2`.
         """
-    def integrate(self, x:Expression) -> NumberFieldPolynomial:
+    def integrate(self, x: Expression) -> NumberFieldPolynomial:
         r"""
         Integrate the polynomial in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x^2+2').to_polynomial()
@@ -3036,26 +3873,42 @@ class NumberFieldPolynomial:
         r"""
         Get the minimal polynomial of the algebraic extension.
         """
-    def extend(self, b:NumberFieldPolynomial) -> tuple[NumberFieldPolynomial, Polynomial, Polynomial]:
+    def extend(
+        self, b: NumberFieldPolynomial
+    ) -> tuple[NumberFieldPolynomial, Polynomial, Polynomial]:
         r"""
         Extend the coefficient ring of this polynomial `R[a]` with `b`, whose minimal polynomial
         is `R[a][b]` and form `R[b]`. Also return the new representation of `a` and `b`.
-        
+
         `b`  must be irreducible over `R` and `R[a]`; this is not checked.
         """
 
 class NumericalIntegrator:
     @classmethod
-    def continuous(cls, n_dims:builtins.int, n_bins:builtins.int=128, min_samples_for_update:builtins.int=100, bin_number_evolution:typing.Optional[typing.Sequence[builtins.int]]=None, train_on_avg:builtins.bool=False) -> NumericalIntegrator:
+    def continuous(
+        cls,
+        n_dims: builtins.int,
+        n_bins: builtins.int = 128,
+        min_samples_for_update: builtins.int = 100,
+        bin_number_evolution: typing.Optional[
+            typing.Sequence[builtins.int]
+        ] = None,
+        train_on_avg: builtins.bool = False,
+    ) -> NumericalIntegrator:
         r"""
         Create a new continuous grid for the numerical integrator.
         """
     @classmethod
-    def discrete(cls, bins:typing.Sequence[typing.Optional[NumericalIntegrator]], max_prob_ratio:builtins.float=100.0, train_on_avg:builtins.bool=False) -> NumericalIntegrator:
+    def discrete(
+        cls,
+        bins: typing.Sequence[typing.Optional[NumericalIntegrator]],
+        max_prob_ratio: builtins.float = 100.0,
+        train_on_avg: builtins.bool = False,
+    ) -> NumericalIntegrator:
         r"""
         Create a new discrete grid for the numerical integrator.
         Each bin can have a sub-grid.
-        
+
         Examples
         --------
         >>> def integrand(samples: list[Sample]):
@@ -3072,24 +3925,32 @@ class NumericalIntegrator:
         >>> integrator.integrate(integrand, True, 10, 10000)
         """
     @classmethod
-    def rng(cls, seed:builtins.int, stream_id:builtins.int) -> RandomNumberGenerator:
+    def rng(
+        cls, seed: builtins.int, stream_id: builtins.int
+    ) -> RandomNumberGenerator:
         r"""
         Create a new random number generator, suitable for use with the integrator.
         Each thread of instance of the integrator should have its own random number generator,
         that is initialized with the same seed but with a different stream id.
         """
-    def sample(self, num_samples:builtins.int, rng:RandomNumberGenerator) -> builtins.list[Sample]:
+    def sample(
+        self, num_samples: builtins.int, rng: RandomNumberGenerator
+    ) -> builtins.list[Sample]:
         r"""
         Sample `num_samples` points from the grid using the random number generator
         `rng`. See `rng()` for how to create a random number generator.
         """
-    def add_training_samples(self, samples:typing.Sequence[Sample], evals:typing.Sequence[builtins.float]) -> None:
+    def add_training_samples(
+        self,
+        samples: typing.Sequence[Sample],
+        evals: typing.Sequence[builtins.float],
+    ) -> None:
         r"""
         Add the samples and their corresponding function evaluations to the grid.
         Call `update` after to update the grid and to obtain the new expected value for the integral.
         """
     @classmethod
-    def import_grid(cls, grid:bytes) -> NumericalIntegrator:
+    def import_grid(cls, grid: bytes) -> NumericalIntegrator:
         r"""
         Import an exported grid from another thread or machine.
         Use `export_grid` to export the grid.
@@ -3099,17 +3960,30 @@ class NumericalIntegrator:
         Export the grid, so that it can be sent to another thread or machine.
         Use `import_grid` to load the grid.
         """
-    def get_live_estimate(self) -> tuple[builtins.float, builtins.float, builtins.float, builtins.float, builtins.float, builtins.int]:
+    def get_live_estimate(
+        self,
+    ) -> tuple[
+        builtins.float,
+        builtins.float,
+        builtins.float,
+        builtins.float,
+        builtins.float,
+        builtins.int,
+    ]:
         r"""
         Get the estamate of the average, error, chi-squared, maximum negative and positive evaluations, and the number of processed samples
         for the current iteration, including the points submitted in the current iteration.
         """
-    def merge(self, other:NumericalIntegrator) -> None:
+    def merge(self, other: NumericalIntegrator) -> None:
         r"""
         Add the accumulated training samples from the grid `other` to the current grid.
         The grid structure of `self` and `other` must be equivalent.
         """
-    def update(self, discrete_learning_rate:builtins.float, continuous_learning_rate:builtins.float) -> tuple[builtins.float, builtins.float, builtins.float]:
+    def update(
+        self,
+        discrete_learning_rate: builtins.float,
+        continuous_learning_rate: builtins.float,
+    ) -> tuple[builtins.float, builtins.float, builtins.float]:
         r"""
         Update the grid using the `discrete_learning_rate` and `continuous_learning_rate`.
         Examples
@@ -3130,17 +4004,25 @@ class NumericalIntegrator:
         >>>     avg, err, chi_sq = integrator.update(1.5, 1.5)
         >>>     print('Iteration {}: {:.6} +- {:.6}, chi={:.6}'.format(i+1, avg, err, chi_sq))
         """
-    def integrate(self, integrand:typing.Callable[[typing.Sequence[Sample]], list[float]], max_n_iter:builtins.int=10000000, min_error:builtins.float=0.01, n_samples_per_iter:builtins.int=10000, seed:builtins.int=0, show_stats:builtins.bool=True) -> tuple[builtins.float, builtins.float, builtins.float]:
+    def integrate(
+        self,
+        integrand: typing.Callable[[typing.Sequence[Sample]], list[float]],
+        max_n_iter: builtins.int = 10000000,
+        min_error: builtins.float = 0.01,
+        n_samples_per_iter: builtins.int = 10000,
+        seed: builtins.int = 0,
+        show_stats: builtins.bool = True,
+    ) -> tuple[builtins.float, builtins.float, builtins.float]:
         r"""
         Integrate the function `integrand` that maps a list of `Sample`s to a list of `float`s.
         The return value is the average, the statistical error, and chi-squared of the integral.
-        
+
         With `show_stats=True`, intermediate statistics will be printed. `max_n_iter` determines the number
         of iterations and `n_samples_per_iter` determine the number of samples per iteration. This is
         the same amount of samples that the integrand function will be called with.
-        
+
         For more flexibility, use `sample`, `add_training_samples` and `update`. See `update` for an example.
-        
+
         Examples
         --------
         >>> from symbolica import NumericalIntegrator, Sample
@@ -3159,11 +4041,11 @@ class PatternRestriction:
     r"""
     A restriction on wildcards.
     """
-    def __and__(self, other:PatternRestriction) -> PatternRestriction:
+    def __and__(self, other: PatternRestriction) -> PatternRestriction:
         r"""
         Create a new pattern restriction that is the logical 'and' operation between two restrictions (i.e., both should hold).
         """
-    def __or__(self, other:PatternRestriction) -> PatternRestriction:
+    def __or__(self, other: PatternRestriction) -> PatternRestriction:
         r"""
         Create a new pattern restriction that is the logical 'or' operation between two restrictions (i.e., one of the two should hold).
         """
@@ -3172,17 +4054,19 @@ class PatternRestriction:
         Create a new pattern restriction that takes the logical 'not' of the current restriction.
         """
     @classmethod
-    def req_matches(cls, match_fn:typing.Callable[[dict[Expression, Expression]], int]) -> PatternRestriction:
+    def req_matches(
+        cls, match_fn: typing.Callable[[dict[Expression, Expression]], int]
+    ) -> PatternRestriction:
         r"""
         Create a pattern restriction based on the current matched variables.
         `match_fn` is a Python function that takes a dictionary of wildcards and their matched values
         and should return an integer. If the integer is less than 0, the restriction is false.
         If the integer is 0, the restriction is inconclusive.
         If the integer is greater than 0, the restriction is true.
-        
+
         If your pattern restriction cannot decide if it holds since not all the required variables
         have been matched, it should return inclusive (0).
-        
+
         Examples
         --------
         >>> from symbolica import *
@@ -3205,7 +4089,7 @@ class PatternRestriction:
         """
 
 class Polynomial:
-    def __richcmp__(self, other:Polynomial, op:int) -> builtins.bool:
+    def __richcmp__(self, other: Polynomial, op: int) -> builtins.bool:
         r"""
         Compare two polynomials.
         """
@@ -3213,10 +4097,28 @@ class Polynomial:
         r"""
         Copy the polynomial.
         """
-    def format(self, mode:PrintMode=PrintMode.Symbolica, terms_on_new_line:builtins.bool=False, color_top_level_sum:builtins.bool=True, color_builtin_symbols:builtins.bool=True, print_finite_field:builtins.bool=True, symmetric_representation_for_finite_field:builtins.bool=False, explicit_rational_polynomial:builtins.bool=False, number_thousands_separator:typing.Optional[builtins.str]=None, multiplication_operator:builtins.str='*', double_star_for_exponentiation:builtins.bool=False, square_brackets_for_function:builtins.bool=False, num_exp_as_superscript:builtins.bool=True, precision:typing.Optional[builtins.int]=None, show_namespaces:builtins.bool=False, max_terms:typing.Optional[builtins.int]=None, custom_print_mode:typing.Optional[builtins.int]=None) -> builtins.str:
+    def format(
+        self,
+        mode: PrintMode = PrintMode.Symbolica,
+        terms_on_new_line: builtins.bool = False,
+        color_top_level_sum: builtins.bool = True,
+        color_builtin_symbols: builtins.bool = True,
+        print_finite_field: builtins.bool = True,
+        symmetric_representation_for_finite_field: builtins.bool = False,
+        explicit_rational_polynomial: builtins.bool = False,
+        number_thousands_separator: typing.Optional[builtins.str] = None,
+        multiplication_operator: builtins.str = "*",
+        double_star_for_exponentiation: builtins.bool = False,
+        square_brackets_for_function: builtins.bool = False,
+        num_exp_as_superscript: builtins.bool = True,
+        precision: typing.Optional[builtins.int] = None,
+        show_namespaces: builtins.bool = False,
+        max_terms: typing.Optional[builtins.int] = None,
+        custom_print_mode: typing.Optional[builtins.int] = None,
+    ) -> builtins.str:
         r"""
         Convert the polynomial into a human-readable string, with tunable settings.
-        
+
         Examples
         --------
         >>> p = FiniteFieldPolynomial.parse("3*x^2+2*x+7*x^3", ['x'], 11)
@@ -3230,7 +4132,11 @@ class Polynomial:
         r"""
         Print the polynomial in a human-readable format.
         """
-    def __pow__(self, exponent:builtins.int, modulo:typing.Optional[builtins.int]=None) -> Polynomial: ...
+    def __pow__(
+        self,
+        exponent: builtins.int,
+        modulo: typing.Optional[builtins.int] = None,
+    ) -> Polynomial: ...
     def to_latex(self) -> builtins.str:
         r"""
         Convert the polynomial into a LaTeX string.
@@ -3243,32 +4149,32 @@ class Polynomial:
         r"""
         Get the list of variables in the internal ordering of the polynomial.
         """
-    def __add__(self, rhs:Polynomial) -> Polynomial:
+    def __add__(self, rhs: Polynomial) -> Polynomial:
         r"""
         Add two polynomials `self and `rhs`, returning the result.
         """
-    def __sub__(self, rhs:Polynomial) -> Polynomial:
+    def __sub__(self, rhs: Polynomial) -> Polynomial:
         r"""
         Subtract polynomials `rhs` from `self`, returning the result.
         """
-    def __mul__(self, rhs:Polynomial) -> Polynomial:
+    def __mul__(self, rhs: Polynomial) -> Polynomial:
         r"""
         Multiply two polynomials `self and `rhs`, returning the result.
         """
-    def __truediv__(self, rhs:Polynomial) -> Polynomial:
+    def __truediv__(self, rhs: Polynomial) -> Polynomial:
         r"""
         Divide the polynomial `self` by `rhs` if possible, returning the result.
         """
-    def unify_variables(self, other:Polynomial) -> None: ...
-    def __contains__(self, var:Expression) -> builtins.bool: ...
-    def contains(self, var:Expression) -> builtins.bool: ...
-    def degree(self, var:Expression) -> builtins.int: ...
-    def reorder(self, order:typing.Sequence[Expression]) -> None:
+    def unify_variables(self, other: Polynomial) -> None: ...
+    def __contains__(self, var: Expression) -> builtins.bool: ...
+    def contains(self, var: Expression) -> builtins.bool: ...
+    def degree(self, var: Expression) -> builtins.int: ...
+    def reorder(self, order: typing.Sequence[Expression]) -> None:
         r"""
         Set a new variable ordering for the polynomial.
         This can be used to introduce new variables as well.
         """
-    def quot_rem(self, rhs:Polynomial) -> tuple[Polynomial, Polynomial]:
+    def quot_rem(self, rhs: Polynomial) -> tuple[Polynomial, Polynomial]:
         r"""
         Divide `self` by `rhs`, returning the quotient and remainder.
         """
@@ -3276,38 +4182,42 @@ class Polynomial:
         r"""
         Negate the polynomial.
         """
-    def __mod__(self, rhs:Polynomial) -> Polynomial:
+    def __mod__(self, rhs: Polynomial) -> Polynomial:
         r"""
         Compute the remainder `self % rhs.
         """
-    def gcd(self, rhs:Polynomial) -> Polynomial:
+    def gcd(self, rhs: Polynomial) -> Polynomial:
         r"""
         Compute the greatest common divisor (GCD) of two polynomials.
         """
-    def extended_gcd(self, rhs:Polynomial) -> tuple[Polynomial, Polynomial, Polynomial]:
+    def extended_gcd(
+        self, rhs: Polynomial
+    ) -> tuple[Polynomial, Polynomial, Polynomial]:
         r"""
         Compute the extended GCD of two polynomials, yielding the GCD and the Bezout coefficients `s` and `t`
         such that `self * s + rhs * t = gcd(self, rhs)`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import *
         >>> E('(1+x)(20+x)').to_polynomial().extended_gcd(E('x^2+2').to_polynomial())
-        
+
         yields `(1, 1/67-7/402*x, 47/134+7/402*x)`.
         """
-    def resultant(self, rhs:Polynomial, var:Expression) -> Polynomial:
+    def resultant(self, rhs: Polynomial, var: Expression) -> Polynomial:
         r"""
         Compute the resultant of two polynomials with respect to the variable `var`.
         """
-    def factor_square_free(self) -> builtins.list[tuple[Polynomial, builtins.int]]:
+    def factor_square_free(
+        self,
+    ) -> builtins.list[tuple[Polynomial, builtins.int]]:
         r"""
         Compute the square-free factorization of the polynomial.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('3*(2*x^2+y)(x^3+y)^2(1+4*y)^2(1+x)').expand().to_polynomial()
         >>> print('Square-free factorization of {}:'.format(p))
@@ -3317,23 +4227,23 @@ class Polynomial:
     def factor(self) -> builtins.list[tuple[Polynomial, builtins.int]]:
         r"""
         Factorize the polynomial.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('(x+1)(x+2)(x+3)(x+4)(x+5)(x^2+6)(x^3+7)(x+8)(x^4+9)(x^5+x+10)').expand().to_polynomial()
         >>> print('Factorization of {}:'.format(p))
         >>> for f, exp in p.factor():
         >>>     print('\t({})^{}'.format(f, exp))
         """
-    def derivative(self, x:Expression) -> Polynomial:
+    def derivative(self, x: Expression) -> Polynomial:
         r"""
         Take a derivative in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x^2+2').to_polynomial()
@@ -3342,34 +4252,37 @@ class Polynomial:
     def content(self) -> Polynomial:
         r"""
         Get the content, i.e., the GCD of the coefficients.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('3x^2+6x+9').to_polynomial()
         >>> print(p.content())
         """
-    def coefficient_list(self, vars:typing.Optional[Expression | typing.Sequence[Expression]]=None) -> builtins.list[tuple[builtins.list[builtins.int], Polynomial]]:
+    def coefficient_list(
+        self,
+        vars: typing.Optional[Expression | typing.Sequence[Expression]] = None,
+    ) -> builtins.list[tuple[builtins.list[builtins.int], Polynomial]]:
         r"""
         Get the coefficient list, optionally in the variables `vars`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x*y+2*x+x^2').to_polynomial()
         >>> for n, pp in p.coefficient_list(x):
         >>>     print(n, pp)
         """
-    def replace(self, x:Expression, v:Polynomial) -> Polynomial:
+    def replace(self, x: Expression, v: Polynomial) -> Polynomial:
         r"""
         Replace the variable `x` with a polynomial `v`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x*y+2*x+x^2').to_polynomial()
@@ -3377,36 +4290,43 @@ class Polynomial:
         >>> p.replace(x, r)
         """
     @classmethod
-    def parse(cls, arg:builtins.str, vars:typing.Sequence[str], default_namespace:builtins.str='python') -> Polynomial:
+    def parse(
+        cls,
+        arg: builtins.str,
+        vars: typing.Sequence[str],
+        default_namespace: builtins.str = "python",
+    ) -> Polynomial:
         r"""
         Parse a polynomial with rational coefficients from a string.
         The input must be written in an expanded format and a list of all
         the variables must be provided.
-        
+
         If these requirements are too strict, use `Expression.to_polynomial()` or
         `RationalPolynomial.parse()` instead.
-        
+
         Examples
         --------
         >>> e = Polynomial.parse('3/4*x^2+y+y*4', ['x', 'y'])
-        
+
         Raises
         ------
         ValueError
             If the input is not a valid Symbolica polynomial.
         """
-    def isolate_roots(self, refine:typing.Optional[builtins.float | decimal.Decimal]=None) -> builtins.list[tuple[Expression, Expression, builtins.int]]:
+    def isolate_roots(
+        self, refine: typing.Optional[builtins.float | decimal.Decimal] = None
+    ) -> builtins.list[tuple[Expression, Expression, builtins.int]]:
         r"""
         Isolate the real roots of the polynomial. The result is a list of intervals with rational bounds that contain exactly one root,
         and the multiplicity of that root. Optionally, the intervals can be refined to a given precision.
-        
+
         Examples
         --------
         >>> from symbolica import *
         >>> p = E('2016+5808*x+5452*x^2+1178*x^3+-753*x^4+-232*x^5+41*x^6').to_polynomial()
         >>> for a, b, n in p.isolate_roots():
         >>>     print('({},{}): {}'.format(a, b, n))
-        
+
         yields
         ```
         (-56/45,-77/62): 1
@@ -3417,32 +4337,39 @@ class Polynomial:
         (6,12): 1
         ```
         """
-    def approximate_roots(self, max_iterations:builtins.int, tolerance:builtins.float) -> builtins.list[tuple[complex, builtins.int]]:
+    def approximate_roots(
+        self, max_iterations: builtins.int, tolerance: builtins.float
+    ) -> builtins.list[tuple[complex, builtins.int]]:
         r"""
         Approximate all complex roots of a univariate polynomial, given a maximal number of iterations
         and a given tolerance. Returns the roots and their multiplicity.
-        
+
         Examples
         --------
-        
+
         >>> p = E('x^10+9x^7+4x^3+2x+1').to_polynomial()
         >>> for (r, m) in p.approximate_roots(1000, 1e-10):
         >>>     print(r, m)
         """
-    def to_finite_field(self, prime:builtins.int) -> FiniteFieldPolynomial:
+    def to_finite_field(self, prime: builtins.int) -> FiniteFieldPolynomial:
         r"""
         Convert the coefficients of the polynomial to a finite field with prime `prime`.
         """
     @classmethod
-    def groebner_basis(cls, system:typing.Sequence[Polynomial], grevlex:builtins.bool=True, print_stats:builtins.bool=False) -> builtins.list[Polynomial]:
+    def groebner_basis(
+        cls,
+        system: typing.Sequence[Polynomial],
+        grevlex: builtins.bool = True,
+        print_stats: builtins.bool = False,
+    ) -> builtins.list[Polynomial]:
         r"""
         Compute the Groebner basis of a polynomial system.
-        
+
         If `grevlex=True`, reverse graded lexicographical ordering is used,
         otherwise the ordering is lexicographical.
-        
+
         If `print_stats=True` intermediate statistics will be printed.
-        
+
         Examples
         --------
         >>> basis = Polynomial.groebner_basis(
@@ -3456,18 +4383,20 @@ class Polynomial:
         >>> for p in basis:
         >>>     print(p)
         """
-    def reduce(self, system:typing.Sequence[Polynomial], grevlex:builtins.bool=True) -> Polynomial:
+    def reduce(
+        self, system: typing.Sequence[Polynomial], grevlex: builtins.bool = True
+    ) -> Polynomial:
         r"""
         Completely reduce the polynomial w.r.t the polynomials `gs`.
         For example reducing `f=y^2+x` by `g=[x]` yields `y^2`.
         """
-    def integrate(self, x:Expression) -> Polynomial:
+    def integrate(self, x: Expression) -> Polynomial:
         r"""
         Integrate the polynomial in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x^2+2').to_polynomial()
@@ -3476,10 +4405,10 @@ class Polynomial:
     def to_expression(self) -> Expression:
         r"""
         Convert the polynomial to an expression.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> e = E('x*y+2*x+x^2')
@@ -3487,18 +4416,25 @@ class Polynomial:
         >>> print(e - p.to_expression())
         """
     @classmethod
-    def interpolate(cls, x:Expression, sample_points:typing.Sequence[Expression | int | str | float | complex], values:typing.Sequence[Polynomial]) -> Polynomial:
+    def interpolate(
+        cls,
+        x: Expression,
+        sample_points: typing.Sequence[
+            Expression | int | str | float | complex
+        ],
+        values: typing.Sequence[Polynomial],
+    ) -> Polynomial:
         r"""
         Perform Newton interpolation in the variable `x` given the sample points
         `sample_points` and the values `values`.
-        
+
         Examples
         --------
         >>> x, y = S('x', 'y')
         >>> a = Polynomial.interpolate(
         >>>         x, [4, 5], [(y**2+5).to_polynomial(), (y**3).to_polynomial()])
         >>> print(a)
-        
+
         yields `25-5*x+5*y^2-y^2*x-4*y^3+y^3*x`.
         """
 
@@ -3516,7 +4452,7 @@ class PrimeTwoPolynomial:
     r"""
     A Symbolica polynomial over Galois fields.
     """
-    def __richcmp__(self, other:PrimeTwoPolynomial, op:int) -> builtins.bool:
+    def __richcmp__(self, other: PrimeTwoPolynomial, op: int) -> builtins.bool:
         r"""
         Compare two polynomials.
         """
@@ -3524,10 +4460,28 @@ class PrimeTwoPolynomial:
         r"""
         Copy the polynomial.
         """
-    def format(self, mode:PrintMode=PrintMode.Symbolica, terms_on_new_line:builtins.bool=False, color_top_level_sum:builtins.bool=True, color_builtin_symbols:builtins.bool=True, print_finite_field:builtins.bool=True, symmetric_representation_for_finite_field:builtins.bool=False, explicit_rational_polynomial:builtins.bool=False, number_thousands_separator:typing.Optional[builtins.str]=None, multiplication_operator:builtins.str='*', double_star_for_exponentiation:builtins.bool=False, square_brackets_for_function:builtins.bool=False, num_exp_as_superscript:builtins.bool=True, precision:typing.Optional[builtins.int]=None, show_namespaces:builtins.bool=False, max_terms:typing.Optional[builtins.int]=None, custom_print_mode:typing.Optional[builtins.int]=None) -> builtins.str:
+    def format(
+        self,
+        mode: PrintMode = PrintMode.Symbolica,
+        terms_on_new_line: builtins.bool = False,
+        color_top_level_sum: builtins.bool = True,
+        color_builtin_symbols: builtins.bool = True,
+        print_finite_field: builtins.bool = True,
+        symmetric_representation_for_finite_field: builtins.bool = False,
+        explicit_rational_polynomial: builtins.bool = False,
+        number_thousands_separator: typing.Optional[builtins.str] = None,
+        multiplication_operator: builtins.str = "*",
+        double_star_for_exponentiation: builtins.bool = False,
+        square_brackets_for_function: builtins.bool = False,
+        num_exp_as_superscript: builtins.bool = True,
+        precision: typing.Optional[builtins.int] = None,
+        show_namespaces: builtins.bool = False,
+        max_terms: typing.Optional[builtins.int] = None,
+        custom_print_mode: typing.Optional[builtins.int] = None,
+    ) -> builtins.str:
         r"""
         Convert the polynomial into a human-readable string, with tunable settings.
-        
+
         Examples
         --------
         >>> p = FiniteFieldPolynomial.parse("3*x^2+2*x+7*x^3", ['x'], 11)
@@ -3541,7 +4495,11 @@ class PrimeTwoPolynomial:
         r"""
         Print the polynomial in a human-readable format.
         """
-    def __pow__(self, exponent:builtins.int, modulo:typing.Optional[builtins.int]=None) -> PrimeTwoPolynomial: ...
+    def __pow__(
+        self,
+        exponent: builtins.int,
+        modulo: typing.Optional[builtins.int] = None,
+    ) -> PrimeTwoPolynomial: ...
     def to_latex(self) -> builtins.str:
         r"""
         Convert the polynomial into a LaTeX string.
@@ -3554,32 +4512,34 @@ class PrimeTwoPolynomial:
         r"""
         Get the list of variables in the internal ordering of the polynomial.
         """
-    def __add__(self, rhs:PrimeTwoPolynomial) -> PrimeTwoPolynomial:
+    def __add__(self, rhs: PrimeTwoPolynomial) -> PrimeTwoPolynomial:
         r"""
         Add two polynomials `self and `rhs`, returning the result.
         """
-    def __sub__(self, rhs:PrimeTwoPolynomial) -> PrimeTwoPolynomial:
+    def __sub__(self, rhs: PrimeTwoPolynomial) -> PrimeTwoPolynomial:
         r"""
         Subtract polynomials `rhs` from `self`, returning the result.
         """
-    def __mul__(self, rhs:PrimeTwoPolynomial) -> PrimeTwoPolynomial:
+    def __mul__(self, rhs: PrimeTwoPolynomial) -> PrimeTwoPolynomial:
         r"""
         Multiply two polynomials `self and `rhs`, returning the result.
         """
-    def __truediv__(self, rhs:PrimeTwoPolynomial) -> PrimeTwoPolynomial:
+    def __truediv__(self, rhs: PrimeTwoPolynomial) -> PrimeTwoPolynomial:
         r"""
         Divide the polynomial `self` by `rhs` if possible, returning the result.
         """
-    def unify_variables(self, other:PrimeTwoPolynomial) -> None: ...
-    def __contains__(self, var:Expression) -> builtins.bool: ...
-    def contains(self, var:Expression) -> builtins.bool: ...
-    def degree(self, var:Expression) -> builtins.int: ...
-    def reorder(self, order:typing.Sequence[Expression]) -> None:
+    def unify_variables(self, other: PrimeTwoPolynomial) -> None: ...
+    def __contains__(self, var: Expression) -> builtins.bool: ...
+    def contains(self, var: Expression) -> builtins.bool: ...
+    def degree(self, var: Expression) -> builtins.int: ...
+    def reorder(self, order: typing.Sequence[Expression]) -> None:
         r"""
         Set a new variable ordering for the polynomial.
         This can be used to introduce new variables as well.
         """
-    def quot_rem(self, rhs:PrimeTwoPolynomial) -> tuple[PrimeTwoPolynomial, PrimeTwoPolynomial]:
+    def quot_rem(
+        self, rhs: PrimeTwoPolynomial
+    ) -> tuple[PrimeTwoPolynomial, PrimeTwoPolynomial]:
         r"""
         Divide `self` by `rhs`, returning the quotient and remainder.
         """
@@ -3587,25 +4547,29 @@ class PrimeTwoPolynomial:
         r"""
         Negate the polynomial.
         """
-    def __mod__(self, rhs:PrimeTwoPolynomial) -> PrimeTwoPolynomial:
+    def __mod__(self, rhs: PrimeTwoPolynomial) -> PrimeTwoPolynomial:
         r"""
         Compute the remainder `self % rhs.
         """
-    def gcd(self, rhs:PrimeTwoPolynomial) -> PrimeTwoPolynomial:
+    def gcd(self, rhs: PrimeTwoPolynomial) -> PrimeTwoPolynomial:
         r"""
         Compute the greatest common divisor (GCD) of two polynomials.
         """
-    def resultant(self, rhs:PrimeTwoPolynomial, var:Expression) -> PrimeTwoPolynomial:
+    def resultant(
+        self, rhs: PrimeTwoPolynomial, var: Expression
+    ) -> PrimeTwoPolynomial:
         r"""
         Compute the resultant of two polynomials with respect to the variable `var`.
         """
-    def factor_square_free(self) -> builtins.list[tuple[PrimeTwoPolynomial, builtins.int]]:
+    def factor_square_free(
+        self,
+    ) -> builtins.list[tuple[PrimeTwoPolynomial, builtins.int]]:
         r"""
         Compute the square-free factorization of the polynomial.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('3*(2*x^2+y)(x^3+y)^2(1+4*y)^2(1+x)').expand().to_polynomial()
         >>> print('Square-free factorization of {}:'.format(p))
@@ -3615,23 +4579,23 @@ class PrimeTwoPolynomial:
     def factor(self) -> builtins.list[tuple[PrimeTwoPolynomial, builtins.int]]:
         r"""
         Factorize the polynomial.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('(x+1)(x+2)(x+3)(x+4)(x+5)(x^2+6)(x^3+7)(x+8)(x^4+9)(x^5+x+10)').expand().to_polynomial()
         >>> print('Factorization of {}:'.format(p))
         >>> for f, exp in p.factor():
         >>>     print('\t({})^{}'.format(f, exp))
         """
-    def derivative(self, x:Expression) -> PrimeTwoPolynomial:
+    def derivative(self, x: Expression) -> PrimeTwoPolynomial:
         r"""
         Take a derivative in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x^2+2').to_polynomial()
@@ -3640,34 +4604,39 @@ class PrimeTwoPolynomial:
     def content(self) -> PrimeTwoPolynomial:
         r"""
         Get the content, i.e., the GCD of the coefficients.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> p = E('3x^2+6x+9').to_polynomial()
         >>> print(p.content())
         """
-    def coefficient_list(self, vars:typing.Optional[Expression | typing.Sequence[Expression]]=None) -> builtins.list[tuple[builtins.list[builtins.int], PrimeTwoPolynomial]]:
+    def coefficient_list(
+        self,
+        vars: typing.Optional[Expression | typing.Sequence[Expression]] = None,
+    ) -> builtins.list[tuple[builtins.list[builtins.int], PrimeTwoPolynomial]]:
         r"""
         Get the coefficient list, optionally in the variables `vars`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x*y+2*x+x^2').to_polynomial()
         >>> for n, pp in p.coefficient_list(x):
         >>>     print(n, pp)
         """
-    def replace(self, x:Expression, v:PrimeTwoPolynomial) -> PrimeTwoPolynomial:
+    def replace(
+        self, x: Expression, v: PrimeTwoPolynomial
+    ) -> PrimeTwoPolynomial:
         r"""
         Replace the variable `x` with a polynomial `v`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x*y+2*x+x^2').to_polynomial()
@@ -3675,27 +4644,36 @@ class PrimeTwoPolynomial:
         >>> p.replace(x, r)
         """
     @classmethod
-    def groebner_basis(cls, system:typing.Sequence[PrimeTwoPolynomial], grevlex:builtins.bool=True, print_stats:builtins.bool=False) -> builtins.list[PrimeTwoPolynomial]:
+    def groebner_basis(
+        cls,
+        system: typing.Sequence[PrimeTwoPolynomial],
+        grevlex: builtins.bool = True,
+        print_stats: builtins.bool = False,
+    ) -> builtins.list[PrimeTwoPolynomial]:
         r"""
         Compute the Groebner basis of a polynomial system.
-        
+
         If `grevlex=True`, reverse graded lexicographical ordering is used,
         otherwise the ordering is lexicographical.
-        
+
         If `print_stats=True` intermediate statistics will be printed.
         """
-    def reduce(self, system:typing.Sequence[PrimeTwoPolynomial], grevlex:builtins.bool=True) -> PrimeTwoPolynomial:
+    def reduce(
+        self,
+        system: typing.Sequence[PrimeTwoPolynomial],
+        grevlex: builtins.bool = True,
+    ) -> PrimeTwoPolynomial:
         r"""
         Completely reduce the polynomial w.r.t the polynomials `gs`.
         For example reducing `f=y^2+x` by `g=[x]` yields `y^2`.
         """
-    def integrate(self, x:Expression) -> PrimeTwoPolynomial:
+    def integrate(self, x: Expression) -> PrimeTwoPolynomial:
         r"""
         Integrate the polynomial in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('x^2+2').to_polynomial()
@@ -3710,11 +4688,13 @@ class RandomNumberGenerator:
     r"""
     A reproducible, fast, non-cryptographic random number generator suitable for parallel Monte Carlo simulations.
     A `seed` has to be set, which can be any `u64` number (small numbers work just as well as large numbers).
-    
+
     Each thread or instance generating samples should use the same `seed` but a different `stream_id`,
     which is an instance counter starting at 0.
     """
-    def __new__(cls, seed:builtins.int, stream_id:builtins.int) -> RandomNumberGenerator:
+    def __new__(
+        cls, seed: builtins.int, stream_id: builtins.int
+    ) -> RandomNumberGenerator:
         r"""
         Create a new random number generator with a given `seed` and `stream_id`. For parallel runs,
         each thread or instance generating samples should use the same `seed` but a different `stream_id`.
@@ -3728,7 +4708,7 @@ class RationalPolynomial:
         r"""
         Copy the rational polynomial.
         """
-    def __richcmp__(self, other:RationalPolynomial, op:int) -> builtins.bool:
+    def __richcmp__(self, other: RationalPolynomial, op: int) -> builtins.bool:
         r"""
         Compare two polynomials.
         """
@@ -3748,19 +4728,19 @@ class RationalPolynomial:
         r"""
         Convert the rational polynomial into a LaTeX string.
         """
-    def __add__(self, rhs:RationalPolynomial) -> RationalPolynomial:
+    def __add__(self, rhs: RationalPolynomial) -> RationalPolynomial:
         r"""
         Add two rational polynomials `self and `rhs`, returning the result.
         """
-    def __sub__(self, rhs:RationalPolynomial) -> RationalPolynomial:
+    def __sub__(self, rhs: RationalPolynomial) -> RationalPolynomial:
         r"""
         Subtract rational polynomials `rhs` from `self`, returning the result.
         """
-    def __mul__(self, rhs:RationalPolynomial) -> RationalPolynomial:
+    def __mul__(self, rhs: RationalPolynomial) -> RationalPolynomial:
         r"""
         Multiply two rational polynomials `self and `rhs`, returning the result.
         """
-    def __truediv__(self, rhs:RationalPolynomial) -> RationalPolynomial:
+    def __truediv__(self, rhs: RationalPolynomial) -> RationalPolynomial:
         r"""
         Divide the rational polynomial `self` by `rhs` if possible, returning the result.
         """
@@ -3768,41 +4748,45 @@ class RationalPolynomial:
         r"""
         Negate the rational polynomial.
         """
-    def gcd(self, rhs:RationalPolynomial) -> RationalPolynomial:
+    def gcd(self, rhs: RationalPolynomial) -> RationalPolynomial:
         r"""
         Compute the greatest common divisor (GCD) of two rational polynomials.
         """
-    def derivative(self, x:Expression) -> RationalPolynomial:
+    def derivative(self, x: Expression) -> RationalPolynomial:
         r"""
         Take a derivative in `x`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('1/((x+y)*(x^2+x*y+1)(x+1))').to_rational_polynomial()
         >>> print(p.derivative(x))
         """
-    def apart(self, x:typing.Optional[Expression]=None) -> builtins.list[RationalPolynomial]:
+    def apart(
+        self, x: typing.Optional[Expression] = None
+    ) -> builtins.list[RationalPolynomial]:
         r"""
         Compute the partial fraction decomposition in `x`. If `x` is `None`,
         compute the multivariate partial fraction decomposition.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> x = S('x')
         >>> p = E('1/((x+y)*(x^2+x*y+1)(x+1))').to_rational_polynomial()
         >>> for pp in p.apart(x):
         >>>     print(pp)
         """
-    def __new__(cls, num:Polynomial, den:Polynomial) -> RationalPolynomial:
+    def __new__(cls, num: Polynomial, den: Polynomial) -> RationalPolynomial:
         r"""
         Create a new rational polynomial from a numerator and denominator polynomial.
         """
-    def to_finite_field(self, prime:builtins.int) -> FiniteFieldRationalPolynomial:
+    def to_finite_field(
+        self, prime: builtins.int
+    ) -> FiniteFieldRationalPolynomial:
         r"""
         Convert the coefficients to finite fields with prime `prime`.
         """
@@ -3815,18 +4799,23 @@ class RationalPolynomial:
         Get the denominator.
         """
     @classmethod
-    def parse(cls, arg:builtins.str, vars:typing.Sequence[str], default_namespace:builtins.str='python') -> RationalPolynomial:
+    def parse(
+        cls,
+        arg: builtins.str,
+        vars: typing.Sequence[str],
+        default_namespace: builtins.str = "python",
+    ) -> RationalPolynomial:
         r"""
         Parse a rational polynomial from a string.
         The list of all the variables must be provided.
-        
+
         If this requirements is too strict, use `Expression.to_polynomial()` instead.
-        
-        
+
+
         Examples
         --------
         >>> e = Polynomial.parse('3/4*x^2+y+y*4', ['x', 'y'])
-        
+
         Raises
         ------
         ValueError
@@ -3835,10 +4824,10 @@ class RationalPolynomial:
     def to_expression(self) -> Expression:
         r"""
         Convert the rational polynomial to an expression.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import Expression
         >>> e = E('(x*y+2*x+x^2)/(1+y^2+x^7)')
         >>> p = e.to_rational_polynomial()
@@ -3864,7 +4853,31 @@ class Replacement:
     """
     @property
     def pattern(self) -> Expression: ...
-    def __new__(cls, pattern:Expression | int | str | float | complex, rhs:Expression | int | str | float | complex | HeldExpression | typing.Callable[[dict[Expression, Expression]], Expression] | int | float | complex | decimal.Decimal, cond:typing.Optional[PatternRestriction | Condition]=None, non_greedy_wildcards:typing.Optional[typing.Sequence[Expression]]=None, level_range:typing.Optional[tuple[builtins.int, typing.Optional[builtins.int]]]=None, level_is_tree_depth:typing.Optional[builtins.bool]=None, allow_new_wildcards_on_rhs:typing.Optional[builtins.bool]=None, rhs_cache_size:typing.Optional[builtins.int]=None) -> Replacement: ...
+    def __new__(
+        cls,
+        pattern: Expression | int | str | float | complex,
+        rhs: Expression
+        | int
+        | str
+        | float
+        | complex
+        | HeldExpression
+        | typing.Callable[[dict[Expression, Expression]], Expression]
+        | int
+        | float
+        | complex
+        | decimal.Decimal,
+        cond: typing.Optional[PatternRestriction | Condition] = None,
+        non_greedy_wildcards: typing.Optional[
+            typing.Sequence[Expression]
+        ] = None,
+        level_range: typing.Optional[
+            tuple[builtins.int, typing.Optional[builtins.int]]
+        ] = None,
+        level_is_tree_depth: typing.Optional[builtins.bool] = None,
+        allow_new_wildcards_on_rhs: typing.Optional[builtins.bool] = None,
+        rhs_cache_size: typing.Optional[builtins.int] = None,
+    ) -> Replacement: ...
 
 class Sample:
     r"""
@@ -3891,31 +4904,35 @@ class Sample:
 class Series:
     r"""
     A series expansion class.
-    
+
     Supports standard arithmetic operations, such
     as addition and multiplication.
-    
+
     Examples
     --------
     >>> x = S('x')
     >>> s = E("(1-cos(x))/sin(x)").series(x, 0, 4)
     >>> print(s)
     """
-    def __add__(self, rhs:Series | Expression) -> Series:
+    def __add__(self, rhs: Series | Expression) -> Series:
         r"""
         Add this series to `rhs`, returning the result.
         """
-    def __radd__(self, rhs:Expression) -> Series:
+    def __radd__(self, rhs: Expression) -> Series:
         r"""
         Add this series to `rhs`, returning the result.
         """
-    def __sub__(self, rhs:Series | Expression) -> Series: ...
-    def __rsub__(self, lhs:Expression) -> Series: ...
-    def __mul__(self, rhs:Series | Expression) -> Series: ...
-    def __rmul__(self, lhs:Expression) -> Series: ...
-    def __truediv__(self, rhs:Series | Expression) -> Series: ...
-    def __rtruediv__(self, lhs:Expression) -> Series: ...
-    def __pow__(self, exponent:builtins.int, modulo:typing.Optional[builtins.int]=None) -> Series: ...
+    def __sub__(self, rhs: Series | Expression) -> Series: ...
+    def __rsub__(self, lhs: Expression) -> Series: ...
+    def __mul__(self, rhs: Series | Expression) -> Series: ...
+    def __rmul__(self, lhs: Expression) -> Series: ...
+    def __truediv__(self, rhs: Series | Expression) -> Series: ...
+    def __rtruediv__(self, lhs: Expression) -> Series: ...
+    def __pow__(
+        self,
+        exponent: builtins.int,
+        modulo: typing.Optional[builtins.int] = None,
+    ) -> Series: ...
     def __neg__(self) -> Series: ...
     def __repr__(self) -> builtins.str:
         r"""
@@ -3926,10 +4943,28 @@ class Series:
         r"""
         Convert the series into a LaTeX string.
         """
-    def format(self, mode:PrintMode=PrintMode.Symbolica, terms_on_new_line:builtins.bool=False, color_top_level_sum:builtins.bool=True, color_builtin_symbols:builtins.bool=True, print_finite_field:builtins.bool=True, symmetric_representation_for_finite_field:builtins.bool=False, explicit_rational_polynomial:builtins.bool=False, number_thousands_separator:typing.Optional[builtins.str]=None, multiplication_operator:builtins.str='*', double_star_for_exponentiation:builtins.bool=False, square_brackets_for_function:builtins.bool=False, num_exp_as_superscript:builtins.bool=True, precision:typing.Optional[builtins.int]=None, show_namespaces:builtins.bool=False, max_terms:typing.Optional[builtins.int]=None, custom_print_mode:typing.Optional[builtins.int]=None) -> builtins.str:
+    def format(
+        self,
+        mode: PrintMode = PrintMode.Symbolica,
+        terms_on_new_line: builtins.bool = False,
+        color_top_level_sum: builtins.bool = True,
+        color_builtin_symbols: builtins.bool = True,
+        print_finite_field: builtins.bool = True,
+        symmetric_representation_for_finite_field: builtins.bool = False,
+        explicit_rational_polynomial: builtins.bool = False,
+        number_thousands_separator: typing.Optional[builtins.str] = None,
+        multiplication_operator: builtins.str = "*",
+        double_star_for_exponentiation: builtins.bool = False,
+        square_brackets_for_function: builtins.bool = False,
+        num_exp_as_superscript: builtins.bool = True,
+        precision: typing.Optional[builtins.int] = None,
+        show_namespaces: builtins.bool = False,
+        max_terms: typing.Optional[builtins.int] = None,
+        custom_print_mode: typing.Optional[builtins.int] = None,
+    ) -> builtins.str:
         r"""
         Convert the expression into a human-readable string, with tunable settings.
-        
+
         Examples
         --------
         >>> a = E('128378127123 z^(2/3)*w^2/x/y + y^4 + z^34 + x^(x+2)+3/5+f(x,x^2)')
@@ -3939,9 +4974,9 @@ class Series:
     def cos(self) -> Series: ...
     def exp(self) -> Series: ...
     def log(self) -> Series: ...
-    def pow(self, num:builtins.int, den:builtins.int) -> Series: ...
-    def spow(self, pow:Series) -> Series: ...
-    def shift(self, e:builtins.int) -> Series:
+    def pow(self, num: builtins.int, den: builtins.int) -> Series: ...
+    def spow(self, pow: Series) -> Series: ...
+    def shift(self, e: builtins.int) -> Series:
         r"""
         Shift the series by `e` units of the ramification.
         """
@@ -3971,29 +5006,40 @@ class TermStreamer:
     A term streamer that can handle large expressions, by
     streaming terms to and from disk.
     """
-    def __new__(cls, path:typing.Optional[builtins.str]=None, max_mem_bytes:typing.Optional[builtins.int]=None, n_cores:typing.Optional[builtins.int]=None) -> TermStreamer:
+    def __new__(
+        cls,
+        path: typing.Optional[builtins.str] = None,
+        max_mem_bytes: typing.Optional[builtins.int] = None,
+        n_cores: typing.Optional[builtins.int] = None,
+    ) -> TermStreamer:
         r"""
         Create a new term streamer with a given path for its files,
         the maximum size of the memory buffer and the number of cores.
         """
-    def __add__(self, rhs:TermStreamer) -> TermStreamer:
+    def __add__(self, rhs: TermStreamer) -> TermStreamer:
         r"""
         Add this expression to `other`, returning the result.
         """
-    def __iadd__(self, rhs:TermStreamer) -> None: ...
+    def __iadd__(self, rhs: TermStreamer) -> None: ...
     def clear(self) -> None:
         r"""
         Clear all terms from the term streamer.
         """
-    def load(self, filename:builtins.str, conflict_fn:typing.Optional[typing.Callable[[str], str]]=None) -> builtins.int:
+    def load(
+        self,
+        filename: builtins.str,
+        conflict_fn: typing.Optional[typing.Callable[[str], str]] = None,
+    ) -> builtins.int:
         r"""
         Load terms and their state from a binary stream into the term streamer.
         The state will be merged with the current one. If a symbol has conflicting attributes, the conflict
         can be resolved using the renaming function `conflict_fn`.
-        
+
         A term stream can be exported using `TermStreamer.save`.
         """
-    def save(self, filename:builtins.str, compression_level:builtins.int=9) -> None:
+    def save(
+        self, filename: builtins.str, compression_level: builtins.int = 9
+    ) -> None:
         r"""
         Export terms and their state to a binary stream.
         The resulting file can be read back using `TermStreamer.load` or
@@ -4012,7 +5058,7 @@ class TermStreamer:
         r"""
         Get the number of terms in the stream.
         """
-    def push(self, expr:Expression) -> None:
+    def push(self, expr: Expression) -> None:
         r"""
         Add an expression to the term stream.
         """
@@ -4024,14 +5070,22 @@ class TermStreamer:
         r"""
         Convert the term stream into an expression. This may exceed the available memory.
         """
-    def map(self, op:Transformer, stats_to_file:typing.Optional[builtins.str]=None) -> TermStreamer:
+    def map(
+        self,
+        op: Transformer,
+        stats_to_file: typing.Optional[builtins.str] = None,
+    ) -> TermStreamer:
         r"""
         Map the transformations to every term in the stream.
         """
-    def map_single_thread(self, op:Transformer, stats_to_file:typing.Optional[builtins.str]=None) -> TermStreamer:
+    def map_single_thread(
+        self,
+        op: Transformer,
+        stats_to_file: typing.Optional[builtins.str] = None,
+    ) -> TermStreamer:
         r"""
         Apply a transformer to all terms in the stream using a single thread.
-        
+
         Parameters
         ----------
         f: Transformer
@@ -4048,16 +5102,20 @@ class Transformer:
         r"""
         Create a new transformer.
         """
-    def __call__(self, expr:Expression | int | str | float | complex, stats_to_file:typing.Optional[builtins.str]=None) -> Expression:
+    def __call__(
+        self,
+        expr: Expression | int | str | float | complex,
+        stats_to_file: typing.Optional[builtins.str] = None,
+    ) -> Expression:
         r"""
         Execute an unbound transformer on the given expression. If the transformer
         is bound, use `execute()` instead.
-        
+
         Examples
         --------
         >>> x = S('x')
         >>> e = T().expand()((1+x)**2)
-        
+
         Parameters
         ----------
         expr: Expression
@@ -4065,28 +5123,66 @@ class Transformer:
         stats_to_file: str, optional
             If set, the output of the `stats` transformer will be written to a file in JSON format.
         """
-    def __richcmp__(self, other:Expression | int | str | float | complex | HeldExpression | Transformer, op:int) -> Condition:
+    def __richcmp__(
+        self,
+        other: Expression
+        | int
+        | str
+        | float
+        | complex
+        | HeldExpression
+        | Transformer,
+        op: int,
+    ) -> Condition:
         r"""
         Compare two expressions. If one of the expressions is not a number, an
         internal ordering will be used.
         """
-    def is_type(self, atom_type:AtomType) -> Condition:
+    def is_type(self, atom_type: AtomType) -> Condition:
         r"""
         Test if the expression is of a certain type.
         """
-    def contains(self, s:Expression | int | str | float | complex | HeldExpression | Transformer) -> Condition:
+    def contains(
+        self,
+        s: Expression
+        | int
+        | str
+        | float
+        | complex
+        | HeldExpression
+        | Transformer,
+    ) -> Condition:
         r"""
         Returns true iff `self` contains `a` literally.
         """
-    def matches(self, lhs:Expression | int | str | float | complex | HeldExpression | Transformer, cond:typing.Optional[PatternRestriction | Condition]=None, level_range:typing.Optional[tuple[builtins.int, typing.Optional[builtins.int]]]=None, level_is_tree_depth:typing.Optional[builtins.bool]=None, allow_new_wildcards_on_rhs:typing.Optional[builtins.bool]=None) -> Condition:
+    def matches(
+        self,
+        lhs: Expression
+        | int
+        | str
+        | float
+        | complex
+        | HeldExpression
+        | Transformer,
+        cond: typing.Optional[PatternRestriction | Condition] = None,
+        level_range: typing.Optional[
+            tuple[builtins.int, typing.Optional[builtins.int]]
+        ] = None,
+        level_is_tree_depth: typing.Optional[builtins.bool] = None,
+        allow_new_wildcards_on_rhs: typing.Optional[builtins.bool] = None,
+    ) -> Condition:
         r"""
         Create a transformer that tests whether the pattern is found in the expression.
         Restrictions on the pattern can be supplied through `cond`.
         """
-    def expand(self, var:typing.Optional[Expression | int | str | float | complex]=None, via_poly:typing.Optional[builtins.bool]=None) -> Transformer:
+    def expand(
+        self,
+        var: typing.Optional[Expression | int | str | float | complex] = None,
+        via_poly: typing.Optional[builtins.bool] = None,
+    ) -> Transformer:
         r"""
         Create a transformer that expands products and powers.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Transformer
@@ -4099,17 +5195,17 @@ class Transformer:
         r"""
         Create a transformer that distributes numbers in the expression, for example:
         `2*(x+y)` -> `2*x+2*y`.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import *
         >>> x, y = S('x', 'y')
         >>> e = 3*(x+y)*(4*x+5*y)
         >>> print(Transformer().expand_num()(e))
-        
+
         yields
-        
+
         ```log
         (3*x+3*y)*(4*x+5*y)
         ```
@@ -4117,7 +5213,7 @@ class Transformer:
     def prod(self) -> Transformer:
         r"""
         Create a transformer that computes the product of a list of arguments.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Transformer
@@ -4129,7 +5225,7 @@ class Transformer:
     def sum(self) -> Transformer:
         r"""
         Create a transformer that computes the sum of a list of arguments.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Transformer
@@ -4138,15 +5234,15 @@ class Transformer:
         >>> e = f(2,3).replace(f(x__), x__.transform().sum())
         >>> print(e)
         """
-    def nargs(self, only_for_arg_fun:builtins.bool=False) -> Transformer:
+    def nargs(self, only_for_arg_fun: builtins.bool = False) -> Transformer:
         r"""
         Create a transformer that returns the number of arguments.
         If the argument is not a function, return 0.
-        
+
         If `only_for_arg_fun` is `True`, only count the number of arguments
         in the `arg()` function and return 1 if the input is not `arg`.
         This is useful for obtaining the length of a range during pattern matching.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Transformer
@@ -4155,24 +5251,26 @@ class Transformer:
         >>> e = f(2,3,4).replace(f(x__), x__.transform().nargs())
         >>> print(e)
         """
-    def linearize(self, symbols:typing.Optional[typing.Sequence[Expression]]=None) -> Transformer:
+    def linearize(
+        self, symbols: typing.Optional[typing.Sequence[Expression]] = None
+    ) -> Transformer:
         r"""
         Create a transformer that linearizes a function, optionally extracting `symbols`
         as well.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Transformer
         >>> x, y, z, w, f, x__ = S('x', 'y', 'z', 'w', 'f', 'x__')
         >>> e = f(x+y, 4*z*w+3).replace(f(x__), f(x__).transform().linearize([z]))
         >>> print(e)
-        
+
         yields `f(x,3)+f(y,3)+4*z*f(x,w)+4*z*f(y,w)`.
         """
     def sort(self) -> Transformer:
         r"""
         Create a transformer that sorts a list of arguments.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Transformer
@@ -4184,7 +5282,7 @@ class Transformer:
     def cycle_symmetrize(self) -> Transformer:
         r"""
         Create a transformer that cycle-symmetrizes a function.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Transformer
@@ -4192,14 +5290,14 @@ class Transformer:
         >>> f = S('f')
         >>> e = f(1,2,4,1,2,3).replace(f(x__), x_.transform().cycle_symmetrize())
         >>> print(e)
-        
+
         Yields `f(1,2,3,1,2,4)`.
         """
     def deduplicate(self) -> Transformer:
         r"""
         Create a transformer that removes elements from a list if they occur
         earlier in the list as well.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Transformer
@@ -4207,13 +5305,13 @@ class Transformer:
         >>> f = S('f')
         >>> e = f(1,2,1,2).replace(f(x__), x__.transform().deduplicate())
         >>> print(e)
-        
+
         Yields `f(1,2)`.
         """
     def from_coeff(self) -> Transformer:
         r"""
         Create a transformer that extracts a rational polynomial from a coefficient.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Function
@@ -4223,7 +5321,7 @@ class Transformer:
     def split(self) -> Transformer:
         r"""
         Create a transformer that split a sum or product into a list of arguments.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Transformer
@@ -4232,19 +5330,29 @@ class Transformer:
         >>> e = (x + 1).replace(x__, f(x__.transform().split()))
         >>> print(e)
         """
-    def partitions(self, bins:typing.Sequence[tuple[Expression | int | str | float | complex | HeldExpression, builtins.int]], fill_last:builtins.bool=False, repeat:builtins.bool=False) -> Transformer:
+    def partitions(
+        self,
+        bins: typing.Sequence[
+            tuple[
+                Expression | int | str | float | complex | HeldExpression,
+                builtins.int,
+            ]
+        ],
+        fill_last: builtins.bool = False,
+        repeat: builtins.bool = False,
+    ) -> Transformer:
         r"""
         Create a transformer that partitions a list of arguments into named bins of a given length,
         returning all partitions and their multiplicity.
-        
+
         If the unordered list `elements` is larger than the bins, setting the flag `fill_last`
         will add all remaining elements to the last bin.
-        
+
         Setting the flag `repeat` means that the bins will be repeated to exactly fit all elements,
         if possible.
-        
+
         Note that the functions names to be provided for the bin names must be generated through `Expression.var`.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Transformer
@@ -4252,14 +5360,22 @@ class Transformer:
         >>> f = S('f')
         >>> e = f(1,2,1,3).replace(f(x_), x_.transform().partitions([(f_id, 2), (g_id, 1), (f_id, 1)]))
         >>> print(e)
-        
+
         yields:
         `2*f(1)*f(1,2)*g(3)+2*f(1)*f(1,3)*g(2)+2*f(1)*f(2,3)*g(1)+f(2)*f(1,1)*g(3)+2*f(2)*f(1,3)*g(1)+f(3)*f(1,1)*g(2)+2*f(3)*f(1,2)*g(1)`
         """
-    def permutations(self, function_name:Expression | int | str | float | complex | HeldExpression) -> Transformer:
+    def permutations(
+        self,
+        function_name: Expression
+        | int
+        | str
+        | float
+        | complex
+        | HeldExpression,
+    ) -> Transformer:
         r"""
         Create a transformer that generates all permutations of a list of arguments.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Transformer
@@ -4267,14 +5383,19 @@ class Transformer:
         >>> f = S('f')
         >>> e = f(1,2,1,2).replace(f(x_), x_.transform().permutations(f_id))
         >>> print(e)
-        
+
         yields:
         `4*f(1,1,2,2)+4*f(1,2,1,2)+4*f(1,2,2,1)+4*f(2,1,1,2)+4*f(2,1,2,1)+4*f(2,2,1,1)`
         """
-    def map(self, f:typing.Callable[[Expression], Expression | int | float | complex | decimal.Decimal]) -> Transformer:
+    def map(
+        self,
+        f: typing.Callable[
+            [Expression], Expression | int | float | complex | decimal.Decimal
+        ],
+    ) -> Transformer:
         r"""
         Create a transformer that apply a function `f`.
-        
+
         Examples
         --------
         >>> from symbolica import Expression, Transformer
@@ -4283,10 +5404,12 @@ class Transformer:
         >>> e = f(2).replace(f(x_), x_.transform().map(lambda r: r**2))
         >>> print(e)
         """
-    def map_terms(self, *transformers, n_cores:builtins.int=1) -> Transformer:
+    def map_terms(
+        self, *transformers, n_cores: builtins.int = 1
+    ) -> Transformer:
         r"""
         Map a chain of transformers over the terms of the expression, optionally using multiple cores.
-        
+
         Examples
         --------
         >>> from symbolica import *
@@ -4298,7 +5421,7 @@ class Transformer:
         r"""
         Create a transformer that applies a transformer chain to every argument of the `arg()` function.
         If the input is not `arg()`, the transformer is applied to the input.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -4310,7 +5433,7 @@ class Transformer:
         r"""
         Create a transformer that checks for a Python interrupt,
         such as ctrl-c and aborts the current transformer.
-        
+
         Examples
         --------
         >>> from symbolica import *
@@ -4322,7 +5445,7 @@ class Transformer:
     def repeat(self, *transformers) -> Transformer:
         r"""
         Create a transformer that keeps executing the transformer chain until the input equals the output.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -4334,29 +5457,39 @@ class Transformer:
         >>>     Transformer().replace(f(x_), f(x_ - 1) + f(x_ - 2), x_.req_gt(1))
         >>> ).execute()
         """
-    def if_then(self, condition:Condition, if_block:Transformer, else_block:typing.Optional[Transformer]=None) -> Transformer:
+    def if_then(
+        self,
+        condition: Condition,
+        if_block: Transformer,
+        else_block: typing.Optional[Transformer] = None,
+    ) -> Transformer:
         r"""
         Evaluate the condition and apply the `if_block` if the condition is true, otherwise apply the `else_block`.
         The expression that is the input of the transformer is the input for the condition, the `if_block` and the `else_block`.
-        
+
         Examples
         --------
         >>> t = T.map_terms(T.if_then(T.contains(x), T.print()))
         >>> t(x + y + 4)
-        
+
         prints `x`.
         """
-    def if_changed(self, condition:Transformer, if_block:Transformer, else_block:typing.Optional[Transformer]=None) -> Transformer:
+    def if_changed(
+        self,
+        condition: Transformer,
+        if_block: Transformer,
+        else_block: typing.Optional[Transformer] = None,
+    ) -> Transformer:
         r"""
         Execute the `condition` transformer. If the result of the `condition` transformer is different from the input expression,
         apply the `if_block`, otherwise apply the `else_block`. The input expression of the `if_block` is the output
         of the `condition` transformer.
-        
+
         Examples
         --------
         >>> t = T.map_terms(T.if_changed(T.replace(x, y), T.print()))
         >>> print(t(x + y + 4))
-        
+
         prints
         ```log
         y
@@ -4366,7 +5499,7 @@ class Transformer:
     def break_chain(self) -> Transformer:
         r"""
         Break the current chain and all higher-level chains containing `if` transformers.
-        
+
         Examples
         --------
         >>> from symbolica import *
@@ -4382,7 +5515,7 @@ class Transformer:
         r"""
         Chain several transformers. `chain(A,B,C)` is the same as `A.B.C`,
         where `A`, `B`, `C` are transformers.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -4394,25 +5527,32 @@ class Transformer:
         >>>     Transformer().replace(f(x_), f(x_ - 1) + f(x_ - 2), x_.req_gt(1))
         >>> ).execute()
         """
-    def set_coefficient_ring(self, vars:typing.Sequence[Expression]) -> Transformer:
+    def set_coefficient_ring(
+        self, vars: typing.Sequence[Expression]
+    ) -> Transformer:
         r"""
         Set the coefficient ring to contain the variables in the `vars` list.
         This will move all variables into a rational polynomial function.
-        
+
         Parameters
         ----------
         vars: List[Expression]
             A list of variables
         """
-    def collect(self, *x, key_map:typing.Optional[Transformer]=None, coeff_map:typing.Optional[Transformer]=None) -> Transformer:
+    def collect(
+        self,
+        *x,
+        key_map: typing.Optional[Transformer] = None,
+        coeff_map: typing.Optional[Transformer] = None,
+    ) -> Transformer:
         r"""
         Create a transformer that collects terms involving the same power of `x`,
         where `x` is an indeterminate.
         Return the list of key-coefficient pairs and the remainder that matched no key.
-        
+
         Both the key (the quantity collected in) and its coefficient can be mapped using
         `key_map` and `coeff_map` transformers respectively.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -4420,17 +5560,17 @@ class Transformer:
         >>> e = 5*x + x * y + x**2 + 5
         >>>
         >>> print(e.transform().collect(x).execute())
-        
+
         yields `x^2+x*(y+5)+5`.
-        
+
         >>> from symbolica import Expression
         >>> x, y, x_, var, coeff = S('x', 'y', 'x_', 'var', 'coeff')
         >>> e = 5*x + x * y + x**2 + 5
         >>> print(e.collect(x, key_map=Transformer().replace(x_, var(x_)),
                 coeff_map=Transformer().replace(x_, coeff(x_))))
-        
+
         yields `var(1)*coeff(5)+var(x)*coeff(y+5)+var(x^2)*coeff(1)`.
-        
+
         Parameters
         ----------
         x: Expression
@@ -4440,13 +5580,18 @@ class Transformer:
         coeff_map: Transformer
             A transformer to be applied to the coefficient
         """
-    def collect_symbol(self, x:Expression, key_map:typing.Optional[Transformer]=None, coeff_map:typing.Optional[Transformer]=None) -> Transformer:
+    def collect_symbol(
+        self,
+        x: Expression,
+        key_map: typing.Optional[Transformer] = None,
+        coeff_map: typing.Optional[Transformer] = None,
+    ) -> Transformer:
         r"""
         Create a transformer that collects terms involving the same power of variables or functions with the name `x`.
-        
+
         Both the key (the quantity collected in) and its coefficient can be mapped using
         `key_map` and `coeff_map` transformers respectively.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -4454,9 +5599,9 @@ class Transformer:
         >>> e = f(1,2) + x*f(1,2)
         >>>
         >>> print(e.transform().collect_symbol(x).execute())
-        
+
         yields `(1+x)*f(1,2)`.
-        
+
         Parameters
         ----------
         x: Expression
@@ -4469,16 +5614,16 @@ class Transformer:
     def collect_factors(self) -> Transformer:
         r"""
         Create a transformer that collects common factors from (nested) sums.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import *
         >>> e = E('x*(x+y*x+x^2+y*(x+x^2))')
         >>> e.transform().collect_factors().execute()
-        
+
         yields
-        
+
         ```log
         v1^2*(1+v1+v2+v2*(1+v1))
         ```
@@ -4487,20 +5632,20 @@ class Transformer:
         r"""
         Create a transformer that collects numerical factors by removing the numerical content from additions.
         For example, `-2*x + 4*x^2 + 6*x^3` will be transformed into `-2*(x - 2*x^2 - 3*x^3)`.
-        
+
         The first argument of the addition is normalized to a positive quantity.
-        
+
         Examples
         --------
-        
+
         >>> from symbolica import *
         >>>
         >>> x, y = S('x', 'y')
         >>> e = (-3*x+6*y)(2*x+2*y)
         >>> print(Transformer().collect_num()(e))
-        
+
         yields
-        
+
         ```log
         -6*(x-2*y)*(x+y)
         ```
@@ -4509,11 +5654,13 @@ class Transformer:
         r"""
         Complex conjugate all complex numbers in the expression.
         """
-    def coefficient(self, x:Expression | int | str | float | complex) -> Transformer:
+    def coefficient(
+        self, x: Expression | int | str | float | complex
+    ) -> Transformer:
         r"""
         Create a transformer that collects terms involving the literal occurrence of `x`.
         """
-    def apart(self, x:Expression) -> Transformer:
+    def apart(self, x: Expression) -> Transformer:
         r"""
         Create a transformer that computes the partial fraction decomposition in `x`.
         """
@@ -4530,14 +5677,23 @@ class Transformer:
         r"""
         Create a transformer that factors the expression over the rationals.
         """
-    def derivative(self, x:Expression | int | str | float | complex | HeldExpression) -> Transformer:
+    def derivative(
+        self, x: Expression | int | str | float | complex | HeldExpression
+    ) -> Transformer:
         r"""
         Create a transformer that derives `self` w.r.t the variable `x`.
         """
-    def series(self, x:Expression | int | str | float | complex, expansion_point:Expression | int | str | float | complex, depth:builtins.int, depth_denom:builtins.int=1, depth_is_absolute:builtins.bool=True) -> Transformer:
+    def series(
+        self,
+        x: Expression | int | str | float | complex,
+        expansion_point: Expression | int | str | float | complex,
+        depth: builtins.int,
+        depth_denom: builtins.int = 1,
+        depth_is_absolute: builtins.bool = True,
+    ) -> Transformer:
         r"""
         Create a transformer that series expands in `x` around `expansion_point` to depth `depth`.
-        
+
         Examples
         -------
         >>> from symbolica import *
@@ -4548,22 +5704,46 @@ class Transformer:
         >>> e = e.series(x, 0, 2)
         >>>
         >>> print(e)
-        
+
         yields `f(0)+x*der(1,f(0))+1/2*x^2*(der(2,f(0))+4*y)`.
         """
-    def replace(self, lhs:Expression | int | str | float | complex, rhs:Expression | int | str | float | complex | HeldExpression | typing.Callable[[dict[Expression, Expression]], Expression] | int | float | complex | decimal.Decimal, cond:typing.Optional[PatternRestriction | Condition]=None, non_greedy_wildcards:typing.Optional[typing.Sequence[Expression]]=None, level_range:typing.Optional[tuple[builtins.int, typing.Optional[builtins.int]]]=None, level_is_tree_depth:typing.Optional[builtins.bool]=None, allow_new_wildcards_on_rhs:typing.Optional[builtins.bool]=None, rhs_cache_size:typing.Optional[builtins.int]=None) -> Transformer:
+    def replace(
+        self,
+        lhs: Expression | int | str | float | complex,
+        rhs: Expression
+        | int
+        | str
+        | float
+        | complex
+        | HeldExpression
+        | typing.Callable[[dict[Expression, Expression]], Expression]
+        | int
+        | float
+        | complex
+        | decimal.Decimal,
+        cond: typing.Optional[PatternRestriction | Condition] = None,
+        non_greedy_wildcards: typing.Optional[
+            typing.Sequence[Expression]
+        ] = None,
+        level_range: typing.Optional[
+            tuple[builtins.int, typing.Optional[builtins.int]]
+        ] = None,
+        level_is_tree_depth: typing.Optional[builtins.bool] = None,
+        allow_new_wildcards_on_rhs: typing.Optional[builtins.bool] = None,
+        rhs_cache_size: typing.Optional[builtins.int] = None,
+    ) -> Transformer:
         r"""
         Create a transformer that replaces all subexpressions matching the pattern `pat` by the right-hand side `rhs`.
-        
+
         Examples
         --------
-        
+
         >>> x, w1_, w2_ = S('x','w1_','w2_')
         >>> f = S('f')
         >>> t = T().replace(f(w1_, w2_), f(w1_ - 1, w2_**2), w1_ >= 1)
         >>> r = t(f(3,x))
         >>> print(r)
-        
+
         Parameters
         ----------
         pat:
@@ -4584,29 +5764,55 @@ class Transformer:
             Cache the first `rhs_cache_size` substituted patterns. If set to `None`, an internally determined cache size is used.
             **Warning**: caching should be disabled (`rhs_cache_size=0`) if the right-hand side contains side effects, such as updating a global variable.
         """
-    def replace_multiple(self, replacements:typing.Sequence[Replacement]) -> Transformer:
+    def replace_multiple(
+        self, replacements: typing.Sequence[Replacement]
+    ) -> Transformer:
         r"""
         Create a transformer that replaces all atoms matching the patterns. See `replace` for more information.
-        
+
         Examples
         --------
-        
+
         >>> x, y, f = S('x', 'y', 'f')
         >>> e = f(x,y)
         >>> r = e.transform().replace_multiple([Replacement(x, y), Replacement(y, x)])
         """
-    def print(self, mode:PrintMode=PrintMode.Symbolica, terms_on_new_line:builtins.bool=False, color_top_level_sum:builtins.bool=True, color_builtin_symbols:builtins.bool=True, print_finite_field:builtins.bool=True, symmetric_representation_for_finite_field:builtins.bool=False, explicit_rational_polynomial:builtins.bool=False, number_thousands_separator:typing.Optional[builtins.str]=None, multiplication_operator:builtins.str='*', double_star_for_exponentiation:builtins.bool=False, square_brackets_for_function:builtins.bool=False, num_exp_as_superscript:builtins.bool=True, precision:typing.Optional[builtins.int]=None, show_namespaces:builtins.bool=False, max_terms:typing.Optional[builtins.int]=None, custom_print_mode:typing.Optional[builtins.int]=None) -> Transformer:
+    def print(
+        self,
+        mode: PrintMode = PrintMode.Symbolica,
+        terms_on_new_line: builtins.bool = False,
+        color_top_level_sum: builtins.bool = True,
+        color_builtin_symbols: builtins.bool = True,
+        print_finite_field: builtins.bool = True,
+        symmetric_representation_for_finite_field: builtins.bool = False,
+        explicit_rational_polynomial: builtins.bool = False,
+        number_thousands_separator: typing.Optional[builtins.str] = None,
+        multiplication_operator: builtins.str = "*",
+        double_star_for_exponentiation: builtins.bool = False,
+        square_brackets_for_function: builtins.bool = False,
+        num_exp_as_superscript: builtins.bool = True,
+        precision: typing.Optional[builtins.int] = None,
+        show_namespaces: builtins.bool = False,
+        max_terms: typing.Optional[builtins.int] = None,
+        custom_print_mode: typing.Optional[builtins.int] = None,
+    ) -> Transformer:
         r"""
         Create a transformer that prints the expression.
-        
+
         Examples
         --------
         >>> E('f(10)').transform().print(terms_on_new_line = True).execute()
         """
-    def stats(self, tag:builtins.str, transformer:Transformer, color_medium_change_threshold:typing.Optional[builtins.float]=10.0, color_large_change_threshold:typing.Optional[builtins.float]=100.0) -> Transformer:
+    def stats(
+        self,
+        tag: builtins.str,
+        transformer: Transformer,
+        color_medium_change_threshold: typing.Optional[builtins.float] = 10.0,
+        color_large_change_threshold: typing.Optional[builtins.float] = 100.0,
+    ) -> Transformer:
         r"""
         Print statistics of a transformer, tagging it with `tag`.
-        
+
         Examples
         --------
         >>> from symbolica import Expression
@@ -4614,7 +5820,7 @@ class Transformer:
         >>> f = S('f')
         >>> e = E("f(5)")
         >>> e = e.transform().stats('replace', Transformer().replace(f(x_), 1)).execute()
-        
+
         yields
         ```log
         Stats for replace:
@@ -4627,6 +5833,7 @@ class AtomType(Enum):
     r"""
     Specifies the type of the atom.
     """
+
     Num = ...
     r"""
     The expression is a number.
@@ -4656,6 +5863,7 @@ class PrintMode(Enum):
     r"""
     Specifies the print mode.
     """
+
     Symbolica = ...
     r"""
     Print using Symbolica notation.
@@ -4673,39 +5881,44 @@ class PrintMode(Enum):
     Print using Sympy notation.
     """
 
-def E(expr:builtins.str, default_namespace:builtins.str='python') -> Expression:
+def E(
+    expr: builtins.str, default_namespace: builtins.str = "python"
+) -> Expression:
     r"""
     Parse a Symbolica expression from a string.
-    
+
     Parameters
     ----------
     input: str
         An input string. UTF-8 characters are allowed.
-    
+
     Examples
     --------
     >>> e = E('x^2+y+y*4')
     >>> print(e)
     x^2+5*y
-    
+
     Raises
     ------
     ValueError
         If the input is not a valid Symbolica expression.
     """
 
-def N(num:int | float | complex | str | decimal.Decimal, relative_error:typing.Optional[builtins.float]=None) -> Expression:
+def N(
+    num: int | float | complex | str | decimal.Decimal,
+    relative_error: typing.Optional[builtins.float] = None,
+) -> Expression:
     r"""
     Create a new Symbolica number from an int, a float, or a string.
     A floating point number is kept as a float with the same precision as the input,
     but it can also be converted to the smallest rational number given a `relative_error`.
-    
+
     Examples
     --------
     >>> e = N(1) / 2
     >>> print(e)
     1/2
-    
+
     >>> print(N(1/3))
     >>> print(N(0.33, 0.1))
     >>> print(N('0.333`3'))
@@ -4717,13 +5930,26 @@ def N(num:int | float | complex | str | decimal.Decimal, relative_error:typing.O
     """
 
 @typing.overload
-def S(name:builtins.str, is_symmetric:typing.Optional[builtins.bool]=None, is_antisymmetric:typing.Optional[builtins.bool]=None, is_cyclesymmetric:typing.Optional[builtins.bool]=None, is_linear:typing.Optional[builtins.bool]=None, custom_normalization:typing.Optional[Transformer]=None, custom_print:typing.Optional[typing.Callable[..., typing.Optional[str]]]=None, custom_derivative:typing.Optional[typing.Callable[[Expression, int], Expression]]=None) -> Expression:
+def S(
+    name: builtins.str,
+    is_symmetric: typing.Optional[builtins.bool] = None,
+    is_antisymmetric: typing.Optional[builtins.bool] = None,
+    is_cyclesymmetric: typing.Optional[builtins.bool] = None,
+    is_linear: typing.Optional[builtins.bool] = None,
+    custom_normalization: typing.Optional[Transformer] = None,
+    custom_print: typing.Optional[
+        typing.Callable[..., typing.Optional[str]]
+    ] = None,
+    custom_derivative: typing.Optional[
+        typing.Callable[[Expression, int], Expression]
+    ] = None,
+) -> Expression:
     r"""
     Create new symbols from `names`. Symbols can have attributes,
     such as symmetries. If no attributes
     are specified and the symbol was previously defined, the attributes are inherited.
     Once attributes are defined on a symbol, they cannot be redefined later.
-    
+
     Examples
     --------
     Define a regular symbol and use it as a variable:
@@ -4731,31 +5957,31 @@ def S(name:builtins.str, is_symmetric:typing.Optional[builtins.bool]=None, is_an
     >>> e = x**2 + 5
     >>> print(e)
     x**2 + 5
-    
+
     Define a regular symbol and use it as a function:
     >>> f = S('f')
     >>> e = f(1,2)
     >>> print(e)
     f(1,2)
-    
-    
+
+
     Define a symmetric function:
     >>> f = S('f', is_symmetric=True)
     >>> e = f(2,1)
     >>> print(e)
     f(1,2)
-    
-    
+
+
     Define a linear and symmetric function:
     >>> p1, p2, p3, p4 = ES('p1', 'p2', 'p3', 'p4')
     >>> dot = S('dot', is_symmetric=True, is_linear=True)
     >>> e = dot(p2+2*p3,p1+3*p2-p3)
     dot(p1,p2)+2*dot(p1,p3)+3*dot(p2,p2)-dot(p2,p3)+6*dot(p2,p3)-2*dot(p3,p3)
-    
+
     Define a custom normalization function:
     >>> e = S('real_log', custom_normalization=T().replace(E("x_(exp(x1_))"), E("x1_")))
     >>> E("real_log(exp(x)) + real_log(5)")
-    
+
     Define a custom print function:
     >>> def print_mu(mu: Expression, mode: PrintMode, **kwargs) -> str | None:
     >>>     if mode == PrintMode.Latex:
@@ -4766,14 +5992,14 @@ def S(name:builtins.str, is_symmetric:typing.Optional[builtins.bool]=None, is_an
     >>> mu = S("mu", custom_print=print_mu)
     >>> expr = E("mu + mu(1,2)")
     >>> print(expr.to_latex())
-    
+
     If the function returns `None`, the default print function is used.
-    
+
     Define a custom derivative function:
     >>> tag = S('tag', custom_derivative=lambda f, index: f)
     >>> x = S('x')
     >>> tag(3, x).derivative(x)
-    
+
     Parameters
     ----------
     name : str
@@ -4799,13 +6025,19 @@ def S(name:builtins.str, is_symmetric:typing.Optional[builtins.bool]=None, is_an
     """
 
 @typing.overload
-def S(*names:str, is_symmetric:typing.Optional[builtins.bool]=None, is_antisymmetric:typing.Optional[builtins.bool]=None, is_cyclesymmetric:typing.Optional[builtins.bool]=None, is_linear:typing.Optional[builtins.bool]=None) -> builtins.list[Expression]:
+def S(
+    *names: str,
+    is_symmetric: typing.Optional[builtins.bool] = None,
+    is_antisymmetric: typing.Optional[builtins.bool] = None,
+    is_cyclesymmetric: typing.Optional[builtins.bool] = None,
+    is_linear: typing.Optional[builtins.bool] = None,
+) -> builtins.list[Expression]:
     r"""
     Create new symbols from `names`. Symbols can have attributes,
     such as symmetries. If no attributes
     are specified and the symbol was previously defined, the attributes are inherited.
     Once attributes are defined on a symbol, they cannot be redefined later.
-    
+
     Examples
     --------
     Define a regular symbol and use it as a variable:
@@ -4813,27 +6045,27 @@ def S(*names:str, is_symmetric:typing.Optional[builtins.bool]=None, is_antisymme
     >>> e = x**2 + 5
     >>> print(e)
     x**2 + 5
-    
+
     Define a regular symbol and use it as a function:
     >>> f = S('f')
     >>> e = f(1,2)
     >>> print(e)
     f(1,2)
-    
-    
+
+
     Define a symmetric function:
     >>> f = S('f', is_symmetric=True)
     >>> e = f(2,1)
     >>> print(e)
     f(1,2)
-    
-    
+
+
     Define a linear and symmetric function:
     >>> p1, p2, p3, p4 = ES('p1', 'p2', 'p3', 'p4')
     >>> dot = S('dot', is_symmetric=True, is_linear=True)
     >>> e = dot(p2+2*p3,p1+3*p2-p3)
     dot(p1,p2)+2*dot(p1,p3)+3*dot(p2,p2)-dot(p2,p3)+6*dot(p2,p3)-2*dot(p3,p3)
-    
+
     Parameters
     ----------
     name : str
@@ -4853,7 +6085,7 @@ def T() -> Transformer:
     Create a new transformer that maps an expression.
     """
 
-def get_license_key(email:builtins.str) -> None:
+def get_license_key(email: builtins.str) -> None:
     r"""
     Get the license key for the account registered with the provided email address.
     """
@@ -4868,28 +6100,32 @@ def is_licensed() -> builtins.bool:
     Check if the current Symbolica instance has a valid license key set.
     """
 
-def request_hobbyist_license(name:builtins.str, email:builtins.str) -> None:
+def request_hobbyist_license(name: builtins.str, email: builtins.str) -> None:
     r"""
     Request a key for **non-professional** use for the user `name`, that will be sent to the e-mail address
     `email`.
     """
 
-def request_sublicense(name:builtins.str, email:builtins.str, company:builtins.str, super_license:builtins.str) -> None:
+def request_sublicense(
+    name: builtins.str,
+    email: builtins.str,
+    company: builtins.str,
+    super_license: builtins.str,
+) -> None:
     r"""
     Request a sublicense key for the user `name` working at `company` that has the site-wide license `super_license`.
     The key will be sent to the e-mail address `email`.
     """
 
-def request_trial_license(name:builtins.str, email:builtins.str, company:builtins.str) -> None:
+def request_trial_license(
+    name: builtins.str, email: builtins.str, company: builtins.str
+) -> None:
     r"""
     Request a key for a trial license for the user `name` working at `company`, that will be sent to the e-mail address
     `email`.
     """
 
-def set_license_key(key:builtins.str) -> None:
+def set_license_key(key: builtins.str) -> None:
     r"""
     Set the Symbolica license key for this computer. Can only be called before calling any other Symbolica functions.
     """
-
-def to_net(a:Expression | int | str | float | complex | TensorIndices | Expression, library:typing.Optional[TensorLibrary]) -> TensorNetwork: ...
-

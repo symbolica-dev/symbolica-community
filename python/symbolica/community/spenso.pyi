@@ -4,321 +4,1735 @@
 import builtins
 import typing
 import symbolica.core
+from symbolica.core import *
 from enum import Enum
 
 class CompiledTensorEvaluator:
     r"""
-    A compiled and optimized evaluator for tensors.
+    A compiled and optimized evaluator for maximum performance tensor evaluation.
+
+    This class wraps a compiled C++ shared library for extremely fast numerical
+    evaluation of tensor expressions. It only supports complex-valued evaluation
+    as this is the most general case.
+
+    Create instances using the `TensorEvaluator.compile()` method.
+
+    # Examples:
+    ```python
+    # Created from a TensorEvaluator
+    compiled = evaluator.compile("eval_func", "code.cpp", "lib")
+
+    # Use for high-performance evaluation
+    results = compiled.evaluate_complex(large_input_batch)
+    ```
     """
-    def evaluate_complex(self, inputs:typing.Sequence[typing.Sequence[builtins.complex]]) -> builtins.list[Tensor]:
+    def evaluate_complex(
+        self, inputs: typing.Sequence[typing.Sequence[builtins.complex]]
+    ) -> builtins.list[Tensor]:
         r"""
-        Evaluate the expression for multiple inputs and return the results.
+        Evaluate the tensor expression for multiple complex-valued parameter inputs.
+
+        Uses the compiled C++ code for maximum performance evaluation with complex numbers.
+
+        # Args:
+            inputs: List of parameter value lists, where each inner list contains
+                    complex values for all parameters in the same order as specified
+                    when creating the original evaluator
+
+        # Returns:
+            List of evaluated tensors, one for each input parameter set
+
+        # Examples:
+        ```python
+        import symbolica as sp
+        from symbolica.community.spenso import Tensor
+
+        # Use compiled evaluator for complex inputs
+        complex_inputs = [
+            [1.0+2.0j, 3.0+0.0j],  # x=1+2i, y=3
+            [0.0+1.0j, 2.0+1.0j]   # x=i, y=2+i
+        ]
+        results = compiled_evaluator.evaluate_complex(complex_inputs)
+        ```
         """
 
 class LibraryTensor:
     r"""
-    A tensor class that can be either dense or sparse.
-    The data is either float or complex or a symbolica expression
-    It can be instantiated with data using the `sparse_empty` or `dense` module functions.
+    A library tensor class optimized for use in tensor libraries and networks.
+
+    Library tensors are similar to regular tensors but use explicit keys for efficient
+    lookup and storage in tensor libraries. They can be either dense or sparse and
+    store data as floats, complex numbers, or symbolic expressions.
+
+    LibraryTensors are designed for:
+    - Registration in TensorLibrary instances
+    - Use in tensor networks where structure reuse is important
+    - Efficient symbolic manipulation and pattern matching
+
+    # Examples:
+    ```python
+    from symbolica.community.spenso import (
+        LibraryTensor,
+        TensorStructure,
+        Representation,
+    )
+
+    # Create a structure for a color matrix
+    rep = Representation.euc(3)  # 3x3 color fundamental
+    structure = TensorStructure(rep, rep, name="T")
+    # Create dense library tensor
+    data = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]  # Identity matrix
+    tensor = LibraryTensor.dense(structure, data)
+    # Create sparse library tensor
+    sparse_tensor = LibraryTensor.sparse(structure, float)
+
+    ```
     """
     def structure(self) -> TensorStructure: ...
     @staticmethod
-    def sparse(structure:TensorStructure | builtins.list[Representation] | builtins.list[builtins.int], type_info:type) -> LibraryTensor:
+    def sparse(
+        structure: TensorStructure
+        | builtins.list[Representation]
+        | builtins.list[builtins.int],
+        type_info: type,
+    ) -> LibraryTensor:
         r"""
-        Create a new sparse empty tensor with the given structure and type.
-        The type is either a float or a symbolica expression.
+        Create a new sparse empty library tensor with the given structure and data type.
+
+        Creates a sparse tensor that initially contains no non-zero elements.
+        Elements can be set individually using indexing operations.
+
+        # Args:
+            structure: The tensor structure (TensorStructure, list of Representations, or list of integers)
+            type_info: The data type - either `float` or `Expression` class
+
+        # Returns:
+            A new sparse library tensor with all elements initially zero
+
+        # Examples:
+        ```python
+        import symbolica as sp
+        from symbolica.community.spenso import (
+            LibraryTensor,
+            TensorStructure,
+            Representation,
+        )
+
+        # Create structure from representations
+        rep = Representation.euc(3)
+        structure = TensorStructure(rep, rep)
+        # Create sparse float tensor
+        sparse_float = LibraryTensor.sparse(structure, float)
+        # Create sparse symbolic tensor
+        sparse_sym = LibraryTensor.sparse(structure, sp.Expression)
+        # Set individual elements
+        sparse_float[0, 0] = 1.0
+        sparse_float[1, 1] = 2.0
+        print(sparse_float)
+
+        ```
         """
     @staticmethod
-    def dense(structure:TensorStructure | builtins.list[Representation] | builtins.list[builtins.int], data:typing.Any) -> LibraryTensor:
+    def dense(
+        structure: TensorStructure
+        | builtins.list[Representation]
+        | builtins.list[builtins.int],
+        data: typing.Any,
+    ) -> LibraryTensor:
         r"""
-        Create a new dense tensor with the given structure and data.
-        The structure can be a list of integers, a list of representations, or a list of slots.
-        In the first two cases, no "indices" are assumed, and thus the tensor is indexless (i.e.) it has a shape but no proper way to contract it.
-        The structure can also be a proper `TensorIndices` object or `TensorStructure` object.
-        
-        The data is either a list of floats or a list of symbolica expressions, of length equal to the number of elements in the structure, in row-major order.
+        Create a new dense library tensor with the given structure and data.
+
+        Dense tensors store all elements explicitly in row-major order. The structure
+        defines the tensor's shape and indexing properties.
+
+        # Args:
+            structure: The tensor structure, can be:
+                - TensorStructure object (proper library structure)
+                - List of Representations (creates library structure)
+                - List of integers (creates indexless shape)
+            data: The tensor data in row-major order:
+                - List of floats for numerical tensors
+                - List of Expressions for symbolic tensors
+
+        # Returns:
+            A new dense library tensor with the specified data
+
+        # Examples:
+        ```python
+        from symbolica import S
+        from symbolica.community.spenso import (
+            LibraryTensor,
+            TensorStructure,
+            Representation,
+        )
+
+        # Create a 2x2 color matrix
+        rep = Representation.euc(2)
+        sigma = S("sigma")
+        structure = TensorStructure(rep, rep, name=sigma)
+        data = [0.0, 1.0, 1.0, 0.0]  # Pauli matrix σ_x
+        tensor = LibraryTensor.dense(structure, data)
+        # Create symbolic tensor
+        x, y = S("x", "y")
+        sym_data = [x, y, -y, x]  # 2x2 matrix with symbolic entries
+        sym_tensor = LibraryTensor.dense(structure, sym_data)
+        print(sym_tensor)
+
+        ```
         """
     @staticmethod
-    def one() -> LibraryTensor: ...
+    def one() -> LibraryTensor:
+        r"""
+        Create a scalar library tensor with value 1.0.
+
+        # Returns:
+            A scalar library tensor containing the value 1.0
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import LibraryTensor
+
+        one = LibraryTensor.one()
+        print(one)  # Scalar library tensor with value 1.0
+        ```
+        """
     @staticmethod
-    def zero() -> LibraryTensor: ...
-    def to_dense(self) -> None: ...
-    def to_sparse(self) -> None: ...
+    def zero() -> LibraryTensor:
+        r"""
+        Create a scalar library tensor with value 0.0.
+
+        # Returns:
+            A scalar library tensor containing the value 0.0
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import LibraryTensor
+
+        zero = LibraryTensor.zero()
+        print(zero)  # Scalar library tensor with value 0.0
+        ```
+        """
+    def to_dense(self) -> None:
+        r"""
+        Convert this library tensor to dense storage format.
+
+        Converts sparse tensors to dense format in-place. Dense tensors are unchanged.
+        This allocates memory for all tensor elements.
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import LibraryTensor, TensorStructure, Representation
+
+        rep = Representation.cof(2)
+        structure = TensorStructure([rep, rep])
+        tensor = LibraryTensor.sparse(structure, float)
+        tensor[0, 0] = 1.0
+        tensor.to_dense()  # Now stores all 4 elements explicitly
+        ```
+        """
+    def to_sparse(self) -> None:
+        r"""
+        Convert this library tensor to sparse storage format.
+
+        Converts dense tensors to sparse format in-place, only storing non-zero elements.
+        This can save memory for tensors with many zero elements.
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import LibraryTensor, TensorStructure, Representation
+
+        rep = Representation.euc(2)
+        structure = TensorStructure(rep, rep)
+        data = [1.0, 0.0, 0.0, 2.0]
+        tensor = LibraryTensor.dense(structure, data)
+        tensor.to_sparse()  # Now only stores 2 non-zero elements
+        ```
+        """
     def __repr__(self) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
     def __len__(self) -> builtins.int: ...
-    def __getitem__(self, item:builtins.slice | builtins.int | builtins.list[builtins.int]) -> typing.Any: ...
-    def __setitem__(self, item:typing.Any, value:typing.Any) -> None: ...
-    def scalar(self) -> Expression: ...
+    def __getitem__(
+        self, item: builtins.slice | builtins.int | builtins.list[builtins.int]
+    ) -> typing.Any: ...
+    def __setitem__(self, item: typing.Any, value: typing.Any) -> None:
+        r"""
+        Set library tensor element(s) at the specified index or indices.
+
+        # Args:
+            item: Index specification:
+                - int: Flat index into the tensor
+                - List[int]: Multi-dimensional index coordinates
+            value: The value to set:
+                - float: Numerical value
+                - Expression: Symbolic expression
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import LibraryTensor, TensorStructure, Representation
+
+        rep = Representation.euc(2)
+        structure = TensorStructure(rep, rep)
+        tensor = LibraryTensor.sparse(structure, float)
+
+        # Set using flat index
+        tensor[0] = 1.0
+
+        # Set using coordinates
+        tensor[1, 1] = 2.0
+        ```
+        """
+    def scalar(self) -> Expression:
+        r"""
+        Extract the scalar value from a rank-0 (scalar) library tensor.
+
+        # Returns:
+            The scalar expression contained in this tensor
+
+        # Raises:
+            RuntimeError: If the tensor is not a scalar
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import LibraryTensor
+
+        scalar_tensor = LibraryTensor.one()
+        value = scalar_tensor.scalar()  # Returns expression "1"
+        ```
+        """
 
 class Representation:
     r"""
-    A representation class in the sense of representation theory. This class is used to represent the representation of a tensor. It is essentially a pair of a name and a dimension.
-    New representations are registered when constructing.
-    Some representations are dualizable, meaning that they have a dual representation.
-    Indices will only ever match across dual representations.
-    There are some already registered representations, such as:
-     EUCLIDEAN: Rep = Rep::SelfDual(0);
-     BISPINOR: Rep = Rep::SelfDual(1);
-     COLORADJ: Rep = Rep::SelfDual(2);
-     MINKOWSKI: Rep = Rep::SelfDual(3);
-    
-     LORENTZ_UP: Rep = Rep::Dualizable(1);
-     LORENTZ_DOWN: Rep = Rep::Dualizable(-1);
-     SPINFUND: Rep = Rep::Dualizable(2);
-     SPINANTIFUND: Rep = Rep::Dualizable(-2);
-     COLORFUND: Rep = Rep::Dualizable(3);
-     COLORANTIFUND: Rep = Rep::Dualizable(-3);
-     COLORSEXT: Rep = Rep::Dualizable(4);
-     COLORANTISEXT: Rep = Rep::Dualizable(-4);
+    A representation in the sense of group representation theory for tensor indices.
+
+    Representations define the transformation properties of tensor indices under group operations.
+    They specify the dimension and duality structure, determining which indices can contract.
+
+    Key concepts:
+    - **Self-dual**: Indices can contract with other indices of the same representation
+    - **Dualizable**: Indices can only contract with their dual representation
+    - **Dimension**: Size of the representation space
+
+    # Predefined Representations:
+    Common physics representations are available as class methods:
+    - `Representation.euc(d)`: Euclidean space (self-dual)
+    - `Representation.mink(d)`: Minkowski space (self-dual)
+    - `Representation.bis(d)`: Bispinor (self-dual)
+    - `Representation.cof(d)`: Color fundamental (dualizable)
+    - `Representation.coad(d)`: Color adjoint (self-dual)
+    - `Representation.cos(d)`: Color sextet (dualizable)
+
+    # Examples:
+    ```python
+    from symbolica.community.spenso import Representation
+
+    # Standard representations
+    euclidean = Representation.euc(4)      # 4D Euclidean
+    lorentz = Representation.mink(4)       # 4D Minkowski
+    color = Representation.cof(3)          # SU(3) fundamental
+    adjoint = Representation.coad(8)       # SU(3) adjoint
+
+    # Custom representation
+    custom = Representation("MyRep", 5, is_self_dual=True)
+
+    # Create slots with indices
+    mu_slot = euclidean('mu')              # Euclidean index μ
+    a_slot = color('a')                    # Color index a
+
+    # Generate metric tensors
+    metric = euclidean.g('mu', 'nu')       # g_μν
+    ```
     """
-    def __new__(cls, name:typing.Any, dimension:builtins.int | Expression | str, is_self_dual:builtins.bool=True) -> Representation:
+    def __new__(
+        cls,
+        name: typing.Any,
+        dimension: builtins.int | Expression | str,
+        is_self_dual: builtins.bool = True,
+    ) -> Representation:
         r"""
-        Register a new representation with the given name and dimension. If dual is true, the representation will be dualizable, else it will be self-dual.
+        Create and register a new representation with specified properties.
+
+        # Args:
+            name: String name for the representation
+            dimension: Size of the representation (int or symbolic)
+            is_self_dual: If True, creates self-dual representation; if False, creates dualizable pair
+
+        # Returns:
+            A new Representation object
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import Representation
+        import symbolica as sp
+
+        # Self-dual representation (indices contract with themselves)
+        euclidean = Representation("Euclidean", 4, is_self_dual=True)
+
+        # Dualizable representation (needs dual partner for contraction)
+        vector_up = Representation("VectorUp", 4, is_self_dual=False)
+
+        vector_down =vector_up.dual()  # Get dual representation
+        # Symbolic dimension
+        n = sp.S('n')
+        general = Representation("General", n, is_self_dual=True)
+        ```
         """
-    def __call__(self, aind:builtins.int | Expression | str) -> typing.Any:
+    def __call__(self, aind: builtins.int | Expression | str) -> typing.Any:
         r"""
-        Generate a new slot with the given index, from this representation
+        Create a slot or symbolic expression from this representation.
+
+        # Args:
+            aind: The index specification:
+                - Abstract index (int, str, Symbol): Creates a Slot
+                - Expression: Creates symbolic representation
+
+        # Returns:
+            Either a Slot object (for indices) or Expression (for symbolic args)
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import Representation
+        import symbolica as sp
+
+        rep = Representation.euc(3)
+
+        # Create slots with different index types
+        slot1 = rep('mu')        # String index
+        slot2 = rep(1)           # Integer index
+        slot3 = rep(sp.S('nu'))  # Symbolic index
+
+        # Create symbolic expression
+        x = sp.S('x')
+        sym_rep = rep(x)         # Symbolic representation
+        ```
         """
-    def g(self, i:builtins.int | Expression | str, j:builtins.int | Expression | str) -> TensorIndices: ...
-    def flat(self, i:builtins.int | Expression | str, j:builtins.int | Expression | str) -> TensorIndices: ...
-    def id(self, i:builtins.int | Expression | str, j:builtins.int | Expression | str) -> TensorIndices: ...
+    def g(
+        self,
+        i: builtins.int | Expression | str,
+        j: builtins.int | Expression | str,
+    ) -> TensorIndices:
+        r"""
+        Create a metric tensor for this representation.
+
+        # Args:
+            i: First index
+            j: Second index
+
+        # Returns:
+            TensorIndices representing the metric tensor g_ij
+
+        # Examples:
+        ```python
+        rep = Representation.mink(4)
+        metric = rep.g('mu', 'nu')  # Minkowski metric g_μν
+        ```
+        """
+    def flat(
+        self,
+        i: builtins.int | Expression | str,
+        j: builtins.int | Expression | str,
+    ) -> TensorIndices:
+        r"""
+        Create a musical isomorphism tensor for this representation.
+
+        # Args:
+            i: First index
+            j: Second index
+
+        # Returns:
+            TensorIndices representing the flat musical isomorphism tensor ♭_ij
+
+        # Examples:
+        ```python
+        rep = Representation.mink(4)
+        flat = rep.flat('mu', 'nu')  # Flat isomorphism ♭_μν
+        ```
+        """
+    def id(
+        self,
+        i: builtins.int | Expression | str,
+        j: builtins.int | Expression | str,
+    ) -> TensorIndices:
+        r"""
+        Create an identity tensor for this representation.
+
+        # Args:
+            i: First index
+            j: Second index
+
+        # Returns:
+            TensorIndices representing the identity tensor δ_ij
+
+        # Examples:
+        ```python
+        rep = Representation.cof(3)
+        identity = rep.id('a', 'b')  # Color identity δ_ab
+        ```
+        """
     def __repr__(self) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
-    def to_expression(self) -> Expression: ...
+    def to_expression(self) -> Expression:
+        r"""
+        Convert the representation to a symbolic expression.
+
+        # Returns:
+            A symbolic Expression representing this representation
+        """
     @staticmethod
-    def bis(dimension:builtins.int | Expression | str) -> Representation: ...
+    def bis(dimension: builtins.int | Expression | str) -> Representation:
+        r"""
+        Create a bispinor representation.
+
+        # Args:
+            dimension: The dimension of the bispinor space
+
+        # Returns:
+            A bispinor Representation
+        """
     @staticmethod
-    def euc(dimension:builtins.int | Expression | str) -> Representation: ...
+    def euc(dimension: builtins.int | Expression | str) -> Representation:
+        r"""
+        Create a Euclidean space representation.
+
+        # Args:
+            dimension: The dimension of the Euclidean space
+
+        # Returns:
+            A Euclidean Representation
+        """
     @staticmethod
-    def mink(dimension:builtins.int | Expression | str) -> Representation: ...
+    def mink(dimension: builtins.int | Expression | str) -> Representation:
+        r"""
+        Create a Minkowski space representation.
+
+        # Args:
+            dimension: The dimension of the Minkowski space
+
+        # Returns:
+            A Minkowski Representation
+        """
+    @staticmethod
+    def cof(dimension: builtins.int | Expression | str) -> Representation:
+        r"""
+        Create a color fundamental representation.
+
+        # Args:
+            dimension: The dimension of the color group (e.g., 3 for SU(3))
+
+        # Returns:
+            A color fundamental Representation
+        """
+    @staticmethod
+    def coad(dimension: builtins.int | Expression | str) -> Representation:
+        r"""
+        Create a color adjoint representation.
+
+        # Args:
+            dimension: The dimension of the adjoint representation (e.g., 8 for SU(3))
+
+        # Returns:
+            A color adjoint Representation
+        """
+    @staticmethod
+    def cos(dimension: builtins.int | Expression | str) -> Representation:
+        r"""
+        Create a color sextet representation.
+
+        # Args:
+            dimension: The dimension of the sextet representation (e.g., 6 for SU(3))
+
+        # Returns:
+            A color sextet Representation
+        """
 
 class Slot:
     r"""
-    An abstract index slot for a tensor.
-    This is essentially a tuple of a `Representation` and an abstract index id.
-    
-    The abstract index id can be either an integer or a symbol.
-    This is the building block for creating tensor structures that can be contracted.
+    A tensor index slot combining a representation with an abstract index.
+
+    Slots are the building blocks for tensor structures, pairing a representation
+    (which defines transformation properties) with an abstract index identifier.
+    Slots with matching representations and indices can be contracted.
+
+    # Examples:
+    ```python
+    from symbolica.community.spenso import Slot, Representation
+    import symbolica as sp
+
+    # Create representation and slots
+    rep = Representation.euc(3)
+    slot1 = rep('mu')           # Slot with string index
+    slot2 = rep(1)              # Slot with integer index
+    slot3 = rep(sp.S('nu')) # Slot with symbolic index
+
+    # Create custom slot
+    custom_slot = Slot("MyRep", 4, 'alpha', dual=False)
+
+    # Use in tensor structures
+    from symbolica.community.spenso import TensorIndices
+    tensor_structure = TensorIndices(slot1, slot2)
+    ```
     """
     def __repr__(self) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
-    def __new__(cls, name:typing.Any, dimension:builtins.int, aind:typing.Any, dual:builtins.bool=False) -> Slot:
+    def __new__(
+        cls,
+        name: typing.Any,
+        dimension: builtins.int,
+        aind: typing.Any,
+        dual: builtins.bool = False,
+    ) -> Slot:
         r"""
-        Create a new slot from a name of a representation, a dimension and an abstract index.
-         If dual is true, the representation will be dualizable, else it will be self-dual.
+        Create a new slot with a custom representation and index.
+
+        # Args:
+            name: String name for the representation
+            dimension: Size of the representation space
+            aind: The abstract index (int, str, or Symbol)
+            dual: If True, creates dualizable representation; if False, self-dual
+
+        # Returns:
+            A new Slot object
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import Slot
+        import symbolica as sp
+
+        # Self-dual slot
+        euclidean_slot = Slot("Euclidean", 4, 'mu', dual=False)
+
+        # Dualizable slot
+        vector_slot = Slot("Vector", 4, 'nu', dual=True)
+
+        # With symbolic index
+        sym_index = sp.S('alpha')
+        symbolic_slot = Slot("Custom", 3, sym_index, dual=False)
+        ```
         """
-    def to_expression(self) -> Expression: ...
+    def to_expression(self) -> Expression:
+        r"""
+        Convert the slot to a symbolic expression.
+
+        # Returns:
+            A symbolic Expression representing this slot
+
+        # Examples:
+        ```python
+        rep = Representation.euc(3)
+        slot = rep('mu')
+        expr = slot.to_expression()  # Symbolic representation of the slot
+        ```
+        """
 
 class Tensor:
     r"""
-    A tensor class that can be either dense or sparse.
-    The data is either float or complex or a symbolica expression
-    It can be instantiated with data using the `sparse_empty` or `dense` module functions.
+    A tensor class that can be either dense or sparse with flexible data types.
+
+    The tensor can store data as floats, complex numbers, or symbolic expressions (Symbolica atoms).
+    Tensors have an associated structure that defines their shape and index properties.
+
+    # Examples
+    ```python
+    from symbolica.community.spenso import (
+        Tensor,
+        TensorIndices,
+        Representation,
+    )
+    # Create a structure for a 2x2 matrix
+    structure = TensorIndices(Representation.euc(4)(1))  # 4 elements total
+    # Create a dense tensor with float data
+    data = [1.0, 2.0, 3.0, 4.0]
+    tensor = Tensor.dense(structure, data)
+    # Create a sparse tensor
+    sparse_tensor = Tensor.sparse(structure, float)
+    ```
     """
     def structure(self) -> TensorIndices: ...
     @staticmethod
-    def sparse(structure:TensorIndices | builtins.list[Slot], type_info:type) -> Tensor:
+    def sparse(
+        structure: TensorIndices | builtins.list[Slot], type_info: type
+    ) -> Tensor:
         r"""
-        Create a new sparse empty tensor with the given structure and type.
-        The type is either a float or a symbolica expression.
+        Create a new sparse empty tensor with the given structure and data type.
+
+        # Args:
+            structure: The tensor structure (TensorIndices or list of Slots)
+            type_info: The data type - either `float` or `Expression` class
+
+        # Returns:
+            A new sparse tensor with all elements initially zero
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import Tensor, TensorIndices,Representation as R
+
+        # Create structure
+        structure = TensorIndices(R.euc(3)(1), R.euc(3)(2))  # 3x3 tensor
+
+        # Create sparse float tensor
+        sparse_float = Tensor.sparse(structure, float)
+
+        # Create sparse symbolic tensor
+        sparse_sym = Tensor.sparse(structure, symbolica.Expression)
+        ```
         """
     @staticmethod
-    def dense(structure:TensorIndices | builtins.list[Slot], data:typing.Any) -> Tensor:
+    def dense(
+        structure: TensorIndices | builtins.list[Slot], data: typing.Any
+    ) -> Tensor:
         r"""
         Create a new dense tensor with the given structure and data.
-        The structure can be a list of integers, a list of representations, or a list of slots.
-        In the first two cases, no "indices" are assumed, and thus the tensor is indexless (i.e.) it has a shape but no proper way to contract it.
-        The structure can also be a proper `TensorIndices` object or `TensorStructure` object.
-        
-        The data is either a list of floats or a list of symbolica expressions, of length equal to the number of elements in the structure, in row-major order.
+
+        # Args:
+            structure: The tensor structure (TensorIndices or list of Slots)
+            data: The tensor data in row-major order:
+                - List of floats for numerical tensors
+                - List of Expressions for symbolic tensors
+
+        # Returns:
+            A new dense tensor with the specified data
+
+        # Examples:
+        ```python
+        import symbolica as sp
+        from symbolica import S
+        from symbolica.community.spenso import (
+            Tensor,
+            TensorIndices,
+            Representation as R,
+        )
+        # Create a 2x2 matrix
+        structure = TensorIndices(R.euc(2)(1), R.euc(2)(2))
+        data = [1.0, 2.0, 3.0, 4.0]  # [[1,2], [3,4]]
+        tensor = Tensor.dense(structure, data)
+        # Create symbolic tensor
+        x, y = S("x", "y")
+        sym_data = [x, y, x * y, x + y]
+        sym_tensor = Tensor.dense(structure, sym_data)
+        print(tensor)
+        print(sym_tensor)
+        ```
         """
     @staticmethod
-    def one() -> Tensor: ...
+    def one() -> Tensor:
+        r"""
+        Create a scalar tensor with value 1.0.
+
+        # Returns:
+            A scalar tensor containing the value 1.0
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import Tensor
+
+        one = Tensor.one()
+        print(one)  # Scalar tensor with value 1.0
+        ```
+        """
     @staticmethod
-    def zero() -> Tensor: ...
-    def to_dense(self) -> None: ...
-    def to_sparse(self) -> None: ...
+    def zero() -> Tensor:
+        r"""
+        Create a scalar tensor with value 0.0.
+
+        # Returns:
+            A scalar tensor containing the value 0.0
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import Tensor
+
+        zero = Tensor.zero()
+        print(zero)  # Scalar tensor with value 0.0
+        ```
+        """
+    def to_dense(self) -> None:
+        r"""
+        Convert this tensor to dense storage format.
+
+        Converts sparse tensors to dense format in-place. Dense tensors are unchanged.
+        This allocates memory for all tensor elements.
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import Tensor, TensorIndices,Representation as R
+
+        structure = TensorIndices(R.euc(4)(2))
+        tensor = Tensor.sparse(structure, float)
+        tensor[0] = 1.0
+        tensor.to_dense()  # Now stores all 4 elements explicitly
+        ```
+        """
+    def to_sparse(self) -> None:
+        r"""
+        Convert this tensor to sparse storage format.
+
+        Converts dense tensors to sparse format in-place, only storing non-zero elements.
+        This can save memory for tensors with many zero elements.
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import Tensor, TensorIndices,Representation as R
+
+        structure = TensorIndices(R.euc(2)(2),R.euc(2)(1))
+        data = [1.0, 0.0, 0.0, 2.0]
+        tensor = Tensor.dense(structure, data)
+        tensor.to_sparse()  # Now only stores 2 non-zero elements
+        print(tensor)
+        ```
+        """
     def __repr__(self) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
     def __len__(self) -> builtins.int: ...
-    def __getitem__(self, item:builtins.slice | builtins.int | builtins.list[builtins.int]) -> typing.Any: ...
-    def __setitem__(self, item:typing.Any, value:typing.Any) -> None: ...
-    def evaluator(self, constants:typing.Mapping[Expression, Expression], funs:typing.Mapping[tuple[Expression, builtins.str, typing.Sequence[Expression]], Expression], params:typing.Sequence[Expression], iterations:builtins.int=100, n_cores:builtins.int=4, verbose:builtins.bool=False) -> TensorEvaluator: ...
-    def scalar(self) -> Expression: ...
+    def __getitem__(
+        self, item: builtins.slice | builtins.int | builtins.list[builtins.int]
+    ) -> typing.Any: ...
+    def __setitem__(self, item: typing.Any, value: typing.Any) -> None:
+        r"""
+        Set tensor element(s) at the specified index or indices.
+
+        # Args:
+            item: Index specification:
+                - int: Flat index into the tensor
+                - List[int]: Multi-dimensional index coordinates
+            value: The value to set:
+                - float: Numerical value
+                - Expression: Symbolic expression
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import (
+            Tensor,
+            TensorIndices,
+            Representation as R,
+        )
+        structure = TensorIndices(R.euc(2)(2), R.euc(2)(1))
+        data = [1.0, 0.0, 0.0, 2.0]
+        tensor = Tensor.dense(structure, data)
+        tensor.to_sparse()  # Now only stores 2 non-zero elements
+        print(tensor)
+        tensor = Tensor.sparse(structure, float)
+        # Set using flat index
+        tensor[0] = 4.0
+        # Set using coordinates
+        tensor[1, 1] = 1.0
+        print(tensor)
+        ```
+        """
+    def evaluator(
+        self,
+        constants: typing.Mapping[Expression, Expression],
+        funs: typing.Mapping[
+            tuple[Expression, builtins.str, typing.Sequence[Expression]],
+            Expression,
+        ],
+        params: typing.Sequence[Expression],
+        iterations: builtins.int = 100,
+        n_cores: builtins.int = 4,
+        verbose: builtins.bool = False,
+    ) -> TensorEvaluator:
+        r"""
+        Create an optimized evaluator for symbolic tensor expressions.
+
+        Compiles the symbolic expressions in this tensor into an optimized evaluation tree
+        that can efficiently compute numerical values for different parameter inputs.
+
+        # Args:
+            constants: Dict mapping symbolic expressions to their constant numerical values
+            funs: Dict mapping function signatures to their symbolic definitions
+            params: List of symbolic parameters that will be varied during evaluation
+            iterations: Number of optimization iterations for Horner scheme (default: 100)
+            n_cores: Number of CPU cores to use for optimization (default: 4)
+            verbose: Whether to print optimization progress (default: False)
+
+        # Returns:
+            A TensorEvaluator object for efficient numerical evaluation
+
+        # Examples:
+        ```python
+        from symbolica import S
+        from symbolica.community.spenso import (
+            Tensor,
+            TensorIndices,
+            Representation as R,
+        )
+        # Create symbolic tensor
+        x, y = S("x", "y")
+        structure = TensorIndices(R.euc(2)(1))
+        tensor = Tensor.dense(structure, [x * y, x + y])
+        # Create evaluator
+        evaluator = tensor.evaluator(
+            constants={}, funs={}, params=[x, y], iterations=50
+        )
+        # Use evaluator
+        results = evaluator.evaluate_complex([[1.0, 2.0], [3.0, 4.0]])
+        print(results)
+        ```
+        """
+    def scalar(self) -> Expression:
+        r"""
+        Extract the scalar value from a rank-0 (scalar) tensor.
+
+        # Returns:
+            The scalar expression contained in this tensor
+
+        # Raises:
+            RuntimeError: If the tensor is not a scalar
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import Tensor
+
+        scalar_tensor = Tensor.one()
+        value = scalar_tensor.scalar()  # Returns expression "1"
+        ```
+        """
 
 class TensorEvaluator:
     r"""
-    An optimized evaluator for tensors.
+    An optimized evaluator for symbolic tensor expressions.
+
+    This class provides efficient numerical evaluation of symbolic tensor expressions
+    after optimization. It supports both real and complex-valued evaluations.
+
+    Create instances using the `Tensor.evaluator()` method rather than directly.
+
+    # Examples:
+    ```python
+    # Created from a symbolic tensor
+    evaluator = my_tensor.evaluator(constants={}, funs={}, params=[x, y])
+
+    # Evaluate for multiple parameter sets
+    results = evaluator.evaluate([[1.0, 2.0], [3.0, 4.0]])
+    ```
     """
-    def evaluate(self, inputs:typing.Sequence[typing.Sequence[builtins.float]]) -> builtins.list[Tensor]:
+    def evaluate(
+        self, inputs: typing.Sequence[typing.Sequence[builtins.float]]
+    ) -> builtins.list[Tensor]:
+        r"""
+        Evaluate the tensor expression for multiple real-valued parameter inputs.
+
+        # Args:
+            inputs: List of parameter value lists, where each inner list contains
+                    numerical values for all parameters in the same order as specified
+                    when creating the evaluator
+
+        # Returns:
+            List of evaluated tensors, one for each input parameter set
+
+        # Raises:
+            ValueError: If the evaluator contains complex coefficients
+
+        # Examples:
+        ```python
+        # Evaluate for two different parameter sets
+        results = evaluator.evaluate([
+            [1.0, 2.0],  # x=1.0, y=2.0
+            [3.0, 4.0]   # x=3.0, y=4.0
+        ])
+        ```
+        """
+    def evaluate_complex(
+        self, inputs: typing.Sequence[typing.Sequence[builtins.complex]]
+    ) -> builtins.list[Tensor]:
         r"""
         Evaluate the expression for multiple inputs and return the results.
         """
-    def evaluate_complex(self, inputs:typing.Sequence[typing.Sequence[builtins.complex]]) -> builtins.list[Tensor]:
+    def compile(
+        self,
+        function_name: builtins.str,
+        filename: builtins.str,
+        library_name: builtins.str,
+        inline_asm: builtins.str = "default",
+        optimization_level: builtins.int = 3,
+        compiler_path: typing.Optional[builtins.str] = None,
+        custom_header: typing.Optional[builtins.str] = None,
+    ) -> CompiledTensorEvaluator:
         r"""
-        Evaluate the expression for multiple inputs and return the results.
-        """
-    def compile(self, function_name:builtins.str, filename:builtins.str, library_name:builtins.str, inline_asm:builtins.str='default', optimization_level:builtins.int=3, compiler_path:typing.Optional[builtins.str]=None, custom_header:typing.Optional[builtins.str]=None) -> CompiledTensorEvaluator:
-        r"""
-        Compile the evaluator to a shared library using C++ and optionally inline assembly and load it.
+        Compile the evaluator to a shared library using C++ for maximum performance.
+
+        Generates optimized C++ code with optional inline assembly and compiles it
+        into a shared library that can be loaded for extremely fast evaluation.
+
+        # Args:
+            function_name: Name for the generated C++ function
+            filename: Path for the generated C++ source file
+            library_name: Name for the compiled shared library
+            inline_asm: Type of inline assembly optimization:
+                         - "default": Platform-appropriate assembly
+                         - "x64": x86-64 specific optimizations
+                         - "aarch64": ARM64 specific optimizations
+                         - "none": No inline assembly
+            optimization_level: Compiler optimization level 0-3 (default: 3)
+            compiler_path: Path to specific C++ compiler (default: system default)
+            custom_header: Additional C++ header code to include
+
+        # Returns:
+            A CompiledTensorEvaluator for maximum performance evaluation
+
+        # Examples:
+        ```python
+        from symbolica import S
+        from symbolica.community.spenso import (
+            Tensor,
+            TensorIndices,
+            Representation as R,
+        )
+        # Create symbolic tensor
+        x, y = S("x", "y")
+        structure = TensorIndices(R.euc(2)(1))
+        tensor = Tensor.dense(structure, [x * y, x + y])
+        # Create evaluator
+        evaluator = tensor.evaluator(
+            constants={}, funs={}, params=[x, y], iterations=50
+        )
+        inputs = [[1.0, 2.0], [3.0, 4.0]]
+        # Use evaluator
+        results = evaluator.evaluate_complex(inputs)
+        print(results)
+        compiled = evaluator.compile(
+            function_name="fast_eval",
+            filename="tensor_eval.cpp",
+            library_name="tensor_lib",
+            optimization_level=3,
+        )
+        # Use compiled evaluator
+        results = compiled.evaluate_complex(inputs)
+        ```
         """
 
 class TensorIndices:
     r"""
-    A structure that can be used to represent the "shape" of a tensor, along with a list of abstract indices.
-    This has an optional name, and accompanying symbolica expressions that are considered as additional non-indexed arguments.
-    The structure is essentially a list of `Slots` that are used to define the structure of the tensor.
+    A tensor structure with abstract indices for symbolic tensor operations.
+
+    TensorIndices represents the index structure of tensors with named abstract indices
+    that can be contracted, manipulated symbolically, and converted to expressions.
+    It maintains both the representation structure and index assignments.
+
+    # Examples:
+    ```python
+    from symbolica.community.spenso import TensorIndices, Slot, Representation, TensorName
+
+    # Create from slots
+    rep = Representation.euc(3)
+    mu = rep('mu')
+    nu = rep('nu')
+    indices = TensorIndices(mu, nu)
+
+    # Create with name
+    T = TensorName("T")
+    named_indices = T(mu, nu)  # Creates TensorIndices with name "T"
+
+    # Access elements
+    print(len(indices))       # Number of elements
+    print(indices[0])         # First element's coordinates
+    print(indices[1, 2])      # Flat index for coordinates [1, 2]
+
+    # Convert to expression
+    expr = named_indices.to_expression()  # Symbolic tensor expression
+    ```
     """
-    def __new__(cls, *additional_args, name:typing.Optional[TensorIndices | builtins.list[Slot]]=None) -> TensorIndices: ...
-    def set_name(self, name:TensorIndices | builtins.list[Slot]) -> None: ...
-    def get_name(self) -> typing.Optional[TensorName]: ...
+    def __new__(
+        cls,
+        *additional_args,
+        name: typing.Optional[TensorIndices | builtins.list[Slot]] = None,
+    ) -> TensorIndices:
+        r"""
+        Create tensor structure from slots and optional arguments.
+
+        # Args:
+            *additional_args: Mixed arguments:
+                - Slot objects: Define the tensor representation structure
+                - Expressions: Additional non-indexed arguments
+            name: Optional tensor name to assign to the structure
+
+        # Returns:
+            A new TensorStructure object
+
+        # Examples:
+        ```python
+        from symbolica import S
+        from symbolica.community.spenso import TensorStructure, Representation, TensorName
+
+        # Create from representations
+        rep = Representation.euc(3)
+        structure = TensorStructure(rep, rep)  # 3x3 tensor
+
+        # With additional arguments
+        x = S('x')
+        structure_with_args = TensorStructure(rep, rep, x)
+
+        # With name
+        T = TensorName("T")
+        named_structure = TensorStructure(rep, rep, name=T)
+        ```
+        """
+    def set_name(self, name: TensorIndices | builtins.list[Slot]) -> None:
+        r"""
+        Set the tensor name for this structure.
+
+        # Args:
+            name: The tensor name to assign
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import TensorStructure, TensorName, Representation
+
+        rep = Representation.euc(3)
+        structure = TensorStructure(rep, rep)
+
+        T = TensorName("T")
+        structure.set_name(T)
+        ```
+        """
+    def get_name(self) -> typing.Optional[TensorName]:
+        r"""
+        Get the tensor name of this structure.
+
+        # Returns:
+            The tensor name if set, None otherwise
+
+        # Examples:
+        ```python
+        # For a named tensor structure
+        name = structure.get_name()  # Returns TensorName object or None
+        ```
+        """
     def __repr__(self) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
-    def to_expression(self) -> Expression: ...
+    def to_expression(self) -> Expression:
+        r"""
+        Convert the tensor indices to a symbolic expression.
+
+        Creates a symbolic representation of the tensor with its indices that can be
+        used in algebraic manipulations and pattern matching.
+
+        # Returns:
+            A symbolic Expression representing this indexed tensor
+
+        # Raises:
+            RuntimeError: If the tensor structure has no name
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import TensorName, Representation
+
+        T = TensorName("T")
+        rep = Representation.euc(3)
+        mu = rep('mu')
+        nu = rep('nu')
+        indices = T(mu, nu)
+
+        expr = indices.to_expression()  # T(mu, nu) as symbolic expression
+        print(expr)  # Can be used in symbolic computations
+        ```
+        """
     def __len__(self) -> builtins.int: ...
-    def __getitem__(self, item:builtins.slice | builtins.int | builtins.list[builtins.int]) -> typing.Any: ...
-    def __add__(self, rhs:Expression | int | str | float | complex | TensorIndices | Expression) -> Expression:
+    def __getitem__(
+        self, item: builtins.slice | builtins.int | builtins.list[builtins.int]
+    ) -> typing.Any: ...
+    def __add__(
+        self,
+        rhs: Expression
+        | int
+        | str
+        | float
+        | complex
+        | TensorIndices
+        | Expression,
+    ) -> Expression:
         r"""
         Add this expression to `other`, returning the result.
         """
-    def __radd__(self, rhs:Expression | int | str | float | complex | TensorIndices | Expression) -> Expression:
+    def __radd__(
+        self,
+        rhs: Expression
+        | int
+        | str
+        | float
+        | complex
+        | TensorIndices
+        | Expression,
+    ) -> Expression:
         r"""
         Add this expression to `other`, returning the result.
         """
-    def __sub__(self, rhs:Expression | int | str | float | complex | TensorIndices | Expression) -> Expression:
+    def __sub__(
+        self,
+        rhs: Expression
+        | int
+        | str
+        | float
+        | complex
+        | TensorIndices
+        | Expression,
+    ) -> Expression:
         r"""
         Subtract `other` from this expression, returning the result.
         """
-    def __rsub__(self, rhs:Expression | int | str | float | complex | TensorIndices | Expression) -> Expression:
+    def __rsub__(
+        self,
+        rhs: Expression
+        | int
+        | str
+        | float
+        | complex
+        | TensorIndices
+        | Expression,
+    ) -> Expression:
         r"""
         Subtract this expression from `other`, returning the result.
         """
-    def __mul__(self, rhs:Expression | int | str | float | complex | TensorIndices | Expression) -> Expression:
+    def __mul__(
+        self,
+        rhs: Expression
+        | int
+        | str
+        | float
+        | complex
+        | TensorIndices
+        | Expression,
+    ) -> Expression:
         r"""
         Add this expression to `other`, returning the result.
         """
-    def __rmul__(self, rhs:Expression | int | str | float | complex | TensorIndices | Expression) -> Expression:
+    def __rmul__(
+        self,
+        rhs: Expression
+        | int
+        | str
+        | float
+        | complex
+        | TensorIndices
+        | Expression,
+    ) -> Expression:
         r"""
         Add this expression to `other`, returning the result.
         """
 
 class TensorLibrary:
-    def __new__(cls) -> TensorLibrary: ...
-    def register(self, tensor:Tensor | LibraryTensor) -> None: ...
-    def __getitem__(self, key:Expression | int | str | float | complex | builtins.str) -> TensorStructure: ...
+    r"""
+    A library for registering and managing tensor templates and structures.
+
+    The TensorLibrary provides a centralized registry for tensor definitions that can be
+    reused across tensor networks and expressions. It manages tensor structures with their
+    associated names and can resolve symbolic references to registered tensors.
+
+    # Examples:
+    ```python
+    import symbolica
+    from symbolica.community.spenso import (
+        TensorLibrary,
+        LibraryTensor,
+        TensorStructure,
+    )
+    from symbolica.community.spenso import Representation
+    # Create a new library
+    lib = TensorLibrary()
+    # Register a tensor structure
+    rep = Representation.euc(3)  # Color fundamental representation
+    name = symbolica.S("my_tensor")
+    structure = TensorStructure(rep, rep, name=name)
+    tensor = LibraryTensor.dense(
+        structure, [1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
+    )
+    lib.register(tensor)
+    # Access registered tensor structure
+    tensor_ref = lib[name]
+    ```
+    """
+    def __new__(cls) -> TensorLibrary:
+        r"""
+        Create a new empty tensor library.
+
+        Initializes an empty library ready for registering tensor structures.
+        The library automatically manages internal tensor IDs.
+
+        # Returns:
+            A new empty TensorLibrary instance
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import TensorLibrary
+
+        # Create new library
+        lib = TensorLibrary()
+        ```
+        """
+    def register(self, tensor: Tensor | LibraryTensor) -> None:
+        r"""
+        Register a tensor in the library.
+
+        Adds a tensor template to the library that can be referenced by name
+        in tensor networks and symbolic expressions. The tensor must have a name
+        set in its structure.
+
+        # Args:
+            tensor: The tensor to register - can be a LibraryTensor or regular Tensor
+
+        # Examples:
+        ```python
+        import symbolica
+        from symbolica.community.spenso import (
+            TensorLibrary,
+            LibraryTensor,
+            TensorStructure,
+        )
+        from symbolica.community.spenso import Representation
+        # Create a new library
+        lib = TensorLibrary()
+        # Register a tensor structure
+        rep = Representation.euc(3)  # Color fundamental representation
+        name = symbolica.S("my_tensor")
+        structure = TensorStructure(rep, rep, name=name)
+        tensor = LibraryTensor.dense(
+            structure, [1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
+        )
+        lib.register(tensor)
+        # Access registered tensor structure
+        tensor_ref = lib[name]
+        ```
+        """
+    def __getitem__(
+        self, key: Expression | int | str | float | complex | builtins.str
+    ) -> TensorStructure:
+        r"""
+        Retrieve a registered tensor structure by name.
+
+        Looks up a previously registered tensor by its name and returns
+        a reference structure that can be used to create new tensor instances.
+
+        # Args:
+            key: The tensor name - can be a string or symbolic expression
+
+        # Returns:
+            A TensorStructure representing the registered tensor template
+
+        # Raises:
+            Error: If the tensor name is not found in the library
+
+        # Examples:
+        ```python
+        # After registering a tensor named "T"
+        structure = lib["T"]  # Get the structure template
+        ```
+        """
     @staticmethod
-    def hep_lib() -> TensorLibrary: ...
+    def hep_lib() -> TensorLibrary:
+        r"""
+        Create a library pre-loaded with High Energy Physics tensor definitions.
+
+        Returns a library containing standard HEP tensors such as gamma matrices,
+        color generators, metric tensors, and other commonly used structures in
+        particle physics calculations.
+
+        # Returns:
+            A TensorLibrary pre-populated with HEP tensor definitions
+
+        # Examples:
+        ```python
+        import symbolica
+        from symbolica.community.spenso import TensorLibrary, TensorName
+        # Get HEP library with standard tensors
+        hep_lib = TensorLibrary.hep_lib()
+        # Access standard tensors like gamma matrices
+        gamma_structure = hep_lib[symbolica.S("spenso::gamma")]
+        print(gamma_structure)
+        print(gamma_structure(7, 3, 4))
+        ```
+        """
 
 class TensorName:
     r"""
-    The name of a tensor.
+    A symbolic name for tensor functions and structures.
+
+    TensorName represents named tensor functions that can be called with indices and arguments
+    to create tensor structures. Names can have various mathematical properties like symmetry,
+    antisymmetry, and custom normalization or printing behavior.
+
+    # Examples:
+    ```python
+    from symbolica.community.spenso import TensorName, Slot, Representation
+
+    # Create a simple tensor name
+    T = TensorName("T")
+
+    # Create tensor with symmetry properties
+    symmetric_T = TensorName("S", is_symmetric=True)
+    antisymmetric_T = TensorName("A", is_antisymmetric=True)
+
+    # Use with slots to create indexed structures
+    rep = Representation.cof(3)
+    mu = rep('mu')
+    nu = rep('nu')
+    tensor_structure = T(mu, nu)  # Creates TensorIndices
+    ```
     """
+
     g: TensorName
+    r"""
+    Predefined metric tensor name.
+
+    # Returns:
+        TensorName for the metric tensor 'g'
+    """
     flat: TensorName
+    r"""
+    Predefined musical isomorphis tensor name. This enables dualizing  self dual indices.
+
+    # Returns:
+        TensorName for the flat musical isomorphism
+    """
     gamma: TensorName
+    r"""
+    Predefined gamma matrix name.
+
+    # Returns:
+        TensorName for Dirac gamma matrices
+    """
     gamma5: TensorName
+    r"""
+    Predefined gamma5 matrix name.
+
+    # Returns:
+        TensorName for the gamma5 matrix
+    """
     projm: TensorName
+    r"""
+    Predefined left chiral projector name.
+
+    # Returns:
+        TensorName for the left projector P_L
+    """
     projp: TensorName
+    r"""
+    Predefined right chiral projector name.
+
+    # Returns:
+        TensorName for the right projector P_R
+    """
     sigma: TensorName
+    r"""
+    Predefined sigma matrix name.
+
+    # Returns:
+        TensorName for Pauli sigma matrices
+    """
     f: TensorName
+    r"""
+    Predefined color structure constant name.
+
+    # Returns:
+        TensorName for SU(N) structure constants f^abc
+    """
     t: TensorName
-    def __new__(cls, name:builtins.str, is_symmetric:typing.Optional[builtins.bool]=None, is_antisymmetric:typing.Optional[builtins.bool]=None, is_cyclesymmetric:typing.Optional[builtins.bool]=None, is_linear:typing.Optional[builtins.bool]=None, custom_normalization:typing.Optional[Transformer]=None, custom_print:typing.Optional[typing.Any]=None) -> TensorName:
+    r"""
+    Predefined color generator name.
+
+    # Returns:
+        TensorName for SU(N) generators T^a
+    """
+    def __new__(
+        cls,
+        name: builtins.str,
+        is_symmetric: typing.Optional[builtins.bool] = None,
+        is_antisymmetric: typing.Optional[builtins.bool] = None,
+        is_cyclesymmetric: typing.Optional[builtins.bool] = None,
+        is_linear: typing.Optional[builtins.bool] = None,
+        custom_normalization: typing.Optional[Transformer] = None,
+        custom_print: typing.Optional[typing.Any] = None,
+    ) -> TensorName:
         r"""
-        Shorthand notation for :func:`Expression.symbol`.
+        Create a new tensor name with optional mathematical properties.
+
+        # Args:
+            name: The string name for the tensor function
+            is_symmetric: If True, tensor is symmetric under index permutation
+            is_antisymmetric: If True, tensor is antisymmetric under index permutation
+            is_cyclesymmetric: If True, tensor is symmetric under cyclic permutations
+            is_linear: If True, tensor is linear in its arguments
+            custom_normalization: Custom normalization function (advanced)
+            custom_print: Custom printing function (advanced)
+
+        # Returns:
+            A new TensorName with the specified properties
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import TensorName
+
+        # Basic tensor name
+        T = TensorName("T")
+
+        # Symmetric tensor (like metric)
+        g = TensorName("g", is_symmetric=True)
+
+        # Antisymmetric tensor (like field strength)
+        F = TensorName("F", is_antisymmetric=True)
+
+        # Linear operator
+        D = TensorName("D", is_linear=True)
+        ```
         """
-    def __call__(self, *args) -> TensorStructure | TensorIndices: ...
+    def __call__(self, *args) -> TensorStructure | TensorIndices:
+        r"""
+        Call the tensor name with arguments to create tensor structures.
+
+        Accepts a mix of slots (for indexed tensors), representations (for indexless tensors),
+        and symbolic expressions (for additional arguments). Cannot mix slots and representations.
+
+        # Args:
+            *args: Mixed arguments:
+                - Slot objects: Create indexed tensor structure (TensorIndices)
+                - Representation objects: Create indexless structure (TensorStructure)
+                - Expressions: Additional non-tensorial arguments
+
+        # Returns:
+            PossiblyIndexed: Either TensorIndices (if slots provided) or TensorStructure (if reps provided)
+
+        # Examples:
+        ```python
+        from symbolica.community.spenso import TensorName, Slot, Representation
+        import symbolica as sp
+
+        T = TensorName("T")
+        rep = Representation.euc(3)
+        # With slots (creates TensorIndices)
+        mu = rep("mu")
+        nu = rep("nu")
+        indexed_tensor = T(mu, nu)
+        # With representations (creates TensorStructure)
+        structure_tensor = T(rep, rep)
+        # With additional arguments
+        x = sp.S("x")
+        tensor_with_args = T(mu, nu, x)  # T(mu, nu; x)
+        print(tensor_with_args)
+        ```
+        """
     def __repr__(self) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
-    def to_expression(self) -> Expression: ...
+    def to_expression(self) -> Expression:
+        r"""
+        Convert the tensor name to a symbolic expression.
+
+        # Returns:
+            A symbolic Expression representing this tensor name
+
+        # Examples:
+        ```python
+        T = TensorName("T")
+        expr = T.to_expression()  # Symbol T as expression
+        ```
+        """
 
 class TensorNetwork:
     r"""
-    A tensor network.
-    
-    This class is a wrapper around the `TensorNetwork` class from the `spenso` crate.
-    Such a network is a graph representing the arithmetic operations between tensors.
-    In the most basic case, edges represent the contraction of indices.
+    A tensor network representing computational graphs of tensor operations.
+
+    A tensor network is a graph-based representation of tensor computations where:
+    - Nodes represent tensors and operations
+    - Edges represent tensor contractions and data flow
+    - The network can be optimized and executed to compute results
+
+    Tensor networks are particularly useful for:
+    - Symbolic manipulation of complex tensor expressions
+    - Optimization of tensor contraction orders
+    - Efficient evaluation of large tensor computations
+    - Physics calculations involving many-body systems
+
+    # Examples:
+    ```python
+    import symbolica as sp
+    from symbolica.community.spenso import TensorNetwork, Tensor, TensorIndices
+
+    # Create from an expression
+    x = sp.symbol('x')
+    expr = x * sp.symbol('T')(sp.symbol('mu'), sp.symbol('nu'))
+    network = TensorNetwork(expr)
+
+    # Execute the network
+    network.execute()
+    result = network.result_tensor()
+    ```
     """
+
     ...
 
 class TensorStructure:
     r"""
-    A structure that can be used to represent the "shape" of a tensor.
-    This has an optional name, and accompanying symbolica expressions that are considered as additional non-indexed arguments.
-    The structure is essentially a list of `Representation` that are used to define the structure of the tensor.
+    A tensor structure without abstract indices, defined purely by representations.
+
+    TensorStructure represents the shape and representation structure of tensors
+    without specific index assignments. It's used for defining tensor templates
+    in libraries and for creating indexless tensor computations.
+
+    # Examples:
+    ```python
+    from symbolica.community.spenso import TensorStructure, Representation, TensorName
+
+    # Create from representations
+    rep = Representation.euc(3)  # Color fundamental
+    structure = TensorStructure(rep, rep)  # 3x3 matrix structure
+
+    # With name for library registration
+    T = TensorName("T")
+    named_structure = TensorStructure(rep, rep, name=T)
+
+    # Use to create indexed tensor
+    indices = structure.index('mu', 'nu')  # Assign specific indices
+
+    # Create symbolic expression
+    expr = structure.symbolic('a', 'b')  # T(a, b)
+    ```
     """
-    def from_list(self, additional_args:tuple, name:typing.Optional[TensorIndices | builtins.list[Slot]]) -> TensorStructure: ...
-    def set_name(self, name:TensorIndices | builtins.list[Slot]) -> None: ...
+    def from_list(
+        self,
+        additional_args: tuple,
+        name: typing.Optional[TensorIndices | builtins.list[Slot]],
+    ) -> TensorStructure: ...
+    def set_name(self, name: TensorIndices | builtins.list[Slot]) -> None: ...
     def get_name(self) -> typing.Optional[TensorName]: ...
     def __repr__(self) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
     def __len__(self) -> builtins.int: ...
-    def __getitem__(self, item:builtins.slice | builtins.int | builtins.list[builtins.int]) -> typing.Any: ...
-    def __call__(self, args:tuple, extra_args:typing.Optional[list]) -> Expression:
+    def __getitem__(
+        self, item: builtins.slice | builtins.int | builtins.list[builtins.int]
+    ) -> typing.Any: ...
+    def __call__(
+        self, args: tuple, extra_args: typing.Optional[list]
+    ) -> Expression:
         r"""
-        Convenience method. Calls `symbolic(*args, extra_args=extra_args)`.
-        
-        Creates a symbolic `Expression` representing this tensor structure. See the
-        `symbolic` method documentation for details on argument handling.
-        """
-    def symbolic(self, args:tuple, extra_args:typing.Optional[list]) -> Expression:
-        r"""
-        Creates a symbolic `Expression` representing this tensor structure with the given arguments.
-        
+        Convenience method for creating symbolic expressions.
+
+        This is a shorthand for calling `symbolic(*args, extra_args=extra_args)`.
+        Creates a symbolic Expression representing this tensor structure.
+
         # Args:
-            *args (int | str | Symbol | Expression | ';'): Positional arguments. Can include
-                indices, expressions, or the semicolon separator.
-            extra_args (list[Expression], optional): Explicit list of additional non-tensorial args.
-        
-        Interprets positional arguments (`*args`) as potential indices. Arguments
-        before a semicolon separator (`;`) and arguments provided via the `extra_args`
-        keyword argument are combined and treated as additional non-tensorial arguments.
-        Arguments after the semicolon (or all positional arguments if no separator is used)
-        are treated as the symbolic tensor indices.
-        
-        
+            *args: Positional arguments (indices and additional args)
+            extra_args: Optional list of additional non-tensorial arguments
+
         # Returns:
-            Expression: A symbolic expression representing the tensor.
-        
-        # Raises:
-            ValueError: If index count mismatches or separator is misused.
-            TypeError: If arguments have unexpected types.
-            RuntimeError: If the structure does not have a name.
+            A symbolic Expression representing the tensor
+
+        # Examples:
+        ```python
+        structure = TensorStructure(rep, rep, name="T")
+        expr = structure('mu', 'nu')  # Same as structure.symbolic('mu', 'nu')
+        ```
         """
-    def index(self, args:tuple, extra_args:typing.Optional[list], cook_indices:builtins.bool) -> TensorIndices:
+    def symbolic(
+        self, args: tuple, extra_args: typing.Optional[list]
+    ) -> Expression:
         r"""
-        Creates an indexed tensor instance (`TensorIndices`) from this structure.
-        
-        Interprets positional arguments (`*args`) as potential indices. Arguments
-        before a semicolon separator (`;`) and arguments provided via the `extra_args`
-        keyword argument are combined and treated as additional non-tensorial arguments.
-        Arguments after the semicolon (or all positional arguments if no separator is used)
-        are treated as the tensor indices.
-        
+        Create a symbolic expression representing this tensor structure.
+
+        Builds a symbolic tensor expression with the specified indices. Arguments can be
+        separated using a semicolon (';') to distinguish between additional arguments
+        and tensor indices.
+
         # Args:
-            *args: Positional arguments. Can include indices (int, str, Symbol, Expression),
-                   or a single semicolon string (`;`).
-            extra_args (list[Expression], optional): An explicit list of additional non-tensorial
-                arguments. Defaults to None.
-            cook_indices (bool, optional): If True, attempt to "cook" non-index arguments
-                intended as tensor indices into valid `AbstractIndex` representations.
-                Defaults to False.
-        
+            *args: Positional arguments, can include:
+                - int, str, Symbol, Expression: Tensor indices
+                - ';': Separator between additional args and indices
+            extra_args: Optional list of additional non-tensorial arguments
+
         # Returns:
-            TensorIndices: An object representing the tensor structure with concrete indices assigned.
-        
+            A symbolic Expression representing the tensor with indices
+
         # Raises:
-            ValueError: If index resolution fails, counts mismatch, or separator is misused.
-            TypeError: If arguments have unexpected types.
+            ValueError: If index count doesn't match structure order
+            TypeError: If arguments have unexpected types
+            RuntimeError: If the structure has no name
+
+        # Examples:
+        ```python
+        import symbolica as sp
+        from symbolica.community.spenso import TensorStructure, Representation, TensorName
+
+        rep = Representation.euc(3)
+        T = TensorName("T")
+        structure = TensorStructure([rep, rep], name=T)
+
+        # Basic usage
+        expr = structure.symbolic('mu', 'nu')  # T(mu, nu)
+
+        # With additional arguments
+        x = sp.S('x')
+        expr = structure.symbolic(x, ';', 'mu', 'nu')  # T(x; mu, nu)
+
+        # Using extra_args parameter
+        expr = structure.symbolic('mu', 'nu', extra_args=[x])  # T(x; mu, nu)
+        ```
+        """
+    def index(
+        self,
+        args: tuple,
+        extra_args: typing.Optional[list],
+        cook_indices: builtins.bool,
+    ) -> TensorIndices:
+        r"""
+        Create an indexed tensor (TensorIndices) from this structure.
+
+        Converts this structure template into a concrete indexed tensor by assigning
+        specific abstract indices to each representation slot.
+
+        # Args:
+            *args: Positional arguments:
+                - Indices (int, str, Symbol, Expression)
+                - ';': Separator between additional args and indices
+            extra_args: Optional list of additional non-tensorial arguments
+            cook_indices: If True, attempt to convert expressions to valid indices
+
+        # Returns:
+            A TensorIndices object with concrete index assignments
+
+        # Raises:
+            ValueError: If index count doesn't match or conversion fails
+            TypeError: If arguments have unexpected types
+
+        # Examples:
+        ```python
+        import symbolica as sp
+        from symbolica.community.spenso import TensorStructure, Representation, TensorName
+
+        rep = Representation.cof(3)
+        T = TensorName("T")
+        structure = TensorStructure([rep, rep], name=T)
+
+        # Create indexed tensor
+        indices = structure.index('mu', 'nu')  # T with indices mu, nu
+
+        # With additional arguments
+        x = sp.S('x')
+        indices = structure.index(x, ';', 'mu', 'nu')  # T(x; mu, nu)
+        ```
         """
 
 class ExecutionMode(Enum):
+    r"""
+    Execution modes for tensor network evaluation.
+
+    Controls how the tensor network execution engine processes the computational graph:
+
+    # Variants:
+        Single: Execute one contraction at a time, useful for debugging
+        Scalar: Only contract scalar operations, leaving tensor structure intact
+        All: Execute all possible contractions for complete evaluation
+    """
+
     Single = ...
     Scalar = ...
     All = ...
 
 class TensorNamespace(Enum):
+    r"""
+    Enumeration for different tensor namespaces in physics.
+
+    Provides categorization for different types of tensor operations and structures
+    commonly used in theoretical physics calculations.
+
+    # Variants:
+        Weyl: Tensors related to Weyl spinors and chiral representations
+        Algebra: Tensors related to algebraic structures and Lie algebras
+    """
+
     Weyl = ...
     Algebra = ...
-
