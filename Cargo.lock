@@ -1896,8 +1896,7 @@ dependencies = [
 [[package]]
 name = "spynso3"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c7b84775a57dd5f25a80a334b90488c47166b4250a11b1d3dc68887d07ce5eb"
+source = "git+https://github.com/alphal00p/spenso?rev=a1319bb4d0c6c8cc821429e87ca53f7da96c8c34#a1319bb4d0c6c8cc821429e87ca53f7da96c8c34"
 dependencies = [
  "ahash",
  "anyhow",
@@ -1905,6 +1904,7 @@ dependencies = [
  "itertools 0.14.0",
  "pyo3",
  "pyo3-stub-gen",
+ "pyo3-stub-gen-derive",
  "spenso",
  "spenso-hep-lib",
  "spenso-macros",
