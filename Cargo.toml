@@ -21,6 +21,7 @@ crate-type = ["rlib", "cdylib"]
 
 [features]
 python_stubgen = [
+    "pyo3-stub-gen",
     "symbolica/python_stubgen",
     "spynso3/python_stubgen",
     "idenso/python_stubgen",
@@ -31,7 +32,7 @@ python_stubgen = [
 idenso = { version = "0.2.2", features = ["bincode", "python"] }
 symbolica = { version = "0.18", features = ["python_export"] }
 pyo3 = "0.25"
-pyo3-stub-gen = { version = "0.13", default-features = false }
+pyo3-stub-gen = { version = "0.13", optional = true, default-features = false }
 spynso3 = { git = "https://github.com/alphal00p/spenso", package = "spynso3", rev = "66843203a8eb3ef473d91d31fc37ad8c43ea9f20" }
 vakint = { git = "https://github.com/alphal00p/vakint", rev = "5877366f652a397924fd5b6d77ef690941ac2881", features = [
     "symbolica_community_module",

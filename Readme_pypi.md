@@ -110,6 +110,8 @@ They can be accessed through:
 import symbolica.community.spenso
 ```
 
+Example use can be found [here](https://github.com/benruijl/symbolica-community/tree/main/examples).
+
 ## Development
 
 Follow the development and discussions on [Zulip](https://reform.zulipchat.com)!
