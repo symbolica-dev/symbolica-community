@@ -698,8 +698,9 @@ checksum = "07e28edb80900c19c28f1072f2e8aeca7fa06b23cd4169cefe1af5aa3260783f"
 
 [[package]]
 name = "gmp-mpfr-sys"
-version = "1.6.7"
-source = "git+https://gitlab.com/benruijl/gmp-mpfr-sys#fe062a3066618bbb2a92ea3f79adc741d9ec1f3f"
+version = "1.6.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60f8970a75c006bb2f8ae79c6768a116dd215fa8346a87aed99bf9d82ca43394"
 dependencies = [
  "libc",
  "windows-sys 0.60.2",

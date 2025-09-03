@@ -18,8 +18,9 @@
 
 This repository contains the [Symbolica](https://github.com/benruijl/symbolica) library, bundled with additional community contributions.
 
-Currently, `symbolica-community` integrates with the following two packages:
+Currently, `symbolica-community` integrates with the following packages:
 - [spenso](https://github.com/alphal00p/spenso): perform tensor network computations
+- [idenso](https://github.com/alphal00p/spenso): perform Dirac and color algebra
 - [vakint](https://github.com/alphal00p/vakint): compute massive vacuum bubbles
 
 
