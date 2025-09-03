@@ -1896,7 +1896,7 @@ dependencies = [
 [[package]]
 name = "spynso3"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/spenso?rev=a1319bb4d0c6c8cc821429e87ca53f7da96c8c34#a1319bb4d0c6c8cc821429e87ca53f7da96c8c34"
+source = "git+https://github.com/alphal00p/spenso?rev=70a3f40dd54b611ef27573e2753d9f9b9bba99e9#70a3f40dd54b611ef27573e2753d9f9b9bba99e9"
 dependencies = [
  "ahash",
  "anyhow",

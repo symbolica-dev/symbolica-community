@@ -41,8 +41,7 @@ vakint = { git = "https://github.com/alphal00p/vakint", rev = "7bba5b8f684fc90e8
 gmp-mpfr-sys = { version = "=1.6.5" } # work around long long patch issue
 
 [patch.crates-io]
-
-spynso3 = { git = "https://github.com/alphal00p/spenso", rev = "a1319bb4d0c6c8cc821429e87ca53f7da96c8c34" }
+spynso3 = { git = "https://github.com/alphal00p/spenso", rev = "70a3f40dd54b611ef27573e2753d9f9b9bba99e9" }
 
 symbolica = { git = "https://github.com/benruijl/symbolica", branch = "modules" }
 pyo3-stub-gen = { git = "https://github.com/benruijl/pyo3-stub-gen", branch = "patched" }
