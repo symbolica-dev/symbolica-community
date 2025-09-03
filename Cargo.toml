@@ -34,9 +34,8 @@ symbolica = { version = "0.18", features = ["python_export"] }
 pyo3 = "0.25"
 pyo3-stub-gen = { version = "0.13", optional = true, default-features = false }
 spynso3 = { version = "0.1" }
-vakint = { git = "https://github.com/alphal00p/vakint", rev = "3355aa24e96bd9ffd9ed2a18b61f053fa0b24980", features = [
+vakint = { git = "https://github.com/alphal00p/vakint", rev = "7bba5b8f684fc90e86c98b448a19246440cc1180", features = [
     "symbolica_community_module",
-    "python_stubgen",
 ] }
 
 gmp-mpfr-sys = { version = "=1.6.5" } # work around long long patch issue

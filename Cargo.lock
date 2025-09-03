@@ -2334,7 +2334,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 [[package]]
 name = "vakint"
 version = "1.0.0"
-source = "git+https://github.com/alphal00p/vakint?rev=5877366f652a397924fd5b6d77ef690941ac2881#5877366f652a397924fd5b6d77ef690941ac2881"
+source = "git+https://github.com/alphal00p/vakint?rev=7bba5b8f684fc90e86c98b448a19246440cc1180#7bba5b8f684fc90e86c98b448a19246440cc1180"
 dependencies = [
  "ahash",
  "anyhow",
