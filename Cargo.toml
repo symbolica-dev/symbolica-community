@@ -39,8 +39,8 @@ vakint = { git = "https://github.com/alphal00p/vakint", rev = "7bba5b8f684fc90e8
 ] }
 
 [patch.crates-io]
-spynso3 = { git = "https://github.com/alphal00p/spenso", rev = "70a3f40dd54b611ef27573e2753d9f9b9bba99e9" }
-
+spynso3 = { git = "https://github.com/alphal00p/spenso", rev = "8871ef7c52b4e14442ef0a3978ef529018092f90" }
+# spynso3 = { path = "../spenso/spynso3" }
 symbolica = { git = "https://github.com/benruijl/symbolica", branch = "modules" }
 pyo3-stub-gen = { git = "https://github.com/benruijl/pyo3-stub-gen", branch = "patched" }
 

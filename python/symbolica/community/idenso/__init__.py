@@ -1,5 +1,9 @@
 """
-Idenso module by Lucien Huber.
+# Idenso
 
-For questions or bug reports, visit https://github.com/alphal00p/spenso/.
+Common tensor algebra simpifications using spenso tensor notation
+
+# Contributors
+- Lucien Huber mail@lucien.ch
+
 """
