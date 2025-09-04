@@ -3,7 +3,7 @@
 
 import builtins
 import typing
-import symbolica.core
+from symbolica.core import Expression
 
 class Vakint:
     r"""

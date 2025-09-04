@@ -60,6 +60,7 @@ If you are developing a Python package that uses Symbolica, your users can simpl
 If you are developing a Rust crate, your crate can be added to `symbolica-community`, which allows you to write Python functions that use Symbolica classes and types, while sharing the same state/engine as the other included packages. The process is straightforward:
 
 - Make sure your crate has a struct called `CommunityModule` that implements `SymbolicaCommunityModule`
+- Create the folder `example` in `python/symbolica/community` and write a `__init__.py` that contains a description of your module
 - Add your crate `example` to `Cargo.toml`:
   - Extend the feature list: `python_stubgen = ["symbolica/python_stubgen", "example/python_stubgen"]`
   - Extend the dependencies: `example = { git = "..." }`

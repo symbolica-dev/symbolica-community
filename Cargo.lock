@@ -698,12 +698,12 @@ checksum = "07e28edb80900c19c28f1072f2e8aeca7fa06b23cd4169cefe1af5aa3260783f"
 
 [[package]]
 name = "gmp-mpfr-sys"
-version = "1.6.5"
+version = "1.6.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c66d61197a68f6323b9afa616cf83d55d69191e1bf364d4eb7d35ae18defe776"
+checksum = "60f8970a75c006bb2f8ae79c6768a116dd215fa8346a87aed99bf9d82ca43394"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -957,9 +957,9 @@ checksum = "cd945864f07fe9f5371a27ad7b52a172b4b499999f1d97574c9fa68373937e12"
 
 [[package]]
 name = "log"
-version = "0.4.27"
+version = "0.4.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94"
+checksum = "34080505efa8e45a4b816c349525ebe327ceaa8559756f0356cba97ef3bf7432"
 
 [[package]]
 name = "maplit"
@@ -1410,7 +1410,7 @@ dependencies = [
 [[package]]
 name = "pyo3-stub-gen"
 version = "0.13.1"
-source = "git+https://github.com/benruijl/pyo3-stub-gen?branch=patched#80edfabe5f0b17f9cddeb5b19eb8612f66142b4d"
+source = "git+https://github.com/benruijl/pyo3-stub-gen?branch=patched#f421197e60e3617992ebfe0615db1fe846c1da81"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1429,7 +1429,7 @@ dependencies = [
 [[package]]
 name = "pyo3-stub-gen-derive"
 version = "0.13.1"
-source = "git+https://github.com/benruijl/pyo3-stub-gen?branch=patched#80edfabe5f0b17f9cddeb5b19eb8612f66142b4d"
+source = "git+https://github.com/benruijl/pyo3-stub-gen?branch=patched#f421197e60e3617992ebfe0615db1fe846c1da81"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -1896,7 +1896,7 @@ dependencies = [
 [[package]]
 name = "spynso3"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/spenso?rev=8871ef7c52b4e14442ef0a3978ef529018092f90#8871ef7c52b4e14442ef0a3978ef529018092f90"
+source = "git+https://github.com/alphal00p/spenso?rev=df271a7c8e6f1fcdd8b1a4fdc2684dff3d352b8f#df271a7c8e6f1fcdd8b1a4fdc2684dff3d352b8f"
 dependencies = [
  "ahash",
  "anyhow",
@@ -1948,7 +1948,7 @@ dependencies = [
 [[package]]
 name = "symbolica"
 version = "0.18.0"
-source = "git+https://github.com/benruijl/symbolica?branch=modules#d44935df6187785a7aa6dbc440f68fc75350452b"
+source = "git+https://github.com/benruijl/symbolica?branch=modules#78cc2a7fe4adf127f1127857b4aff8f6bf75a39f"
 dependencies = [
  "ahash",
  "append-only-vec",
