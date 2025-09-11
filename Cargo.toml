@@ -11,6 +11,7 @@ repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.73"
 version = "0.18.0"
 
+
 [[bin]]
 name = "stub_gen"
 required-features = ["python_stubgen"]
@@ -26,9 +27,11 @@ python_stubgen = [
     "spynso3/python_stubgen",
     "idenso/python_stubgen",
     "vakint/python_stubgen",
+    "example_extension/python_stubgen"
 ]
 
 [dependencies]
+example_extension = { path = "example_extension" }
 idenso = { version = "0.2.3", features = ["bincode", "python"] }
 symbolica = { version = "0.18", features = ["python_export"] }
 pyo3 = "0.25"

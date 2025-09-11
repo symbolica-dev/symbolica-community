@@ -619,6 +619,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "example_extension"
+version = "0.1.0"
+dependencies = [
+ "pyo3",
+ "pyo3-stub-gen",
+ "symbolica",
+]
+
+[[package]]
 name = "fastrand"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1981,6 +1990,7 @@ dependencies = [
 name = "symbolica_community"
 version = "0.18.0"
 dependencies = [
+ "example_extension",
  "idenso",
  "pyo3",
  "pyo3-build-config 0.26.0",

@@ -1,9 +1,9 @@
-use ::symbolica::api::python::{create_symbolica_module, SymbolicaCommunityModule};
 use pyo3::{
     pymodule,
     types::{PyAnyMethods, PyModule, PyModuleMethods},
     Bound, PyResult,
 };
+use symbolica::api::python::{create_symbolica_module, SymbolicaCommunityModule};
 
 #[cfg(feature = "python_stubgen")]
 use pyo3_stub_gen::define_stub_info_gatherer;
@@ -27,6 +27,7 @@ fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     register_extension::<idenso::python::IdensoModule>(m)?;
     register_extension::<spynso3::SpensoModule>(m)?;
     register_extension::<vakint::symbolica_community_module::VakintWrapper>(m)?;
+    register_extension::<example_extension::CommunityModule>(m)?;
 
     Ok(())
 }

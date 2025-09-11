@@ -13,3 +13,4 @@ flake.lock
 .devenv*
 devenv*
 uv.lock
+/example_extension/target
