@@ -66,3 +66,23 @@ If you are developing a Rust crate, your crate can be added to `symbolica-commun
   - Extend the dependencies: `example = { git = "..." }`
 - Register your crate as a submodule in `lib.rs` by extending the `core` function:
   - `register_extension::<example::CommunityModule>(m)?;`
+
+
+## Note for macOS users using GNU gcc installed with MacPorts
+
+Some ports of the `GNU gcc` compiler from MacPorts miss the `libgcc_s.1.dylib` library, which contains symbols required by the `mpfr` dependency of Symbolica. 
+
+If you encounter an error like this:
+
+```
+Undefined symbols for architecture arm64:
+  "___emutls_get_address", referenced from:
+      _mpfr_check_range in libgmp_mpfr_sys-e988bd27f251f250.rlib[90](exceptions.o)
+  [...]
+```
+
+Then try recompiling with the following rust flag:
+
+```bash
+RUSTFLAGS="-L/opt/local/lib/libgcc -l dylib=gcc_s"
+```
