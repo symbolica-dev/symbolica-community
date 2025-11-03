@@ -33,19 +33,23 @@ python_stubgen = [
 [dependencies]
 example_extension = { path = "example_extension" }
 idenso = { version = "0.2.3", features = ["bincode", "python"] }
-symbolica = { version = "0.18", features = ["python_export"] }
-pyo3 = "0.25"
-pyo3-stub-gen = { version = "0.13", optional = true, default-features = false }
+symbolica = { version = "0.19", features = ["python_export"] }
+pyo3 = "0.27"
+pyo3-stub-gen = { version = "0.16", optional = true, default-features = false }
 spynso3 = { version = "0.1" }
-vakint = { git = "https://github.com/alphal00p/vakint", rev = "7bba5b8f684fc90e86c98b448a19246440cc1180", features = [
+vakint = { git = "https://github.com/alphal00p/vakint", rev = "2bf65b038a756fcc8dbb1c7f6708997cfc9cd6d6", features = [
     "symbolica_community_module",
 ] }
 
 [patch.crates-io]
-spynso3 = { git = "https://github.com/alphal00p/spenso", rev = "df271a7c8e6f1fcdd8b1a4fdc2684dff3d352b8f" }
+spynso3 = { git = "https://github.com/alphal00p/spenso", rev = "08c56e08ff3429bd56b6c51c4e1f8b479d7552d5" }
+idenso= {git= "https://github.com/alphal00p/spenso", rev = "08c56e08ff3429bd56b6c51c4e1f8b479d7552d5" }
+spenso= {git= "https://github.com/alphal00p/spenso", rev = "08c56e08ff3429bd56b6c51c4e1f8b479d7552d5" }
+spenso-hep-lib = {git= "https://github.com/alphal00p/spenso", rev = "08c56e08ff3429bd56b6c51c4e1f8b479d7552d5" }
+# vakint = {git }
 # spynso3 = { path = "../spenso/spynso3" }
 symbolica = { git = "https://github.com/benruijl/symbolica", branch = "modules" }
-pyo3-stub-gen = { git = "https://github.com/benruijl/pyo3-stub-gen", branch = "patched" }
+# pyo3-stub-gen = { git = "https://github.com/benruijl/pyo3-stub-gen", branch = "patched" }
 
 [build-dependencies]
 pyo3-build-config = "*"
