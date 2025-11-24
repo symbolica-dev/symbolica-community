@@ -44,10 +44,10 @@ vakint = { git = "https://github.com/alphal00p/vakint", rev = "a32723f7c56ce73dd
 ] }
 
 [patch.crates-io]
-spynso3 = { git = "https://github.com/alphal00p/spenso", rev = "7784a15e7638662a128b1e0e0ca49de9dc98ff39" }
-idenso = { git = "https://github.com/alphal00p/spenso", rev = "7784a15e7638662a128b1e0e0ca49de9dc98ff39" }
-spenso = { git = "https://github.com/alphal00p/spenso", rev = "7784a15e7638662a128b1e0e0ca49de9dc98ff39" }
-spenso-hep-lib = { git = "https://github.com/alphal00p/spenso", rev = "7784a15e7638662a128b1e0e0ca49de9dc98ff39" }
+spynso3 = { git = "https://github.com/alphal00p/spenso", rev = "906b4653e4c35d6083ddf0bd1c9585bdfdd7b681" }
+idenso = { git = "https://github.com/alphal00p/spenso", rev = "906b4653e4c35d6083ddf0bd1c9585bdfdd7b681" }
+spenso = { git = "https://github.com/alphal00p/spenso", rev = "906b4653e4c35d6083ddf0bd1c9585bdfdd7b681" }
+spenso-hep-lib = { git = "https://github.com/alphal00p/spenso", rev = "906b4653e4c35d6083ddf0bd1c9585bdfdd7b681" }
 #pyo3-stub-gen = { git = "https://github.com/Jij-Inc/pyo3-stub-gen", rev = "b13f213a748ee09bf22073e0e4d82cb09d797a5c", optional = true, default-features = false, features = [
 #    "numpy",
 #] }

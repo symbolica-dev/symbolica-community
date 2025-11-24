@@ -771,7 +771,7 @@ dependencies = [
 [[package]]
 name = "idenso"
 version = "0.2.3"
-source = "git+https://github.com/alphal00p/spenso?rev=7784a15e7638662a128b1e0e0ca49de9dc98ff39#7784a15e7638662a128b1e0e0ca49de9dc98ff39"
+source = "git+https://github.com/alphal00p/spenso?rev=906b4653e4c35d6083ddf0bd1c9585bdfdd7b681#906b4653e4c35d6083ddf0bd1c9585bdfdd7b681"
 dependencies = [
  "anyhow",
  "bincode",
@@ -961,9 +961,9 @@ dependencies = [
 
 [[package]]
 name = "linnet"
-version = "0.13.2"
+version = "0.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02da105b20e02472f029169276caf3771744e384abf7a0220be6204084edd740"
+checksum = "636a5571737c37035e674262ea57574108a33314f94955e7b6f1547fe85f6c6b"
 dependencies = [
  "ahash",
  "bincode",
@@ -2054,7 +2054,7 @@ dependencies = [
 [[package]]
 name = "spenso"
 version = "0.5.4"
-source = "git+https://github.com/alphal00p/spenso?rev=7784a15e7638662a128b1e0e0ca49de9dc98ff39#7784a15e7638662a128b1e0e0ca49de9dc98ff39"
+source = "git+https://github.com/alphal00p/spenso?rev=906b4653e4c35d6083ddf0bd1c9585bdfdd7b681#906b4653e4c35d6083ddf0bd1c9585bdfdd7b681"
 dependencies = [
  "ahash",
  "anyhow",
@@ -2097,7 +2097,7 @@ dependencies = [
 [[package]]
 name = "spenso-hep-lib"
 version = "0.1.4"
-source = "git+https://github.com/alphal00p/spenso?rev=7784a15e7638662a128b1e0e0ca49de9dc98ff39#7784a15e7638662a128b1e0e0ca49de9dc98ff39"
+source = "git+https://github.com/alphal00p/spenso?rev=906b4653e4c35d6083ddf0bd1c9585bdfdd7b681#906b4653e4c35d6083ddf0bd1c9585bdfdd7b681"
 dependencies = [
  "ahash",
  "idenso",
@@ -2123,7 +2123,7 @@ dependencies = [
 [[package]]
 name = "spynso3"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/spenso?rev=7784a15e7638662a128b1e0e0ca49de9dc98ff39#7784a15e7638662a128b1e0e0ca49de9dc98ff39"
+source = "git+https://github.com/alphal00p/spenso?rev=906b4653e4c35d6083ddf0bd1c9585bdfdd7b681#906b4653e4c35d6083ddf0bd1c9585bdfdd7b681"
 dependencies = [
  "ahash",
  "anyhow",

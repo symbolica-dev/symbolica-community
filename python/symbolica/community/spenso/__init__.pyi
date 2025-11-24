@@ -364,52 +364,6 @@ class Representation:
     metric = euclidean.g('mu', 'nu')       # g_μν
     ```
     """
-    @typing.overload
-    def __call__(self, aind: builtins.int | Expression | str) -> Slot:
-        r"""
-        Create a slot from this representation, by specifying an index.
-
-        Parameters
-        ----------
-        aind : int, str, or Symbol
-            The index specification
-
-        Returns
-        -------
-        Slot
-            A new Slot object with the specified index
-
-        Examples
-        --------
-        >>> from symbolica.community.spenso import Representation
-        >>> import symbolica as sp
-        >>> rep = Representation.euc(3)
-        >>> slot1 = rep('mu')
-        >>> slot2 = rep(1)
-        >>> slot3 = rep(sp.S('nu'))
-        """
-    @typing.overload
-    def __call__(self, aind: Expression) -> Expression | Slot:
-        r"""
-        Create a slot or symbolic expression from this representation.
-
-        Parameters
-        ----------
-        aind : Expression
-            The index specification (Expression creates symbolic representation)
-
-        Returns
-        -------
-        Expression
-            A symbolic expression representing this representation
-
-        Examples
-        --------
-        >>> from symbolica.community.spenso import Representation
-        >>> import symbolica as sp
-        >>> rep = Representation.euc(3)
-        >>> expr = rep(sp.E("cos(x)"))
-        """
     def __new__(cls, name: builtins.str, dimension: builtins.int | Expression | str, is_self_dual: builtins.bool = ...) -> Representation:
         r"""
         Create and register a new representation with specified properties.
@@ -535,6 +489,52 @@ class Representation:
 
         # Parameters:
         - dimension: The dimension of the sextet representation (e.g., 6 for SU(3))
+        """
+    @typing.overload
+    def __call__(self, aind: builtins.int | Expression | str) -> Slot:
+        r"""
+        Create a slot from this representation, by specifying an index.
+
+        Parameters
+        ----------
+        aind : int, str, or Symbol
+            The index specification
+
+        Returns
+        -------
+        Slot
+            A new Slot object with the specified index
+
+        Examples
+        --------
+        >>> from symbolica.community.spenso import Representation
+        >>> import symbolica as sp
+        >>> rep = Representation.euc(3)
+        >>> slot1 = rep('mu')
+        >>> slot2 = rep(1)
+        >>> slot3 = rep(sp.S('nu'))
+        """
+    @typing.overload
+    def __call__(self, aind: Expression) -> Expression | Slot:
+        r"""
+        Create a slot or symbolic expression from this representation.
+
+        Parameters
+        ----------
+        aind : Expression
+            The index specification (Expression creates symbolic representation)
+
+        Returns
+        -------
+        Expression
+            A symbolic expression representing this representation
+
+        Examples
+        --------
+        >>> from symbolica.community.spenso import Representation
+        >>> import symbolica as sp
+        >>> rep = Representation.euc(3)
+        >>> expr = rep(sp.E("cos(x)"))
         """
 
 
@@ -1350,42 +1350,6 @@ class TensorName:
     >>> nu = rep('nu')
     >>> tensor_structure = T(mu, nu)
     """
-    g: TensorName
-    r"""
-    Predefined metric tensor name.
-    """
-    flat: TensorName
-    r"""
-    Predefined musical isomorphism tensor name. This enables dualizing self dual indices.
-    """
-    gamma: TensorName
-    r"""
-    Predefined gamma matrix name.
-    """
-    gamma5: TensorName
-    r"""
-    Predefined gamma5 matrix name.
-    """
-    projm: TensorName
-    r"""
-    Predefined left chiral projector name.
-    """
-    projp: TensorName
-    r"""
-    Predefined right chiral projector name.
-    """
-    sigma: TensorName
-    r"""
-    Predefined sigma matrix name.
-    """
-    f: TensorName
-    r"""
-    Predefined color structure constant name.
-    """
-    t: TensorName
-    r"""
-    Predefined color generator name.
-    """
     @typing.overload
     def __call__(self, *args: Slot | Expression | int | str | float | builtins.complex) -> TensorIndices:
         r"""
@@ -1487,6 +1451,51 @@ class TensorName:
         --------
         >>> T = TensorName("T")
         >>> expr = T.to_expression()
+        """
+    @staticmethod
+    def g() -> TensorName:
+        r"""
+        Predefined metric tensor name.
+        """
+    @staticmethod
+    def flat() -> TensorName:
+        r"""
+        Predefined musical isomorphism tensor name. This enables dualizing self dual indices.
+        """
+    @staticmethod
+    def gamma() -> TensorName:
+        r"""
+        Predefined gamma matrix name.
+        """
+    @staticmethod
+    def gamma5() -> TensorName:
+        r"""
+        Predefined gamma5 matrix name.
+        """
+    @staticmethod
+    def projm() -> TensorName:
+        r"""
+        Predefined left chiral projector name.
+        """
+    @staticmethod
+    def projp() -> TensorName:
+        r"""
+        Predefined right chiral projector name.
+        """
+    @staticmethod
+    def sigma() -> TensorName:
+        r"""
+        Predefined sigma matrix name.
+        """
+    @staticmethod
+    def f() -> TensorName:
+        r"""
+        Predefined color structure constant name.
+        """
+    @staticmethod
+    def t() -> TensorName:
+        r"""
+        Predefined color generator name.
         """
 
 
