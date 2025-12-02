@@ -69,6 +69,8 @@ jobs:
           update: true
           path-type: inherit
           install: >-
+            git
+            ca-certificates
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-rust
             mingw-w64-x86_64-make
@@ -76,6 +78,8 @@ jobs:
 
       - name: Build and Repair wheels
         shell: msys2 {0}
+        env:
+          CARGO_NET_GIT_FETCH_WITH_CLI: "true"
         run: |
           pip install maturin delvewheel
           maturin build --release --out dist
