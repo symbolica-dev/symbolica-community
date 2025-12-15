@@ -131,9 +131,9 @@ checksum = "2114736faba96bcd79595c700d03183f61357b9fbce14852515e59f3bee4ed4a"
 
 [[package]]
 name = "approx-derive"
-version = "0.2.6"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fe983a589f7658d803c7f4ec0458fce2fe22d93808a366acc54c3f14812928f"
+checksum = "975325d44fbc3b668d8d5205cf65f96ca72758bef5431fec79cf80ff29dde8ea"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -143,9 +143,9 @@ dependencies = [
 
 [[package]]
 name = "approxim"
-version = "0.6.6"
+version = "0.6.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5bd37130ed2dff8ae28af3a80524def9005bd5d7b4d39695949e761bc0229c85"
+checksum = "6a5c2a568af8c49854c15b682d27eb4827058aeae70a3d4452d0f37ace18c7b6"
 dependencies = [
  "approx-derive",
  "num-traits",
@@ -318,9 +318,9 @@ checksum = "b35204fbdc0b3f4446b89fc1ac2cf84a8a68971995d0bf2e925ec7cd960f9cb3"
 
 [[package]]
 name = "cc"
-version = "1.2.48"
+version = "1.2.49"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c481bdbf0ed3b892f6f806287d72acd515b352a4ec27a208489b8c1bc839633a"
+checksum = "90583009037521a116abf44494efecd645ba48b6622457080f080b85544e2215"
 dependencies = [
  "find-msvc-tools",
  "shlex",
@@ -571,7 +571,7 @@ name = "example_extension"
 version = "0.1.0"
 dependencies = [
  "pyo3",
- "pyo3-stub-gen 0.17.2",
+ "pyo3-stub-gen",
  "symbolica",
 ]
 
@@ -686,8 +686,9 @@ dependencies = [
 
 [[package]]
 name = "graphica"
-version = "1.0.0"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=main#72bc605b19676f689cdffa27b30d0a0905ee427b"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48ae2b2a9d8e50961c8d53beccd3c8e0fa603fce7416e98910eeef3df288f88c"
 dependencies = [
  "ahash",
  "dyn-clone",
@@ -740,7 +741,7 @@ dependencies = [
 [[package]]
 name = "idenso"
 version = "0.2.3"
-source = "git+https://github.com/alphal00p/spenso?rev=4b2c54701bac02259f1d97fb200e1a7cba2b9e9c#4b2c54701bac02259f1d97fb200e1a7cba2b9e9c"
+source = "git+https://github.com/alphal00p/spenso?rev=1c2773874f9d9e062f8892a884229fb99c06c55c#1c2773874f9d9e062f8892a884229fb99c06c55c"
 dependencies = [
  "anyhow",
  "bincode",
@@ -748,7 +749,7 @@ dependencies = [
  "itertools 0.14.0",
  "linnet",
  "pyo3",
- "pyo3-stub-gen 0.17.2",
+ "pyo3-stub-gen",
  "spenso",
  "spenso-macros",
  "symbolica",
@@ -930,9 +931,9 @@ dependencies = [
 
 [[package]]
 name = "linnet"
-version = "0.13.3"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "636a5571737c37035e674262ea57574108a33314f94955e7b6f1547fe85f6c6b"
+checksum = "04bf74b7db2dd07875234c0688d8933061f881a22d4a8b0c11ce68ac249fc720"
 dependencies = [
  "ahash",
  "bincode",
@@ -959,9 +960,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.28"
+version = "0.4.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34080505efa8e45a4b816c349525ebe327ceaa8559756f0356cba97ef3bf7432"
+checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
 
 [[package]]
 name = "maplit"
@@ -1029,9 +1030,9 @@ dependencies = [
 
 [[package]]
 name = "ndarray"
-version = "0.16.1"
+version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "882ed72dce9365842bf196bdeedf5055305f11fc8c03dee7bb0194a6cad34841"
+checksum = "0c7c9125e8f6f10c9da3aad044cc918cf8784fa34de857b1aa68038eb05a50a9"
 dependencies = [
  "matrixmultiply",
  "num-complex",
@@ -1129,8 +1130,9 @@ dependencies = [
 
 [[package]]
 name = "numerica"
-version = "1.0.0"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=main#72bc605b19676f689cdffa27b30d0a0905ee427b"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d2ff12c259483db2f0231db0213cb85196cd1d4716b24783970861577f27e19"
 dependencies = [
  "ahash",
  "bincode",
@@ -1139,7 +1141,7 @@ dependencies = [
  "dyn-clone",
  "numpy",
  "pyo3",
- "pyo3-stub-gen 0.17.2",
+ "pyo3-stub-gen",
  "rand 0.9.2",
  "rand_xoshiro 0.7.0",
  "rug",
@@ -1150,9 +1152,9 @@ dependencies = [
 
 [[package]]
 name = "numpy"
-version = "0.27.0"
+version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fa24ffc88cf9d43f7269d6b6a0d0a00010924a8cc90604a21ef9c433b66998d"
+checksum = "7aac2e6a6e4468ffa092ad43c39b81c79196c2bb773b8db4085f695efe3bba17"
 dependencies = [
  "libc",
  "ndarray",
@@ -1507,27 +1509,6 @@ dependencies = [
 
 [[package]]
 name = "pyo3-stub-gen"
-version = "0.16.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50df8acb60b50a06188d55ae6c2736d38cc4d353588ccfb764caf50baad48429"
-dependencies = [
- "anyhow",
- "chrono",
- "indexmap",
- "inventory",
- "itertools 0.14.0",
- "log",
- "maplit",
- "num-complex",
- "numpy",
- "pyo3",
- "pyo3-stub-gen-derive 0.16.2",
- "serde",
- "toml",
-]
-
-[[package]]
-name = "pyo3-stub-gen"
 version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "398b833826a83ca72c1e26d1b2c7c71f9ca7c3bfc74eacc663901895c362ae33"
@@ -1555,20 +1536,6 @@ dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
- "syn 2.0.111",
-]
-
-[[package]]
-name = "pyo3-stub-gen-derive"
-version = "0.16.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9744c6258016e82d2042b67376c58169ea9f68609df01b2b42e00777481fc05f"
-dependencies = [
- "heck 0.5.0",
- "indexmap",
- "proc-macro2",
- "quote",
- "rustpython-parser",
  "syn 2.0.111",
 ]
 
@@ -1971,9 +1938,9 @@ checksum = "56199f7ddabf13fe5074ce809e7d3f42b42ae711800501b5b16ea82ad029c39d"
 
 [[package]]
 name = "slotmap"
-version = "1.0.7"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbff4acf519f630b3a3ddcfaea6c06b42174d9a44bc70c620e9ed1649d58b82a"
+checksum = "bdd58c3c93c3d278ca835519292445cb4b0d4dc59ccfdf7ceadaab3f8aeb4038"
 dependencies = [
  "serde",
  "version_check",
@@ -1999,7 +1966,7 @@ dependencies = [
 [[package]]
 name = "spenso"
 version = "0.5.4"
-source = "git+https://github.com/alphal00p/spenso?rev=4b2c54701bac02259f1d97fb200e1a7cba2b9e9c#4b2c54701bac02259f1d97fb200e1a7cba2b9e9c"
+source = "git+https://github.com/alphal00p/spenso?rev=1c2773874f9d9e062f8892a884229fb99c06c55c#1c2773874f9d9e062f8892a884229fb99c06c55c"
 dependencies = [
  "ahash",
  "anyhow",
@@ -2026,7 +1993,7 @@ dependencies = [
  "num",
  "once_cell",
  "pyo3",
- "pyo3-stub-gen 0.16.2",
+ "pyo3-stub-gen",
  "rand 0.9.2",
  "rand_xoshiro 0.6.0",
  "rayon",
@@ -2043,7 +2010,7 @@ dependencies = [
 [[package]]
 name = "spenso-hep-lib"
 version = "0.1.4"
-source = "git+https://github.com/alphal00p/spenso?rev=4b2c54701bac02259f1d97fb200e1a7cba2b9e9c#4b2c54701bac02259f1d97fb200e1a7cba2b9e9c"
+source = "git+https://github.com/alphal00p/spenso?rev=1c2773874f9d9e062f8892a884229fb99c06c55c#1c2773874f9d9e062f8892a884229fb99c06c55c"
 dependencies = [
  "ahash",
  "idenso",
@@ -2069,14 +2036,14 @@ dependencies = [
 [[package]]
 name = "spynso3"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/spenso?rev=4b2c54701bac02259f1d97fb200e1a7cba2b9e9c#4b2c54701bac02259f1d97fb200e1a7cba2b9e9c"
+source = "git+https://github.com/alphal00p/spenso?rev=1c2773874f9d9e062f8892a884229fb99c06c55c#1c2773874f9d9e062f8892a884229fb99c06c55c"
 dependencies = [
  "ahash",
  "anyhow",
  "idenso",
  "itertools 0.14.0",
  "pyo3",
- "pyo3-stub-gen 0.17.2",
+ "pyo3-stub-gen",
  "pyo3-stub-gen-derive 0.13.1",
  "spenso",
  "spenso-hep-lib",
@@ -2120,8 +2087,8 @@ dependencies = [
 
 [[package]]
 name = "symbolica"
-version = "1.0.2"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=main#72bc605b19676f689cdffa27b30d0a0905ee427b"
+version = "1.1.0"
+source = "git+https://github.com/symbolica-dev/symbolica?rev=0387eb40d98efee733dea6e212ad61618b46cf90#0387eb40d98efee733dea6e212ad61618b46cf90"
 dependencies = [
  "ahash",
  "append-only-vec",
@@ -2139,7 +2106,7 @@ dependencies = [
  "numpy",
  "once_cell",
  "pyo3",
- "pyo3-stub-gen 0.17.2",
+ "pyo3-stub-gen",
  "pyo3-stub-gen-derive 0.17.2",
  "rand 0.9.2",
  "rand_xoshiro 0.7.0",
@@ -2157,13 +2124,13 @@ dependencies = [
 
 [[package]]
 name = "symbolica_community"
-version = "1.0.2"
+version = "1.1.0"
 dependencies = [
  "example_extension",
  "idenso",
  "pyo3",
  "pyo3-build-config",
- "pyo3-stub-gen 0.16.2",
+ "pyo3-stub-gen",
  "spynso3",
  "symbolica",
  "vakint",
@@ -2336,9 +2303,9 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.23.7"
+version = "0.23.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6485ef6d0d9b5d0ec17244ff7eb05310113c3f316f2d14200d4de56b3cb98f8d"
+checksum = "5d7cbc3b4b49633d57a0509303158ca50de80ae32c265093b24c414705807832"
 dependencies = [
  "indexmap",
  "toml_datetime",
@@ -2570,8 +2537,8 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "vakint"
-version = "1.0.0"
-source = "git+https://github.com/alphal00p/vakint?rev=4d61a5d60e5490d19856c8db552384d8a9422e40#4d61a5d60e5490d19856c8db552384d8a9422e40"
+version = "0.1.1"
+source = "git+https://github.com/alphal00p/vakint?rev=5d3686c81423dbc83f7eb90aaf921c86858d11fd#5d3686c81423dbc83f7eb90aaf921c86858d11fd"
 dependencies = [
  "ahash",
  "anyhow",
@@ -2580,7 +2547,7 @@ dependencies = [
  "log",
  "phf 0.13.1",
  "pyo3",
- "pyo3-stub-gen 0.17.2",
+ "pyo3-stub-gen",
  "regex",
  "rug",
  "string-template-plus",

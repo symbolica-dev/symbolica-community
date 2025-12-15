@@ -9,7 +9,7 @@ name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.88"
-version = "1.0.2"
+version = "1.1.0"
 
 
 [[bin]]
@@ -35,24 +35,24 @@ example_extension = { path = "example_extension" }
 idenso = { version = "0.2.3", features = ["bincode", "python"] }
 symbolica = { version = "1.0.2", features = ["python_export"] }
 pyo3 = "0.27"
-pyo3-stub-gen = { version = "0.16", optional = true, default-features = false, features = [
+pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
     "numpy",
 ] }
 spynso3 = { version = "0.1" }
-vakint = { git = "https://github.com/alphal00p/vakint", rev = "4d61a5d60e5490d19856c8db552384d8a9422e40", features = [
+vakint = { git = "https://github.com/alphal00p/vakint", rev = "5d3686c81423dbc83f7eb90aaf921c86858d11fd", features = [
     "symbolica_community_module",
 ] }
 
 [patch.crates-io]
-spynso3 = { git = "https://github.com/alphal00p/spenso", rev = "4b2c54701bac02259f1d97fb200e1a7cba2b9e9c" }
-idenso = { git = "https://github.com/alphal00p/spenso", rev = "4b2c54701bac02259f1d97fb200e1a7cba2b9e9c" }
-spenso = { git = "https://github.com/alphal00p/spenso", rev = "4b2c54701bac02259f1d97fb200e1a7cba2b9e9c" }
-spenso-hep-lib = { git = "https://github.com/alphal00p/spenso", rev = "4b2c54701bac02259f1d97fb200e1a7cba2b9e9c" }
+spynso3 = { git = "https://github.com/alphal00p/spenso", rev = "1c2773874f9d9e062f8892a884229fb99c06c55c" }
+idenso = { git = "https://github.com/alphal00p/spenso", rev = "1c2773874f9d9e062f8892a884229fb99c06c55c" }
+spenso = { git = "https://github.com/alphal00p/spenso", rev = "1c2773874f9d9e062f8892a884229fb99c06c55c" }
+spenso-hep-lib = { git = "https://github.com/alphal00p/spenso", rev = "1c2773874f9d9e062f8892a884229fb99c06c55c" }
 #pyo3-stub-gen = { git = "https://github.com/Jij-Inc/pyo3-stub-gen", rev = "b13f213a748ee09bf22073e0e4d82cb09d797a5c", optional = true, default-features = false, features = [
 #    "numpy",
 #] }
 
-symbolica = { git = "https://github.com/symbolica-dev/symbolica", branch = "main" }
+symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "0387eb40d98efee733dea6e212ad61618b46cf90" }
 
 
 [build-dependencies]
