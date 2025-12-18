@@ -10,5 +10,4 @@ Common tensor algebra simpifications using spenso tensor notation
 
 from ..idenso_native import *
 
-if 'initialize' in dir():
-    initialize()
+initialize_module()

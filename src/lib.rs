@@ -1,34 +1,43 @@
 use pyo3::{
-    pymodule,
+    pyfunction, pymodule,
     types::{PyAnyMethods, PyModule, PyModuleMethods},
-    Bound, PyResult,
+    wrap_pyfunction, Bound, PyResult, Python,
 };
 use symbolica::api::python::{create_symbolica_module, SymbolicaCommunityModule};
 
 #[cfg(feature = "python_stubgen")]
 use pyo3_stub_gen::define_stub_info_gatherer;
 
-fn register_extension<T: SymbolicaCommunityModule>(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    let native_name = format!("{}_native", T::get_name());
-    let child_module = PyModule::new(m.py(), &native_name)?;
-    T::register_module(&child_module)?;
-    m.add_submodule(&child_module)?;
+macro_rules! register_module {
+    ($m:expr, $module_type:ty) => {{
+        let native_name = format!("{}_native", <$module_type>::get_name());
 
-    m.py().import("sys")?.getattr("modules")?.set_item(
-        format!("symbolica.community.{}", native_name),
-        &child_module,
-    )?;
-    Ok(())
+        #[pyfunction]
+        fn initialize_module(py: Python) -> PyResult<()> {
+            <$module_type>::initialize(py)
+        }
+
+        let child_module = PyModule::new($m.py(), &native_name)?;
+        child_module.add_function(wrap_pyfunction!(initialize_module, &child_module)?)?;
+
+        <$module_type>::register_module(&child_module)?;
+        $m.add_submodule(&child_module)?;
+
+        $m.py().import("sys")?.getattr("modules")?.set_item(
+            format!("symbolica.community.{}", native_name),
+            &child_module,
+        )?;
+    }};
 }
 
 #[pymodule]
 fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     create_symbolica_module(m)?;
 
-    register_extension::<idenso::python::IdensoModule>(m)?;
-    register_extension::<spynso3::SpensoModule>(m)?;
-    register_extension::<vakint::symbolica_community_module::VakintWrapper>(m)?;
-    register_extension::<example_extension::CommunityModule>(m)?;
+    register_module!(m, idenso::python::IdensoModule);
+    register_module!(m, spynso3::SpensoModule);
+    register_module!(m, vakint::symbolica_community_module::VakintWrapper);
+    register_module!(m, example_extension::CommunityModule);
 
     Ok(())
 }

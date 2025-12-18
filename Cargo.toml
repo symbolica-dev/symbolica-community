@@ -9,7 +9,7 @@ name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.88"
-version = "1.1.0"
+version = "1.2.0"
 
 
 [[bin]]
@@ -33,7 +33,7 @@ python_stubgen = [
 [dependencies]
 example_extension = { path = "example_extension" }
 idenso = { version = "0.2.3", features = ["bincode", "python"] }
-symbolica = { version = "1.0.2", features = ["python_export"] }
+symbolica = { version = "1.2", features = ["python_export"] }
 pyo3 = "0.27"
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
     "numpy",
@@ -52,7 +52,7 @@ spenso-hep-lib = { git = "https://github.com/alphal00p/spenso", rev = "1c2773874
 #    "numpy",
 #] }
 
-symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "0387eb40d98efee733dea6e212ad61618b46cf90" }
+#symbolica = { git = "https://github.com/symbolica-dev/symbolica", branch = "main" }
 
 
 [build-dependencies]

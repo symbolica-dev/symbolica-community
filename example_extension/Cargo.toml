@@ -9,7 +9,7 @@ name = "example_extension"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-symbolica = { version = "1.0", features = ["python_export"] }
+symbolica = { version = "1.2", features = ["python_export"] }
 pyo3 = "0.27"
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false }
 

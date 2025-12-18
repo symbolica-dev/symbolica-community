@@ -19,5 +19,4 @@ The Spenso Python API provides powerful tools for:
 
 from ..spenso_native import *
 
-if 'initialize' in dir():
-    initialize()
+initialize_module()

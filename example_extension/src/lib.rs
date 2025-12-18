@@ -1,7 +1,7 @@
 use pyo3::{
-    pyfunction,
+    Bound, PyResult, Python, pyfunction,
     types::{PyModule, PyModuleMethods},
-    wrap_pyfunction, Bound, PyResult,
+    wrap_pyfunction,
 };
 
 #[cfg(feature = "python_stubgen")]
@@ -12,11 +12,16 @@ pub struct CommunityModule;
 
 impl SymbolicaCommunityModule for CommunityModule {
     fn get_name() -> String {
-        "example".to_string()
+        "example_extension".to_string()
     }
 
     fn register_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
         m.add_function(wrap_pyfunction!(add_two, m)?)?;
+        Ok(())
+    }
+
+    fn initialize(_py: Python) -> PyResult<()> {
+        println!("Initializing example_extension community module");
         Ok(())
     }
 }
