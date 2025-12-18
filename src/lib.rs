@@ -9,12 +9,13 @@ use symbolica::api::python::{create_symbolica_module, SymbolicaCommunityModule};
 use pyo3_stub_gen::define_stub_info_gatherer;
 
 fn register_extension<T: SymbolicaCommunityModule>(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    let child_module = PyModule::new(m.py(), &T::get_name())?;
+    let native_name = format!("{}_native", T::get_name());
+    let child_module = PyModule::new(m.py(), &native_name)?;
     T::register_module(&child_module)?;
     m.add_submodule(&child_module)?;
 
     m.py().import("sys")?.getattr("modules")?.set_item(
-        format!("symbolica.community.{}", T::get_name()),
+        format!("symbolica.community.{}", native_name),
         &child_module,
     )?;
     Ok(())

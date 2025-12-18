@@ -16,3 +16,8 @@ The Spenso Python API provides powerful tools for:
 - Lucien Huber mail@lucien.ch
 
 """
+
+from ..spenso_native import *
+
+if 'initialize' in dir():
+    initialize()

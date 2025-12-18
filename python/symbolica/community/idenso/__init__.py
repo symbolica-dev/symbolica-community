@@ -7,3 +7,8 @@ Common tensor algebra simpifications using spenso tensor notation
 - Lucien Huber mail@lucien.ch
 
 """
+
+from ..idenso_native import *
+
+if 'initialize' in dir():
+    initialize()
