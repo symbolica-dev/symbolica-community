@@ -33,8 +33,8 @@ python_stubgen = [
 [dependencies]
 example_extension = { path = "example_extension" }
 idenso = { version = "0.2.3", features = ["bincode", "python"] }
-symbolica = { version = "1.2", features = ["python_export"] }
-pyo3 = "0.27"
+symbolica = { version = "1.2", features = ["python_export", "python_abi3"] }
+pyo3 = { version = "0.27", features = ["abi3"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
     "numpy",
 ] }
@@ -52,7 +52,7 @@ spenso-hep-lib = { git = "https://github.com/alphal00p/spenso", rev = "1c2773874
 #    "numpy",
 #] }
 
-#symbolica = { git = "https://github.com/symbolica-dev/symbolica", branch = "main" }
+symbolica = { git = "https://github.com/symbolica-dev/symbolica", branch = "dev" }
 
 
 [build-dependencies]
