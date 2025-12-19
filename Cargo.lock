@@ -740,8 +740,8 @@ dependencies = [
 
 [[package]]
 name = "idenso"
-version = "0.2.3"
-source = "git+https://github.com/alphal00p/spenso?rev=1c2773874f9d9e062f8892a884229fb99c06c55c#1c2773874f9d9e062f8892a884229fb99c06c55c"
+version = "0.2.4"
+source = "git+https://github.com/alphal00p/spenso?rev=4b4329528a4a3f52a0749fcb7cb7958d3cbe4d97#4b4329528a4a3f52a0749fcb7cb7958d3cbe4d97"
 dependencies = [
  "anyhow",
  "bincode",
@@ -1523,20 +1523,9 @@ dependencies = [
  "num-complex",
  "numpy",
  "pyo3",
- "pyo3-stub-gen-derive 0.17.2",
+ "pyo3-stub-gen-derive",
  "serde",
  "toml",
-]
-
-[[package]]
-name = "pyo3-stub-gen-derive"
-version = "0.13.1"
-source = "git+https://github.com/benruijl/pyo3-stub-gen?branch=patched#f421197e60e3617992ebfe0615db1fe846c1da81"
-dependencies = [
- "heck 0.5.0",
- "proc-macro2",
- "quote",
- "syn 2.0.111",
 ]
 
 [[package]]
@@ -1965,8 +1954,8 @@ dependencies = [
 
 [[package]]
 name = "spenso"
-version = "0.5.4"
-source = "git+https://github.com/alphal00p/spenso?rev=1c2773874f9d9e062f8892a884229fb99c06c55c#1c2773874f9d9e062f8892a884229fb99c06c55c"
+version = "0.5.5"
+source = "git+https://github.com/alphal00p/spenso?rev=4b4329528a4a3f52a0749fcb7cb7958d3cbe4d97#4b4329528a4a3f52a0749fcb7cb7958d3cbe4d97"
 dependencies = [
  "ahash",
  "anyhow",
@@ -2009,8 +1998,8 @@ dependencies = [
 
 [[package]]
 name = "spenso-hep-lib"
-version = "0.1.4"
-source = "git+https://github.com/alphal00p/spenso?rev=1c2773874f9d9e062f8892a884229fb99c06c55c#1c2773874f9d9e062f8892a884229fb99c06c55c"
+version = "0.1.5"
+source = "git+https://github.com/alphal00p/spenso?rev=4b4329528a4a3f52a0749fcb7cb7958d3cbe4d97#4b4329528a4a3f52a0749fcb7cb7958d3cbe4d97"
 dependencies = [
  "ahash",
  "idenso",
@@ -2035,8 +2024,8 @@ dependencies = [
 
 [[package]]
 name = "spynso3"
-version = "0.1.0"
-source = "git+https://github.com/alphal00p/spenso?rev=1c2773874f9d9e062f8892a884229fb99c06c55c#1c2773874f9d9e062f8892a884229fb99c06c55c"
+version = "0.1.1"
+source = "git+https://github.com/alphal00p/spenso?rev=4b4329528a4a3f52a0749fcb7cb7958d3cbe4d97#4b4329528a4a3f52a0749fcb7cb7958d3cbe4d97"
 dependencies = [
  "ahash",
  "anyhow",
@@ -2044,7 +2033,7 @@ dependencies = [
  "itertools 0.14.0",
  "pyo3",
  "pyo3-stub-gen",
- "pyo3-stub-gen-derive 0.13.1",
+ "pyo3-stub-gen-derive",
  "spenso",
  "spenso-hep-lib",
  "spenso-macros",
@@ -2107,7 +2096,7 @@ dependencies = [
  "once_cell",
  "pyo3",
  "pyo3-stub-gen",
- "pyo3-stub-gen-derive 0.17.2",
+ "pyo3-stub-gen-derive",
  "rand 0.9.2",
  "rand_xoshiro 0.7.0",
  "rayon",
@@ -2537,8 +2526,8 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "vakint"
-version = "0.1.1"
-source = "git+https://github.com/alphal00p/vakint?rev=5d3686c81423dbc83f7eb90aaf921c86858d11fd#5d3686c81423dbc83f7eb90aaf921c86858d11fd"
+version = "0.1.2"
+source = "git+https://github.com/alphal00p/vakint?rev=f7dc9907abb1786306bfc44fde6c32ba30446422#f7dc9907abb1786306bfc44fde6c32ba30446422"
 dependencies = [
  "ahash",
  "anyhow",
