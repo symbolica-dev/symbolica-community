@@ -25,14 +25,17 @@ jobs:
               with:
                   python-version: ${{ matrix.python-version }}
 
-            - name: Build and install package
+            - name: Build wheel
               uses: PyO3/maturin-action@v1
               with:
-                  command: develop
+                  command: build
+                  args: --out dist
                   sccache: "true"
 
-            - name: Install test dependencies
-              run: pip install pytest
+            - name: Install package and test dependencies
+              run: |
+                  pip install dist/*.whl
+                  pip install pytest
 
             - name: Run tests
               env:
