@@ -33,7 +33,10 @@ repository = "https://github.com/symbolica-dev/symbolica"
 package-mode = false
 
 [tool.uv]
+package = false
+
 cache-keys = [{ file = "pyproject.toml" }, { file = "src/*.rs" }]
+
 
 [dependency-groups]
 dev = ["ipykernel>=6.16.2", "pytest>=7.0.0", "pytest-cov>=4.0.0"]
