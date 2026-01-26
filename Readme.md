@@ -49,7 +49,7 @@ pip install symbolica
 or can be manually built using `maturin`:
 
 ```bash
-cargo run --features "python_stubgen" # generate type hints
+cargo run --features "python_stubgen" --no-default-features # generate type hints
 maturin build --release
 ```
 

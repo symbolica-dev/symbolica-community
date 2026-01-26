@@ -28,7 +28,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.runner[1] }}
-          args: --release --out dist
+          args: --release --out dist --sdist
           sccache: "true"
           manylinux: auto
       - name: Upload wheels
@@ -113,11 +113,6 @@ jobs:
           path: dist
           pattern: wheels-*
           merge-multiple: true
-
-      - name: Build source distribution
-        run: |
-          pip install maturin
-          maturin build --sdist --out dist
 
       - name: Publish to PyPI
         uses: PyO3/maturin-action@v1
