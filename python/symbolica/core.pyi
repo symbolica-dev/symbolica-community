@@ -31,6 +31,18 @@ def use_custom_logger() -> None:
     """
 
 
+def get_namespace() -> str:
+    """Get the Symbolica namespace for the calling module. Use `set_namespace` to set a namespace."""
+
+
+def set_namespace(namespace: str) -> None:
+    """Set the Symbolica namespace for the calling module.
+    All subsequently created symbols in the calling module will be defined within this namespace.
+
+    This function sets the `SYMBOLICA_NAMESPACE` variable in the global scope of the calling module.
+    """
+
+
 def get_version() -> str:
     """Get the current Symbolica version."""
 
@@ -40,12 +52,8 @@ def is_licensed() -> bool:
 
 
 def set_license_key(key: str) -> None:
-    """This function is deprecated and no longer sets the license key.
-    You can set the license key through the environment variable `SYMBOLICA_LICENSE` before importing Symbolica:
-
-    >>> import os  # noqa: E402
-    >>> os.environ['SYMBOLICA_LICENSE'] = 'YOURKEY'  # noqa: E402
-    >>> from symbolica import *
+    """Set the Symbolica license key for this computer. Can only be called before calling any other Symbolica functions
+    and before importing any community modules.
     """
 
 
@@ -254,7 +262,7 @@ def N(num: int | float | complex | str | Decimal, relative_error: Optional[float
     """
 
 
-def E(input: str, mode: ParseMode = ParseMode.Symbolica, default_namespace: str = "python") -> Expression:
+def E(input: str, mode: ParseMode = ParseMode.Symbolica, default_namespace: str | None = None) -> Expression:
     """
     Parse a Symbolica expression from a string.
 
@@ -264,7 +272,7 @@ def E(input: str, mode: ParseMode = ParseMode.Symbolica, default_namespace: str 
         An input string. UTF-8 characters are allowed.
     mode: ParseMode
         The parsing mode to use. Use `ParseMode.Mathematica` to parse Mathematica expressions.
-    default_namespace: str
+    default_namespace: Optional[str]
         The default namespace to use when parsing symbols.
 
     Examples
@@ -293,14 +301,14 @@ def T() -> Transformer:
 
 
 @overload
-def P(poly: str, default_namespace: str = "python", vars: Optional[Sequence[Expression]] = None) -> Polynomial:
+def P(poly: str, default_namespace: str | None = None, vars: Optional[Sequence[Expression]] = None) -> Polynomial:
     """Parse a string a polynomial, optionally, with the variable ordering specified in `vars`.
     All non-polynomial parts will be converted to new, independent variables.
     """
 
 
 @overload
-def P(poly: str,  minimal_poly: Polynomial, default_namespace: str = "python", vars: Optional[Sequence[Expression]] = None,
+def P(poly: str,  minimal_poly: Polynomial, default_namespace: str | None = None, vars: Optional[Sequence[Expression]] = None,
       ) -> NumberFieldPolynomial:
     """Parse string to a polynomial, optionally, with the variables and the ordering specified in `vars`.
     All non-polynomial elements will be converted to new independent variables.
@@ -313,7 +321,7 @@ def P(poly: str,  minimal_poly: Polynomial, default_namespace: str = "python", v
 @overload
 def P(poly: str,
       modulus: int,
-      default_namespace: str = "python",
+      default_namespace: str | None = None,
       power: Optional[Tuple[int, Expression]] = None,
       minimal_poly: Optional[Polynomial] = None,
       vars: Optional[Sequence[Expression]] = None,
@@ -689,7 +697,7 @@ class Expression:
         """Return all defined symbol names (function names and variables)."""
 
     @classmethod
-    def parse(_cls, input: str, mode: ParseMode = ParseMode.Symbolica, default_namespace: str = "python") -> Expression:
+    def parse(_cls, input: str, mode: ParseMode = ParseMode.Symbolica, default_namespace: str | None = None) -> Expression:
         """
         Parse a Symbolica expression from a string.
 
@@ -812,6 +820,7 @@ class Expression:
         square_brackets_for_function: bool = False,
         num_exp_as_superscript: bool = True,
         show_namespaces: bool = False,
+        hide_namespace: Optional[str] = None,
         include_attributes: bool = False,
         max_terms: Optional[int] = 100,
         custom_print_mode: Optional[int] = None,
@@ -1421,7 +1430,7 @@ class Expression:
 
     def __iter__(self) -> Iterator[Expression]:
         """
-        Create an iterator over all atoms in the expression.
+        Create an iterator over all subexpressions of the expression.
         """
 
     def __getitem__(self, idx: int) -> Expression:
@@ -1515,7 +1524,7 @@ class Expression:
 
         >>> from symbolica import *
         >>> x, y = S('x', 'y')
-        >>> var, coeff = Expression.funs('var', 'coeff')
+        >>> var, coeff = S('var', 'coeff')
         >>> e = 5*x + x * y + x**2 + 5
         >>>
         >>> print(e.collect(x, key_map=lambda x: var(x), coeff_map=lambda x: coeff(x)))
@@ -1867,7 +1876,8 @@ class Expression:
         level_is_tree_depth: Optional[bool] = False,
         allow_new_wildcards_on_rhs: Optional[bool] = False,
         rhs_cache_size: Optional[int] = None,
-        repeat: Optional[bool] = False,
+        repeat: bool = False,
+        once: bool = False,
     ) -> Expression:
         """
         Replace all subexpressions matching the pattern `pattern` by the right-hand side `rhs`.
@@ -1906,6 +1916,8 @@ class Expression:
             **Warning**: caching should be disabled (`rhs_cache_size=0`) if the right-hand side contains side effects, such as updating a global variable.
         repeat: bool, optional
             If set to `True`, the entire operation will be repeated until there are no more matches.
+        once: bool, optional
+            If set to `True`, only the first match will be replaced, instead of all non-overlapping matches.
         """
 
     def replace_multiple(self, replacements: Sequence[Replacement],  repeat: Optional[bool] = False) -> Expression:
@@ -2052,7 +2064,7 @@ class Expression:
         """
 
     def evaluate(
-        self, constants: dict[Expression, float], funs: dict[Expression, Callable[[Sequence[float]], float]]
+        self, constants: dict[Expression, float], functions: dict[Expression, Callable[[Sequence[float]], float]]
     ) -> float:
         """Evaluate the expression, using a map of all the variables and
         user functions to a float.
@@ -2069,7 +2081,7 @@ class Expression:
     def evaluate_with_prec(
         self,
         constants: dict[Expression, float | str | Decimal],
-        funs: dict[Expression, Callable[[Sequence[Decimal]], float | str | Decimal]],
+        functions: dict[Expression, Callable[[Sequence[Decimal]], float | str | Decimal]],
         decimal_digit_precision: int
     ) -> Decimal:
         """Evaluate the expression, using a map of all the constants and
@@ -2089,7 +2101,7 @@ class Expression:
         """
 
     def evaluate_complex(
-        self, constants: dict[Expression, float | complex], funs: dict[Expression, Callable[[Sequence[complex]], float | complex]]
+        self, constants: dict[Expression, float | complex], functions: dict[Expression, Callable[[Sequence[complex]], float | complex]]
     ) -> complex:
         """Evaluate the expression, using a map of all the variables and
         user functions to a complex number.
@@ -2105,11 +2117,15 @@ class Expression:
     def evaluator(
         self,
         constants: dict[Expression, Expression],
-        funs: dict[Tuple[Expression, str, Sequence[Expression]], Expression],
+        functions: dict[Tuple[Expression, str, Sequence[Expression]], Expression],
         params: Sequence[Expression],
         iterations: int = 100,
+        cpe_iterations: Optional[int] = None,
         n_cores: int = 4,
         verbose: bool = False,
+        max_horner_scheme_variables: int = 500,
+        max_common_pair_cache_entries: int = 1000000,
+        max_common_pair_distance: int = 100,
         external_functions: Optional[dict[Tuple[Expression, str], Callable[[
             Sequence[float | complex]], float | complex]]] = None,
         conditionals: Optional[Sequence[Expression]] = None,
@@ -2154,20 +2170,29 @@ class Expression:
         ----------
         constants: dict[Expression, Expression]
             A map of expressions to constants. The constants should be numerical expressions.
-        funs: dict[Tuple[Expression, str, Sequence[Expression]], Expression]
+        functions: dict[Tuple[Expression, str, Sequence[Expression]], Expression]
             A dictionary of functions. The key is a tuple of the function name, printable name and the argument variables.
             The value is the function body.
         params: Sequence[Expression]
             A list of free parameters.
         iterations: int, optional
-            The number of optimization iterations to perform.
+            The number of Horner schemes to try.
+        cpe_iterations: Optional[int], optional
+            The number of CPE iterations to perform. The number if unbounded if `None`.
         n_cores: int, optional
             The number of cores to use for the optimization.
         verbose: bool, optional
             Print the progress of the optimization.
+        max_horner_scheme_variables: int, optional
+            The maximum number of variables in a Horner scheme.
+        max_common_pair_cache_entries: int, optional
+            The maximum number of entries in the common pair cache.
+        max_common_pair_distance: int, optional
+            The maximum distance between common pairs. Used when clearing cache entries.
         external_functions: Optional[dict[Tuple[Expression, str], Callable[[Sequence[float | complex]], float | complex]]]
             A dictionary of external functions that can be called during evaluation.
-            The key is the function name and the value is a callable that takes a list of arguments and returns a float.
+            The key is a tuple of the function symbol and a printable function name. 
+            The value is a callable that takes a list of arguments and returns a float.
             This is useful for functions that are not defined in Symbolica but are available in Python.
         conditionals: Optional[Sequence[Expression]], optional
             A list of conditional functions. These functions should take three argument: a condition that is tested for
@@ -2179,11 +2204,18 @@ class Expression:
         _cls,
         exprs: Sequence[Expression],
         constants: dict[Expression, Expression],
-        funs: dict[Tuple[Expression, str, Sequence[Expression]], Expression],
+        functions: dict[Tuple[Expression, str, Sequence[Expression]], Expression],
         params: Sequence[Expression],
         iterations: int = 100,
+        cpe_iterations: Optional[int] = None,
         n_cores: int = 4,
         verbose: bool = False,
+        max_horner_scheme_variables: int = 500,
+        max_common_pair_cache_entries: int = 1000000,
+        max_common_pair_distance: int = 100,
+        external_functions: Optional[dict[Tuple[Expression, str], Callable[[
+            Sequence[float | complex]], float | complex]]] = None,
+        conditionals: Optional[Sequence[Expression]] = None,
     ) -> Evaluator:
         """Create an evaluator that can jointly evaluate (nested) expressions in an optimized fashion.
         See `Expression.evaluator()` for more information.
@@ -2193,7 +2225,7 @@ class Expression:
         >>> from symbolica import *
         >>> x = S('x')
         >>> e1 = E("x^2 + 1")
-        >>> e2 = E("x^2 + 2)
+        >>> e2 = E("x^2 + 2")
         >>> ev = Expression.evaluator_multiple([e1, e2], {}, {}, [x])
 
         will recycle the `x^2`
@@ -2984,6 +3016,7 @@ class Transformer:
         level_is_tree_depth: Optional[bool] = False,
         allow_new_wildcards_on_rhs: Optional[bool] = False,
         rhs_cache_size: Optional[int] = None,
+        once: bool = False,
     ) -> Transformer:
         """
         Create a transformer that replaces all subexpressions matching the pattern `pat` by the right-hand side `rhs`.
@@ -3016,6 +3049,8 @@ class Transformer:
         rhs_cache_size: int, optional
             Cache the first `rhs_cache_size` substituted patterns. If set to `None`, an internally determined cache size is used.
             **Warning**: caching should be disabled (`rhs_cache_size=0`) if the right-hand side contains side effects, such as updating a global variable.
+        once: bool, optional
+            If set to `True`, only the first match will be replaced, instead of all non-overlapping matches.
         """
 
     def replace_multiple(self, replacements: Sequence[Replacement]) -> Transformer:
@@ -3046,6 +3081,7 @@ class Transformer:
         square_brackets_for_function: bool = False,
         num_exp_as_superscript: bool = True,
         show_namespaces: bool = False,
+        hide_namespace: Optional[str] = None,
         include_attributes: bool = False,
         max_terms: Optional[int] = None,
         custom_print_mode: Optional[int] = None,
@@ -3174,6 +3210,7 @@ class Series:
         num_exp_as_superscript: bool = True,
         precision: Optional[int] = None,
         show_namespaces: bool = False,
+        hide_namespace: Optional[str] = None,
         include_attributes: bool = False,
         max_terms: Optional[int] = None,
         custom_print_mode: Optional[int] = None,
@@ -3352,7 +3389,7 @@ class Polynomial:
     """A Symbolica polynomial with rational coefficients."""
 
     @classmethod
-    def parse(_cls, input: str, vars: Sequence[str], default_namespace: str = "python") -> Polynomial:
+    def parse(_cls, input: str, vars: Sequence[str], default_namespace: str | None = None) -> Polynomial:
         """
         Parse a polynomial with integer coefficients from a string.
         The input must be written in an expanded format and a list of all
@@ -3396,6 +3433,7 @@ class Polynomial:
         num_exp_as_superscript: bool = True,
         precision: Optional[int] = None,
         show_namespaces: bool = False,
+        hide_namespace: Optional[str] = None,
         include_attributes: bool = False,
         max_terms: Optional[int] = None,
         custom_print_mode: Optional[int] = None,
@@ -3830,6 +3868,7 @@ class NumberFieldPolynomial:
         num_exp_as_superscript: bool = True,
         precision: Optional[int] = None,
         show_namespaces: bool = False,
+        hide_namespace: Optional[str] = None,
         include_attributes: bool = False,
         max_terms: Optional[int] = None,
         custom_print_mode: Optional[int] = None,
@@ -4102,7 +4141,7 @@ class FiniteFieldPolynomial:
     """A Symbolica polynomial with finite field coefficients."""
 
     @classmethod
-    def parse(_cls, input: str, vars: Sequence[str], prime: int, default_namespace: str = "python") -> FiniteFieldPolynomial:
+    def parse(_cls, input: str, vars: Sequence[str], prime: int, default_namespace: str | None = None) -> FiniteFieldPolynomial:
         """
         Parse a polynomial with integer coefficients from a string.
         The input must be written in an expanded format and a list of all
@@ -4146,6 +4185,7 @@ class FiniteFieldPolynomial:
         num_exp_as_superscript: bool = True,
         precision: Optional[int] = None,
         show_namespaces: bool = False,
+        hide_namespace: Optional[str] = None,
         include_attributes: bool = False,
         max_terms: Optional[int] = None,
         custom_print_mode: Optional[int] = None,
@@ -4433,7 +4473,7 @@ class RationalPolynomial:
         """Create a new rational polynomial from a numerator and denominator polynomial."""
 
     @classmethod
-    def parse(_cls, input: str, vars: Sequence[str], default_namespace: str = "python") -> RationalPolynomial:
+    def parse(_cls, input: str, vars: Sequence[str], default_namespace: str | None = None) -> RationalPolynomial:
         """
         Parse a rational polynomial from a string.
         The list of all the variables must be provided.
@@ -4558,7 +4598,7 @@ class FiniteFieldRationalPolynomial:
         """Create a new rational polynomial from a numerator and denominator polynomial."""
 
     @classmethod
-    def parse(_cls, input: str, vars: Sequence[str], prime: int, default_namespace: str = "python") -> FiniteFieldRationalPolynomial:
+    def parse(_cls, input: str, vars: Sequence[str], prime: int, default_namespace: str | None = None) -> FiniteFieldRationalPolynomial:
         """
         Parse a rational polynomial from a string.
         The list of all the variables must be provided.
@@ -4736,6 +4776,7 @@ class Matrix:
         num_exp_as_superscript: bool = True,
         precision: Optional[int] = None,
         show_namespaces: bool = False,
+        hide_namespace: Optional[str] = None,
         include_attributes: bool = False,
         max_terms: Optional[int] = None,
         custom_print_mode: Optional[int] = None,
@@ -4802,13 +4843,13 @@ class Evaluator:
         - `out`: the list of outputs.
 
         The instructions are of the form:
-        - `('add', ('out', 0), [('const', 1), ('param', 0)])` which means `out[0] = const[1] + param[0]`.
-        - `('mul', ('out', 0), [('temp', 0), ('param', 0)])` which means `out[0] = temp[0] * param[0]`.
-        - `('pow', ('out', 0), ('param', 0), -1)` which means `out[0] = param[0]^-1`.
-        - `('powf', ('out', 0), ('param', 0), ('param', 1))` which means `out[0] = param[0]^param[1]`.
-        - `('fun', ('temp', 1), cos, ('param', 0))` which means `temp[1] = cos(param[0])`.
+        - `('add', ('out', 0), [('const', 1), ('param', 0)], 0)` which means `out[0] = const[1] + param[0]` where the first `0` arguments are real.
+        - `('mul', ('out', 0), [('temp', 0), ('param', 0)], 1)` which means `out[0] = temp[0] * param[0]`, where the first `1` arguments are real.
+        - `('pow', ('out', 0), ('param', 0), -1, true)` which means `out[0] = param[0]^-1` and the output is real (`true`).
+        - `('powf', ('out', 0), ('param', 0), ('param', 1), false)` which means `out[0] = param[0]^param[1]`.
+        - `('fun', ('temp', 1), cos, ('param', 0), true)` which means `temp[1] = cos(param[0])` and the output is real (`true`).
         - `('external_fun', ('temp', 1), f, [('param', 0)])` which means `temp[1] = f(param[0])`.
-        - `('if_else', ('temp', 0), 5)` which means `if temp[0] != 0 goto label 5`.
+        - `('if_else', ('temp', 0), 5)` which means `if temp[0] == 0 goto label 5` (false branch).
         - `('goto', 10)` which means `goto label 10`.
         - `('label', 3)` which means `label 3`.
         - `('join', ('out', 0), ('temp', 0), 3, 7)` which means `out[0] = (temp[0] != 0) ? label 3 : label 7`.
@@ -4827,20 +4868,20 @@ class Evaluator:
         yields
 
         ```
-        ('mul', ('out', 0), [('param', 0), ('param', 0)])
-        ('fun', ('temp', 1), cos, ('param', 0))
+        ('mul', ('out', 0), [('param', 0), ('param', 0)], 0)
+        ('fun', ('temp', 1), cos, ('param', 0), false)
         ('add', ('out', 0), [('const', 0), ('out', 0), ('temp', 1)])
         temp list length: 2
         constants: [5/3]
         ```
         """
 
-    def merge(self, other: Evaluator, cpe_rounds: Optional[int] = None) -> Evaluator:
+    def merge(self, other: Evaluator, cpe_iterations: Optional[int] = None) -> None:
         """
         Merge evaluator `other` into `self`. The parameters must be the same, and
         the outputs will be concatenated.
 
-        The optional `cpe_rounds` parameter can be used to limit the number of common
+        The optional `cpe_iterations` parameter can be used to limit the number of common
         pair elimination rounds after the merge.
 
         Examples
@@ -4849,10 +4890,67 @@ class Evaluator:
         >>> from symbolica import *
         >>> e1 = E('x').evaluator({}, {}, [S('x')])
         >>> e2 = E('x+1').evaluator({}, {}, [S('x')])
-        >>> e = e1.merge(e2)
-        >>> e.evaluate([2])
+        >>> e1.merge(e2)
+        >>> e1.evaluate([[2.]])
 
         yields `[2, 3]`.
+        """
+
+    def dualize(self, dual_shape: list[list[int]], external_functions: Optional[dict[tuple[str, str, int], Callable[[
+            Sequence[float | complex]], float | complex]]] = None,
+            zero_components: Optional[list[tuple[int, int]]] = None) -> None:
+        """
+        Dualize the evaluator to support hyper-dual numbers with the given shape,
+        indicating the number of derivatives in every variable per term.
+        This allows for efficient computation of derivatives.
+
+        For example, to compute first derivatives in two variables `x` and `y`,
+        use `dual_shape = [[0, 0], [1, 0], [0, 1]]`.
+
+        External functions must be mapped to `len(dual_shape)` different functions
+        that compute a single component each. The input to the functions
+        is the flattened vector of all components of all parameters,
+        followed by all previously computed output components.
+
+        Examples
+        --------
+
+        >>> from symbolica import *
+        >>> e1 = E('x^2 + y*x').evaluator({}, {}, [S('x'), S('y')])
+        >>> e1.dualize([[0, 0], [1, 0], [0, 1]])
+        >>> r = e1.evaluate([[2., 1., 0., 3., 0., 1.]])
+        >>> print(r)  # [10, 7, 2]
+
+        Mapping external functions:
+
+        >>> ev = E('f(x + 1)').evaluator({}, {}, [S('x')], external_functions={(S('f'), 'f'): lambda args: args[0]})
+        >>> ev.dualize([[0], [1]], {('f', 'f0', 0): lambda args: args[0], ('f', 'f1', 1): lambda args: args[1]})
+        >>> print(ev.evaluate([[2., 1.]]))  # [[3. 1.]]
+
+        Parameters
+        ----------
+        dual_shape : list[list[int]]
+            The shape of the dual numbers, indicating the number of derivatives
+            in every variable per term.
+        external_functions : Optional[dict[tuple[str, str, int], Callable[[Sequence[float | complex]], float | complex]]]
+            A mapping from external function identifiers to functions that compute a single component each.
+            The key is a tuple of function name, unique printable name, and component index.
+            The value is a function that takes the flattened parameters and returns a component.
+        zero_components : Optional[list[tuple[int, int]]]
+            A list of components that are known to be zero and can be skipped in the dualization.
+            Each component is specified as a tuple of (parameter index, dual index).
+        """
+
+    def set_real_params(self, real_params: list[int], sqrt_real=False, log_real=False, powf_real=False, verbose=False) -> None:
+        """Set which parameters are fully real. This allows for more optimal
+        assembly output that uses real arithmetic instead of complex arithmetic
+        where possible.
+
+        You can also set if all encountered sqrt, log, and powf operations with real
+        arguments are expected to yield real results.
+
+        Must be called after all optimization functions and merging are performed
+        on the evaluator, or the registration will be lost.
         """
 
     @overload
