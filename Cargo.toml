@@ -41,7 +41,7 @@ pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, f
     "numpy",
 ] }
 spynso3 = { version = "0.1" }
-vakint = { git = "https://github.com/alphal00p/vakint", rev = "f7dc9907abb1786306bfc44fde6c32ba30446422", features = [
+vakint = { git = "https://github.com/alphal00p/vakint", rev = "a768ac5edaf7f7ddf7517497a4c41b6d303cb1c9", features = [
     "symbolica_community_module",
 ] }
 
