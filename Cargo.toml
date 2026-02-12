@@ -9,7 +9,7 @@ name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.88"
-version = "1.3.0"
+version = "1.3.1"
 exclude = ["dist"]
 
 [[bin]]
@@ -55,7 +55,7 @@ spenso-hep-lib = { git = "https://github.com/alphal00p/spenso", rev = "ad0e8c243
 #] }
 
 #symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "7a43c94878f9746e12a430ee6a54bcffb6a5be9a" }
-symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "f4e275a8f7a070b0aaa2228cb8b67058130579c4" }
+symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "198eb538431193aa5e3b0f1d4186d1868a05965b" }
 
 [build-dependencies]
 pyo3-build-config = "*"

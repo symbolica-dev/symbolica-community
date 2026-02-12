@@ -11,7 +11,7 @@ authors = [
 name = "symbolica"
 description = "Community-enhanced version of Symbolica: a blazing fast computer algebra system"
 keywords = ["math", "algebra", "polynomial", "expression", "manipulation"]
-version = "1.3.0"
+version = "1.3.1"
 readme = "Readme_pypi.md"
 requires-python = ">=3.7"
 classifiers = [
