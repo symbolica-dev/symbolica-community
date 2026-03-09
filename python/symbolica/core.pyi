@@ -85,6 +85,7 @@ def S(name: str,
       is_integer: Optional[bool] = None,
       is_positive: Optional[bool] = None,
       tags: Optional[Sequence[str]] = None,
+      aliases: Optional[Sequence[str]] = None,
       custom_normalization: Optional[Transformer] = None,
       custom_print: Optional[Callable[..., Optional[str]]] = None,
       custom_derivative: Optional[Callable[[
@@ -172,6 +173,8 @@ def S(name: str,
         Set to true if the symbol is a positive number.
     tags: Optional[Sequence[str]] = None
         A list of tags to associate with the symbol.
+    aliases: Optional[Sequence[str]] = None
+        A list of aliases to associate with the symbol.
     custom_normalization : Optional[Transformer]
         A transformer that is called after every normalization. Note that the symbol
         name cannot be used in the transformer as this will lead to a definition of the
@@ -421,6 +424,8 @@ class PrintMode(Enum):
     """Print using Mathematica notation."""
     Sympy = 4
     """Print using Sympy notation."""
+    Typst = 5
+    """Print using Typst notation."""
 
 
 class Expression:
@@ -473,8 +478,14 @@ class Expression:
     SQRT: Expression
     """The built-in square root function."""
 
+    ABS: Expression
+    """The built-in absolute value function."""
+
     CONJ: Expression
     """The built-in complex conjugate function."""
+
+    IF: Expression
+    """The built-in function for piecewise-defined expressions. `IF(cond, true_expr, false_expr)` evaluates to `true_expr` if `cond` is non-zero and `false_expr` otherwise."""
 
     @overload
     @classmethod
@@ -489,6 +500,7 @@ class Expression:
                is_integer: Optional[bool] = None,
                is_positive: Optional[bool] = None,
                tags: Optional[Sequence[str]] = None,
+               aliases: Optional[Sequence[str]] = None,
                custom_normalization: Optional[Transformer] = None,
                custom_print: Optional[Callable[..., Optional[str]]] = None,
                custom_derivative: Optional[Callable[[
@@ -576,6 +588,8 @@ class Expression:
             Set to true if the symbol is a positive number.
         tags: Optional[Sequence[str]]
             A list of tags to associate with the symbol.
+        aliases: Optional[Sequence[str]]
+            A list of aliases to associate with the symbol.
         custom_normalization : Optional[Transformer]
             A transformer that is called after every normalization. Note that the symbol
             name cannot be used in the transformer as this will lead to a definition of the
@@ -808,9 +822,14 @@ class Expression:
     def format(
         self,
         mode: PrintMode = PrintMode.Symbolica,
+        max_line_length: int | None = 80,
+        indentation: int = 4,
+        fill_indented_lines: bool = True,
         terms_on_new_line: bool = False,
         color_top_level_sum: bool = True,
         color_builtin_symbols: bool = True,
+        bracket_level_colors: Sequence[int] | None = [
+            244, 25, 97, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60],
         print_ring: bool = True,
         symmetric_representation_for_finite_field: bool = False,
         explicit_rational_polynomial: bool = False,
@@ -818,6 +837,7 @@ class Expression:
         multiplication_operator: str = "*",
         double_star_for_exponentiation: bool = False,
         square_brackets_for_function: bool = False,
+        function_brackets: tuple[str, str] = ('(', ')'),
         num_exp_as_superscript: bool = True,
         show_namespaces: bool = False,
         hide_namespace: Optional[str] = None,
@@ -866,6 +886,17 @@ class Expression:
         >>> print(a.to_latex())
 
         Yields `$$z^{34}+x^{x+2}+y^{4}+f(x,x^{2})+128378127123 z^{\\frac{2}{3}} w^{2} \\frac{1}{x} \\frac{1}{y}+\\frac{3}{5}$$`.
+        """
+
+    def to_typst(self, show_namespaces: bool = False) -> str:
+        """Convert the expression into a Typst string.
+
+        Examples
+        --------
+        >>> a = E('f(x+2i + 3) * 2 / x')
+        >>> print(a.to_typst())
+
+        Yields ```(2 op("f")(3+2𝑖+"x"))/"x"```.
         """
 
     def to_sympy(self) -> str:
@@ -1101,6 +1132,11 @@ class Expression:
     def sqrt(self) -> Expression:
         """
         Take the square root of this expression, returning the result.
+        """
+
+    def abs(self) -> Expression:
+        """
+        Take the absolute value of this expression, returning the result.
         """
 
     def conj(self) -> Expression:
@@ -1476,9 +1512,21 @@ class Expression:
 
     def expand(self, var: Optional[Expression] = None, via_poly: Optional[bool] = None) -> Expression:
         """
-        Expand the expression. Optionally, expand in `var` only.
+        Expand the expression. Optionally, expand in `var` only. `var` can be a variable or a function.
+        If it is a variable, any function with that variable name is also expanded in.
+        To expand in multiple functions at the same time, wrap them in a function with the same symbol first,
+        using a match and replace, and then expand in that function.
 
         Using `via_poly=True` may give a significant speedup for large expressions.
+
+        Examples
+        --------
+        >>> from symbolica import *
+        >>> x, y, f, g = S('x', 'y', 'f', 'g')
+        >>> e = (f(1) + g(2))*(f(3) + (y+1)**2)
+        >>> print(e.expand(f))
+
+        yields `f(1)*f(3)+f(3)*g(2)+(1+y)^2*f(1)+(1+y)^2*g(2)`.
         """
 
     def expand_num(self) -> Expression:
@@ -1777,9 +1825,12 @@ class Expression:
         self,
         lhs: Expression | int | float | complex | Decimal,
         cond: Optional[PatternRestriction | Condition] = None,
+        min_level: int = 0,
+        max_level: Optional[int] = None,
         level_range: Optional[Tuple[int, Optional[int]]] = None,
-        level_is_tree_depth: Optional[bool] = False,
-        allow_new_wildcards_on_rhs: Optional[bool] = False,
+        level_is_tree_depth: bool = False,
+        partial: bool = True,
+        allow_new_wildcards_on_rhs: bool = False,
     ) -> MatchIterator:
         """
         Return an iterator over the pattern `self` matching to `lhs`.
@@ -1804,9 +1855,12 @@ class Expression:
         self,
         lhs: Expression | int | float | complex | Decimal,
         cond: Optional[PatternRestriction | Condition] = None,
+        min_level: int = 0,
+        max_level: Optional[int] = None,
         level_range: Optional[Tuple[int, Optional[int]]] = None,
-        level_is_tree_depth: Optional[bool] = False,
-        allow_new_wildcards_on_rhs: Optional[bool] = False,
+        level_is_tree_depth: bool = False,
+        partial: bool = True,
+        allow_new_wildcards_on_rhs: bool = False,
     ) -> Condition:
         """
         Test whether the pattern is found in the expression.
@@ -1825,9 +1879,12 @@ class Expression:
         lhs: Expression | int | float | complex | Decimal,
         rhs: HeldExpression | Expression | Callable[[dict[Expression, Expression]], Expression] | int | float | complex | Decimal,
         cond: Optional[PatternRestriction | Condition] = None,
+        min_level: int = 0,
+        max_level: Optional[int] = None,
         level_range: Optional[Tuple[int, Optional[int]]] = None,
-        level_is_tree_depth: Optional[bool] = False,
-        allow_new_wildcards_on_rhs: Optional[bool] = False,
+        level_is_tree_depth: bool = False,
+        partial: bool = True,
+        allow_new_wildcards_on_rhs: bool = False,
     ) -> ReplaceIterator:
         """
         Return an iterator over the replacement of the pattern `self` on `lhs` by `rhs`.
@@ -1858,11 +1915,18 @@ class Expression:
             The right-hand side to replace the matched subexpression with. Can be a transformer, expression or a function that maps a dictionary of wildcards to an expression.
         cond:
             Conditions on the pattern.
+        min_level: int, optional
+            The minimum level at which the pattern is allowed to match. The first level is 0 and the level is increased when going into a function or one level deeper in the expression tree, depending on `level_is_tree_depth`.
+        max_level: Optional[int], optional
+            The maximum level at which the pattern is allowed to match. `None` means no maximum.
         level_range:
             Specifies the `[min,max]` level at which the pattern is allowed to match. The first level is 0 and the level is increased when going into a function or one level deeper in the expression tree, depending on `level_is_tree_depth`.
-        level_is_tree_depth:
+            Prefer setting `min_level` and `max_level` directly over `level_range`, as this argument will be deprecated in the future.
+        level_is_tree_depth: bool, optional
             If set to `True`, the level is increased when going one level deeper in the expression tree.
-        allow_new_wildcards_on_rhs:
+        partial: bool, optional
+            If set to `True`, allow the pattern to match to a part of a term. For example, with `partial=True`, the pattern `x+y` matches to `x+2+y`.
+        allow_new_wildcards_on_rhs: bool, optional
             If set to `True`, allow wildcards that do not appear in the pattern on the right-hand side.
         """
 
@@ -1872,9 +1936,12 @@ class Expression:
         rhs: HeldExpression | Expression | Callable[[dict[Expression, Expression]], Expression] | int | float | complex | Decimal,
         cond: Optional[PatternRestriction | Condition] = None,
         non_greedy_wildcards: Optional[Sequence[Expression]] = None,
+        min_level: int = 0,
+        max_level: Optional[int] = None,
         level_range: Optional[Tuple[int, Optional[int]]] = None,
-        level_is_tree_depth: Optional[bool] = False,
-        allow_new_wildcards_on_rhs: Optional[bool] = False,
+        level_is_tree_depth: bool = False,
+        partial: bool = True,
+        allow_new_wildcards_on_rhs: bool = False,
         rhs_cache_size: Optional[int] = None,
         repeat: bool = False,
         once: bool = False,
@@ -1901,14 +1968,21 @@ class Expression:
             The pattern to match.
         rhs:
             The right-hand side to replace the matched subexpression with. Can be a transformer, expression or a function that maps a dictionary of wildcards to an expression.
-        cond:
+        cond: PatternRestriction | Condition, optional
             Conditions on the pattern.
-        non_greedy_wildcards:
+        non_greedy_wildcards: Sequence[Expression], optional
             Wildcards that try to match as little as possible.
+        min_level: int, optional
+            The minimum level at which the pattern is allowed to match. The first level is 0 and the level is increased when going into a function or one level deeper in the expression tree, depending on `level_is_tree_depth`.
+        max_level: Optional[int], optional
+            The maximum level at which the pattern is allowed to match. `None` means no maximum.
         level_range:
             Specifies the `[min,max]` level at which the pattern is allowed to match. The first level is 0 and the level is increased when going into a function or one level deeper in the expression tree, depending on `level_is_tree_depth`.
+            Prefer setting `min_level` and `max_level` directly over `level_range`, as this argument will be deprecated in the future.
         level_is_tree_depth: bool, optional
             If set to `True`, the level is increased when going one level deeper in the expression tree.
+        partial: bool, optional
+            If set to `True`, allow the pattern to match to a part of a term. For example, with `partial=True`, the pattern `x+y` matches to `x+2+y`.
         allow_new_wildcards_on_rhs: bool, optional
             If set to `True`, allow wildcards that do not appear in the pattern on the right-hand side.
         rhs_cache_size: int, optional
@@ -2119,7 +2193,7 @@ class Expression:
         constants: dict[Expression, Expression],
         functions: dict[Tuple[Expression, str, Sequence[Expression]], Expression],
         params: Sequence[Expression],
-        iterations: int = 100,
+        iterations: int = 1,
         cpe_iterations: Optional[int] = None,
         n_cores: int = 4,
         verbose: bool = False,
@@ -2172,7 +2246,7 @@ class Expression:
             A map of expressions to constants. The constants should be numerical expressions.
         functions: dict[Tuple[Expression, str, Sequence[Expression]], Expression]
             A dictionary of functions. The key is a tuple of the function name, printable name and the argument variables.
-            The value is the function body.
+            The value is the function body. If the function name entry contains arguments, these are considered tags.
         params: Sequence[Expression]
             A list of free parameters.
         iterations: int, optional
@@ -2206,7 +2280,7 @@ class Expression:
         constants: dict[Expression, Expression],
         functions: dict[Tuple[Expression, str, Sequence[Expression]], Expression],
         params: Sequence[Expression],
-        iterations: int = 100,
+        iterations: int = 1,
         cpe_iterations: Optional[int] = None,
         n_cores: int = 4,
         verbose: bool = False,
@@ -2267,9 +2341,12 @@ class Replacement:
             rhs: HeldExpression | Expression | Callable[[dict[Expression, Expression]], Expression] | int | float | complex | Decimal,
             cond: Optional[PatternRestriction | Condition] = None,
             non_greedy_wildcards: Optional[Sequence[Expression]] = None,
+            min_level: int = 0,
+            max_level: Optional[int] = None,
             level_range: Optional[Tuple[int, Optional[int]]] = None,
-            level_is_tree_depth: Optional[bool] = False,
-            allow_new_wildcards_on_rhs: Optional[bool] = False,
+            level_is_tree_depth: bool = False,
+            partial: bool = True,
+            allow_new_wildcards_on_rhs: bool = False,
             rhs_cache_size: Optional[int] = None) -> Replacement:
         """Create a new replacement. See `replace` for more information."""
 
@@ -2409,9 +2486,12 @@ class HeldExpression:
         self,
         lhs: Expression | int | float | complex | Decimal,
         cond: Optional[PatternRestriction | Condition] = None,
+        min_level: int = 0,
+        max_level: Optional[int] = None,
         level_range: Optional[Tuple[int, Optional[int]]] = None,
-        level_is_tree_depth: Optional[bool] = False,
-        allow_new_wildcards_on_rhs: Optional[bool] = False,
+        level_is_tree_depth: bool = False,
+        partial: bool = True,
+        allow_new_wildcards_on_rhs: bool = False,
     ) -> Condition:
         """
         Create a transformer that tests whether the pattern is found in the expression.
@@ -3012,9 +3092,12 @@ class Transformer:
         rhs: HeldExpression | Expression | Callable[[dict[Expression, Expression]], Expression] | int | float | complex | Decimal,
         cond: Optional[PatternRestriction | Condition] = None,
         non_greedy_wildcards: Optional[Sequence[Expression]] = None,
+        min_level: int = 0,
+        max_level: Optional[int] = None,
         level_range: Optional[Tuple[int, Optional[int]]] = None,
-        level_is_tree_depth: Optional[bool] = False,
-        allow_new_wildcards_on_rhs: Optional[bool] = False,
+        level_is_tree_depth: bool = False,
+        partial: bool = True,
+        allow_new_wildcards_on_rhs: bool = False,
         rhs_cache_size: Optional[int] = None,
         once: bool = False,
     ) -> Transformer:
@@ -3040,11 +3123,22 @@ class Transformer:
             Conditions on the pattern.
         non_greedy_wildcards:
             Wildcards that try to match as little as possible.
+        cond: PatternRestriction | Condition, optional
+            Conditions on the pattern.
+        non_greedy_wildcards: Sequence[Expression], optional
+            Wildcards that try to match as little as possible.
+        min_level: int, optional
+            The minimum level at which the pattern is allowed to match. The first level is 0 and the level is increased when going into a function or one level deeper in the expression tree, depending on `level_is_tree_depth`.
+        max_level: Optional[int], optional
+            The maximum level at which the pattern is allowed to match. `None` means no maximum.
         level_range:
             Specifies the `[min,max]` level at which the pattern is allowed to match. The first level is 0 and the level is increased when going into a function or one level deeper in the expression tree, depending on `level_is_tree_depth`.
-        level_is_tree_depth:
+            Prefer setting `min_level` and `max_level` directly over `level_range`, as this argument will be deprecated in the future.
+        level_is_tree_depth: bool, optional
             If set to `True`, the level is increased when going one level deeper in the expression tree.
-        allow_new_wildcards_on_rhs:
+        partial: bool, optional
+            If set to `True`, allow the pattern to match to a part of a term. For example, with `partial=True`, the pattern `x+y` matches to `x+2+y`.
+        allow_new_wildcards_on_rhs: bool, optional
             If set to `True`, allow wildcards that do not appear in the pattern on the right-hand side.
         rhs_cache_size: int, optional
             Cache the first `rhs_cache_size` substituted patterns. If set to `None`, an internally determined cache size is used.
@@ -3069,9 +3163,14 @@ class Transformer:
     def print(
         self,
         mode: PrintMode = PrintMode.Symbolica,
+        max_line_length: int | None = 80,
+        indentation: int = 4,
+        fill_indented_lines: bool = True,
         terms_on_new_line: bool = False,
         color_top_level_sum: bool = True,
         color_builtin_symbols: bool = True,
+        bracket_level_colors: Sequence[int] | None = [
+            244, 25, 97, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60],
         print_ring: bool = True,
         symmetric_representation_for_finite_field: bool = False,
         explicit_rational_polynomial: bool = False,
@@ -3079,6 +3178,7 @@ class Transformer:
         multiplication_operator: str = "*",
         double_star_for_exponentiation: bool = False,
         square_brackets_for_function: bool = False,
+        function_brackets: tuple[str, str] = ('(', ')'),
         num_exp_as_superscript: bool = True,
         show_namespaces: bool = False,
         hide_namespace: Optional[str] = None,
@@ -3164,9 +3264,12 @@ class Transformer:
         self,
         lhs: HeldExpression | Expression | int | float | Decimal,
         cond: Optional[PatternRestriction | Condition] = None,
+        min_level: int = 0,
+        max_level: Optional[int] = None,
         level_range: Optional[Tuple[int, Optional[int]]] = None,
-        level_is_tree_depth: Optional[bool] = False,
-        allow_new_wildcards_on_rhs: Optional[bool] = False,
+        level_is_tree_depth: bool = False,
+        partial: bool = True,
+        allow_new_wildcards_on_rhs: bool = False,
     ) -> Condition:
         """
         Create a transformer that tests whether the pattern is found in the expression.
@@ -3188,6 +3291,15 @@ class Series:
     >>> print(s)
     """
 
+    def __getitem__(self, expr: Expression | int) -> Expression:
+        """Get the coefficient of the term with exponent `exp`"""
+
+    def get_coefficient(self, exp:  Expression | int) -> Expression:
+        """Get the coefficient of the term with exponent `exp`.  Alternatively, use `series[exp]`."""
+
+    def __iter__(self) -> Iterator[Tuple[Expression, Expression]]:
+        """Iterate over the terms of the series, yielding pairs of exponent and coefficient."""
+
     def __str__(self) -> str:
         """Print the series in a human-readable format."""
 
@@ -3197,9 +3309,14 @@ class Series:
     def format(
         self,
         mode: PrintMode = PrintMode.Symbolica,
+        max_line_length: int | None = 80,
+        indentation: int = 4,
+        fill_indented_lines: bool = True,
         terms_on_new_line: bool = False,
         color_top_level_sum: bool = True,
         color_builtin_symbols: bool = True,
+        bracket_level_colors: Sequence[int] | None = [
+            244, 25, 97, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60],
         print_ring: bool = True,
         symmetric_representation_for_finite_field: bool = False,
         explicit_rational_polynomial: bool = False,
@@ -3207,6 +3324,7 @@ class Series:
         multiplication_operator: str = "*",
         double_star_for_exponentiation: bool = False,
         square_brackets_for_function: bool = False,
+        function_brackets: tuple[str, str] = ('(', ')'),
         num_exp_as_superscript: bool = True,
         precision: Optional[int] = None,
         show_namespaces: bool = False,
@@ -3420,9 +3538,14 @@ class Polynomial:
     def format(
         self,
         mode: PrintMode = PrintMode.Symbolica,
+        max_line_length: int | None = 80,
+        indentation: int = 4,
+        fill_indented_lines: bool = True,
         terms_on_new_line: bool = False,
         color_top_level_sum: bool = True,
         color_builtin_symbols: bool = True,
+        bracket_level_colors: Sequence[int] | None = [
+            244, 25, 97, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60],
         print_ring: bool = True,
         symmetric_representation_for_finite_field: bool = False,
         explicit_rational_polynomial: bool = False,
@@ -3430,6 +3553,7 @@ class Polynomial:
         multiplication_operator: str = "*",
         double_star_for_exponentiation: bool = False,
         square_brackets_for_function: bool = False,
+        function_brackets: tuple[str, str] = ('(', ')'),
         num_exp_as_superscript: bool = True,
         precision: Optional[int] = None,
         show_namespaces: bool = False,
@@ -3855,9 +3979,14 @@ class NumberFieldPolynomial:
     def format(
         self,
         mode: PrintMode = PrintMode.Symbolica,
+        max_line_length: int | None = 80,
+        indentation: int = 4,
+        fill_indented_lines: bool = True,
         terms_on_new_line: bool = False,
         color_top_level_sum: bool = True,
         color_builtin_symbols: bool = True,
+        bracket_level_colors: Sequence[int] | None = [
+            244, 25, 97, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60],
         print_ring: bool = True,
         symmetric_representation_for_finite_field: bool = False,
         explicit_rational_polynomial: bool = False,
@@ -3865,6 +3994,7 @@ class NumberFieldPolynomial:
         multiplication_operator: str = "*",
         double_star_for_exponentiation: bool = False,
         square_brackets_for_function: bool = False,
+        function_brackets: tuple[str, str] = ('(', ')'),
         num_exp_as_superscript: bool = True,
         precision: Optional[int] = None,
         show_namespaces: bool = False,
@@ -4172,9 +4302,14 @@ class FiniteFieldPolynomial:
     def format(
         self,
         mode: PrintMode = PrintMode.Symbolica,
+        max_line_length: int | None = 80,
+        indentation: int = 4,
+        fill_indented_lines: bool = True,
         terms_on_new_line: bool = False,
         color_top_level_sum: bool = True,
         color_builtin_symbols: bool = True,
+        bracket_level_colors: Sequence[int] | None = [
+            244, 25, 97, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60],
         print_ring: bool = True,
         symmetric_representation_for_finite_field: bool = False,
         explicit_rational_polynomial: bool = False,
@@ -4182,6 +4317,7 @@ class FiniteFieldPolynomial:
         multiplication_operator: str = "*",
         double_star_for_exponentiation: bool = False,
         square_brackets_for_function: bool = False,
+        function_brackets: tuple[str, str] = ('(', ')'),
         num_exp_as_superscript: bool = True,
         precision: Optional[int] = None,
         show_namespaces: bool = False,
@@ -4768,11 +4904,15 @@ class Matrix:
     def format(
         self,
         mode: PrintMode = PrintMode.Symbolica,
+        max_line_length: int | None = 80,
+        indentation: int = 4,
+        fill_indented_lines: bool = True,
         pretty_matrix=True,
         number_thousands_separator: Optional[str] = None,
         multiplication_operator: str = "*",
         double_star_for_exponentiation: bool = False,
         square_brackets_for_function: bool = False,
+        function_brackets: tuple[str, str] = ('(', ')'),
         num_exp_as_superscript: bool = True,
         precision: Optional[int] = None,
         show_namespaces: bool = False,
@@ -4830,6 +4970,17 @@ class Matrix:
 
 class Evaluator:
     """An optimized evaluator of an expression."""
+
+    def __copy__(self) -> Evaluator:
+        """Copy the evaluator."""
+
+    @classmethod
+    def load(cls, evaluator: bytes, external_functions: dict[Tuple[Expression, str], Callable[[
+            Sequence[float | complex]], float | complex]] = {}) -> Evaluator:
+        """Load the evaluator into memory, preparing it for evaluation."""
+
+    def save(self) -> bytes:
+        """Save the evaluator to a byte string."""
 
     def get_instructions(self) -> Tuple[List[Tuple[str, Tuple[str, int], List[Tuple[str, int]]]], int, List[Expression]]:
         """Return the instructions for efficiently evaluating the expression, the length of the list
@@ -5241,6 +5392,20 @@ class Evaluator:
         Yields`[[ 4.] [ 8.] [14.]]` 
         """
 
+    def evaluate_with_prec(self, inputs: Sequence[float | str | Decimal], decimal_digit_precision: int) -> list[Decimal]:
+        """Evaluate the expression for a single input with the given decimal digit precision and return the result.
+
+        Examples
+        --------
+        Evaluate the function for a single input with 50 digits of precision:
+
+        >>> from symbolica import *
+        >>> ev = E('x^2').evaluator({}, {}, [S('x')])
+        >>> print(ev.evaluate_with_prec([Decimal('1.234567890121223456789981273238947212312338947923')], 50))
+
+        Yields `1.524157875318369274550121833760353508310334033629`
+        """
+
     def evaluate_complex(self, inputs: npt.ArrayLike) -> npt.NDArray[np.complex128]:
         """Evaluate the expression for multiple inputs and return the result.
         For best performance, use `numpy` arrays and `np.complex128` instead of lists and
@@ -5256,6 +5421,21 @@ class Evaluator:
         >>> print(ev.evaluate(np.array([1.+2j, 2., 3., 4., 5., 6.]).reshape((3, 2))))
 
         Yields`[[ 4.+4.j] [14.+0.j] [32.+0.j]]` 
+        """
+
+    def evaluate_complex_with_prec(self, inputs: Sequence[tuple[float | str | Decimal, float | str | Decimal]], decimal_digit_precision: int) -> list[tuple[Decimal]]:
+        """Evaluate the expression for a single complex input, represented as a tuple of real and imaginary parts, with the given decimal digit precision and return the result.
+
+        Examples
+        --------
+        Evaluate the function for a single input with 50 digits of precision:
+
+        >>> from symbolica import *
+        >>> ev = E('x^2').evaluator({}, {}, [S('x')])
+        >>> print(ev.evaluate_complex_with_prec(
+        >>>     [(Decimal('1.234567890121223456789981273238947212312338947923'), Decimal('3.434567890121223356789981273238947212312338947923'))], 50))
+
+        Yields `[(Decimal('-10.27209871653338252296233957800668637617803672307'), Decimal('8.480414467170121512062583245527383392798704790330'))]`
         """
 
 

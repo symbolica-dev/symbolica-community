@@ -423,6 +423,7 @@ class Representation:
         general = Representation("General", n, is_self_dual=True)
         ```
         """
+    def dual(self) -> Representation: ...
     def g(self, i: builtins.int | Expression | str, j: builtins.int | Expression | str) -> TensorIndices:
         r"""
         Create a metric tensor for this representation.
@@ -550,6 +551,7 @@ class Slot:
     """
     def __repr__(self) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
+    def dual(self) -> Slot: ...
     def __new__(cls, name: builtins.str, dimension: builtins.int, aind: builtins.int | Expression | str, dual: builtins.bool = ...) -> Slot:
         r"""
         Create a new slot with a custom representation and index.

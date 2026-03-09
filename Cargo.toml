@@ -9,7 +9,7 @@ name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.88"
-version = "1.3.1"
+version = "1.4.0"
 exclude = ["dist"]
 
 [[bin]]
@@ -35,27 +35,23 @@ python_stubgen = [
 [dependencies]
 example_extension = { path = "example_extension" }
 idenso = { version = "0.3", features = ["bincode", "python"] }
-symbolica = { version = "1.2", features = ["python_export"] }
-pyo3 = { version = "0.27", features = ["abi3"] }
+symbolica = { version = "1.4", features = ["python_export"] }
+pyo3 = { version = "0.28", features = ["abi3"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
     "numpy",
 ] }
 spynso3 = { version = "0.1" }
-vakint = { git = "https://github.com/alphal00p/vakint", rev = "a768ac5edaf7f7ddf7517497a4c41b6d303cb1c9", features = [
+vakint = { git = "https://github.com/alphal00p/gammaloop", rev = "eb94c672ce51fb70aa43c5d79dcc6617f054122c", features = [
     "symbolica_community_module",
 ] }
 
 [patch.crates-io]
-spynso3 = { git = "https://github.com/alphal00p/spenso", rev = "ad0e8c24398ac14cce6b2b6b29dbc938e1833d8c" }
-idenso = { git = "https://github.com/alphal00p/spenso", rev = "ad0e8c24398ac14cce6b2b6b29dbc938e1833d8c" }
-spenso = { git = "https://github.com/alphal00p/spenso", rev = "ad0e8c24398ac14cce6b2b6b29dbc938e1833d8c" }
-spenso-hep-lib = { git = "https://github.com/alphal00p/spenso", rev = "ad0e8c24398ac14cce6b2b6b29dbc938e1833d8c" }
-#pyo3-stub-gen = { git = "https://github.com/Jij-Inc/pyo3-stub-gen", rev = "f44a54e238c8b1fcd89b5145da465eb749a3f5fe", optional = true, default-features = false, features = [
-#    "numpy",
-#] }
+spynso3 = { git = "https://github.com/alphal00p/gammaloop", rev = "eb94c672ce51fb70aa43c5d79dcc6617f054122c" }
+idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "eb94c672ce51fb70aa43c5d79dcc6617f054122c" }
+spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "eb94c672ce51fb70aa43c5d79dcc6617f054122c" }
+spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "eb94c672ce51fb70aa43c5d79dcc6617f054122c" }
 
-#symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "7a43c94878f9746e12a430ee6a54bcffb6a5be9a" }
-symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "198eb538431193aa5e3b0f1d4186d1868a05965b" }
+#symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "94e63537a0e94573e98f260d9763fbb3ffec413e" }
 
 [build-dependencies]
 pyo3-build-config = "*"
