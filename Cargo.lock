@@ -41,6 +41,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "allocator-api2"
+version = "0.2.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
+
+[[package]]
 name = "android_system_properties"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -110,6 +116,15 @@ name = "append-only-vec"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2114736faba96bcd79595c700d03183f61357b9fbce14852515e59f3bee4ed4a"
+
+[[package]]
+name = "approx"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cab112f0a86d568ea0e627cc1d6be74a1e9cd55214684db5561995f6dad897c6"
+dependencies = [
+ "num-traits",
+]
 
 [[package]]
 name = "arrayvec"
@@ -558,10 +573,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5baebc0774151f905a1a2cc41989300b1e6fbb29aff0ceffa1064fdd3088d582"
 
 [[package]]
+name = "fixedbitset"
+version = "0.5.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d674e81391d1e1ab681a28d99df07927c6d4aa5b027d7da16ba32d1d21ecd99"
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
+
+[[package]]
+name = "foldhash"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
+
+[[package]]
+name = "foldhash"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
 
 [[package]]
 name = "funty"
@@ -641,9 +674,23 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
+version = "0.15.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
+dependencies = [
+ "foldhash 0.1.5",
+]
+
+[[package]]
+name = "hashbrown"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
+dependencies = [
+ "allocator-api2",
+ "equivalent",
+ "foldhash 0.2.0",
+]
 
 [[package]]
 name = "heck"
@@ -684,7 +731,7 @@ dependencies = [
 [[package]]
 name = "idenso"
 version = "0.3.0"
-source = "git+https://github.com/alphal00p/gammaloop?rev=eb94c672ce51fb70aa43c5d79dcc6617f054122c#eb94c672ce51fb70aa43c5d79dcc6617f054122c"
+source = "git+https://github.com/alphal00p/gammaloop?rev=3c55fae78ce3d13802ab24aed014fdc4abe6f492#3c55fae78ce3d13802ab24aed014fdc4abe6f492"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -697,7 +744,8 @@ dependencies = [
  "spenso",
  "spenso-macros",
  "symbolica",
- "thiserror 1.0.69",
+ "thiserror",
+ "tracing",
 ]
 
 [[package]]
@@ -713,7 +761,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7714e70437a7dc3ac8eb7e6f8df75fd8eb422675fc7678aff7364301092b1017"
 dependencies = [
  "equivalent",
- "hashbrown",
+ "hashbrown 0.16.1",
  "serde",
  "serde_core",
 ]
@@ -867,7 +915,7 @@ dependencies = [
 [[package]]
 name = "linnet"
 version = "0.17.0"
-source = "git+https://github.com/alphal00p/gammaloop?rev=eb94c672ce51fb70aa43c5d79dcc6617f054122c#eb94c672ce51fb70aa43c5d79dcc6617f054122c"
+source = "git+https://github.com/alphal00p/gammaloop?rev=3c55fae78ce3d13802ab24aed014fdc4abe6f492#3c55fae78ce3d13802ab24aed014fdc4abe6f492"
 dependencies = [
  "ahash",
  "bincode",
@@ -884,7 +932,9 @@ dependencies = [
  "paste",
  "rand 0.8.5",
  "serde",
- "thiserror 2.0.18",
+ "serde_repr",
+ "symbolica",
+ "thiserror",
 ]
 
 [[package]]
@@ -892,6 +942,15 @@ name = "log"
 version = "0.4.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
+
+[[package]]
+name = "mach2"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d640282b302c0bb0a2a8e0233ead9035e3bed871f0b7e81fe4a1ec829765db44"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "maplit"
@@ -1035,9 +1094,9 @@ dependencies = [
 
 [[package]]
 name = "numerica"
-version = "1.3.0"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdd9474fbe32d20ae4e655789a335034fe1d1d743c6420c5a2b2719b84a60f89"
+checksum = "7ddf0932cf45645a6207deff29349270f52299b39b1e9dc1407b79ac732ac269"
 dependencies = [
  "ahash",
  "bincode",
@@ -1045,16 +1104,18 @@ dependencies = [
  "colored 3.1.1",
  "dyn-clone",
  "itertools 0.14.0",
+ "num-traits",
  "numpy",
  "pyo3",
  "pyo3-stub-gen",
  "rand 0.9.2",
- "rand_xoshiro 0.7.0",
  "rayon",
  "rug",
  "serde",
+ "simba",
  "smallvec",
- "wide",
+ "wide 1.1.1",
+ "xprec",
 ]
 
 [[package]]
@@ -1143,6 +1204,18 @@ checksum = "89815c69d36021a140146f26659a81d6c2afa33d216d736dd4be5381a7362220"
 dependencies = [
  "pest",
  "sha2",
+]
+
+[[package]]
+name = "petgraph"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8701b58ea97060d5e5b155d383a69952a60943f0e6dfe30b04c287beb0b27455"
+dependencies = [
+ "fixedbitset",
+ "hashbrown 0.15.5",
+ "indexmap",
+ "serde",
 ]
 
 [[package]]
@@ -1509,15 +1582,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rand_xoshiro"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f703f4665700daf5512dcca5f43afa6af89f09db47fb56be587f80636bda2d41"
-dependencies = [
- "rand_core 0.9.5",
-]
-
-[[package]]
 name = "rawpointer"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1577,6 +1641,18 @@ name = "regex-syntax"
 version = "0.8.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
+
+[[package]]
+name = "region"
+version = "3.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6b6ebd13bc009aef9cd476c1310d49ac354d36e240cf1bd753290f3dc7199a7"
+dependencies = [
+ "bitflags 1.3.2",
+ "libc",
+ "mach2",
+ "windows-sys 0.52.0",
+]
 
 [[package]]
 name = "rug"
@@ -1687,6 +1763,15 @@ checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
 
 [[package]]
 name = "safe_arch"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96b02de82ddbe1b636e6170c21be622223aea188ef2e139be0a5b219ec215323"
+dependencies = [
+ "bytemuck",
+]
+
+[[package]]
+name = "safe_arch"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f7caad094bd561859bcd467734a720c3c1f5d1f338995351fefe2190c45efed"
@@ -1750,6 +1835,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_repr"
+version = "0.1.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "175ee3e80ae9982737ca543e96133087cbd9a485eecc3bc4de9c1a37b47ea59c"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
+]
+
+[[package]]
 name = "serde_spanned"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1785,6 +1881,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
+name = "simba"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c99284beb21666094ba2b75bbceda012e610f5479dfcc2d6e2426f53197ffd95"
+dependencies = [
+ "approx",
+ "num-complex",
+ "num-traits",
+ "paste",
+ "wide 0.7.33",
+]
+
+[[package]]
 name = "siphasher"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1808,9 +1917,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "spec_math"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "02ef091d4e8b981dbaa4cc17789d00b53d5d2c001ae689f14e6093f30c529036"
+
+[[package]]
 name = "spenso"
 version = "0.6.0"
-source = "git+https://github.com/alphal00p/gammaloop?rev=eb94c672ce51fb70aa43c5d79dcc6617f054122c#eb94c672ce51fb70aa43c5d79dcc6617f054122c"
+source = "git+https://github.com/alphal00p/gammaloop?rev=3c55fae78ce3d13802ab24aed014fdc4abe6f492#3c55fae78ce3d13802ab24aed014fdc4abe6f492"
 dependencies = [
  "ahash",
  "append-only-vec",
@@ -1838,7 +1953,7 @@ dependencies = [
  "pyo3",
  "pyo3-stub-gen",
  "rand 0.9.2",
- "rand_xoshiro 0.6.0",
+ "rand_xoshiro",
  "rayon",
  "ref-ops",
  "serde",
@@ -1846,13 +1961,13 @@ dependencies = [
  "spenso-macros",
  "symbolica",
  "tabled",
- "thiserror 1.0.69",
+ "thiserror",
 ]
 
 [[package]]
 name = "spenso-hep-lib"
 version = "0.1.7"
-source = "git+https://github.com/alphal00p/gammaloop?rev=eb94c672ce51fb70aa43c5d79dcc6617f054122c#eb94c672ce51fb70aa43c5d79dcc6617f054122c"
+source = "git+https://github.com/alphal00p/gammaloop?rev=3c55fae78ce3d13802ab24aed014fdc4abe6f492#3c55fae78ce3d13802ab24aed014fdc4abe6f492"
 dependencies = [
  "ahash",
  "idenso",
@@ -1865,7 +1980,7 @@ dependencies = [
 [[package]]
 name = "spenso-macros"
 version = "0.3.2"
-source = "git+https://github.com/alphal00p/gammaloop?rev=eb94c672ce51fb70aa43c5d79dcc6617f054122c#eb94c672ce51fb70aa43c5d79dcc6617f054122c"
+source = "git+https://github.com/alphal00p/gammaloop?rev=3c55fae78ce3d13802ab24aed014fdc4abe6f492#3c55fae78ce3d13802ab24aed014fdc4abe6f492"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1877,7 +1992,7 @@ dependencies = [
 [[package]]
 name = "spynso3"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?rev=eb94c672ce51fb70aa43c5d79dcc6617f054122c#eb94c672ce51fb70aa43c5d79dcc6617f054122c"
+source = "git+https://github.com/alphal00p/gammaloop?rev=3c55fae78ce3d13802ab24aed014fdc4abe6f492#3c55fae78ce3d13802ab24aed014fdc4abe6f492"
 dependencies = [
  "ahash",
  "eyre",
@@ -1890,7 +2005,7 @@ dependencies = [
  "spenso-hep-lib",
  "spenso-macros",
  "symbolica",
- "thiserror 1.0.69",
+ "thiserror",
  "xpct",
 ]
 
@@ -1928,9 +2043,9 @@ dependencies = [
 
 [[package]]
 name = "symbolica"
-version = "1.4.0"
+version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c4e740f36592919409c27ce6c668c3faa0e81816d69074d3daf70a49c0faa45"
+checksum = "07395d35b180c532b7fd85d5de5e65e41db721f070444b7a4b234bedbd246e3e"
 dependencies = [
  "ahash",
  "append-only-vec",
@@ -1950,22 +2065,22 @@ dependencies = [
  "pyo3-stub-gen",
  "pyo3-stub-gen-derive",
  "rand 0.9.2",
- "rand_xoshiro 0.7.0",
  "rayon",
  "rug",
  "self_cell",
  "serde",
  "smallvec",
  "smartstring",
+ "symjit",
  "tinyjson",
  "tracing",
  "tracing-subscriber",
- "wide",
+ "wide 1.1.1",
 ]
 
 [[package]]
 name = "symbolica_community"
-version = "1.4.0"
+version = "1.5.0"
 dependencies = [
  "example_extension",
  "idenso",
@@ -1975,6 +2090,29 @@ dependencies = [
  "spynso3",
  "symbolica",
  "vakint",
+]
+
+[[package]]
+name = "symjit"
+version = "2.14.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5fb0edc5f71e76eb01cc4a81ad155480ed8c00242998e2cb5dc45f51d859ad99"
+dependencies = [
+ "ahash",
+ "anyhow",
+ "hashbrown 0.16.1",
+ "libc",
+ "num-complex",
+ "petgraph",
+ "rand 0.9.2",
+ "rayon",
+ "region",
+ "serde",
+ "serde_json",
+ "spec_math",
+ "wasmtime-jit-icache-coherence",
+ "wide 1.1.1",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -2049,16 +2187,7 @@ version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
 dependencies = [
- "thiserror-impl 1.0.69",
-]
-
-[[package]]
-name = "thiserror"
-version = "2.0.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4288b5bcbc7920c07a1149a35cf9590a2aa808e0bc1eafaade0b80947865fbc4"
-dependencies = [
- "thiserror-impl 2.0.18",
+ "thiserror-impl",
 ]
 
 [[package]]
@@ -2066,17 +2195,6 @@ name = "thiserror-impl"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
-
-[[package]]
-name = "thiserror-impl"
-version = "2.0.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebc4ee7f67670e9b64d05fa4253e753e016c6c95ff35b89b7941d6b856dec1d5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2340,7 +2458,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 [[package]]
 name = "vakint"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?rev=eb94c672ce51fb70aa43c5d79dcc6617f054122c#eb94c672ce51fb70aa43c5d79dcc6617f054122c"
+source = "git+https://github.com/alphal00p/gammaloop?rev=3c55fae78ce3d13802ab24aed014fdc4abe6f492#3c55fae78ce3d13802ab24aed014fdc4abe6f492"
 dependencies = [
  "ahash",
  "arrayvec",
@@ -2354,7 +2472,7 @@ dependencies = [
  "rug",
  "string-template-plus",
  "symbolica",
- "thiserror 1.0.69",
+ "thiserror",
  "version-compare",
 ]
 
@@ -2443,13 +2561,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "wasmtime-jit-icache-coherence"
+version = "34.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ea6b740d1a35f2cebfe88e013ac8a4a84ff8dabc3a392df920abf554e871cf2"
+dependencies = [
+ "anyhow",
+ "cfg-if",
+ "libc",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "wide"
+version = "0.7.33"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ce5da8ecb62bcd8ec8b7ea19f69a51275e91299be594ea5cc6ef7819e16cd03"
+dependencies = [
+ "bytemuck",
+ "safe_arch 0.7.4",
+]
+
+[[package]]
 name = "wide"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ac11b009ebeae802ed758530b6496784ebfee7a87b9abfbcaf3bbe25b814eb25"
 dependencies = [
  "bytemuck",
- "safe_arch",
+ "safe_arch 1.0.0",
 ]
 
 [[package]]
@@ -2531,6 +2671,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7837d08f69c77cf6b07689544538e017c1bfcf57e34b4c0ff58e6c2cd3b37091"
 dependencies = [
  "windows-link",
+]
+
+[[package]]
+name = "windows-sys"
+version = "0.52.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d"
+dependencies = [
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
@@ -2719,6 +2868,18 @@ dependencies = [
  "anyhow",
  "bitflags 2.11.0",
  "colored 2.2.0",
+]
+
+[[package]]
+name = "xprec"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "39a30f7277acb4ef10faeec631c7fbb0ff92355bea37e1b01a63f3803c78e319"
+dependencies = [
+ "approx",
+ "libm",
+ "num-traits",
+ "simba",
 ]
 
 [[package]]

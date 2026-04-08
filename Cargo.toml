@@ -9,7 +9,7 @@ name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.88"
-version = "1.4.0"
+version = "1.5.0"
 exclude = ["dist"]
 
 [[bin]]
@@ -35,21 +35,21 @@ python_stubgen = [
 [dependencies]
 example_extension = { path = "example_extension" }
 idenso = { version = "0.3", features = ["bincode", "python"] }
-symbolica = { version = "1.4", features = ["python_export"] }
+symbolica = { version = "1.5", features = ["python_export"] }
 pyo3 = { version = "0.28", features = ["abi3"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
     "numpy",
 ] }
 spynso3 = { version = "0.1" }
-vakint = { git = "https://github.com/alphal00p/gammaloop", rev = "eb94c672ce51fb70aa43c5d79dcc6617f054122c", features = [
+vakint = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d13802ab24aed014fdc4abe6f492", features = [
     "symbolica_community_module",
 ] }
 
 [patch.crates-io]
-spynso3 = { git = "https://github.com/alphal00p/gammaloop", rev = "eb94c672ce51fb70aa43c5d79dcc6617f054122c" }
-idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "eb94c672ce51fb70aa43c5d79dcc6617f054122c" }
-spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "eb94c672ce51fb70aa43c5d79dcc6617f054122c" }
-spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "eb94c672ce51fb70aa43c5d79dcc6617f054122c" }
+spynso3 = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d13802ab24aed014fdc4abe6f492" }
+idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d13802ab24aed014fdc4abe6f492" }
+spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d13802ab24aed014fdc4abe6f492" }
+spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d13802ab24aed014fdc4abe6f492" }
 
 #symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "94e63537a0e94573e98f260d9763fbb3ffec413e" }
 
