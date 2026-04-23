@@ -9,7 +9,7 @@ name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.88"
-version = "1.5.0"
+version = "1.5.1"
 exclude = ["dist"]
 
 [[bin]]
@@ -51,7 +51,7 @@ idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d1
 spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d13802ab24aed014fdc4abe6f492" }
 spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d13802ab24aed014fdc4abe6f492" }
 
-symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "cf756e1d98d45c61ba3c08bfd31990e381dd8ede" }
+symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "f83da04bfaa9f9629dfedefbb985e6c38bbd1aba" }
 
 [build-dependencies]
 pyo3-build-config = "*"
