@@ -41,15 +41,15 @@ pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, f
     "numpy",
 ] }
 spynso3 = { version = "0.1" }
-vakint = { git = "https://github.com/alphal00p/gammaloop", rev = "d29c3702ad85d87227c4a8d5f0007c0d3aa3cd7c", features = [
+vakint = { git = "https://github.com/alphal00p/gammaloop", rev = "db79edc84f6a1580decbcc4ede7ea0b1c79d9a08", features = [
     "symbolica_community_module",
 ] }
 
 [patch.crates-io]
-spynso3 = { git = "https://github.com/alphal00p/gammaloop", rev = "d29c3702ad85d87227c4a8d5f0007c0d3aa3cd7c" }
-idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "d29c3702ad85d87227c4a8d5f0007c0d3aa3cd7c" }
-spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "d29c3702ad85d87227c4a8d5f0007c0d3aa3cd7c" }
-spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "d29c3702ad85d87227c4a8d5f0007c0d3aa3cd7c" }
+spynso3 = { git = "https://github.com/alphal00p/gammaloop", rev = "db79edc84f6a1580decbcc4ede7ea0b1c79d9a08" }
+idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "db79edc84f6a1580decbcc4ede7ea0b1c79d9a08" }
+spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "db79edc84f6a1580decbcc4ede7ea0b1c79d9a08" }
+spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "db79edc84f6a1580decbcc4ede7ea0b1c79d9a08" }
 
 symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "f52eea647e937716c8e45017ba08cbf207669467" }
 
