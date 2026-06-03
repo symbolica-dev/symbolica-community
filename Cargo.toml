@@ -2,14 +2,14 @@
 authors = ["Ben Ruijl <benruyl@gmail.com>"]
 categories = ["science"]
 description = "A blazing fast computer algebra system, with community extensions"
-edition = "2021"
+edition = "2024"
 keywords = ["algebra", "symbolic", "manipulation", "mathematics", "physics"]
 license = "MIT"
 name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.88"
-version = "1.5.1"
+version = "2.0.0"
 exclude = ["dist"]
 
 [[bin]]
@@ -35,23 +35,23 @@ python_stubgen = [
 [dependencies]
 example_extension = { path = "example_extension" }
 idenso = { version = "0.3", features = ["bincode", "python"] }
-symbolica = { version = "1.5", features = ["python_export"] }
+symbolica = { version = "2.0", features = ["python_export"] }
 pyo3 = { version = "0.28", features = ["abi3"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
     "numpy",
 ] }
 spynso3 = { version = "0.1" }
-vakint = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d13802ab24aed014fdc4abe6f492", features = [
+vakint = { git = "https://github.com/alphal00p/gammaloop", rev = "d29c3702ad85d87227c4a8d5f0007c0d3aa3cd7c", features = [
     "symbolica_community_module",
 ] }
 
 [patch.crates-io]
-spynso3 = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d13802ab24aed014fdc4abe6f492" }
-idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d13802ab24aed014fdc4abe6f492" }
-spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d13802ab24aed014fdc4abe6f492" }
-spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "3c55fae78ce3d13802ab24aed014fdc4abe6f492" }
+spynso3 = { git = "https://github.com/alphal00p/gammaloop", rev = "d29c3702ad85d87227c4a8d5f0007c0d3aa3cd7c" }
+idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "d29c3702ad85d87227c4a8d5f0007c0d3aa3cd7c" }
+spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "d29c3702ad85d87227c4a8d5f0007c0d3aa3cd7c" }
+spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "d29c3702ad85d87227c4a8d5f0007c0d3aa3cd7c" }
 
-symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "f83da04bfaa9f9629dfedefbb985e6c38bbd1aba" }
+symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "f52eea647e937716c8e45017ba08cbf207669467" }
 
 [build-dependencies]
 pyo3-build-config = "*"
