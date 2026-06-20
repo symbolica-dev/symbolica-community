@@ -140,6 +140,39 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 
 [[package]]
+name = "astro-float"
+version = "0.9.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96034cc871c05bb65ad7fb77e6a8bebf45d8b055ed0311769e2f83a1d373c1ec"
+dependencies = [
+ "astro-float-macro",
+ "astro-float-num",
+]
+
+[[package]]
+name = "astro-float-macro"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05cfe0f6df5a74fb25b9e713470ad77e091f35f798730673c8772f26ed438963"
+dependencies = [
+ "astro-float-num",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "astro-float-num"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "86887daca11d02e0b04f37a9cb81888aae881397fb48ff66494e356aea97554a"
+dependencies = [
+ "itertools 0.10.5",
+ "lazy_static",
+ "serde",
+]
+
+[[package]]
 name = "atomic"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -750,9 +783,9 @@ dependencies = [
 
 [[package]]
 name = "graphica"
-version = "2.0.0"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81d07452dc5bcb2484f2cfab9fb746d6a13346e1c94d7d80aa3f4cd0df6b5ab8"
+checksum = "10b1f5801ef27f815fbfb0f2057a6dfebaf0001304fd8c904e509f8f57b81f73"
 dependencies = [
  "ahash",
  "dyn-clone",
@@ -898,6 +931,15 @@ name = "is_terminal_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
+
+[[package]]
+name = "itertools"
+version = "0.10.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
+dependencies = [
+ "either",
+]
 
 [[package]]
 name = "itertools"
@@ -1048,6 +1090,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "malachite-base"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc6d8264f5349e0aac20c5ada00ce6a54408455a355d6cd10fec233a10254562"
+dependencies = [
+ "hashbrown 0.16.1",
+ "itertools 0.14.0",
+ "libm",
+ "ryu",
+]
+
+[[package]]
+name = "malachite-nz"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2fe915f924252a6bb46670059b3cf36f022d68e4eeebe280ddb05fc411a6e268"
+dependencies = [
+ "itertools 0.14.0",
+ "libm",
+ "malachite-base",
+ "serde",
+ "wide 0.7.33",
+]
+
+[[package]]
+name = "malachite-q"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ccc576eda346100e6ac908df4d239cb902e96be6e8fe9e275f2d11d25bdcbaf5"
+dependencies = [
+ "itertools 0.14.0",
+ "malachite-base",
+ "malachite-nz",
+ "serde",
+]
+
+[[package]]
 name = "maplit"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1189,16 +1268,19 @@ dependencies = [
 
 [[package]]
 name = "numerica"
-version = "2.0.0"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05bcf7d2ad3bb55bb374a43e7401d911825ee6c6be001bbee9385b4212d2dda9"
+checksum = "76d94348503b03b352810facf970f7b626049bfb5e2884d186c9cba320299116"
 dependencies = [
  "ahash",
+ "astro-float",
  "bincode",
  "bincode-trait-derive",
  "colored 3.1.1",
  "dyn-clone",
  "itertools 0.14.0",
+ "malachite-nz",
+ "malachite-q",
  "num-traits",
  "numpy",
  "pyo3",
@@ -1857,6 +1939,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
 
 [[package]]
+name = "ryu"
+version = "1.0.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
+
+[[package]]
 name = "safe_arch"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2144,8 +2232,8 @@ dependencies = [
 
 [[package]]
 name = "symbolica"
-version = "2.0.0"
-source = "git+https://github.com/symbolica-dev/symbolica?rev=f52eea647e937716c8e45017ba08cbf207669467#f52eea647e937716c8e45017ba08cbf207669467"
+version = "2.1.0"
+source = "git+https://github.com/symbolica-dev/symbolica?rev=9135b4091505276baa11ef262fe1165f2b95ea33#9135b4091505276baa11ef262fe1165f2b95ea33"
 dependencies = [
  "ahash",
  "append-only-vec",
@@ -2181,10 +2269,12 @@ dependencies = [
 
 [[package]]
 name = "symbolica_community"
-version = "2.0.0"
+version = "2.1.0"
 dependencies = [
  "example_extension",
  "idenso",
+ "mimalloc",
+ "numerica",
  "pyo3",
  "pyo3-build-config",
  "pyo3-stub-gen",
@@ -2226,6 +2316,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72b64191b275b66ffe2469e8af2c1cfe3bafa67b529ead792a6d0160888b4237"
 dependencies = [
  "proc-macro2",
+ "quote",
  "unicode-ident",
 ]
 
