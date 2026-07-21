@@ -1,9 +1,18 @@
 use pyo3::{
+    Bound, PyResult, Python,
+    exceptions::PyRuntimeError,
     pyfunction, pymodule,
     types::{PyAnyMethods, PyModule, PyModuleMethods},
-    wrap_pyfunction, Bound, PyResult, Python,
+    wrap_pyfunction,
 };
-use symbolica::api::python::{create_symbolica_module, SymbolicaCommunityModule};
+use symbolica::{
+    api::python::{
+        PythonIntegrationFunctions, PythonIntegrationStep, SymbolicaCommunityModule,
+        create_symbolica_module, set_python_integration_functions,
+    },
+    atom::{Atom, Symbol},
+};
+use symbolica_integrate::Integrate;
 
 #[cfg(feature = "python_stubgen")]
 use pyo3_stub_gen::define_stub_info_gatherer;
@@ -30,8 +39,46 @@ macro_rules! register_module {
     }};
 }
 
+fn integrate(expression: &Atom, variable: Symbol) -> Result<Atom, Atom> {
+    expression.integrate(variable)
+}
+
+fn integrate_with_steps(
+    expression: &Atom,
+    variable: Symbol,
+) -> (Result<Atom, Atom>, String, Vec<PythonIntegrationStep>) {
+    let explanation = expression.integrate_with_steps(variable);
+    let overview = format!("{}", explanation);
+    let steps = explanation
+        .steps
+        .into_iter()
+        .map(|step| {
+            PythonIntegrationStep::new(
+                step.rule,
+                step.depth,
+                step.description.to_owned(),
+                step.references
+                    .iter()
+                    .map(|reference| (*reference).to_owned())
+                    .collect(),
+                step.source.to_owned(),
+                step.input,
+                step.output,
+            )
+        })
+        .collect();
+
+    (explanation.result, overview, steps)
+}
+
 #[pymodule]
 fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    set_python_integration_functions(PythonIntegrationFunctions {
+        integrate,
+        integrate_with_steps,
+    })
+    .map_err(PyRuntimeError::new_err)?;
+
     create_symbolica_module(m)?;
 
     register_module!(m, idenso::python::IdensoModule);

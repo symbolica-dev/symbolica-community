@@ -36,7 +36,7 @@ python_stubgen = [
 example_extension = { path = "example_extension" }
 idenso = { version = "0.3", features = ["bincode", "python"] }
 symbolica = { version = "2.1", features = ["python_export"] }
-symbolica-integrate = { git = "https://github.com/symbolica-dev/symbolica-integrate" }
+symbolica-integrate = { git = "https://github.com/symbolica-dev/symbolica-integrate", features = ["steps"] }
 pyo3 = { version = "0.28", features = ["abi3"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
     "numpy",
