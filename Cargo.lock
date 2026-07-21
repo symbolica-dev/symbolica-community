@@ -670,22 +670,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5baebc0774151f905a1a2cc41989300b1e6fbb29aff0ceffa1064fdd3088d582"
 
 [[package]]
-name = "fixedbitset"
-version = "0.5.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d674e81391d1e1ab681a28d99df07927c6d4aa5b027d7da16ba32d1d21ecd99"
-
-[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
-
-[[package]]
-name = "foldhash"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
 
 [[package]]
 name = "foldhash"
@@ -784,22 +772,12 @@ dependencies = [
 [[package]]
 name = "graphica"
 version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10b1f5801ef27f815fbfb0f2057a6dfebaf0001304fd8c904e509f8f57b81f73"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=dev#f751b23f5b55ba62e39124767a7785a8dc24cba8"
 dependencies = [
  "ahash",
  "dyn-clone",
  "numerica",
  "rand 0.9.4",
-]
-
-[[package]]
-name = "hashbrown"
-version = "0.15.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
-dependencies = [
- "foldhash 0.1.5",
 ]
 
 [[package]]
@@ -810,7 +788,7 @@ checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
 dependencies = [
  "allocator-api2",
  "equivalent",
- "foldhash 0.2.0",
+ "foldhash",
 ]
 
 [[package]]
@@ -1268,9 +1246,8 @@ dependencies = [
 
 [[package]]
 name = "numerica"
-version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76d94348503b03b352810facf970f7b626049bfb5e2884d186c9cba320299116"
+version = "2.2.0"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=dev#f751b23f5b55ba62e39124767a7785a8dc24cba8"
 dependencies = [
  "ahash",
  "astro-float",
@@ -1381,18 +1358,6 @@ checksum = "89815c69d36021a140146f26659a81d6c2afa33d216d736dd4be5381a7362220"
 dependencies = [
  "pest",
  "sha2",
-]
-
-[[package]]
-name = "petgraph"
-version = "0.8.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8701b58ea97060d5e5b155d383a69952a60943f0e6dfe30b04c287beb0b27455"
-dependencies = [
- "fixedbitset",
- "hashbrown 0.15.5",
- "indexmap",
- "serde",
 ]
 
 [[package]]
@@ -2233,7 +2198,7 @@ dependencies = [
 [[package]]
 name = "symbolica"
 version = "2.1.0"
-source = "git+https://github.com/symbolica-dev/symbolica?rev=9135b4091505276baa11ef262fe1165f2b95ea33#9135b4091505276baa11ef262fe1165f2b95ea33"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=dev#f751b23f5b55ba62e39124767a7785a8dc24cba8"
 dependencies = [
  "ahash",
  "append-only-vec",
@@ -2268,6 +2233,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "symbolica-integrate"
+version = "1.0.0"
+source = "git+https://github.com/symbolica-dev/symbolica-integrate#ca228601b3b298662c13f76bfe32d2157f1a76f9"
+dependencies = [
+ "symbolica",
+]
+
+[[package]]
 name = "symbolica_community"
 version = "2.1.0"
 dependencies = [
@@ -2280,14 +2253,15 @@ dependencies = [
  "pyo3-stub-gen",
  "spynso3",
  "symbolica",
+ "symbolica-integrate",
  "vakint",
 ]
 
 [[package]]
 name = "symjit"
-version = "2.18.6"
+version = "2.20.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c51e4f44848e6c920fe6f3e565632007a91bdf4f7c5f8c7f6e6dfee9dbcd98a7"
+checksum = "feaedfcf07ed32b5e4c7fef6d00d61bfdc0a5b996883b4619dfcfa56c2211ed9"
 dependencies = [
  "ahash",
  "anyhow",
@@ -2296,7 +2270,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "num-complex",
- "petgraph",
+ "num-traits",
  "rand 0.9.4",
  "rayon",
  "region",
