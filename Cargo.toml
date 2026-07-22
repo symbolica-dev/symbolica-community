@@ -9,7 +9,7 @@ name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.88"
-version = "2.1.0"
+version = "2.2.0"
 exclude = ["dist"]
 
 [[bin]]
@@ -35,14 +35,14 @@ python_stubgen = [
 [dependencies]
 example_extension = { path = "example_extension" }
 idenso = { version = "0.3", features = ["bincode", "python"] }
-symbolica = { version = "2.1", features = ["python_export"] }
-symbolica-integrate = { git = "https://github.com/symbolica-dev/symbolica-integrate", features = ["steps"] }
+symbolica = { version = "2.2", features = ["python_export"] }
+symbolica-integrate = { version = "1.0", features = ["steps"] }
 pyo3 = { version = "0.28", features = ["abi3"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
     "numpy",
 ] }
 spynso3 = { version = "0.1" }
-vakint = { git = "https://github.com/alphal00p/gammaloop", rev = "db79edc84f6a1580decbcc4ede7ea0b1c79d9a08", features = [
+vakint = { git = "https://github.com/alphal00p/gammaloop", rev = "d1f99ffab783715050fe5fd1de676670d7f3e2aa", features = [
     "symbolica_community_module",
 ] }
 mimalloc = { version = "0.1", features = [
@@ -50,14 +50,14 @@ mimalloc = { version = "0.1", features = [
 ] } # prevent TLS allocation errors in conjunction with numpy
 
 [patch.crates-io]
-spynso3 = { git = "https://github.com/alphal00p/gammaloop", rev = "db79edc84f6a1580decbcc4ede7ea0b1c79d9a08" }
-idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "db79edc84f6a1580decbcc4ede7ea0b1c79d9a08" }
-spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "db79edc84f6a1580decbcc4ede7ea0b1c79d9a08" }
-spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "db79edc84f6a1580decbcc4ede7ea0b1c79d9a08" }
+spynso3 = { git = "https://github.com/alphal00p/gammaloop", rev = "d1f99ffab783715050fe5fd1de676670d7f3e2aa" }
+idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "d1f99ffab783715050fe5fd1de676670d7f3e2aa" }
+spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "d1f99ffab783715050fe5fd1de676670d7f3e2aa" }
+spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "d1f99ffab783715050fe5fd1de676670d7f3e2aa" }
 
-symbolica = { git = "https://github.com/symbolica-dev/symbolica", branch = "dev" }
-numerica = { git = "https://github.com/symbolica-dev/symbolica", branch = "dev" }
-graphica = { git = "https://github.com/symbolica-dev/symbolica", branch = "dev" }
+symbolica = { git = "https://github.com/symbolica-dev/symbolica", branch = "main" }
+numerica = { git = "https://github.com/symbolica-dev/symbolica", branch = "main" }
+graphica = { git = "https://github.com/symbolica-dev/symbolica", branch = "main" }
 
 [build-dependencies]
 pyo3-build-config = "*"
