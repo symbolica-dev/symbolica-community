@@ -1969,6 +1969,24 @@ class ExecutionMode(enum.Enum):
     All = ...
 
 @typing.final
+class SymbolicParallelism(enum.Enum):
+    r"""
+    Policy for Rayon operations that manipulate Symbolica expressions.
+    """
+    Auto = ...
+    r"""
+    Resolve the setting from the Symbolica license when configured.
+    """
+    Serial = ...
+    r"""
+    Keep symbolic operations on the calling thread.
+    """
+    Parallel = ...
+    r"""
+    Allow symbolic operations to use Rayon workers.
+    """
+
+@typing.final
 class TensorNamespace(enum.Enum):
     r"""
     Enumeration for different tensor namespaces in physics.
@@ -1985,3 +2003,10 @@ class TensorNamespace(enum.Enum):
 
 def initialize() -> None: ...
 
+def set_symbolica_rayon_enabled(policy: SymbolicParallelism) -> builtins.bool:
+    r"""
+    Configure whether Spenso may use Rayon for Symbolica operations.
+
+    `Auto` checks the Symbolica license once during this call. Tensor operations
+    subsequently use the cached result without querying the license again.
+    """

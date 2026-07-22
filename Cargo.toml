@@ -42,7 +42,7 @@ pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, f
     "numpy",
 ] }
 spynso3 = { version = "0.1" }
-vakint = { git = "https://github.com/alphal00p/gammaloop", rev = "d1f99ffab783715050fe5fd1de676670d7f3e2aa", features = [
+vakint = { git = "https://github.com/alphal00p/gammaloop", rev = "fff1d66ee7ca039b9e165fe8d29da91f4c27113c", features = [
     "symbolica_community_module",
 ] }
 mimalloc = { version = "0.1", features = [
@@ -50,10 +50,10 @@ mimalloc = { version = "0.1", features = [
 ] } # prevent TLS allocation errors in conjunction with numpy
 
 [patch.crates-io]
-spynso3 = { git = "https://github.com/alphal00p/gammaloop", rev = "d1f99ffab783715050fe5fd1de676670d7f3e2aa" }
-idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "d1f99ffab783715050fe5fd1de676670d7f3e2aa" }
-spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "d1f99ffab783715050fe5fd1de676670d7f3e2aa" }
-spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "d1f99ffab783715050fe5fd1de676670d7f3e2aa" }
+spynso3 = { git = "https://github.com/alphal00p/gammaloop", rev = "fff1d66ee7ca039b9e165fe8d29da91f4c27113c" }
+idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "fff1d66ee7ca039b9e165fe8d29da91f4c27113c" }
+spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "fff1d66ee7ca039b9e165fe8d29da91f4c27113c" }
+spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "fff1d66ee7ca039b9e165fe8d29da91f4c27113c" }
 
 symbolica = { git = "https://github.com/symbolica-dev/symbolica", branch = "main" }
 numerica = { git = "https://github.com/symbolica-dev/symbolica", branch = "main" }

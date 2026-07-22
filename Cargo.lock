@@ -952,7 +952,7 @@ dependencies = [
 [[package]]
 name = "gammaloop-workspace-hack"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?rev=d1f99ffab783715050fe5fd1de676670d7f3e2aa#d1f99ffab783715050fe5fd1de676670d7f3e2aa"
+source = "git+https://github.com/alphal00p/gammaloop?rev=fff1d66ee7ca039b9e165fe8d29da91f4c27113c#fff1d66ee7ca039b9e165fe8d29da91f4c27113c"
 dependencies = [
  "ahash",
  "anstream",
@@ -1168,7 +1168,7 @@ dependencies = [
 [[package]]
 name = "idenso"
 version = "0.3.0"
-source = "git+https://github.com/alphal00p/gammaloop?rev=d1f99ffab783715050fe5fd1de676670d7f3e2aa#d1f99ffab783715050fe5fd1de676670d7f3e2aa"
+source = "git+https://github.com/alphal00p/gammaloop?rev=fff1d66ee7ca039b9e165fe8d29da91f4c27113c#fff1d66ee7ca039b9e165fe8d29da91f4c27113c"
 dependencies = [
  "base64",
  "bincode",
@@ -1392,7 +1392,7 @@ dependencies = [
 [[package]]
 name = "linnet"
 version = "0.17.0"
-source = "git+https://github.com/alphal00p/gammaloop?rev=d1f99ffab783715050fe5fd1de676670d7f3e2aa#d1f99ffab783715050fe5fd1de676670d7f3e2aa"
+source = "git+https://github.com/alphal00p/gammaloop?rev=fff1d66ee7ca039b9e165fe8d29da91f4c27113c#fff1d66ee7ca039b9e165fe8d29da91f4c27113c"
 dependencies = [
  "ahash",
  "bincode",
@@ -2682,7 +2682,7 @@ checksum = "02ef091d4e8b981dbaa4cc17789d00b53d5d2c001ae689f14e6093f30c529036"
 [[package]]
 name = "spenso"
 version = "0.6.0"
-source = "git+https://github.com/alphal00p/gammaloop?rev=d1f99ffab783715050fe5fd1de676670d7f3e2aa#d1f99ffab783715050fe5fd1de676670d7f3e2aa"
+source = "git+https://github.com/alphal00p/gammaloop?rev=fff1d66ee7ca039b9e165fe8d29da91f4c27113c#fff1d66ee7ca039b9e165fe8d29da91f4c27113c"
 dependencies = [
  "ahash",
  "append-only-vec",
@@ -2726,7 +2726,7 @@ dependencies = [
 [[package]]
 name = "spenso-hep-lib"
 version = "0.1.7"
-source = "git+https://github.com/alphal00p/gammaloop?rev=d1f99ffab783715050fe5fd1de676670d7f3e2aa#d1f99ffab783715050fe5fd1de676670d7f3e2aa"
+source = "git+https://github.com/alphal00p/gammaloop?rev=fff1d66ee7ca039b9e165fe8d29da91f4c27113c#fff1d66ee7ca039b9e165fe8d29da91f4c27113c"
 dependencies = [
  "ahash",
  "gammaloop-workspace-hack",
@@ -2740,7 +2740,7 @@ dependencies = [
 [[package]]
 name = "spenso-macros"
 version = "0.3.2"
-source = "git+https://github.com/alphal00p/gammaloop?rev=d1f99ffab783715050fe5fd1de676670d7f3e2aa#d1f99ffab783715050fe5fd1de676670d7f3e2aa"
+source = "git+https://github.com/alphal00p/gammaloop?rev=fff1d66ee7ca039b9e165fe8d29da91f4c27113c#fff1d66ee7ca039b9e165fe8d29da91f4c27113c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2752,7 +2752,7 @@ dependencies = [
 [[package]]
 name = "spynso3"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?rev=d1f99ffab783715050fe5fd1de676670d7f3e2aa#d1f99ffab783715050fe5fd1de676670d7f3e2aa"
+source = "git+https://github.com/alphal00p/gammaloop?rev=fff1d66ee7ca039b9e165fe8d29da91f4c27113c#fff1d66ee7ca039b9e165fe8d29da91f4c27113c"
 dependencies = [
  "ahash",
  "eyre",
@@ -3425,7 +3425,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 [[package]]
 name = "vakint"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?rev=d1f99ffab783715050fe5fd1de676670d7f3e2aa#d1f99ffab783715050fe5fd1de676670d7f3e2aa"
+source = "git+https://github.com/alphal00p/gammaloop?rev=fff1d66ee7ca039b9e165fe8d29da91f4c27113c#fff1d66ee7ca039b9e165fe8d29da91f4c27113c"
 dependencies = [
  "ahash",
  "arrayvec",
