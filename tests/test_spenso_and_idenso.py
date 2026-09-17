@@ -6,14 +6,12 @@ import pytest
 from symbolica import E, Expression, S
 from symbolica.community.spenso import (
     ExecutionMode,
-    LibraryTensor,
     Representation,
     Slot,
     Tensor,
-    TensorIndices,
+    TensorExpression,
     TensorLibrary,
     TensorNetwork,
-    TensorStructure,
 )
 from symbolica.community.spenso import TensorName as N
 
@@ -28,11 +26,9 @@ class TestNotebookBasics:
         assert S is not None
         assert E is not None
         assert N is not None
-        assert LibraryTensor is not None
+        assert TensorExpression is not None
         assert TensorNetwork is not None
         assert Representation is not None
-        assert TensorStructure is not None
-        assert TensorIndices is not None
         assert Tensor is not None
         assert Slot is not None
         assert TensorLibrary is not None
@@ -123,16 +119,16 @@ class TestTensorIndices:
         self.k = self.bis(S("k"))
         self.mu = self.mink("mu")
         self.nu = self.mink("nu")
-        self.gamma = N.gamma()
+        self.gamma = TensorExpression.gamma(4)
         self.p = N("P")
         self.w = N("w")
-        self.g = N.g()
+        self.g = TensorExpression.g(self.bis)
         self.mq = S("mq")
 
     def test_create_tensor_indices(self):
         """Test creating tensor indices"""
         other_g = self.gamma(self.i, self.k, self.mu)
-        g_muik = TensorIndices(self.i, self.k, self.mu, name=self.gamma)
+        g_muik = self.gamma(self.i, self.k, self.mu)
 
         assert other_g is not None
         assert g_muik is not None
@@ -141,7 +137,7 @@ class TestTensorIndices:
 
     def test_tensor_indices_indexing(self):
         """Test indexing tensor indices"""
-        g_muik = TensorIndices(self.i, self.k, self.mu, name=self.gamma)
+        g_muik = self.gamma(self.i, self.k, self.mu)
         result = g_muik[2]
         assert result is not None
 
@@ -152,13 +148,13 @@ class TestTensorIndices:
 
     def test_tensor_slicing(self):
         """Test tensor slicing"""
-        g_muik = TensorIndices(self.i, self.k, self.mu, name=self.gamma)
+        g_muik = self.gamma(self.i, self.k, self.mu)
         result = g_muik[45:63:3]
         assert result is not None
 
     def test_tensor_multi_indexing(self):
         """Test tensor multi-indexing"""
-        g_muik = TensorIndices(self.i, self.k, self.mu, name=self.gamma)
+        g_muik = self.gamma(self.i, self.k, self.mu)
         result = g_muik[[2, 2, 2]]
         assert result is not None
 
@@ -175,15 +171,15 @@ class TestTensorNetwork:
         self.k = self.bis(S("k"))
         self.mu = self.mink("mu")
         self.nu = self.mink("nu")
-        self.gamma = N.gamma()
+        self.gamma = TensorExpression.gamma(4)
         self.p = N("P")
         self.w = N("w")
-        self.g = N.g()
+        self.g = TensorExpression.g(self.bis)
         self.mq = S("mq")
 
     def test_tensor_network_creation(self):
         """Test creating tensor network from expression"""
-        g_muik = TensorIndices(self.i, self.k, self.mu, name=self.gamma)
+        g_muik = self.gamma(self.i, self.k, self.mu)
         x = (
             g_muik
             * (
@@ -199,7 +195,7 @@ class TestTensorNetwork:
 
     def test_tensor_network_graph(self):
         """Test tensor network graph creation"""
-        g_muik = TensorIndices(self.i, self.k, self.mu, name=self.gamma)
+        g_muik = self.gamma(self.i, self.k, self.mu)
         x = (
             g_muik
             * (
@@ -217,7 +213,7 @@ class TestTensorNetwork:
 
     def test_tensor_network_execution_scalar(self):
         """Test tensor network execution in scalar mode"""
-        g_muik = TensorIndices(self.i, self.k, self.mu, name=self.gamma)
+        g_muik = self.gamma(self.i, self.k, self.mu)
         x = (
             g_muik
             * (
@@ -248,7 +244,7 @@ class TestTensorNetwork:
 
     def test_tensor_network_full_execution(self):
         """Test full tensor network execution and result"""
-        g_muik = TensorIndices(self.i, self.k, self.mu, name=self.gamma)
+        g_muik = self.gamma(self.i, self.k, self.mu)
         x = (
             g_muik
             * (
@@ -282,14 +278,14 @@ class TestTensorEvaluation:
         self.k = self.bis(S("k"))
         self.mu = self.mink("mu")
         self.nu = self.mink("nu")
-        self.gamma = N.gamma()
+        self.gamma = TensorExpression.gamma(4)
         self.p = N("P")
         self.w = N("w")
-        self.g = N.g()
+        self.g = TensorExpression.g(self.bis)
         self.mq = S("mq")
 
         # Create tensor network and execute
-        g_muik = TensorIndices(self.i, self.k, self.mu, name=self.gamma)
+        g_muik = self.gamma(self.i, self.k, self.mu)
         x = (
             g_muik
             * (
@@ -353,7 +349,7 @@ class TestLibraryTensors:
         custom = Representation("custom", 4, is_self_dual=False)
         mq = S("mq")
 
-        t = LibraryTensor.sparse([custom, custom], type(mq))
+        t = Tensor.sparse(N("sparse_test")(custom, custom), type(mq))
         # Note that the structure is a list of representations, not slots
         structure = t.structure()
         assert structure is not None
@@ -377,8 +373,8 @@ class TestLibraryTensors:
         tname = S("test")
 
         # Dense tensors are built from a list of values in row-major order.
-        t = LibraryTensor.dense(
-            TensorStructure(d, d, name=tname),
+        t = Tensor.dense(
+            N("test")(d, d),
             [0, 0, 123, 11, 3, 234, 234, 23, 44],
         )
 
@@ -422,7 +418,7 @@ class TestSymbolicOperations:
 
         self.to_expression = to_expression
 
-        self.gam = self.lib["spenso::gamma"]
+        self.gam = TensorExpression.gamma(4)
 
         def p(i):
             m = to_expression(self.minkd(i))
@@ -459,7 +455,7 @@ class TestIdensoSimplifications:
         """Set up for idenso tests."""
         self.bis = Representation.bis(4)
         self.lib = TensorLibrary.hep_lib()
-        self.gam = self.lib["spenso::gamma"]
+        self.gam = TensorExpression.gamma(4)
         self.fc = S("spenso::f")
         self.ps = S("p")
         self.coad = Representation("coad", 8)
@@ -576,7 +572,7 @@ def test_notebook_integration():
     w = N("w")
 
     # Create simple tensor expression
-    expr = gamma(i, i, mu) * w(1, mu)
+    expr = TensorExpression.gamma(4)(i, i, mu) * w(1, mu)
 
     # Create and execute tensor network
     tn = TensorNetwork(expr)

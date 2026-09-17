@@ -9,9 +9,9 @@ authors = [
     { name = "Valentin Hirschi", email = "valentin.hirschi@gmail.com" },
 ]
 name = "symbolica"
-description = "Community-enhanced version of Symbolica: a blazing fast computer algebra system"
+description = "Symbolica: a blazing fast computer algebra system, with community extensions"
 keywords = ["math", "algebra", "polynomial", "expression", "manipulation"]
-version = "2.2.0"
+version = "3.0.0"
 readme = "Readme_pypi.md"
 requires-python = ">=3.7"
 classifiers = [

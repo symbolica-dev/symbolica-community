@@ -96,6 +96,56 @@ jobs:
         with:
           name: wheels-windows-x86_64
           path: wheelhouse
+  pyemscripten:
+    runs-on: ubuntu-latest
+    env:
+      PYODIDE_VERSION: "314.0.7"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Set cross-build environment directory
+        run: echo "PYODIDE_XBUILDENV_PATH=$RUNNER_TEMP/pyodide-xbuildenv" >> "$GITHUB_ENV"
+
+      - name: Set up Pyodide cross-compilation
+        run: |
+          python -m pip install pyodide-build==0.39.0 maturin==1.15.0
+          pyodide xbuildenv install "$PYODIDE_VERSION"
+          toolchain=$(pyodide config get rust_toolchain)
+          rustup toolchain install "$toolchain" --profile minimal --target wasm32-unknown-emscripten
+          echo "RUSTUP_TOOLCHAIN=$toolchain" >> "$GITHUB_ENV"
+
+      # pyodide-build installs the matching Emscripten SDK and applies the
+      # pyemscripten platform tag required for installation from PyPI.
+      # Rust links directly with emcc, bypassing pyodide's --exports option.
+      # Pass its public entry point to the linker explicitly.
+      - name: Build wheel
+        run: >-
+          pyodide build . --outdir dist --no-isolation
+          -C maturin.build-args="--locked --profile release-small
+          --no-default-features --features wasm
+          -- -C link-arg=-sEXPORTED_FUNCTIONS=_PyInit_core"
+
+      - name: Test installation with micropip
+        env:
+          SYMBOLICA_LICENSE_KEY: ${{ secrets.SYMBOLICA_LICENSE_KEY }}
+        run: |
+          PYODIDE_DIST_DIR=$(pyodide config get dist_dir)
+          export PYODIDE_DIST_DIR
+          node .github/scripts/test_pyodide.mjs dist
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: pyemscripten-wheels-2026-wasm32
+          path: dist/*-pyemscripten_2026_0_wasm32.whl
+          if-no-files-found: error
+
   publish:
     name: Publish to PyPI
     runs-on: ubuntu-latest
@@ -113,6 +163,29 @@ jobs:
           path: dist
           pattern: wheels-*
           merge-multiple: true
+
+      - name: Publish to PyPI
+        uses: PyO3/maturin-action@v1
+        env:
+          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        with:
+          command: upload
+          args: --skip-existing dist/*
+
+  publish_pyemscripten:
+    name: Publish PyEmscripten to PyPI
+    runs-on: ubuntu-latest
+    needs: [pyemscripten]
+    if: inputs.publish == true
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: pyemscripten-wheels-2026-wasm32
+          path: dist
 
       - name: Publish to PyPI
         uses: PyO3/maturin-action@v1

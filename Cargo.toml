@@ -8,8 +8,8 @@ license = "MIT"
 name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
-rust-version = "1.88"
-version = "2.2.0"
+rust-version = "1.89"
+version = "3.0.0"
 exclude = ["dist"]
 
 [[bin]]
@@ -20,10 +20,21 @@ required-features = ["python_stubgen"]
 name = "symbolica_community"
 crate-type = ["rlib", "cdylib"]
 
+# Optimize browser downloads separately from native release performance.
+[profile.release-small]
+inherits = "release"
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+strip = "symbols"
+
 [features]
-default = ["module"]
+default = ["module", "native"]
 module = ["pyo3/abi3", "symbolica/python_abi3"] # incompatible with stub_gen
+native = ["symbolica/default", "idenso/native", "spynso3/native", "example_extension/native"]
+wasm = ["symbolica/wasm", "idenso/wasm", "spynso3/wasm", "example_extension/wasm"]
 python_stubgen = [
+    "native",
     "pyo3-stub-gen",
     "symbolica/python_stubgen",
     "spynso3/python_stubgen",
@@ -33,32 +44,24 @@ python_stubgen = [
 ]
 
 [dependencies]
-example_extension = { path = "example_extension" }
-idenso = { version = "0.3", features = ["bincode", "python"] }
-symbolica = { version = "2.2", features = ["python_export"] }
-symbolica-integrate = { version = "1.0", features = ["steps"] }
-pyo3 = { version = "0.28", features = ["abi3"] }
+example_extension = { path = "example_extension", default-features = false }
+idenso = { git = "https://github.com/alphal00p/gammaloop", branch = "main", default-features = false, features = ["bincode", "python"] }
+spynso3 = { git = "https://github.com/alphal00p/gammaloop", branch = "main", default-features = false }
+symbolica = { version = "3.0", default-features = false, features = ["python_export"] }
+symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
+pyo3 = { version = "0.28" }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
     "numpy",
 ] }
-spynso3 = { version = "0.1" }
-vakint = { git = "https://github.com/alphal00p/gammaloop", rev = "fff1d66ee7ca039b9e165fe8d29da91f4c27113c", features = [
-    "symbolica_community_module",
-] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+# Vakint currently requires native dependencies, including GMP/MPFR.
+vakint = { git = "https://github.com/alphal00p/gammaloop", branch = "main", features = ["symbolica_community_module"] }
 mimalloc = { version = "0.1", features = [
     "local_dynamic_tls",
 ] } # prevent TLS allocation errors in conjunction with numpy
 
 [patch.crates-io]
-spynso3 = { git = "https://github.com/alphal00p/gammaloop", rev = "fff1d66ee7ca039b9e165fe8d29da91f4c27113c" }
-idenso = { git = "https://github.com/alphal00p/gammaloop", rev = "fff1d66ee7ca039b9e165fe8d29da91f4c27113c" }
-spenso = { git = "https://github.com/alphal00p/gammaloop", rev = "fff1d66ee7ca039b9e165fe8d29da91f4c27113c" }
-spenso-hep-lib = { git = "https://github.com/alphal00p/gammaloop", rev = "fff1d66ee7ca039b9e165fe8d29da91f4c27113c" }
-
 symbolica = { git = "https://github.com/symbolica-dev/symbolica", branch = "main" }
 numerica = { git = "https://github.com/symbolica-dev/symbolica", branch = "main" }
 graphica = { git = "https://github.com/symbolica-dev/symbolica", branch = "main" }
-
-[build-dependencies]
-pyo3-build-config = "*"
-numerica = { version = "2.2", features = ["gmp"] }

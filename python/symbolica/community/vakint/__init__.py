@@ -88,11 +88,12 @@ print(f"\nNumerical evaluation as list:\n{num_eval.to_list()}")
 
 print(f"\nNumerical evaluation, as expression:\n{vakint.numerical_result_to_expression(num_eval)}")
 
+# MSbar reference, cross-checked with AlphaLoop and MATAD.
 benchmark = VakintNumericalResult([
-    (-3, (0.0, -4230.112451731339)),
-    (-2, (0.0,  22000.89349621258)),
-    (-1, (0.0, -64562.68098612698)),
-    (-0, (0.0,  41560.11791065207)),
+    (-3, (0.0, -1.1173609576420288e-6)),
+    (-2, (0.0, -6.5100173620734605e-6)),
+    (-1, (0.0, -2.0905712543667471e-5)),
+    (0, (0.0, -7.3459590332116190e-5)),
 ])
 
 match_res, match_msg = benchmark.compare_to(
@@ -105,6 +106,11 @@ assert match_res
 ```
 
 """
+
+import sys as _sys
+
+if _sys.platform == "emscripten":
+    raise ImportError("Vakint requires a native Symbolica installation.")
 
 from ..vakint_native import *
 

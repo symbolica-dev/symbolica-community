@@ -32,7 +32,7 @@ You are able to perform these operations from the comfort of a programming langu
 
 # Installation
 
-Symbolica can be installed for Python >3.5 using `pip`:
+Symbolica can be installed for Python 3.7 or newer using `pip`:
 
 ```sh
 pip install symbolica
@@ -40,6 +40,15 @@ pip install symbolica
 
 Visit the [Get Started](https://symbolica.io/docs/get_started.html) page for detailed installation instructions.
 
+For Pyodide 314.x (Python 3.14), install the PyEmscripten wheel with `micropip`:
+
+```python
+import micropip
+await micropip.install("symbolica")
+```
+
+The WebAssembly build uses Symbolica's Rust numeric backends. Native code
+generation is unavailable in this build.
 
 # Examples
 
@@ -99,18 +108,13 @@ which yields `(45+13*x+50*x*y^2+152*x^2+25*x^2*y^4+300*x^3*y^2+150*x^4*y^4)/(5+2
 
 # Community packages
 
-The PyPi version of Symbolica ships with the following community packages:
-- [spenso](https://github.com/alphal00p/spenso): perform tensor network computations
-- [idenso](https://github.com/alphal00p/spenso): perform Dirac and color algebra
-- [vakint](https://github.com/alphal00p/vakint): compute massive vacuum bubbles
+Version 3.0 ships core Symbolica and symbolic integration, including step-by-step
+explanations, through `symbolica-integrate` 2.0. Integration rule metadata is
+compressed to reduce download size.
 
-They can be accessed through:
-
-```python
-import symbolica.community.spenso
-```
-
-Example use can be found [here](https://github.com/benruijl/symbolica-community/tree/main/examples).
+Native wheels also include Spenso, Idenso, Vakint, and the example extension.
+PyEmscripten wheels include Idenso, Spenso, and the example extension.
+Vakint and Spenso's compiled evaluators require a native installation.
 
 ## Development
 

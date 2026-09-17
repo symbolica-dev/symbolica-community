@@ -9,7 +9,8 @@ from symbolica import E, S
 
 @pytest.mark.skipif(os.environ.get('CI') in ('True', 'true'), reason="Test does not run in CI environment as FORM is not installed.")
 class TestVakint:
-    def test_one_loop_evaluation(self):
+    @pytest.mark.parametrize("backend", ["alphaloop", "matad"])
+    def test_three_loop_evaluation(self, backend):
 
         masses = {"muvsq": 2., "mursq": 3.}
         external_momenta = {
@@ -26,19 +27,10 @@ class TestVakint:
         vakint = Vakint(
             integral_normalization_factor="MSbar",
             mu_r_sq_symbol=S("mursq"),
-            # If you select 5 terms, then MATAD will be used, but for 4 and fewer, alphaLoop is will be used as
-            # it is first in the evaluation_order supplied.
+            run_time_decimal_precision=50,
             number_of_terms_in_epsilon_expansion=4,
             evaluation_order=[
-                VakintEvaluationMethod.new_alphaloop_method(),
-                VakintEvaluationMethod.new_matad_method(),
-                VakintEvaluationMethod.new_fmft_method(),
-                # VakintEvaluationMethod.new_pysecdec_method(
-                #     min_n_evals=10_000,
-                #     max_n_evals=1000_000,
-                #     numerical_masses=masses,
-                #     numerical_external_momenta=external_momenta
-                # ),
+                getattr(VakintEvaluationMethod, f"new_{backend}_method")(),
             ],
             form_exe_path="form",
             python_exe_path="python3",
@@ -84,11 +76,15 @@ class TestVakint:
         # FIX: on my setup, the code below triggers an "out of bound" python crash, similar to before for new Vakint() setup
         # print(f"\nNumerical evaluation, as expression:\n{vakint.numerical_result_to_expression(num_eval)}")  # nopep8
 
+        # MSbar reference: AlphaLoop and MATAD agree at 50-digit precision.
+        # Also checked by reducing the numerator to scalar propagator powers
+        # independently of Vakint's tensor reduction. The leading coefficient
+        # is -i * (13/8 * 2**2 + 7/4 * 2 * (-0.6)) / (4096 * pi**6).
         benchmark = VakintNumericalResult([
-            (-3, (0.0, -11440.53140354612)),
-            (-2, (0.0,  57169.95521898031)),
-            (-1, (0.0, -178748.9838377694)),
-            (-0, (0.0,  321554.1122184795)),
+            (-3, (0.0, -1.1173609576420288e-6)),
+            (-2, (0.0, -6.5100173620734605e-6)),
+            (-1, (0.0, -2.0905712543667471e-5)),
+            (0, (0.0, -7.3459590332116190e-5)),
         ])
 
         match_res, match_msg = benchmark.compare_to(
@@ -97,4 +93,4 @@ class TestVakint:
 
         # print(f"\nMatch result: {match_res}, {match_msg}")
 
-        assert match_res
+        assert match_res, match_msg

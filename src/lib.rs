@@ -28,10 +28,8 @@ macro_rules! register_module {
 
         let child_module = PyModule::new($m.py(), &native_name)?;
         child_module.add_function(wrap_pyfunction!(initialize_module, &child_module)?)?;
-
         <$module_type>::register_module(&child_module)?;
         $m.add_submodule(&child_module)?;
-
         $m.py().import("sys")?.getattr("modules")?.set_item(
             format!("symbolica.community.{}", native_name),
             &child_module,
@@ -48,7 +46,7 @@ fn integrate_with_steps(
     variable: Symbol,
 ) -> (Result<Atom, Atom>, String, Vec<PythonIntegrationStep>) {
     let explanation = expression.integrate_with_steps(variable);
-    let overview = format!("{}", explanation);
+    let overview = explanation.to_string();
     let steps = explanation
         .steps
         .into_iter()
@@ -67,7 +65,6 @@ fn integrate_with_steps(
             )
         })
         .collect();
-
     (explanation.result, overview, steps)
 }
 
@@ -78,14 +75,14 @@ fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
         integrate_with_steps,
     })
     .map_err(PyRuntimeError::new_err)?;
-
     create_symbolica_module(m)?;
-
     register_module!(m, idenso::python::IdensoModule);
-    register_module!(m, spynso3::SpensoModule);
-    register_module!(m, vakint::symbolica_community_module::VakintWrapper);
     register_module!(m, example_extension::CommunityModule);
-
+    register_module!(m, spynso3::SpensoModule);
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        register_module!(m, vakint::symbolica_community_module::VakintWrapper);
+    }
     Ok(())
 }
 
