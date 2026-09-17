@@ -1,0 +1,22 @@
+{
+  "name": "symbolica-browser-playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild editor.js output.js --bundle --format=esm --minify --outdir=assets"
+  },
+  "dependencies": {
+    "@codemirror/autocomplete": "6.20.3",
+    "@codemirror/commands": "6.11.1",
+    "@codemirror/lang-python": "6.2.1",
+    "@codemirror/language": "6.12.4",
+    "@codemirror/state": "6.7.5",
+    "@codemirror/view": "6.43.12",
+    "@lezer/highlight": "1.2.3",
+    "dompurify": "3.4.15",
+    "marked": "18.0.13"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Symbolica · Browser lab</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Symbolica home"><span class="mark">s</span> symbolica<span class="edition">COMMUNITY</span></a>
+    <a class="page-link" href="quick-start.html">Live quick start ↗</a>
+  </header>
+  <main>
+    <section class="intro">
+      <div><p class="eyebrow">PYTHON × WEBASSEMBLY</p><h1>Your browser. <em>Your algebra.</em></h1>
+      <p class="lede">Explore symbolic expressions, integrals, and tensors with Symbolica.</p></div>
+      <div class="runtime" role="status" aria-live="polite"><span id="status-dot" class="dot busy"></span><span id="status">Starting Python…</span></div>
+    </section>
+    <div class="workspace">
+      <aside>
+        <p class="eyebrow">START WITH AN EXAMPLE</p>
+        <nav id="examples" aria-label="Python examples"></nav>
+        <div class="note"><span class="note-icon">↳</span><p>Python runs in your browser.<br>Variables persist between runs.</p></div>
+        <div class="package"><p class="eyebrow">IN THIS RUNTIME</p><p>Symbolica <span id="version">3.0</span></p><p>Integration · Idenso · Spenso</p><small id="size">Loading local wheel…</small></div>
+      </aside>
+      <section class="lab" aria-label="Python playground">
+        <div class="panel editor-panel">
+          <div class="panel-head"><span><span class="file-dot"></span> playground.py</span><span class="hint">Ctrl / ⌘ + Enter</span></div>
+          <div id="editor"></div>
+          <div class="editor-foot"><span id="example-description">Expand and factor a polynomial.</span><div class="actions"><button id="stop" hidden>Stop</button><button id="run" class="primary" disabled><span>▶</span> Run Python</button></div></div>
+        </div>
+        <div class="panel output-panel">
+          <div class="panel-head"><span>OUTPUT <span id="elapsed"></span></span><button id="clear" class="text-button">Clear</button></div>
+          <div id="output" role="log" aria-live="polite" aria-label="Python output">Preparing your Python workspace…</div>
+        </div>
+        <div class="under"><span id="session-note">A fresh session, ready for an idea.</span><button id="reset" class="text-button">↻ Reset session</button></div>
+        <p id="type-status" role="status" class="type-status">Loading ty type hints…</p>
+      </section>
+    </div>
+  </main>
+  <footer><span>Built for curiosity.</span><span>Pyodide 314 · Python 3.14 · All computation stays in this browser</span></footer>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Symbolica · Live quick start</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="quick-start.css">
+  <script type="module" src="quick-start.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Symbolica playground"><span class="mark">s</span> symbolica<span class="edition">COMMUNITY</span></a>
+    <a class="page-link" href="/">Open playground ↗</a>
+  </header>
+  <main>
+    <section class="intro">
+      <div><p class="eyebrow">A LIVE PYTHON QUICK START</p><h1>Start with a symbol.<br><em>Make it do something.</em></h1>
+      <p class="lede">Nine small experiments in symbolic mathematics. Edit the Python, run it,<br class="wide-only"> and hover over a name or method to explore its types and documentation.</p></div>
+      <div class="runtime" role="status" aria-live="polite"><span id="status-dot" class="dot busy"></span><span id="status">Starting Python…</span></div>
+    </section>
+    <div class="guide-layout">
+      <aside class="guide-sidebar">
+        <p class="eyebrow">EXPLORE THE BASICS</p>
+        <nav id="contents" aria-label="Quick-start sections"></nav>
+        <p class="guide-source">Adapted from the <a href="https://symbolica.io/docs/quick_start.html" target="_blank" rel="noopener noreferrer">Symbolica quick start ↗</a>, with examples you can run here.</p>
+      </aside>
+      <div class="guide-content">
+        <section class="guide-toolbar" aria-label="Runtime controls">
+          <div><strong>Your browser is the notebook.</strong><p>Each run starts with fresh Python variables. End with an expression for rich output. Ctrl / ⌘ + Enter runs the focused example.</p></div>
+          <div class="actions"><button id="run-all" class="primary" disabled>▶ Run all</button><button id="stop" hidden>Stop</button><button id="reset" class="text-button">↻ Reset runtime</button></div>
+        </section>
+        <p id="type-status" class="type-status" role="status">Loading ty type hints…</p>
+        <div id="live-examples"></div>
+        <section class="next-steps">
+          <p class="eyebrow">KEEP EXPLORING</p><h2>Take the next step.</h2>
+          <p>Use the <a href="/">playground</a> for a persistent Python session and community tensor examples, or explore the full documentation:</p>
+          <div class="doc-links"><a href="https://symbolica.io/docs/expressions.html">Expressions ↗</a><a href="https://symbolica.io/docs/pattern_matching.html">Pattern matching ↗</a><a href="https://symbolica.io/docs/numerical_evaluation.html">Numerical evaluation ↗</a><a href="https://symbolica.io/docs/polynomials.html">Polynomials ↗</a></div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <footer><span>Symbolica community <span id="version">3.0</span> · <span id="size">Local wheel</span></span><span>Pyodide · Local assets · Python and ty run in your browser</span></footer>
+  <noscript><p>Enable JavaScript to load the editable examples and browser Python runtime.</p></noscript>
+</body>
+</html>
