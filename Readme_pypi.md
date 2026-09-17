@@ -112,9 +112,12 @@ Version 3.0 ships core Symbolica and symbolic integration, including step-by-ste
 explanations, through `symbolica-integrate` 2.0. Integration rule metadata is
 compressed to reduce download size.
 
-Native wheels also include Spenso, Idenso, Vakint, and the example extension.
-PyEmscripten wheels include Idenso, Spenso, and the example extension.
+Native wheels also include Spenso, Idenso, FeynKit HEP tools, Vakint, and the example extension.
+PyEmscripten wheels include Idenso, Spenso, HEP, and the example extension.
 Vakint and Spenso's compiled evaluators require a native installation.
+
+The HEP classes are available directly under `symbolica.community.hep`, including
+`FeynmanDiagram`, `Model`, `Generator`, `CffGenerator`, and `TensorReducer`.
 
 ## Development
 

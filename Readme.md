@@ -19,10 +19,11 @@
 This repository contains the [Symbolica](https://github.com/benruijl/symbolica) library, bundled with additional community contributions.
 
 Version 3.0 ships core Symbolica and symbolic integration via
-`symbolica-integrate` 2.0, plus Idenso, Spenso, Vakint, and the example extension.
-The gammaLoop extensions track its `main` branch, with the tested revision pinned
-in `Cargo.lock`. PyEmscripten wheels include Idenso, Spenso, and the example
-extension. Vakint and Spenso's compiled evaluators require a native installation.
+`symbolica-integrate` 2.0, plus Idenso, Spenso, FeynKit HEP tools, Vakint, and the
+example extension. The GammaLoop extensions track its `feynkit` branch, with
+the tested revision pinned in `Cargo.lock`. PyEmscripten wheels include Idenso,
+Spenso, HEP, and the example extension. Vakint and Spenso's compiled evaluators
+require a native installation.
 
 The integrator enables `compressed-step-metadata`, preserving integration steps
 while storing their rule sources and descriptions in a Brotli-compressed catalog.
@@ -35,6 +36,15 @@ To use core Symbolica features, simply write:
 from symbolica import *
 ```
 See the [documentation](https://symbolica.io/docs) for further help.
+
+FeynKit's diagram, generation, CFF, tensor-reduction, model, and kinematics
+classes share one flat namespace:
+
+```python
+from symbolica.community.hep import FeynmanDiagram, Model, Generator, TensorReducer
+```
+
+See the [HEP example](examples/hep/README.md) for a complete one-loop calculation.
 
 #### Installation 
 

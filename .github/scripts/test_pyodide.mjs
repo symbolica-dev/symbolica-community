@@ -22,6 +22,7 @@ const wheelBytes = await readFile(join(wheelDir, wheel));
 pyodide.FS.writeFile(`/${wheel}`, wheelBytes);
 pyodide.globals.set("wheel_uri", `emfs:/${wheel}`);
 pyodide.globals.set("expected_version", wheel.split("-")[1]);
+pyodide.globals.set("hep_model_json", await readFile(new URL("../../examples/hep/scalar_phi3.json", import.meta.url), "utf8"));
 await pyodide.runPythonAsync(`
 import os
 import sys
@@ -59,6 +60,29 @@ network = TensorNetwork(tensor.structure()(1, 1), library=library)
 network.execute(library=library)
 assert list(network.result_tensor(library=library)) == [E("x+4")]
 assert "symbolica.community.spenso_native" in sys.modules
+from symbolica.community import hep
+assert hep.FeynmanDiagram.__module__ == "symbolica.community.hep"
+model = hep.Model.from_json(hep_model_json)
+options = hep.GenerationOptions(max_vertices=3, allow_self_loops=False)
+generated = model.generate_diagrams(["scalar_0"], ["scalar_0", "scalar_0"], loops=1, options=options)
+assert generated.report.completed and len(generated) > 0
+diagram = generated[0]
+assert isinstance(diagram, hep.FeynmanDiagram) and diagram.loop_count == 1
+diagram.validate()
+restored = hep.FeynmanDiagram.from_json(model, diagram.to_json())
+assert restored.loop_count == 1
+cff = restored.build_cff()
+assert len(cff) > 0
+from symbolica import Expression
+assert isinstance(cff.to_expression(), Expression)
+D, mu, nu = S("hep_smoke::D", "hep_smoke::mu", "hep_smoke::nu")
+k, p = S("hep_smoke::k", "hep_smoke::p")
+mink, dot = S("spenso::mink", "spenso::dot")
+kv, pv = k(mink(D)), p(mink(D))
+numerator = k(mink(D, mu)) * k(mink(D, nu)) * p(mink(D, mu)) * p(mink(D, nu))
+assert hep.TensorReducer(D).with_integrated_vector(kv).reduce(numerator) == dot(kv, kv) * dot(pv, pv) / D
+assert hep.ThreeMomentum(3.0, 4.0, 0.0).on_shell().components() == (5.0, 3.0, 4.0, 0.0)
+assert "symbolica.community.hep_native" in sys.modules
 assert not hasattr(evaluator, "compile")
 assert not hasattr(spenso, "CompiledTensorEvaluator")
 assert "symbolica.community.vakint_native" not in sys.modules
@@ -79,12 +103,16 @@ const allowedExports = new Set([
   "__wasm_apply_data_relocs",
 ]);
 // Rust retains these inventory registration globals even with an explicit
-// function export list. The hash varies between builds; their identity does not.
-const inventoryConstructor = /^_ZN(?:9symbolica(?:14transcendental|5state)|19symbolica_integrate|6idenso|6spenso9shadowing)1_6__CTOR17h[0-9a-f]{16}E$/;
+// function export list. Accept Rust's legacy and v0 symbol mangling, keeping
+// the crate/module paths and constructor name restricted in both formats.
+const inventoryConstructors = [
+  /^_ZN(?:9symbolica(?:14transcendental|5state)|19symbolica_integrate|6idenso|6spenso9shadowing|17feynkit_generator)1_6__CTOR17h[0-9a-f]{16}E$/,
+  /^_RNvNv(?:Cs[0-9A-Za-z]+_(?:6idenso|19symbolica_integrate|17feynkit_generator)|NtCs[0-9A-Za-z]+_(?:6spenso9shadowing|9symbolica(?:14transcendental|5state)))1__6___CTOR$/,
+];
 assert(exports.some(({ name }) => name === "PyInit_core"), "Missing Python module entry point");
 assert.deepEqual(
   exports.filter(({ name, kind }) =>
-    !allowedExports.has(name) && !(kind === "global" && inventoryConstructor.test(name)),
+    !allowedExports.has(name) && !(kind === "global" && inventoryConstructors.some(pattern => pattern.test(name))),
   ),
   [],
   "Unexpected public WebAssembly exports",

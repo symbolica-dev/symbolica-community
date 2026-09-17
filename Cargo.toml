@@ -31,22 +31,25 @@ strip = "symbols"
 [features]
 default = ["module", "native"]
 module = ["pyo3/abi3", "symbolica/python_abi3"] # incompatible with stub_gen
-native = ["symbolica/default", "idenso/native", "spynso3/native", "example_extension/native"]
-wasm = ["symbolica/wasm", "idenso/wasm", "spynso3/wasm", "example_extension/wasm"]
+native = ["symbolica/default", "idenso/native", "spynso3/native", "feynkit-py/native", "example_extension/native"]
+wasm = ["symbolica/wasm", "idenso/wasm", "spynso3/wasm", "feynkit-py/wasm", "example_extension/wasm"]
 python_stubgen = [
     "native",
     "pyo3-stub-gen",
     "symbolica/python_stubgen",
     "spynso3/python_stubgen",
     "idenso/python_stubgen",
+    "feynkit-py/python_stubgen",
     "vakint/python_stubgen",
     "example_extension/python_stubgen",
 ]
 
 [dependencies]
 example_extension = { path = "example_extension", default-features = false }
-idenso = { git = "https://github.com/alphal00p/gammaloop", branch = "main", default-features = false, features = ["bincode", "python"] }
-spynso3 = { git = "https://github.com/alphal00p/gammaloop", branch = "main", default-features = false }
+idenso = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false, features = ["bincode", "python"] }
+spynso3 = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
+# Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.
+feynkit-py = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false, features = ["ufo"] }
 symbolica = { version = "3.0", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
 pyo3 = { version = "0.28" }
@@ -56,7 +59,7 @@ pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, f
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # Vakint currently requires native dependencies, including GMP/MPFR.
-vakint = { git = "https://github.com/alphal00p/gammaloop", branch = "main", features = ["symbolica_community_module"] }
+vakint = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", features = ["symbolica_community_module"] }
 mimalloc = { version = "0.1", features = [
     "local_dynamic_tls",
 ] } # prevent TLS allocation errors in conjunction with numpy

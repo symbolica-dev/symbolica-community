@@ -1,0 +1,112 @@
+{
+  "name": "scalar_phi3",
+  "restriction": "default",
+  "orders": [
+    {
+      "name": "QCD",
+      "expansion_order": 99,
+      "hierarchy": 1
+    }
+  ],
+  "parameters": [
+    {
+      "name": "ZERO",
+      "lhablock": null,
+      "lhacode": null,
+      "nature": "internal",
+      "parameter_type": "real",
+      "value": [
+        0.0,
+        0.0
+      ],
+      "expression": null
+    },
+    {
+      "name": "lam",
+      "lhablock": "SCALARS",
+      "lhacode": [
+        1337
+      ],
+      "nature": "external",
+      "parameter_type": "real",
+      "value": [
+        1.0,
+        0.0
+      ],
+      "expression": null
+    }
+  ],
+  "particles": [
+    {
+      "pdg_code": 1000,
+      "name": "scalar_0",
+      "antiname": "scalar_0",
+      "spin": 1,
+      "color": 1,
+      "mass": "ZERO",
+      "width": "ZERO",
+      "texname": "\\phi_0",
+      "antitexname": "\\phi_0",
+      "charge": 0.0,
+      "ghost_number": 0,
+      "lepton_number": 0,
+      "y_charge": 0
+    }
+  ],
+  "propagators": [
+    {
+      "name": "scalar_0_propFeynman",
+      "particle": "scalar_0",
+      "numerator": "1",
+      "denominator": "(UFO::{}::P(UFO::{}::idx(1,1)))^2"
+    }
+  ],
+  "lorentz_structures": [
+    {
+      "name": "SCALAR_3_LORENTZ_STRUCTURE",
+      "spins": [
+        1,
+        1,
+        1
+      ],
+      "structure": "1"
+    }
+  ],
+  "couplings": [
+    {
+      "name": "SCALAR_COUPLING",
+      "expression": "1𝑖*UFO::{}::lam",
+      "orders": [
+        [
+          "QCD",
+          1
+        ]
+      ],
+      "value": [
+        0.0,
+        1.0
+      ]
+    }
+  ],
+  "vertex_rules": [
+    {
+      "name": "V_3_SCALAR_000",
+      "particles": [
+        "scalar_0",
+        "scalar_0",
+        "scalar_0"
+      ],
+      "color_structures": [
+        "1"
+      ],
+      "lorentz_structures": [
+        "SCALAR_3_LORENTZ_STRUCTURE"
+      ],
+      "couplings": [
+        [
+          "SCALAR_COUPLING"
+        ]
+      ]
+    }
+  ]
+}
