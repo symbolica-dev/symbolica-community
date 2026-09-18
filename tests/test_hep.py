@@ -20,12 +20,14 @@ def model():
 def test_flat_namespace_and_stubs():
     for name in (
         "FeynmanDiagram", "DiagramEdge", "DiagramVertex", "LoopMomentumBasis",
-        "Model", "Particle", "Generator", "GenerationOptions", "Process",
+        "Model", "Particle", "Generator", "Process", "NumeratorGrouping",
+        "SelfEnergyFilterOptions", "TadpoleFilterOptions", "SnailFilterOptions",
         "CffGenerator", "CffResult", "TensorReducer", "FourMomentum",
         "ThreeMomentum", "JetDefinition", "UfoLoader", "FeynkitError",
     ):
         assert getattr(hep, name).__module__ == "symbolica.community.hep"
     assert not hasattr(hep, "initialize_module")
+    assert not hasattr(hep, "GenerationOptions")
     classes = {name: value for name, value in vars(hep).items() if isinstance(value, type)}
     assert all(value.__module__ == "symbolica.community.hep" for value in classes.values())
     stub = Path(hep.__file__).with_name("__init__.pyi").read_text()
@@ -35,9 +37,8 @@ def test_flat_namespace_and_stubs():
 
 
 def test_generate_diagram_and_cff(model):
-    options = hep.GenerationOptions(max_vertices=3, allow_self_loops=False)
     process = hep.Process.amplitude(["scalar_0"], ["scalar_0", "scalar_0"]).with_loop_count(1, 1)
-    generated = hep.Generator(model).generate(process, options)
+    generated = hep.Generator(model).generate(process, max_vertices=3, allow_self_loops=False)
     assert generated.report.completed
     assert len(generated) > 0
     diagram = generated[0]
@@ -54,6 +55,27 @@ def test_generate_diagram_and_cff(model):
     assert len(cff) > 0
     assert isinstance(cff.to_expression(), Expression)
     assert diagram.build_cff().to_expression() == cff.to_expression()
+
+
+def test_generation_keywords_and_empty_results(model):
+    incoming, outgoing = ["scalar_0"], ["scalar_0", "scalar_0"]
+    process = hep.Process.amplitude(incoming, outgoing)
+    generator = hep.Generator(model)
+    kwargs = dict(max_vertices=3, coupling_orders={"QCD": 1})
+    generated = generator.generate(process, **kwargs)
+    ranged = model.generate_diagrams(
+        incoming, outgoing, max_vertices=3, coupling_orders={"QCD": (1, 1)},
+    )
+    assert len(generated) > 0
+    assert [diagram.id for diagram in generated] == [diagram.id for diagram in ranged]
+    assert kwargs["coupling_orders"] == {"QCD": 1}
+    for result in (
+        generator.generate(process, particle_veto=["scalar_0"], **kwargs),
+        model.generate_diagrams(incoming, outgoing, max_vertices=3, coupling_orders={"QCD": 0}),
+    ):
+        assert result.report.completed
+        assert len(result) == 0
+        assert list(result) == []
 
 
 def test_tensor_reduction_uses_host_expressions():
