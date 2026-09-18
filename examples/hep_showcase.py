@@ -34,27 +34,25 @@ def _():
 
 @app.cell
 def _(S):
-    D, eps, p2, ell2, x = S(
-        'hep_gluon::D', 'hep_gluon::eps', 'hep_gluon::p2',
-        'hep_gluon::ell2', 'hep_gluon::x',
-    )
+    D, eps = S('hep_gluon::D', 'hep_gluon::eps')
     P, K = S('hep_gluon::P', 'hep_gluon::K', tags=['spenso::tensor', 'spenso::rank1'])
-    L = S('hep_gluon::L')
-    RED_P = S('hep_gluon::reduction_P')
     index_ = S('hep_gluon::index_')
     mink, metric, dot = S('spenso::mink', 'spenso::g', 'spenso::dot')
     MOMENTUM = S('FeynKit::Momentum')
     t = S("hep_gluon::t", is_scalar=True) # a scale that can move out of dot products
-    Muv2 = S("hep_gluon::Muv2")
+    mUV = S("hep_gluon::mUV", is_scalar=True)
+    uv_probe = S("hep_gluon::uv_probe", is_scalar=True)
+    prop = S("hep_gluon::prop", is_scalar=True)
+    q_, mass2_ = S("hep_gluon::q_", "hep_gluon::mass2_")
     # Python aliases for actual dot expressions, not substitute scalar symbols.
     k2 = dot(K(mink(D)), K(mink(D)))
     kp = dot(K(mink(D)), P(mink(D)))
+    p2 = dot(P(mink(D)), P(mink(D)))
     UV_K, UV_P = S("hep_gluon::uv_K", "hep_gluon::uv_P", tags=['spenso::tensor', 'spenso::rank1'])
     return (
         D,
         K,
         MOMENTUM,
-        Muv2,
         P,
         UV_K,
         UV_P,
@@ -63,10 +61,15 @@ def _(S):
         index_,
         k2,
         kp,
+        mUV,
+        mass2_,
         metric,
         mink,
         p2,
+        prop,
+        q_,
         t,
+        uv_probe,
     )
 
 
@@ -200,22 +203,10 @@ def _(
 
 
 @app.cell
-def _(
-    D,
-    P,
-    TensorExpression,
-    as_tensor,
-    contract_indices,
-    dot,
-    idenso,
-    mink,
-    p2,
-):
+def _(TensorExpression, as_tensor, contract_indices):
     def scalar_products(expression: TensorExpression) -> TensorExpression:
         """Keep compact scalar products inside the structured tensor expression."""
-        return as_tensor(idenso.to_dots(contract_indices(expression).to_expression()).replace(
-            dot(P(mink(D)), P(mink(D))), p2
-        ).expand())
+        return as_tensor(contract_indices(expression).to_dots().to_expression().expand())
 
     return (scalar_products,)
 
@@ -260,43 +251,84 @@ def _(E, Expression, Model, S, TensorExpression, as_tensor):
 
 
 @app.cell
-def _(D, Expression, P, TensorExpression, dot, mink, p2):
-    def invariants(expression: TensorExpression) -> Expression:
-        """Drop the scalar tensor interface, retaining the loop-momentum dots."""
+def _(TensorExpression, as_tensor):
+    def invariants(expression: TensorExpression) -> TensorExpression:
+        """Validate a scalar tensor while retaining its dot notation and interface."""
         if not expression.is_scalar:
             raise ValueError('Contract all external indices before taking the UV series')
-        return expression.to_expression().replace(
-            dot(P(mink(D)), P(mink(D))), p2
-        ).expand()
+        return as_tensor(expression.to_expression().expand())
 
     return (invariants,)
 
 
 @app.cell
 def _(
+    D,
     E,
-    Expression,
     FeynmanDiagram,
+    K,
     Model,
+    P,
     S,
-    k2,
-    kp,
-    p2,
+    TensorExpression,
+    as_tensor,
+    mink,
+    prop,
     routing_coefficients,
 ):
-    def bubble_denominator(diagram: FeynmanDiagram, model: Model) -> Expression:
+    def graph_propagators(diagram: FeynmanDiagram, model: Model) -> TensorExpression:
+        """Instantiate each internal edge's model denominator with graph routing."""
         if len(diagram.internal_edges) != 2:
             raise ValueError('This example supports two-propagator bubbles only')
-        denominator = E('1')
         routing = routing_coefficients(diagram)
+        ufo_momentum = S('UFO::P')(S('UFO::idx')(1, 1))
+        product = E('1')
         for edge in diagram.internal_edges:
-            a, b = routing[edge.id]
-            particle = model.particle(edge.particle_name)
-            mass2 = E('0') if particle.is_massless else S('UFO::' + particle.mass_parameter)**2
-            denominator *= a*a*k2 + 2*a*b*kp + b*b*p2 - mass2
-        return denominator
+            candidates = [item for item in model.propagators if item.particle == edge.particle_name]
+            if len(candidates) != 1:
+                raise ValueError(f'Expected one model propagator for {edge.particle_name}')
+            denominator = candidates[0].denominator
+            mass_squared = -denominator.replace(ufo_momentum**2, 0).expand()
+            if (denominator - ufo_momentum**2 + mass_squared).expand() != E('0'):
+                raise ValueError('Expected a quadratic UFO propagator denominator')
+            loop, external = routing[edge.id]
+            momentum = loop*K(mink(D)) + external*P(mink(D))
+            product *= prop(momentum, mass_squared)
+        return as_tensor(product)
 
-    return (bubble_denominator,)
+    return (graph_propagators,)
+
+
+@app.cell
+def _(
+    D,
+    Expression,
+    K,
+    TensorExpression,
+    as_tensor,
+    dot,
+    mUV,
+    mass2_,
+    mink,
+    prop,
+    q_,
+    t,
+):
+    def evaluate_propagators(expression: Expression) -> TensorExpression:
+        """Interpret prop(q, M2) as 1/(q.q-M2), retaining the model's mass term."""
+        return as_tensor(expression.replace(prop(q_, mass2_), 1/(dot(q_, q_)-mass2_)))
+
+    def uv_deform(expression: Expression) -> TensorExpression:
+        """Scale the full integrand and shift normalized propagator masses."""
+        scaled = expression.replace(K(mink(D)), K(mink(D))/t)
+        # Factoring t^2 from a rescaled propagator rescales its mass to t^2*m^2.
+        # Apply prop(q,M2) -> prop(q,M2+(1-t^2)*mUV^2) in that normalization.
+        return as_tensor(scaled.replace(
+            prop(q_, mass2_),
+            t**2 * prop(t*q_, t**2*mass2_ + (1-t**2)*mUV**2),
+        ))
+
+    return evaluate_propagators, uv_deform
 
 
 @app.cell
@@ -324,7 +356,7 @@ def _(
         Radial dot(K,K) factors remain scalar coefficients.
         """
         indexed = E('0')
-        for power, coefficient in expression.expand().coefficient_list(kp):
+        for power, coefficient in as_tensor(expression).to_expression().expand().coefficient_list(kp):
             rank = 0 if power == E('1') else power.to_polynomial().degree(kp)
             tensor = E('1')
             for n in range(rank):
@@ -333,13 +365,13 @@ def _(
             indexed += coefficient * tensor
         return as_tensor(indexed)
 
-    def uv_scalar_invariants(expression: Expression) -> Expression:
-        """Restore the original loop-vector name and external invariant p2."""
+    def uv_scalar_invariants(expression: Expression) -> TensorExpression:
+        """Restore the original loop and external vectors inside scalar dots."""
         reduced = expression.replace(dot(UV_K(mink(D)), UV_K(mink(D))), k2)
         reduced = reduced.replace(dot(UV_P(mink(D)), UV_P(mink(D))), p2).expand()
         if reduced.replace(UV_K(index_), 0).replace(UV_P(index_), 0) != reduced:
             raise ValueError('Tensor reduction left an indexed momentum')
-        return reduced
+        return as_tensor(reduced)
 
     return uv_scalar_invariants, uv_tensor_input
 
@@ -351,32 +383,43 @@ def _(D, UV_K, fk, mink):
 
 
 @app.cell
+def _(D, K, TensorExpression, as_tensor, k2, mink, uv_probe):
+    def uv_pole_residue(expression: TensorExpression) -> TensorExpression:
+        """Extract the logarithmic radial tail: its one-loop pole is i/(16*pi^2*eps)."""
+        tail = expression.to_expression().replace(K(mink(D)), K(mink(D))/uv_probe)
+        # Include the one-loop measure and keep its scale-independent term.
+        logarithmic = (tail/uv_probe**4).series(uv_probe, 0, 0)[0]
+        return as_tensor((logarithmic*k2**2).expand().cancel().replace(D, 4).expand())
+
+    return (uv_pole_residue,)
+
+
+@app.cell
 def _(
-    D,
-    E,
-    Expression,
-    K,
+    TensorExpression,
+    as_tensor,
     copy,
-    k2,
-    mink,
+    evaluate_propagators,
     t,
     tensor_reducer,
+    uv_deform,
+    uv_pole_residue,
     uv_scalar_invariants,
     uv_tensor_input,
 ):
-    def uv_expansion_data(expression: Expression):
-        """Expand a copy for k -> k/t, through t^4, then reduce the vacuum tensors."""
-        uv_copy = copy(expression)
-        scaled = uv_copy.replace(K(mink(D)), K(mink(D))/t)
-        series = scaled.series(t, 0, 4).to_expression().expand()
+    def uv_expansion_data(expression: TensorExpression, *, loop_count: int):
+        """Expand an expression copy, with numerator and massive UV denominators together."""
+        uv_copy = as_tensor(copy(expression))
+        deformed = uv_deform(uv_copy)
+        measure_factor = t**(-4*loop_count)
+        with_measure = evaluate_propagators(deformed).to_expression() * measure_factor
+        # Retain every UV-divergent power, then remove the measure bookkeeping.
+        series = as_tensor((with_measure.series(t, 0, 0).to_expression()/measure_factor).expand())
         reduced = uv_scalar_invariants(tensor_reducer.reduce(uv_tensor_input(series)))
-        a = (reduced.coefficient(t**2) * k2).expand()
-        b = (reduced.coefficient(t**4) * k2**2).expand()
-        remainder = (reduced - a*t**2/k2 - b*t**4/k2**2).expand()
-        if remainder != E('0') or a.contains(k2) or b.contains(k2):
-            raise ValueError('Expected UV terms A/k2 + B/k2^2 after angular averaging')
-        return {'copy': uv_copy, 'series': series, 'reduced': reduced,
-                'quadratic': a, 'logarithmic': b, 'residue': b.replace(D, 4).expand()}
+        counterterm = as_tensor(-reduced.to_expression().replace(t, 1).expand())
+        return {'copy': uv_copy, 'deformed': deformed, 'series': series,
+                'reduced': reduced, 'counterterm': counterterm,
+                'residue': -uv_pole_residue(counterterm)}
 
     return (uv_expansion_data,)
 
@@ -414,13 +457,22 @@ def _(mo):
 
 
 @app.cell
-def _(SnailFilterOptions, g, model):
-    diagrams = model.generate_diagrams(
-        [g], [g], loops=1,
-        coupling_orders={"QCD": 2, "QED": 0},
-        particle_veto=["c", "t", "s", "u", "d"],
-        zero_snails=SnailFilterOptions(),
-    )
+def _(SnailFilterOptions, g, mo, model):
+    with mo.status.spinner(title="Generating diagrams") as status:
+        def report(p):
+            status.update(
+                title=str(p.stage),
+                subtitle=f"{p.completed:,} processed",
+            )
+
+        loops = 1
+        diagrams = model.generate_diagrams(
+            [g], [g], loops=loops,
+            coupling_orders={"QCD": 2*loops, "QED": 0},
+            particle_veto=["c", "t", "s", "u", "d"],
+            zero_snails=SnailFilterOptions(),
+            progress=report,
+        )
     return (diagrams,)
 
 
@@ -441,7 +493,7 @@ def _(diagrams, mo):
             f"{i}: {', '.join(e.particle_name for e in d.internal_edges)}": i
             for i, d in enumerate(diagrams)
         },
-        value="1: g, g",
+        #value="1: g, g",
         label="Particles in the loop",
     )
     diagram_index
@@ -574,13 +626,20 @@ def _(mo):
     mo.md(r"""
     ## UV expansion on a copy of the expression
 
-    Include the two propagator denominators, then copy the projected expression.
-    Declare `t` with `is_scalar=True` and set $k\to k/t$ directly inside the dots.
-    Their normalization extracts $1/t^2$ from $k\cdot k$ and $1/t$ from $k\cdot p$;
-    no scalar placeholder for either loop-momentum dot is needed. Expand at
-    $t=0$ through $t^4$. These are the quadratically, linearly, and logarithmically
-    UV-divergent terms in four dimensions; the integration measure is not included
-    in the series. External momenta and physical masses are held fixed.
+    Read each internal edge's propagator denominator from the model and use
+    the graph's momentum routing. Here `prop(q, M2)` denotes $1/(q^2-M^2)$.
+    Copy the full projected integrand and scale $k\to k/t$ in numerator and
+    propagators together. After extracting $t^2$ from each propagator, apply
+    $$\operatorname{prop}(k+tp,t^2m^2)\longrightarrow
+    \operatorname{prop}(k+tp,t^2m^2+(1-t^2)m_{\rm UV}^2).$$
+    At $t=1$ this recovers the physical integrand; at $t=0$ the denominator is
+    $k^2-m_{\rm UV}^2$. Include the loop-measure factor $t^{-4L}$ for
+    four-dimensional power counting and expand through $t^0$. For these
+    quadratically divergent bubbles, the series starts at $t^{-2}$.
+    Remove the measure factor before tensor reduction to recover the
+    counterterm integrand. This bookkeeping does not change the symbolic
+    dimension $D$ used in the contractions.
+    All momentum squares remain dot products, including $p\cdot p$.
     """)
     return
 
@@ -588,33 +647,41 @@ def _(mo):
 @app.cell
 def _(
     as_tensor,
-    bubble_denominator,
     diagram,
+    graph_propagators,
     invariants,
     model,
     weighted_projected_numerator,
 ):
-    projected_integrand = invariants(weighted_projected_numerator) / bubble_denominator(diagram, model)
-    as_tensor(projected_integrand)
-    return (projected_integrand,)
+    graph_propagator_product = graph_propagators(diagram, model)
+    projected_integrand = as_tensor(invariants(weighted_projected_numerator) * graph_propagator_product)
+    projected_integrand
+    return graph_propagator_product, projected_integrand
 
 
 @app.cell
-def _(D, K, copy, mink, projected_integrand, t):
-    uv_expression_copy = copy(projected_integrand)
-    uv_scaled_expression = uv_expression_copy.replace(K(mink(D)), K(mink(D)) / t)
-    uv_series = uv_scaled_expression.series(t, 0, 4)
-    uv_series
-    return uv_expression_copy, uv_series
-
-
-@app.cell
-def _(projected_integrand, t, uv_expression_copy, uv_series):
-    # The original expression is still available, with its full denominators.
-    assert uv_expression_copy == projected_integrand
-    uv_expanded_expression = uv_series.to_expression().replace(t, 1).expand()
-    uv_expanded_expression
+def _(as_tensor, evaluate_propagators, graph_propagator_product):
+    graph_denominator = as_tensor(1 / evaluate_propagators(graph_propagator_product))
+    graph_denominator
     return
+
+
+@app.cell
+def _(as_tensor, copy, projected_integrand, uv_deform):
+    uv_expression_copy = as_tensor(copy(projected_integrand))
+    uv_deformed_expression = uv_deform(uv_expression_copy)
+    uv_deformed_expression
+    return (uv_deformed_expression,)
+
+
+@app.cell
+def _(as_tensor, diagram, evaluate_propagators, t, uv_deformed_expression):
+    uv_scaled_expression = evaluate_propagators(uv_deformed_expression)
+    uv_measure_factor = t**(-4*diagram.loop_count)
+    uv_with_measure = as_tensor(uv_scaled_expression.to_expression() * uv_measure_factor)
+    uv_series = uv_with_measure.to_expression().series(t, 0, 0)
+    uv_series
+    return uv_measure_factor, uv_series
 
 
 @app.cell(hide_code=True)
@@ -632,33 +699,24 @@ def _(mo):
 
 
 @app.cell
-def _(uv_series, uv_tensor_input):
-    uv_indexed_series = uv_tensor_input(uv_series.to_expression())
+def _(uv_measure_factor, uv_series, uv_tensor_input):
+    uv_indexed_series = uv_tensor_input(uv_series.to_expression()/uv_measure_factor)
     return (uv_indexed_series,)
 
 
 @app.cell
 def _(as_tensor, tensor_reducer, uv_indexed_series):
-    uv_tensor_reduced = tensor_reducer.reduce(uv_indexed_series)
-    as_tensor(uv_tensor_reduced)
+    uv_tensor_reduced = as_tensor(tensor_reducer.reduce(uv_indexed_series))
+    uv_tensor_reduced
     return (uv_tensor_reduced,)
 
 
 @app.cell
-def _(t, uv_scalar_invariants, uv_tensor_reduced):
+def _(as_tensor, t, uv_scalar_invariants, uv_tensor_reduced):
     uv_reduced_series = uv_scalar_invariants(uv_tensor_reduced)
-    uv_reduced_expression = uv_reduced_series.replace(t, 1).expand()
+    uv_reduced_expression = as_tensor(uv_reduced_series.to_expression().replace(t, 1).expand())
     uv_reduced_expression
     return (uv_reduced_series,)
-
-
-@app.cell
-def _(E, k2, t, uv_reduced_series):
-    uv_quadratic_coefficient = (uv_reduced_series.coefficient(t**2) * k2).expand()
-    uv_log_coefficient = (uv_reduced_series.coefficient(t**4) * k2**2).expand()
-    assert uv_reduced_series.coefficient(t**3) == E('0')
-    uv_log_coefficient
-    return uv_log_coefficient, uv_quadratic_coefficient
 
 
 @app.cell(hide_code=True)
@@ -666,35 +724,30 @@ def _(mo):
     mo.md(r"""
     ## UV counterterm
 
-    The angular-averaged asymptotic integrand is $A/k^2+B/(k^2)^2$.
-    To give its subtraction an infrared-safe denominator, introduce an auxiliary
-    $M_{\rm UV}^2$ and use
-    $$C_{\rm UV}(k)=-\frac{A}{k^2-M_{\rm UV}^2}
-    -\frac{B-A M_{\rm UV}^2}{(k^2-M_{\rm UV}^2)^2}.$$
-    Its large-$k$ expansion cancels $A/k^2+B/(k^2)^2$. The compensating term
-    $-A M_{\rm UV}^2$ makes the integrated UV pole independent of the auxiliary mass.
-    This is an **angular-averaged** subtraction, not a pointwise tensor subtraction.
+    The UV expansion already has massive denominators
+    $(k^2-m_{\rm UV}^2)^n$. Tensor-reduce the series, set $t=1$, and negate it
+    to obtain the angular-averaged counterterm. No mass is inserted afterward.
 
-    With $D=4-2\epsilon$ and measure $d^Dk/(2\pi)^D$, the integrated MS counterterm
-    is $-i B|_{D=4}/(16\pi^2\epsilon)$. The unregulated scaleless UV terms above
-    must not be integrated as zero: their UV and infrared poles would cancel.
+    The integrated pole is determined by the coefficient of $1/(k^2)^2$
+    in its large-$k$ radial expansion. With $D=4-2\epsilon$ and measure
+    $d^Dk/(2\pi)^D$, multiply that coefficient by $i/(16\pi^2\epsilon)$.
+    The auxiliary $m_{\rm UV}$ cancels from this coefficient. Finite parts
+    are not evaluated.
     """)
     return
 
 
 @app.cell
-def _(Muv2, k2, uv_log_coefficient, uv_quadratic_coefficient):
-    uv_counterterm_integrand = -uv_quadratic_coefficient / (k2 - Muv2) - (
-        uv_log_coefficient - uv_quadratic_coefficient * Muv2
-    ) / (k2 - Muv2)**2
+def _(as_tensor, t, uv_reduced_series):
+    uv_counterterm_integrand = as_tensor(-uv_reduced_series.to_expression().replace(t, 1).expand())
     uv_counterterm_integrand
-    return
+    return (uv_counterterm_integrand,)
 
 
 @app.cell
-def _(D, E, eps, uv_log_coefficient):
-    uv_residue = uv_log_coefficient.replace(D, 4).expand()
-    uv_counterterm = -E('1i') * uv_residue / (16 * E('pi')**2 * eps)
+def _(E, as_tensor, eps, uv_counterterm_integrand, uv_pole_residue):
+    uv_residue = -uv_pole_residue(uv_counterterm_integrand)
+    uv_counterterm = as_tensor(-E('1i') * uv_residue / (16 * E('pi')**2 * eps))
     uv_counterterm
     return
 
@@ -716,10 +769,10 @@ def _(
     E,
     apply_projector,
     as_tensor,
-    bubble_denominator,
     diagram_weight,
     diagrams,
     external_projector,
+    graph_propagators,
     invariants,
     mo,
     model,
@@ -730,30 +783,30 @@ def _(
 ):
     _uv_rows = []
     for _d in diagrams:
-        _denominator = bubble_denominator(_d, model)
+        _propagators = graph_propagators(_d, model)
         _weight = diagram_weight(_d, model)
         _transverse = resolve_qcd(as_tensor(scalar_products(apply_projector(route_numerator(_d), external_projector(_d))) * _weight), model)
         _longitudinal = resolve_qcd(as_tensor(scalar_products(apply_projector(route_numerator(_d), external_projector(_d, longitudinal=True))) * _weight), model)
         _uv_rows.append({
             'loop': ', '.join(_e.particle_name for _e in _d.internal_edges),
-            'transverse': uv_expansion_data(invariants(_transverse) / _denominator)['residue'],
-            'longitudinal': uv_expansion_data(invariants(_longitudinal) / _denominator)['residue'],
+            'transverse': uv_expansion_data(invariants(_transverse) * _propagators, loop_count=_d.loop_count)['residue'],
+            'longitudinal': uv_expansion_data(invariants(_longitudinal) * _propagators, loop_count=_d.loop_count)['residue'],
         })
-    total_uv_residue = sum((_row['transverse'] for _row in _uv_rows), E('0')).expand()
-    longitudinal_uv_residue = sum((_row['longitudinal'] for _row in _uv_rows), E('0')).expand()
+    total_uv_residue = as_tensor(sum((_row['transverse'].to_expression() for _row in _uv_rows), E('0')).expand())
+    longitudinal_uv_residue = as_tensor(sum((_row['longitudinal'].to_expression() for _row in _uv_rows), E('0')).expand())
     assert longitudinal_uv_residue == E('0')
     mo.ui.table([
         {'Loop': _row['loop'],
-         'Transverse residue': _row['transverse'].format(color_top_level_sum=False, color_builtin_symbols=False),
-         'Longitudinal residue': _row['longitudinal'].format(color_top_level_sum=False, color_builtin_symbols=False)}
+         'Transverse residue': _row['transverse'].format_tensor(),
+         'Longitudinal residue': _row['longitudinal'].format_tensor()}
         for _row in _uv_rows
     ], selection=None)
     return (total_uv_residue,)
 
 
 @app.cell
-def _(E, eps, total_uv_residue):
-    total_uv_counterterm = -E('1i') * total_uv_residue / (16 * E('pi')**2 * eps)
+def _(E, as_tensor, eps, total_uv_residue):
+    total_uv_counterterm = as_tensor(-E('1i') * total_uv_residue / (16 * E('pi')**2 * eps))
     total_uv_counterterm
     return
 
