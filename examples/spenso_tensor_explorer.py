@@ -1,0 +1,1 @@
+/common/dev/gammaloop/feynkit-rich-display/examples/notebooks/spenso_tensor_explorer.py

@@ -262,7 +262,7 @@ class TestTensorNetwork:
         assert t is not None
 
         # Test structure
-        structure = t.structure()
+        structure = t.expression()
         assert structure is not None
 
 
@@ -312,13 +312,11 @@ class TestTensorEvaluation:
         assert e is not None
 
         # Test evaluation without compilation
-        e_params = [
-            random.random() + 1j * random.random() for _ in range(len(params))
-        ]
+        e_params = [random.random() + 1j * random.random() for _ in range(len(params))]
         eval_res = e.evaluate_complex([e_params])[0]
 
         assert eval_res is not None
-        assert eval_res.structure() is not None
+        assert eval_res.expression() is not None
 
     def test_tensor_compilation(self):
         """Test tensor compilation"""
@@ -351,7 +349,7 @@ class TestLibraryTensors:
 
         t = Tensor.sparse(N("sparse_test")(custom, custom), type(mq))
         # Note that the structure is a list of representations, not slots
-        structure = t.structure()
+        structure = t.expression()
         assert structure is not None
 
         # Set individual elements
@@ -381,12 +379,12 @@ class TestLibraryTensors:
         # Test element assignment
         t[[1, 2]] = 3 / 34
         assert t is not None
-        assert t.structure() is not None
+        assert t.expression() is not None
 
         lib = TensorLibrary.hep_lib()
         lib.register(t)
 
-        new_t = t.structure()
+        new_t = t.expression()
 
         x = new_t(1, 2) * new_t(2, 3) * new_t(3, 1)
         n = TensorNetwork(x, library=lib)
@@ -471,88 +469,58 @@ class TestIdensoSimplifications:
 
     def test_simplify_metrics_tensor(self):
         """Test metric simplification with tensor"""
-        from symbolica.community.idenso import simplify_metrics
-
-        result = simplify_metrics(self.bis.g(4, 2) * self.gam(2, 3, 1))
+        result = (self.bis.g(4, 2) * self.gam(2, 3, 1)).simplify_metrics()
         assert result is not None
 
     def test_simplify_metrics_bis_trace(self):
         """Test metric simplification with bis trace"""
-        from symbolica.community.idenso import simplify_metrics
-
-        result = simplify_metrics(self.bis.g(1, 1).to_expression())
+        result = self.bis.g(1, 1).simplify_metrics()
         assert result is not None
 
     def test_simplify_metrics_euclidean_trace(self):
         """Test metric simplification with euclidean trace"""
-        from symbolica.community.idenso import simplify_metrics
-
-        result = simplify_metrics(
-            Representation.euc("d").g(1, 1).to_expression()
-        )
+        result = Representation.euc("d").g(1, 1).simplify_metrics()
         assert result is not None
 
-    def test_simplify_gamma_chain(self):
-        """Test gamma matrix simplification"""
-        from symbolica.community.idenso import simplify_gamma
-
-        # Define p function as in the notebook
-        def p(i):
-            from symbolica import Expression
-
-            minkd = Representation("mink", "D")
-            if isinstance(i, str):
-                m = minkd(i).to_expression()
-            elif isinstance(i, int):
-                m = minkd(i).to_expression()
-            else:
-                m = minkd(i).to_expression()
-            return self.ps(m)
-
-        a = simplify_gamma(
-            self.gam(1, 2, 1)
-            * self.gam(2, 3, "mu")
-            * self.gam(3, 4, 1)
-            * self.gam(4, 1, 2)
-            * p("mu")
-            * p(2)
+    @pytest.mark.parametrize("dimension", [4, S("D")])
+    def test_simplify_gamma_chain(self, dimension):
+        """Tr(gamma_mu gamma_nu gamma^mu gamma_rho) in a consistent dimension."""
+        gamma = TensorExpression.gamma(dimension)
+        mink = Representation.mink(dimension)
+        # Multiply explicit indexed expressions to retain this contracted basis.
+        chain = TensorExpression(
+            gamma(1, 2, "mu").to_expression()
+            * gamma(2, 3, "nu").to_expression()
+            * gamma(3, 4, "mu").to_expression()
+            * gamma(4, 1, "rho").to_expression()
         )
-        assert a is not None
+        expected = 4 * (2 - dimension) * mink.g("nu", "rho").to_expression()
+        assert (chain.simplify_gamma().to_expression() - expected).expand() == 0
 
-    def test_to_dots_conversion(self):
-        """Test conversion to dots notation"""
-        from symbolica.community.idenso import simplify_gamma, to_dots
-
-        # Define p function as in the notebook
-        def p(i):
-            from symbolica import Expression
-
-            minkd = Representation("mink", "D")
-            if isinstance(i, str):
-                m = minkd(i).to_expression()
-            elif isinstance(i, int):
-                m = minkd(i).to_expression()
-            else:
-                m = minkd(i).to_expression()
-            return self.ps(m)
-
-        a = simplify_gamma(
-            self.gam(1, 2, 1)
-            * self.gam(2, 3, "mu")
-            * self.gam(3, 4, 1)
-            * self.gam(4, 1, 2)
-            * p("mu")
-            * p(2)
+    @pytest.mark.parametrize("dimension", [4, S("D")])
+    def test_to_dots_conversion(self, dimension):
+        """Contract the gamma trace with two momenta and check its scalar value."""
+        gamma = TensorExpression.gamma(dimension)
+        mink = Representation.mink(dimension)
+        chain = TensorExpression(
+            gamma(1, 2, "mu").to_expression()
+            * gamma(2, 3, "nu").to_expression()
+            * gamma(3, 4, "mu").to_expression()
+            * gamma(4, 1, "rho").to_expression()
+            * self.ps(mink("nu").to_expression())
+            * self.ps(mink("rho").to_expression())
         )
-
-        dots_result = to_dots(a)
-        assert dots_result is not None
+        result = chain.simplify_gamma().expand().simplify_metrics().to_dots()
+        momentum = self.ps(mink.to_expression())
+        expected = 4 * (2 - dimension) * S("spenso::dot")(momentum, momentum)
+        assert result.rank == 0
+        assert (result.to_expression() - expected).expand() == 0
 
     def test_simplify_color_structure(self):
         """Test color structure simplification"""
-        from symbolica.community.idenso import simplify_color
-
-        result = simplify_color(self.f_func(1, 2, 3) * self.f_func(3, 2, 1))
+        result = TensorExpression(
+            self.f_func(1, 2, 3) * self.f_func(3, 2, 1)
+        ).simplify_color()
         assert result is not None
 
 

@@ -2137,6 +2137,16 @@ class FormattedOutput:
     def _repr_pretty_(self, pretty, cycle: bool):
         """Convert the formatted output into a pretty string representation."""
 
+    def _display_(self) -> typing.Any:
+        r"""
+        Supply a live display to marimo, or the existing static representation.
+        """
+
+    def _repr_mimebundle_(self, include: typing.Optional[typing.Sequence[builtins.str]] = None, exclude: typing.Optional[typing.Sequence[builtins.str]] = None) -> typing.Any:
+        r"""
+        Supply a live Jupyter representation when the producer supports it.
+        """
+
 class IntegrationStep:
     """One accepted transformation in a symbolic integration derivation."""
 
@@ -4242,12 +4252,12 @@ class Expression:
 
     def map(
         self,
-        transformations: Transformer,
-        n_cores: int | None = 1,
+        op: Transformer,
+        n_cores: int | None = None,
         stats_to_file: str | None = None,
     ) -> Expression:
         """
-        Map the transformations to every term in the expression.
+        Map the transformer to every term in the expression.
         The execution happens in parallel using `n_cores`.
 
         Examples
@@ -4259,7 +4269,7 @@ class Expression:
 
         Parameters
         ----------
-        transformations: Transformer
+        op: Transformer
             The transformations to apply.
         n_cores: int, optional
             The number of CPU cores used for parallel execution.
@@ -12700,3 +12710,30 @@ class Integer:
         gamma: Float | float | Decimal | None
             The PSLQ gamma parameter controlling the reduction strategy.
         """
+
+
+class Citation:
+    def __init__(self, id: str, reference: str, bibtex: str, *, reasons: list[str] = [], description: str = "", relevance: int | None = None) -> None: ...
+    @property
+    def id(self) -> str: ...
+    @property
+    def reference(self) -> str: ...
+    @property
+    def bibtex(self) -> str: ...
+    @property
+    def reasons(self) -> list[str]: ...
+    @property
+    def description(self) -> str: ...
+    @property
+    def relevance(self) -> int | None: ...
+    def __str__(self) -> str: ...
+    def __repr__(self) -> str: ...
+    def to_markdown(self, include_bibtex: bool = False) -> str: ...
+    def to_bibtex(self) -> str: ...
+    def _repr_markdown_(self) -> str: ...
+    def _repr_html_(self) -> str: ...
+    def _repr_pretty_(self, pretty: Any, cycle: bool) -> None: ...
+
+def get_citations() -> list[Citation]:
+    """Return cumulative references for Symbolica and the community features used."""
+    ...
