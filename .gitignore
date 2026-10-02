@@ -13,4 +13,6 @@ flake.lock
 .devenv*
 devenv*
 uv.lock
-/example_extension/target
+/dist/
+__marimo__/
+*.log

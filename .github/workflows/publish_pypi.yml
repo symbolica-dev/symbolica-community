@@ -164,6 +164,9 @@ jobs:
           pattern: wheels-*
           merge-multiple: true
 
+      - name: Check core citation stub in source and wheels
+        run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/*.whl
+
       - name: Publish to PyPI
         uses: PyO3/maturin-action@v1
         env:
@@ -186,6 +189,9 @@ jobs:
         with:
           name: pyemscripten-wheels-2026-wasm32
           path: dist
+
+      - name: Check core citation stub in source and wheels
+        run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/*.whl
 
       - name: Publish to PyPI
         uses: PyO3/maturin-action@v1

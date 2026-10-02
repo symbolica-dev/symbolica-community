@@ -11,14 +11,17 @@ authors = [
 name = "symbolica"
 description = "Symbolica: a blazing fast computer algebra system, with community extensions"
 keywords = ["math", "algebra", "polynomial", "expression", "manipulation"]
-version = "3.0.0"
+version = "3.0.1"
 readme = "Readme_pypi.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Rust",
     "Topic :: Scientific/Engineering :: Mathematics",
 ]
+
+[project.optional-dependencies]
+notebook-display = ["anywidget>=0.9,<1; python_version >= '3.9'", "typst>=0.15,<0.16; python_version >= '3.9'"]
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
@@ -39,4 +42,14 @@ cache-keys = [{ file = "pyproject.toml" }, { file = "src/*.rs" }]
 
 
 [dependency-groups]
-dev = ["ipykernel>=6.16.2", "pytest>=7.0.0", "pytest-cov>=4.0.0"]
+dev = ["ipykernel>=6.16.2", "pytest>=7.0.0", "pytest-cov>=4.0.0", "ty>=0.0.75; python_version >= '3.8'"]
+
+[tool.marimo.language_servers.ty]
+enabled = true
+
+[tool.marimo.diagnostics]
+enabled = true
+
+[tool.marimo.runtime]
+# Keep marimo's standard guard against oversized notebook outputs.
+output_max_bytes = 8_000_000
