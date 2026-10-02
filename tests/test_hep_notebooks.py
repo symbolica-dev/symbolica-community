@@ -49,6 +49,8 @@ def run_notebook(path, controls=None, models=()):
     script = """
 import json, runpy, sys
 from types import SimpleNamespace
+from tests._license import configure_license_key
+configure_license_key()
 from symbolica.community.hepkit import Model
 sys.path.insert(0, sys.argv[1])
 controls, models = json.loads(sys.argv[3])

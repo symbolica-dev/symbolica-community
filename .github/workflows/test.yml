@@ -45,13 +45,13 @@ jobs:
 
             - name: Run tests
               env:
-                  SYMBOLICA_LICENSE_KEY: ${{ secrets.SYMBOLICA_LICENSE_KEY }}
+                  SYMBOLICA_LICENSE_KEY: ${{ vars.SYMBOLICA_LICENSE }}
               run: pytest tests/ -v
 
             - name: Run tests with coverage
               if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'
               env:
-                  SYMBOLICA_LICENSE_KEY: ${{ secrets.SYMBOLICA_LICENSE_KEY }}
+                  SYMBOLICA_LICENSE_KEY: ${{ vars.SYMBOLICA_LICENSE }}
               run: |
                   pip install pytest-cov
                   pytest tests/ --cov=symbolica --cov-report=xml --cov-report=term

@@ -176,6 +176,8 @@ import os
 import signal
 import sys
 import threading
+from tests._license import configure_license_key
+configure_license_key()
 from symbolica.community import hepkit as hep
 
 model = hep.Model(sys.argv[1])

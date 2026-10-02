@@ -36,6 +36,8 @@ def test_full_rate_and_independent_momentum_space_oracles(
     }
     script = r"""
 import json, math, runpy, sys
+from tests._license import configure_license_key
+configure_license_key()
 import numpy as np
 from symbolica import E
 parameters = json.loads(sys.argv[2])
