@@ -1,0 +1,4 @@
+# Local benchmark reports; runtime fixtures and benchmark inputs remain versioned.
+/data/*.json
+!/data/feyncalc_etac_topologies.json
+!/data/tensor_benchmark_provenance.json
