@@ -100,6 +100,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PYODIDE_VERSION: "314.0.7"
+      # Pyodide's default Rust 1.93 predates Symbolica's Rust 1.96 minimum.
+      RUSTUP_TOOLCHAIN: "1.98.0"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -116,20 +118,20 @@ jobs:
         run: |
           python -m pip install pyodide-build==0.39.0 maturin==1.15.0
           pyodide xbuildenv install "$PYODIDE_VERSION"
-          toolchain=$(pyodide config get rust_toolchain)
-          rustup toolchain install "$toolchain" --profile minimal --target wasm32-unknown-emscripten
-          echo "RUSTUP_TOOLCHAIN=$toolchain" >> "$GITHUB_ENV"
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --target wasm32-unknown-emscripten
 
-      # pyodide-build installs the matching Emscripten SDK and applies the
-      # pyemscripten platform tag required for installation from PyPI.
-      # Rust links directly with emcc, bypassing pyodide's --exports option.
-      # Pass its public entry point to the linker explicitly.
+      # Keep Rust/LLVM release optimization, but use minimal wasm-opt processing.
+      # Test the final wheel below, after zstd compression.
       - name: Build wheel
-        run: >-
-          pyodide build . --outdir dist --no-isolation
-          -C maturin.build-args="--locked --profile release-small
-          --no-default-features --features wasm
-          -- -C link-arg=-sEXPORTED_FUNCTIONS=_PyInit_core"
+        env:
+          WASM_OPT_LEVEL: "-O0"
+          WASM_RUST_PROFILE: release-performance
+          WASM_SKIP_TESTS: "1"
+        run: bash scripts/build_wasm_performance.sh dist
+
+      # Compress after pyodide-build's retagging/repacking, which uses deflate.
+      - name: Compress wheel with zstd
+        run: python scripts/compress_wheel_zstd.py dist/*-pyemscripten_2026_0_wasm32.whl
 
       - name: Test installation with micropip
         env:
@@ -181,6 +183,8 @@ jobs:
     needs: [pyemscripten]
     if: inputs.publish == true
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.14"

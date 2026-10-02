@@ -60,7 +60,7 @@ assert version("symbolica") == expected_version
 import symbolica.community.tensor as tensor_module
 from symbolica.community.tensor import Representation, Tensor, TensorExpression, TensorLibrary, TensorName, TensorNetwork, dot
 metric = TensorExpression(E("g(bis(4,1),bis(4,1))", default_namespace="spenso"))
-assert metric.simplify_algebra(contract="dots").to_expression().to_expression() == E("4")
+assert metric.simplify_algebra(contract="dots").to_expression() == E("4")
 rep = Representation.euc(2)
 tensor = Tensor.dense(TensorName("wasm_matrix")(rep, rep), [E("x"), E("2"), E("3"), E("4")])
 evaluator = tensor.evaluator(params=[S("x")], constants={}, funs={})
@@ -92,7 +92,7 @@ k, p = TensorName.vector("hep_smoke::k"), TensorName.vector("hep_smoke::p")
 space = Representation.mink(D)
 kv, pv = k(space), p(space)
 numerator = (k(space(mu)) * k(space(nu)) * p(space(mu)) * p(space(nu))).to_expression()
-reduced = hep.TensorReducer(D).with_integrated_vector(kv.to_expression()).reduce(numerator)
+reduced = hep.TensorReducer(D, integrated=[kv.to_expression()]).reduce(numerator)
 expected = (dot(kv, kv) * dot(pv, pv) / D).to_expression()
 assert (reduced - expected).expand() == E("0")
 assert hep.ThreeMomentum(3.0, 4.0, 0.0).on_shell().components() == (5.0, 3.0, 4.0, 0.0)
@@ -125,7 +125,7 @@ const inventoryConstructors = [
   /^_RNvNv(?:Cs[0-9A-Za-z]+_13feynkit_graph|NtCs[0-9A-Za-z]+_11feynkit_cff7symbols)1__6___CTOR$/,
   // multiple-pymethods registers Python method blocks through inventory.
   // Only accept constructor globals from the known binding namespaces.
-  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|7spynso3|20oneloopreduce_python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
+  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|7spynso3|9linnet_py|20oneloopreduce_python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
 ];
 assert(exports.some(({ name }) => name === "PyInit_core"), "Missing Python module entry point");
 assert.deepEqual(

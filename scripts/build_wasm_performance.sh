@@ -41,6 +41,9 @@ export WASM_OPT_FORCE_LEVEL="$wasm_opt_level"
 # linker's -O flag can also change its defaults outside wasm-opt.
 pyodide build . --outdir "$outdir" --no-isolation \
   -C "maturin.build-args=--locked --profile $rust_profile --no-default-features --features wasm -- -C link-arg=-sEXPORTED_FUNCTIONS=_PyInit_core -C link-arg=-O3"
-export PYODIDE_DIST_DIR
-PYODIDE_DIST_DIR="$(pyodide config get dist_dir)"
-node .github/scripts/test_pyodide.mjs "$outdir"
+# CI tests separately after recompressing the wheel for distribution.
+if [[ "${WASM_SKIP_TESTS:-0}" != 1 ]]; then
+  export PYODIDE_DIST_DIR
+  PYODIDE_DIST_DIR="$(pyodide config get dist_dir)"
+  node .github/scripts/test_pyodide.mjs "$outdir"
+fi
