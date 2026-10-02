@@ -135,7 +135,7 @@ jobs:
 
       - name: Test installation with micropip
         env:
-          SYMBOLICA_LICENSE_KEY: ${{ secrets.SYMBOLICA_LICENSE_KEY }}
+          SYMBOLICA_LICENSE_KEY: ${{ secrets.SYMBOLICA_LICENSE }}
         run: |
           PYODIDE_DIST_DIR=$(pyodide config get dist_dir)
           export PYODIDE_DIST_DIR

@@ -1,16 +1,13 @@
 """Pytest configuration and fixtures."""
 import os
-import pytest
 
 
-@pytest.fixture(scope="session", autouse=True)
-def set_license_key():
-    """Set the symbolica license key for all tests."""
-    # Check if license key is set in environment variable first
-    license_key = os.environ.get('SYMBOLICA_LICENSE_KEY')
-
+def pytest_configure(config):
+    """Make the license available before collection and in child processes."""
+    license_key = os.environ.get("SYMBOLICA_LICENSE") or os.environ.get(
+        "SYMBOLICA_LICENSE_KEY"
+    )
     if license_key:
-        from symbolica import set_license_key as set_key
-        set_key(license_key)
-
-    yield
+        # Symbolica reads SYMBOLICA_LICENSE automatically. Keep the old test
+        # variable working, including in subprocesses that do not run pytest.
+        os.environ["SYMBOLICA_LICENSE"] = license_key
