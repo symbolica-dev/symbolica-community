@@ -32,7 +32,7 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _():
-    from symbolica.community.hep import Symbols
+    from symbolica.community.hepkit import Symbols
 
     return (Symbols,)
 
@@ -52,7 +52,7 @@ def _():
         TensorPattern,
         dot,
     )
-    from symbolica.community.hep import Model, FeynmanDiagram
+    from symbolica.community.hepkit import Model, FeynmanDiagram
 
     _set_namespace("hep_gluon")
 

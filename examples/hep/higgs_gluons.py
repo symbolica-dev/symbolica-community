@@ -45,14 +45,14 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _():
-    from symbolica.community import hep
+    from symbolica.community import hepkit as hep
     from symbolica.community import tensor as sp
     import math
 
     import marimo as mo
     from symbolica import E, Replacement, S, Symbol
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hep import (
+    from symbolica.community.hepkit import (
         IBPFamily,
         Kinematics,
         Model,

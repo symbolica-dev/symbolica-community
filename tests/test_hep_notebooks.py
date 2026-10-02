@@ -49,7 +49,7 @@ def run_notebook(path, controls=None, models=()):
     script = """
 import json, runpy, sys
 from types import SimpleNamespace
-from symbolica.community.hep import Model
+from symbolica.community.hepkit import Model
 sys.path.insert(0, sys.argv[1])
 controls, models = json.loads(sys.argv[3])
 definitions = {name: SimpleNamespace(value=value) for name, value in controls.items()}

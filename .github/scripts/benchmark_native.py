@@ -19,7 +19,8 @@ def main():
     start = time.perf_counter()
     import symbolica
     import symbolica.core
-    from symbolica.community import hep, tensor
+    from symbolica.community import hepkit as hep
+    from symbolica.community import tensor
 
     if os.environ.get("SYMBOLICA_LICENSE_KEY"):
         symbolica.set_license_key(os.environ["SYMBOLICA_LICENSE_KEY"])

@@ -7,7 +7,8 @@ from pathlib import Path
 
 import pytest
 from symbolica import S
-from symbolica.community import hep, tensor
+from symbolica.community import hepkit as hep
+from symbolica.community import tensor
 
 
 def test_model_references_work_with_native_coupling_expansion():

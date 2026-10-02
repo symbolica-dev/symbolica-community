@@ -26,7 +26,7 @@ pub fn get_citations() -> Vec<Citation> {
         relevance: None,
     }];
     let mut community = Vec::new();
-    community.extend(crate::hep::HepModule::get_citations());
+    community.extend(crate::hepkit::HepKitModule::get_citations());
     community.extend(spynso3::SpensoModule::get_citations());
     #[cfg(not(target_arch = "wasm32"))]
     community.extend(vakint::symbolica_community_module::VakintWrapper::get_citations());

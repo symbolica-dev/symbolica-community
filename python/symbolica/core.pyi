@@ -1421,7 +1421,7 @@ def S(
     tags: Sequence[str] | None = None,
     aliases: Sequence[str] | None = None,
     normalization: Transformer | Callable[[Expression], Expression] | None = None,
-    print: Callable[..., str | None] | None = None,
+    print: Callable[..., str | None] | dict[str, str] | dict[PrintMode, str] | dict[str | PrintMode, str] | None = None,
     derivative: Callable[[Expression, int], Expression] | None = None,
     series: Callable[[Sequence[Series]], tuple[Expression, Expression] | None]
     | None = None,
@@ -1539,10 +1539,14 @@ def S(
         A transformer that is called after every normalization. Note that the symbol
         name cannot be used in the transformer as this will lead to a definition of the
         symbol. Use a wildcard with the same attributes instead.
-    print : Callable[..., str | None] | None:
+    print : Callable[..., str | None] | dict[str | PrintMode, str] | None:
         A function that is called when printing the variable/function, which is provided as its first argument.
         This function should return a string, or `None` if the default print function should be used.
         The custom print function takes in keyword arguments that are the same as the arguments of the `format` function.
+        Alternatively, provide a dictionary mapping mode names (case-insensitive strings
+        or `PrintMode` values) to strings, e.g. `{'latex': r'\overline{a}', PrintMode.Typst: '#overline(a)'}`.
+        Values replace the entire variable or function call verbatim. Missing modes use default printing.
+        The dictionary is copied when the symbol is defined; duplicate modes are rejected.
     derivative: Callable[[Expression, int], Expression] | None:
         A function that is called when computing the derivative of a function in a given argument.
     series: Callable[[Sequence[Series]], tuple[Expression, Expression] | None] | None:
@@ -1590,7 +1594,7 @@ def S(
     tags: Sequence[str] | None = None,
     aliases: Sequence[str] | None = None,
     normalization: Transformer | Callable[[Expression], Expression] | None = None,
-    print: Callable[..., str | None] | None = None,
+    print: Callable[..., str | None] | dict[str, str] | dict[PrintMode, str] | dict[str | PrintMode, str] | None = None,
     derivative: Callable[[Expression, int], Expression] | None = None,
     series: Callable[[Sequence[Series]], tuple[Expression, Expression] | None]
     | None = None,
@@ -2111,6 +2115,60 @@ class RootLocation(Enum):
     Imaginary = ...
     Zero = ...
 
+class Citation:
+    """A scientific reference with explanations of its relevance to a computation.
+
+    Fields are read-only. Reasons and description may contain Markdown.
+    """
+
+    def __new__(
+        cls,
+        id: str,
+        reference: str,
+        bibtex: str,
+        *,
+        reasons: Sequence[str] = (),
+        description: str = "",
+        relevance: int | None = None,
+    ) -> Citation:
+        """Create a citation. Relevance is a nonnegative library-defined score."""
+
+    @property
+    def id(self) -> str:
+        """The stable identity of the citation, preferably a DOI or arXiv ID."""
+    @property
+    def reference(self) -> str:
+        """The human-readable bibliographic reference."""
+    @property
+    def bibtex(self) -> str:
+        """The ready-to-export BibTeX entry."""
+    @property
+    def reasons(self) -> list[str]:
+        """The reasons for including this citation, optionally formatted as Markdown."""
+    @property
+    def description(self) -> str:
+        """A description of the citation, optionally formatted as Markdown."""
+    @property
+    def relevance(self) -> int | None:
+        """The relevance score, or None if unknown."""
+
+    def __str__(self) -> str:
+        """Display the reference, identifier, description, reasons and known relevance."""
+
+    def __repr__(self) -> str:
+        """Return a compact representation suitable for lists of citations."""
+
+    def to_markdown(self, include_bibtex: bool = False) -> str:
+        """Return a Markdown report, optionally including a fenced BibTeX entry."""
+
+    def to_bibtex(self) -> str:
+        """Return the original BibTeX entry unchanged, ready to write to a .bib file."""
+
+    def _repr_markdown_(self) -> str: ...
+    def _repr_html_(self) -> str:
+        """Display an HTML report, with description and reasons as escaped text."""
+    def _repr_pretty_(self, pretty: Any, cycle: bool) -> None: ...
+
 class FormattedOutput:
     """A formatted string with rich notebook display representations."""
 
@@ -2136,16 +2194,6 @@ class FormattedOutput:
 
     def _repr_pretty_(self, pretty, cycle: bool):
         """Convert the formatted output into a pretty string representation."""
-
-    def _display_(self) -> typing.Any:
-        r"""
-        Supply a live display to marimo, or the existing static representation.
-        """
-
-    def _repr_mimebundle_(self, include: typing.Optional[typing.Sequence[builtins.str]] = None, exclude: typing.Optional[typing.Sequence[builtins.str]] = None) -> typing.Any:
-        r"""
-        Supply a live Jupyter representation when the producer supports it.
-        """
 
 class IntegrationStep:
     """One accepted transformation in a symbolic integration derivation."""
@@ -2371,7 +2419,7 @@ class Expression:
         tags: Sequence[str] | None = None,
         aliases: Sequence[str] | None = None,
         normalization: Transformer | Callable[[Expression], Expression] | None = None,
-        print: Callable[..., str | None] | None = None,
+        print: Callable[..., str | None] | dict[str, str] | dict[PrintMode, str] | dict[str | PrintMode, str] | None = None,
         derivative: Callable[[Expression, int], Expression] | None = None,
         series: Callable[[Sequence[Series]], tuple[Expression, Expression] | None]
         | None = None,
@@ -2489,10 +2537,14 @@ class Expression:
             A transformer that is called after every normalization. Note that the symbol
             name cannot be used in the transformer as this will lead to a definition of the
             symbol. Use a wildcard with the same attributes instead.
-        print : Callable[..., str | None] | None:
+        print : Callable[..., str | None] | dict[str | PrintMode, str] | None:
             A function that is called when printing the variable/function, which is provided as its first argument.
             This function should return a string, or `None` if the default print function should be used.
             The custom print function takes in keyword arguments that are the same as the arguments of the `format` function.
+            Alternatively, provide a dictionary mapping mode names (case-insensitive strings
+            or `PrintMode` values) to strings, e.g. `{'latex': r'\overline{a}', PrintMode.Typst: '#overline(a)'}`.
+            Values replace the entire variable or function call verbatim. Missing modes use default printing.
+            The dictionary is copied when the symbol is defined; duplicate modes are rejected.
         derivative: Callable[[Expression, int], Expression] | None:
             A function that is called when computing the derivative of a function in a given argument.
         series: Callable[[Sequence[Series]], tuple[Expression, Expression] | None] | None:
@@ -2542,7 +2594,7 @@ class Expression:
         tags: Sequence[str] | None = None,
         aliases: Sequence[str] | None = None,
         normalization: Transformer | Callable[[Expression], Expression] | None = None,
-        print: Callable[..., str | None] | None = None,
+        print: Callable[..., str | None] | dict[str, str] | dict[PrintMode, str] | dict[str | PrintMode, str] | None = None,
         derivative: Callable[[Expression, int], Expression] | None = None,
         series: Callable[[Sequence[Series]], tuple[Expression, Expression] | None]
         | None = None,
@@ -4240,24 +4292,41 @@ class Expression:
         Create an iterator over all terms in the expression.
         """
 
-    def __getitem__(self, idx: int) -> Expression:
+    @overload
+    def __getitem__(self, idx: int, /) -> Expression:
+        """Get a child expression by index. Negative indices count from the end."""
+
+    @overload
+    def __getitem__(self, idx: slice, /) -> list[Expression]:
         """
-        Get the `idx`th component of the expression.
+        Get a slice of the expression's immediate children as a list.
+
+        Slices follow Python's usual bounds and step rules, including reverse
+        slices, and use the same child order as iteration. Leaf expressions
+        cannot be indexed or sliced.
+
+        Examples
+        --------
+        >>> f, x, y, z = S('f', 'x', 'y', 'z')
+        >>> f(x, y, z)[1:]
+        [y, z]
+        >>> f(x, y, z)[::-1]
+        [z, y, x]
 
         Parameters
         ----------
-        idx: int
-            The zero-based index to access.
+        idx: slice
+            The slice to access.
         """
 
     def map(
         self,
-        op: Transformer,
-        n_cores: int | None = None,
+        transformations: Transformer,
+        n_cores: int | None = 1,
         stats_to_file: str | None = None,
     ) -> Expression:
         """
-        Map the transformer to every term in the expression.
+        Map the transformations to every term in the expression.
         The execution happens in parallel using `n_cores`.
 
         Examples
@@ -4269,7 +4338,7 @@ class Expression:
 
         Parameters
         ----------
-        op: Transformer
+        transformations: Transformer
             The transformations to apply.
         n_cores: int, optional
             The number of CPU cores used for parallel execution.
@@ -12711,28 +12780,6 @@ class Integer:
             The PSLQ gamma parameter controlling the reduction strategy.
         """
 
-
-class Citation:
-    def __init__(self, id: str, reference: str, bibtex: str, *, reasons: list[str] = [], description: str = "", relevance: int | None = None) -> None: ...
-    @property
-    def id(self) -> str: ...
-    @property
-    def reference(self) -> str: ...
-    @property
-    def bibtex(self) -> str: ...
-    @property
-    def reasons(self) -> list[str]: ...
-    @property
-    def description(self) -> str: ...
-    @property
-    def relevance(self) -> int | None: ...
-    def __str__(self) -> str: ...
-    def __repr__(self) -> str: ...
-    def to_markdown(self, include_bibtex: bool = False) -> str: ...
-    def to_bibtex(self) -> str: ...
-    def _repr_markdown_(self) -> str: ...
-    def _repr_html_(self) -> str: ...
-    def _repr_pretty_(self, pretty: Any, cycle: bool) -> None: ...
 
 def get_citations() -> list[Citation]:
     """Return cumulative references for Symbolica and the community features used."""

@@ -1,14 +1,11 @@
 //! Expose FeynKit, one-loop reduction, and native master evaluation together.
 
-use pyo3::{
-    Bound, PyResult, Python,
-    types::{PyAnyMethods, PyDictMethods, PyModule, PyModuleMethods, PyType},
-};
+use pyo3::{Bound, PyResult, Python, types::PyModule};
 use symbolica::api::python::{Citation, SymbolicaCommunityModule};
 
-pub struct HepModule;
+pub struct HepKitModule;
 
-impl SymbolicaCommunityModule for HepModule {
+impl SymbolicaCommunityModule for HepKitModule {
     fn get_citations() -> Vec<Citation> {
         let mut citations = feynkit_py::FeynkitModule::get_citations();
         citations.extend(crate::oneloop::get_citations());
@@ -33,21 +30,11 @@ impl SymbolicaCommunityModule for HepModule {
     }
 
     fn get_name() -> String {
-        "hep".to_owned()
+        "hepkit".to_owned()
     }
 
     fn register_module(module: &Bound<'_, PyModule>) -> PyResult<()> {
         feynkit_py::initialize_feynkit(module)?;
-        // Reuse the upstream classes themselves, including their methods and
-        // exception hierarchy, while making introspection point to our public API.
-        for value in module.dict().values() {
-            if value.is_instance_of::<PyType>()
-                && value.getattr("__module__")?.extract::<String>()?
-                    == "symbolica.community.feynkit"
-            {
-                value.setattr("__module__", "symbolica.community.hep")?;
-            }
-        }
         crate::oneloop::register(module)?;
         #[cfg(not(target_arch = "wasm32"))]
         rustred_feynkit::register_hep_module(module)?;

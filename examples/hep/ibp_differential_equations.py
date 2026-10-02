@@ -45,7 +45,7 @@ def _():
     import numpy as np
     from symbolica import E, Matrix, Replacement
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hep import oneloop
+    from symbolica.community.hepkit import oneloop
 
     _set_namespace("ibp_differential_equations")
     return E, Matrix, Replacement, mo, np, oneloop

@@ -7,7 +7,7 @@ OneLoopMaster's registered native Rust numerical hooks directly.
 from math import isclose, log
 
 from symbolica import E, S
-from symbolica.community.hep import IntegralFamily, Kinematics, oneloop
+from symbolica.community.hepkit import IntegralFamily, Kinematics, oneloop
 
 
 def main():

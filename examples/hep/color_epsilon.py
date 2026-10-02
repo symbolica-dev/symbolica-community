@@ -46,7 +46,7 @@ def _():
     import marimo as mo
     from symbolica import E, S
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hep import Model
+    from symbolica.community.hepkit import Model
     from symbolica.community.tensor import TensorExpression
 
     _set_namespace("color_epsilon")

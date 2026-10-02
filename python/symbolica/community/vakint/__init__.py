@@ -1,6 +1,6 @@
-"""Compatibility imports; use symbolica.community.hep.vakint."""
+"""Compatibility imports; use symbolica.community.hepkit.vakint."""
 
-from ..hep.vakint import (
+from symbolica.community.hepkit.vakint import (
     Vakint as Vakint,
     VakintEvaluationMethod as VakintEvaluationMethod,
     VakintExpression as VakintExpression,

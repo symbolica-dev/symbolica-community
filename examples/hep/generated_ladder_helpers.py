@@ -3,7 +3,8 @@
 from math import prod
 
 from symbolica import E, Graph, Replacement, S
-from symbolica.community import hep, tensor as sp
+from symbolica.community import hepkit as hep
+from symbolica.community import tensor as sp
 
 
 def ladder_filter(outer_quark=False):

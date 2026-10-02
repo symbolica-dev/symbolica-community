@@ -57,7 +57,7 @@ python_stubgen = [
 ]
 
 [dependencies]
-one-loop-reduce-python = { git = "https://github.com/ecavan/one-loop-reduce", branch = "main", default-features = false }
+one-loop-reduce-python = { git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
 spynso3 = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
 # Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.
 feynkit-py = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false, features = ["ufo"] }

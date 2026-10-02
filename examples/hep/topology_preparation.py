@@ -55,7 +55,7 @@ def _():
     import marimo as mo
     from symbolica import E, Replacement, S
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hep import IntegralFamily, Kinematics
+    from symbolica.community.hepkit import IntegralFamily, Kinematics
 
     _set_namespace("etac")
     return (

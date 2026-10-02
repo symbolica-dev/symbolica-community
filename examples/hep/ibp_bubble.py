@@ -45,7 +45,7 @@ def _():
     import numpy as np
     from symbolica import E, Replacement, S
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hep import IBPFamily, IntegralFamily, Kinematics, oneloop
+    from symbolica.community.hepkit import IBPFamily, IntegralFamily, Kinematics, oneloop
 
     _set_namespace("ibp_bubble")
     return (

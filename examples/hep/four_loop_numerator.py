@@ -11,7 +11,7 @@ with app.setup(hide_code=True):
 
     import marimo as mo
     from symbolica import S
-    from symbolica.community.hep import Model
+    from symbolica.community.hepkit import Model
     from symbolica.community.tensor import TensorExpression
 
 

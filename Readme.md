@@ -41,7 +41,7 @@ FeynKit's diagram, generation, CFF, tensor-reduction, model, and kinematics
 classes share one flat namespace:
 
 ```python
-from symbolica.community.hep import FeynmanDiagram, Model, Generator, TensorReducer
+from symbolica.community.hepkit import FeynmanDiagram, Model, Generator, TensorReducer
 ```
 
 See the [HEP example](examples/hep/README.md) for a complete one-loop calculation.
@@ -51,7 +51,7 @@ is available in `hep.oneloop`. Native builds also expose OneLoopMaster's scalar
 integral evaluation there, sharing the same Symbolica kernel:
 
 ```python
-from symbolica.community.hep import FourMomentum, oneloop
+from symbolica.community.hepkit import FourMomentum, oneloop
 
 p = FourMomentum(3.0, 1.0, 0.0, 0.0)
 finite, pole, double_pole = oneloop.b0(p.mass_squared, 4.0, 4.0)
@@ -74,8 +74,8 @@ coefficients through their registered native Rust hooks:
 
 ```python
 from symbolica import E, S
-from symbolica.community import hep
-from symbolica.community.hep import oneloop
+from symbolica.community import hepkit as hep
+from symbolica.community.hepkit import oneloop
 
 k, D, mass_squared = S("example::k", "example::D", "example::mass_squared")
 kinematics = hep.Kinematics(D, momenta=[k])
@@ -124,9 +124,9 @@ shifts are extracted from the shared family's actual inverse denominators and
 kinematics; users do not supply a second family or a separate invariant list.
 Numerical master evaluation requires a native build.
 
-The local host uses `../../oneloopmaster/python` and
-`../../one-loop-reduce/crates/one-loop-reduce-python`, and shares OneLoopMaster's
-pinned Symbolica revision. The local reducer checkout includes
+The host fetches OneLoopMaster from `alphal00p/oneloopmaster` and the reducer
+from the public `lcnbr/one-loop-reduce` fork, which CI can access. All modules
+share Symbolica 3.0.1 through the kernel's community-branch patch. The reducer includes
 the canonical master symbols, scale-aware expressions, and feature selection needed
 by this host. Run
 `.venv-feynkit/bin/python examples/oneloop_smoke.py` to check numeric evaluation,
@@ -139,16 +139,22 @@ checks. To regenerate the combined one-loop type hints, run
 `cargo run --no-default-features --features python_stubgen --bin stub_gen -- --oneloop-only`;
 native evaluator declarations are maintained in `stubs/oneloop.pyi`.
 
-The public Python packages and their type hints live together under
-`python/symbolica/community/tensor/` and
-`python/symbolica/community/hep/vakint/`. Import them with
+The public Python packages and their type hints use matching directories under
+`python/symbolica/community/tensor/` and `python/symbolica/community/hepkit/`,
+including the `oneloop/`, `ibp/` and `vakint/` subpackages. Import them with
 `from symbolica.community import tensor` and
-`from symbolica.community.hep.vakint import Vakint`.
+`from symbolica.community.hepkit.vakint import Vakint`.
 The older `community.spenso` and `community.vakint` paths re-export those APIs.
 Regenerate tensor hints with
 `cargo run --no-default-features --features python_stubgen --bin stub_gen -- --tensor-only`.
 Use `--vakint-only` with the same command to regenerate the Vakint hints.
 CI checks the packaged stub layout and type-checks these public imports.
+
+`python/symbolica/core.pyi` retains the canonical Symbolica 3.0.1 declarations
+from the kernel's `symbolica.pyi`, plus the community
+`get_citations() -> list[Citation]` function. Community stub generation preserves
+this file. To compare source stubs or wheels with the kernel stub, run
+`python .github/scripts/check_core_stub.py --canonical /path/to/symbolica.pyi python/symbolica/core.pyi dist/*.whl`.
 
 #### Installation 
 

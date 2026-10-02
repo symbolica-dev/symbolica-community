@@ -4,7 +4,7 @@ from decimal import Decimal
 from math import isclose, log
 
 from symbolica import Expression, S
-from symbolica.community.hep import FourMomentum, TensorReducer, oneloop
+from symbolica.community.hepkit import FourMomentum, TensorReducer, oneloop
 
 
 def main():

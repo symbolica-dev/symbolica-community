@@ -30,7 +30,7 @@ def test_spenso_import():
 
 
 def test_vakint_import():
-    from symbolica.community.hep.vakint import Vakint, VakintEvaluationMethod
+    from symbolica.community.hepkit.vakint import Vakint, VakintEvaluationMethod
 
     assert Vakint is not None
     assert VakintEvaluationMethod is not None
@@ -47,12 +47,12 @@ def test_vakint_import_paths_and_citations():
             """
 from symbolica import E, get_citations
 before = {citation.id for citation in get_citations()}
-from symbolica.community.hep import vakint
+from symbolica.community.hepkit import vakint
 from symbolica.community import vakint as legacy
 for name in ("Vakint", "VakintEvaluationMethod", "VakintExpression", "VakintNumericalResult"):
     cls = getattr(vakint, name)
     assert cls is getattr(legacy, name)
-    assert cls.__module__ == "symbolica.community.hep.vakint"
+    assert cls.__module__ == "symbolica.community.hepkit.vakint"
 assert {citation.id for citation in get_citations()} == before
 assert not hasattr(vakint, "get_citations")
 vakint.VakintExpression(E("0"))

@@ -29,12 +29,12 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _():
-    from symbolica.community import hep
+    from symbolica.community import hepkit as hep
     from symbolica.community import tensor as sp
     import marimo as mo
     from symbolica import S, E, Expression
     from symbolica.community.tensor import TensorExpression, as_tensor
-    from symbolica.community.hep import (
+    from symbolica.community.hepkit import (
         Model,
         SnailFilterOptions,
         FeynmanDiagram,

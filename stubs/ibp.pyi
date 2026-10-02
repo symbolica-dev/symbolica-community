@@ -4,8 +4,6 @@ from typing import overload
 
 from symbolica import Expression
 
-from . import IntegralFamily
-
 class IBPFamily:
     r"""
     Find exact integration-by-parts (IBP) relations for a complete integral family.
@@ -27,7 +25,7 @@ class IBPFamily:
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
+    >>> from symbolica.community import hepkit as hep
     >>> d, k, m2 = S("d", "k", "m2")
     >>> kin = hep.Kinematics(d, momenta=[k])
     >>> family = hep.IntegralFamily([k], [], [kin.scalar_product(k, k) - m2], kinematics=kin)
@@ -55,7 +53,7 @@ class IBPFamily:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
+        >>> from symbolica.community import hepkit as hep
         >>> d, k, m2 = S("d", "k", "m2")
         >>> kin = hep.Kinematics(d, momenta=[k])
         >>> family = hep.IntegralFamily([k], [], [kin.scalar_product(k, k) - m2], kinematics=kin)
@@ -220,7 +218,7 @@ class IBPRule:
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
+    >>> from symbolica.community import hepkit as hep
     >>> d, k, m2 = S("d", "k", "m2")
     >>> kin = hep.Kinematics(d, momenta=[k])
     >>> family = hep.IntegralFamily([k], [], [kin.scalar_product(k, k) - m2], kinematics=kin)
@@ -378,7 +376,7 @@ class IBPSolution:
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
+    >>> from symbolica.community import hepkit as hep
     >>> d, k, m2 = S("d", "k", "m2")
     >>> kin = hep.Kinematics(d, momenta=[k])
     >>> family = hep.IntegralFamily([k], [], [kin.scalar_product(k, k) - m2], kinematics=kin)

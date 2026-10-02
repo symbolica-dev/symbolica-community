@@ -58,8 +58,9 @@ def _():
         AtomType,
     )
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community import hep, tensor
-    from symbolica.community.hep import oneloop
+    from symbolica.community import hepkit as hep
+    from symbolica.community import tensor
+    from symbolica.community.hepkit import oneloop
 
     _set_namespace("Higgs_diphoton_decay")
     return (

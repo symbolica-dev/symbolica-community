@@ -15,7 +15,7 @@ use symbolica::{
 use symbolica_integrate::Integrate;
 
 mod citations;
-mod hep;
+mod hepkit;
 mod oneloop;
 
 #[cfg(feature = "python_stubgen")]
@@ -84,7 +84,7 @@ fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     create_symbolica_module(m)?;
     m.add_function(wrap_pyfunction!(citations::get_citations, m)?)?;
     register_module!(m, spynso3::SpensoModule);
-    register_module!(m, hep::HepModule);
+    register_module!(m, hepkit::HepKitModule);
     #[cfg(not(target_arch = "wasm32"))]
     {
         register_module!(m, vakint::symbolica_community_module::VakintWrapper);

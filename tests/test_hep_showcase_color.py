@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 from symbolica import E, S, Expression
-from symbolica.community.hep import Model, SnailFilterOptions
+from symbolica.community.hepkit import Model, SnailFilterOptions
 from symbolica.community.tensor import TensorExpression
 from symbolica.community import tensor as sp
 

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-HEP = Path(__file__).parents[1] / "python/symbolica/community/hep"
+HEP = Path(__file__).parents[1] / "python/symbolica/community/hepkit"
 PARSER = doctest.DocTestParser()
 # These examples explicitly require a user-supplied UFO directory. Their
 # documentation is audited below; the other examples use built-in models.
@@ -29,7 +29,9 @@ def entries(path):
             yield node.name, node
 
 
-@pytest.mark.parametrize("filename", ["__init__.pyi", "ibp.pyi", "oneloop.pyi"])
+@pytest.mark.parametrize(
+    "filename", ["__init__.pyi", "ibp/__init__.pyi", "oneloop/__init__.pyi"]
+)
 def test_public_documentation_has_examples_and_uses_public_namespace(filename):
     for name, node in entries(HEP / filename):
         doc = ast.get_docstring(node) or ""
@@ -41,7 +43,9 @@ def test_public_documentation_has_examples_and_uses_public_namespace(filename):
             compile(example.source, f"{filename}:{name}", "exec")
 
 
-@pytest.mark.parametrize("filename", ["__init__.pyi", "ibp.pyi", "oneloop.pyi"])
+@pytest.mark.parametrize(
+    "filename", ["__init__.pyi", "ibp/__init__.pyi", "oneloop/__init__.pyi"]
+)
 def test_parameters_are_documented_after_examples(filename):
     for name, node in entries(HEP / filename):
         if not isinstance(node, ast.FunctionDef):
@@ -74,7 +78,7 @@ def test_parameters_are_documented_after_examples(filename):
 
 
 def runnable_examples():
-    for filename in ("__init__.pyi", "oneloop.pyi"):
+    for filename in ("__init__.pyi", "oneloop/__init__.pyi"):
         tree = ast.parse((HEP / filename).read_text())
         for node in tree.body:
             if isinstance(node, ast.FunctionDef):

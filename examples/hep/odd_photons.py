@@ -47,12 +47,12 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _():
-    from symbolica.community import hep
+    from symbolica.community import hepkit as hep
     from symbolica.community import tensor as sp
     import marimo as mo
     from symbolica import E, S
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hep import IntegralFamily, Kinematics, Model, TensorReducer
+    from symbolica.community.hepkit import IntegralFamily, Kinematics, Model, TensorReducer
     from symbolica.community.tensor import TensorExpression
 
     _set_namespace("furry")

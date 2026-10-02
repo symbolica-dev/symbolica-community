@@ -20,7 +20,7 @@ class DecimalComplex:
     Examples
     --------
     >>> from decimal import Decimal
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community.hepkit import oneloop
     >>> z = oneloop.DecimalComplex("1.25", "-0.5")
     >>> assert z.real == Decimal("1.25")
     >>> assert z.imag == Decimal("-0.5")
@@ -32,7 +32,7 @@ class DecimalComplex:
         Examples
         --------
         >>> from decimal import Decimal
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community.hepkit import oneloop
         >>> z = oneloop.DecimalComplex("1.25", "-0.5")
         >>> assert complex(z) == 1.25 - 0.5j
 
@@ -52,7 +52,7 @@ class DecimalComplex:
         Examples
         --------
         >>> from decimal import Decimal
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community.hepkit import oneloop
         >>> z = oneloop.DecimalComplex("1.25", "-0.5")
         >>> assert z.real == Decimal("1.25")
         """
@@ -64,7 +64,7 @@ class DecimalComplex:
         Examples
         --------
         >>> from decimal import Decimal
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community.hepkit import oneloop
         >>> z = oneloop.DecimalComplex("1.25", "-0.5")
         >>> assert z.imag == Decimal("-0.5")
         """
@@ -75,7 +75,7 @@ class DecimalComplex:
         Examples
         --------
         >>> from decimal import Decimal
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community.hepkit import oneloop
         >>> z = oneloop.DecimalComplex("1.25", "-0.5")
         >>> assert complex(z) == complex(1.25, -0.5)
         """
@@ -86,7 +86,7 @@ class DecimalComplex:
         Examples
         --------
         >>> from decimal import Decimal
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community.hepkit import oneloop
         >>> z = oneloop.DecimalComplex("1.25", "-0.5")
         >>> text = repr(z)
         """
@@ -107,8 +107,8 @@ def is_initialized() -> bool:
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> initialized = oneloop.is_initialized()
     """
 
@@ -130,8 +130,8 @@ class Evaluator:
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> evaluator = oneloop.Evaluator(oneloop.A0)
     >>> finite, pole, double_pole = evaluator.evaluate([1.0, 1.0])
     >>> assert pole == 1+0j and double_pole == 0j
@@ -150,8 +150,8 @@ class Evaluator:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> evaluator = oneloop.Evaluator(oneloop.A0)
         >>> assert evaluator.family == "A0" and evaluator.arity == 2
 
@@ -174,8 +174,8 @@ class Evaluator:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> evaluator = oneloop.Evaluator(oneloop.A0)
         >>> assert evaluator.family == "A0"
         """
@@ -187,8 +187,8 @@ class Evaluator:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> evaluator = oneloop.Evaluator(oneloop.A0)
         >>> assert evaluator.arity == 2
         >>> assert oneloop.Evaluator(oneloop.B0).arity == 4
@@ -201,8 +201,8 @@ class Evaluator:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> evaluator = oneloop.Evaluator(oneloop.A0)
         >>> assert evaluator.prec == 16
         """
@@ -214,8 +214,8 @@ class Evaluator:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> evaluator = oneloop.Evaluator(oneloop.A0)
         >>> assert evaluator.backend == "auto"
         """
@@ -230,8 +230,8 @@ class Evaluator:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> evaluator = oneloop.Evaluator(oneloop.A0)
         >>> finite, pole, double_pole = evaluator.evaluate([1.0, 1.0])
         >>> assert pole == 1+0j
@@ -258,8 +258,8 @@ class Evaluator:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> evaluator = oneloop.Evaluator(oneloop.A0)
         >>> rows = evaluator.evaluate_batch([[1.0, 1.0], [2.0, 1.0]])
         >>> assert rows[0] == evaluator.evaluate([1.0, 1.0])
@@ -284,8 +284,8 @@ class Evaluator:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> evaluator = oneloop.Evaluator(oneloop.A0)
         >>> before = evaluator.evaluate([1.0, 1.0])
         >>> evaluator.rebuild()
@@ -297,7 +297,7 @@ class Evaluator:
 
         Examples
         --------
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community.hepkit import oneloop
         >>> summary = repr(oneloop.Evaluator(oneloop.A0))
         """
 
@@ -325,8 +325,8 @@ def a0(mass_squared: Number, mu_squared: Number | None = None, *, rebuild: bool 
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> finite, pole, double_pole = oneloop.a0(1.0, 1.0)
 
     Parameters
@@ -359,8 +359,8 @@ def b0(momentum_squared: Number, mass_0_squared: Number, mass_1_squared: Number,
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> finite, pole, double_pole = oneloop.b0(-1.0, 1.0, 1.0, 1.0)
 
     Parameters
@@ -395,8 +395,8 @@ def db0(momentum_squared: Number, mass_0_squared: Number, mass_1_squared: Number
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> finite, pole, double_pole = oneloop.db0(-1.0, 1.0, 1.0, 1.0)
 
     Parameters
@@ -431,8 +431,8 @@ def c0(p1_squared: Number, p2_squared: Number, p3_squared: Number, mass_0_square
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> finite, pole, double_pole = oneloop.c0(-1.0, -2.0, -3.0, 1.0, 1.0, 1.0, 1.0)
 
     Parameters
@@ -467,8 +467,8 @@ def d0(p1_squared: Number, p2_squared: Number, p3_squared: Number, p4_squared: N
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> finite, pole, double_pole = oneloop.d0(-1.0, -1.0, -1.0, -1.0, -3.0, -4.0, 1.0, 1.0, 1.0, 1.0, 1.0)
 
     Parameters
@@ -505,8 +505,8 @@ def master_coefficients(master: Expression) -> list[Expression]:
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> s = S("s")
     >>> coefficients = oneloop.master_coefficients(oneloop.B0(s, 0, 0, 1))
     >>> assert len(coefficients) == 3
@@ -528,8 +528,8 @@ def reduction_coefficients(reduction: Reduction, mu_squared: Expression | None =
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> d, k, p, s = S("d", "k", "p", "s")
     >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
     >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -557,8 +557,8 @@ def compile_native(expressions: Sequence[Expression | int | float | complex], pa
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> m2 = S("m2")
     >>> coefficients = oneloop.master_coefficients(oneloop.A0(m2, 1))
     >>> compiled = oneloop.compile_native(coefficients, [m2])
@@ -583,8 +583,8 @@ def get_expression(master: Expression, *, coefficient: Literal[0, -1, -2] | None
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> m2 = S("m2")
     >>> pole = oneloop.get_expression(oneloop.A0(m2, 1), coefficient=-1)
 
@@ -611,8 +611,8 @@ def select_branch(expression: _Expressions, replacement_rules: Sequence[Replacem
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> from symbolica import Replacement
     >>> m2 = S("m2")
     >>> expressions = oneloop.get_expression(oneloop.A0(m2, 1))
@@ -632,7 +632,7 @@ def select_branch(expression: _Expressions, replacement_rules: Sequence[Replacem
 
 import builtins
 import typing
-from symbolica.community.hep import IntegralFamily
+from symbolica.community.hepkit import IntegralFamily
 from symbolica.core import Expression
 
 @typing.final
@@ -648,8 +648,8 @@ class MasterIntegral:
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> d, k, p, s = S("d", "k", "p", "s")
     >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
     >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -668,8 +668,8 @@ class MasterIntegral:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> d, k, p, s = S("d", "k", "p", "s")
         >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
         >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -686,8 +686,8 @@ class MasterIntegral:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> d, k, p, s = S("d", "k", "p", "s")
         >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
         >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -708,8 +708,8 @@ class MasterIntegral:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> d, k, p, s = S("d", "k", "p", "s")
         >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
         >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -725,8 +725,8 @@ class MasterIntegral:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> d, k, p, s = S("d", "k", "p", "s")
         >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
         >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -752,8 +752,8 @@ class MasterIntegral:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> d, k, p, s = S("d", "k", "p", "s")
         >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
         >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -776,8 +776,8 @@ class MasterIntegral:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> d, k, p, s = S("d", "k", "p", "s")
         >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
         >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -800,8 +800,8 @@ class Reduction:
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> d, k, p, s = S("d", "k", "p", "s")
     >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
     >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -820,8 +820,8 @@ class Reduction:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> d, k, p, s = S("d", "k", "p", "s")
         >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
         >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -837,8 +837,8 @@ class Reduction:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> d, k, p, s = S("d", "k", "p", "s")
         >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
         >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -858,8 +858,8 @@ class Reduction:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> d, k, p, s = S("d", "k", "p", "s")
         >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
         >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -881,8 +881,8 @@ class Reduction:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> d, k, p, s = S("d", "k", "p", "s")
         >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
         >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -898,8 +898,8 @@ class Reduction:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> d, k, p, s = S("d", "k", "p", "s")
         >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
         >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -914,8 +914,8 @@ class Reduction:
         Examples
         --------
         >>> from symbolica import S, E
-        >>> from symbolica.community import hep
-        >>> from symbolica.community.hep import oneloop
+        >>> from symbolica.community import hepkit as hep
+        >>> from symbolica.community.hepkit import oneloop
         >>> d, k, p, s = S("d", "k", "p", "s")
         >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
         >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),
@@ -937,8 +937,8 @@ def reduce(family: IntegralFamily, powers: typing.Sequence[builtins.int], *, num
     Examples
     --------
     >>> from symbolica import S, E
-    >>> from symbolica.community import hep
-    >>> from symbolica.community.hep import oneloop
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
     >>> d, k, p, s = S("d", "k", "p", "s")
     >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
     >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),

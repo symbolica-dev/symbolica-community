@@ -1,6 +1,7 @@
 """Exercise the flat HEP API against the host's Symbolica kernel."""
 
 import ast
+import importlib
 import os
 from pathlib import Path
 import subprocess
@@ -10,7 +11,7 @@ import threading
 import pytest
 
 from symbolica import E, S, Expression
-from symbolica.community import hep
+from symbolica.community import hepkit as hep
 from symbolica.community.tensor import Representation, TensorExpression, TensorName, dot
 
 
@@ -23,6 +24,8 @@ def model():
 
 
 def test_flat_namespace_and_stubs():
+    assert hep.__name__ == "symbolica.community.hepkit"
+    assert importlib.import_module("symbolica.community.hepkit") is hep
     for name in (
         "FeynmanDiagram",
         "DiagramEdge",
@@ -45,14 +48,14 @@ def test_flat_namespace_and_stubs():
         "UfoLoader",
         "FeynkitError",
     ):
-        assert getattr(hep, name).__module__ == "symbolica.community.hep"
+        assert getattr(hep, name).__module__ == "symbolica.community.hepkit"
     assert not hasattr(hep, "initialize_module")
     assert not hasattr(hep, "GenerationOptions")
     classes = {
         name: value for name, value in vars(hep).items() if isinstance(value, type)
     }
     assert all(
-        value.__module__ == "symbolica.community.hep" for value in classes.values()
+        value.__module__ == "symbolica.community.hepkit" for value in classes.values()
     )
     stub = Path(hep.__file__).with_name("__init__.pyi").read_text()
     declarations = {
@@ -60,6 +63,25 @@ def test_flat_namespace_and_stubs():
     }
     assert classes.keys() <= declarations
     assert "symbolica.community.feynkit" not in stub
+
+
+@pytest.mark.parametrize(
+    "module_name", ["symbolica.hep", "symbolica.community.hep", "symbolica.hepkit"]
+)
+def test_superseded_hep_import_is_removed(module_name):
+    with pytest.raises(ModuleNotFoundError):
+        importlib.import_module(module_name)
+
+
+@pytest.mark.skipif(not hasattr(hep, "IBPFamily"), reason="IBP is native-only")
+def test_ibp_package_reuses_flat_class_identities():
+    ibp = importlib.import_module("symbolica.community.hepkit.ibp")
+    assert ibp.__name__ == "symbolica.community.hepkit.ibp"
+    assert ibp.__path__
+    assert ibp.__spec__.submodule_search_locations is not None
+    for name in ("IBPFamily", "IBPRule", "IBPSolution"):
+        assert getattr(ibp, name) is getattr(hep, name)
+        assert getattr(ibp, name).__module__ == "symbolica.community.hepkit"
 
 
 def test_generate_diagram_and_cff(model):
@@ -154,7 +176,7 @@ import os
 import signal
 import sys
 import threading
-from symbolica.community import hep
+from symbolica.community import hepkit as hep
 
 model = hep.Model(sys.argv[1])
 process = model.process(["scalar_0"], ["scalar_0", "scalar_0"])

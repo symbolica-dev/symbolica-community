@@ -45,7 +45,8 @@ def _(mo):
 def _():
     import marimo as mo
     from symbolica import E, Replacement, S
-    from symbolica.community import hep, tensor as sp
+    from symbolica.community import hepkit as hep
+    from symbolica.community import tensor as sp
     from generated_ladder_helpers import (
         dot_coordinates,
         ladder_filter,

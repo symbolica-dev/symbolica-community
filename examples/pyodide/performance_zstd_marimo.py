@@ -40,7 +40,7 @@ async def _(mo):
         await micropip.install("emfs:" + str(_local))
         _local.unlink()
     from symbolica import E, S
-    from symbolica.community import hep
+    from symbolica.community import hepkit as hep
     return E, S, hep
 
 

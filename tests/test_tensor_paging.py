@@ -210,7 +210,7 @@ def test_page_source_can_serve_jupyter_comm_thread():
 def test_three_rung_ladder_pages_keep_factorization_and_budgets():
     """The 6,001-term example that formerly produced 380,000 MathML nodes."""
     from symbolica import Graph
-    from symbolica.community.hep import Model
+    from symbolica.community.hepkit import Model
     from symbolica.community.tensor import Representation
 
     target = Graph()

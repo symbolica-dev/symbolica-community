@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from symbolica.community.hep import FeynmanDiagram, Model
+from symbolica.community.hepkit import FeynmanDiagram, Model
 
 model = Model(str(Path(__file__).with_name("scalar_phi3.json")))
 process = model.process(["scalar_0"], ["scalar_0", "scalar_0"])

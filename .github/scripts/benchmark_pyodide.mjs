@@ -21,7 +21,8 @@ await micropip.install(wheel_uri)
 from symbolica import E, S, set_license_key
 if os.environ.get("SYMBOLICA_LICENSE_KEY"):
     set_license_key(os.environ["SYMBOLICA_LICENSE_KEY"])
-from symbolica.community import tensor, hep
+from symbolica.community import tensor
+from symbolica.community import hepkit as hep
 `);
 const installImportMs = performance.now() - start;
 pyodide.globals.set("hep_model_json", await readFile(new URL("../../examples/hep/scalar_phi3.json", import.meta.url), "utf8"));

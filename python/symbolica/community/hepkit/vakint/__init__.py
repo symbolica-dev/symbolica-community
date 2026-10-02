@@ -16,7 +16,7 @@ For questions or bug reports, visit https://github.com/alphal00p/vakint/.
 
 # Example:
 ```
-from symbolica.community.hep.vakint import Vakint, VakintEvaluationMethod, VakintExpression, VakintNumericalResult
+from symbolica.community.hepkit.vakint import Vakint, VakintEvaluationMethod, VakintExpression, VakintNumericalResult
 from symbolica import E, S
 
 masses = {"muvsq": 2., "mursq": 3.}
@@ -112,7 +112,7 @@ import sys as _sys
 if _sys.platform == "emscripten":
     raise ImportError("Vakint requires a native Symbolica installation.")
 
-from ..vakint_native import *
+from symbolica.community.hepkit_vakint_native import *
 
 initialize_module()
 

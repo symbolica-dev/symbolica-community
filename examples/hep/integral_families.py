@@ -36,7 +36,7 @@ def _():
     import marimo as mo
     from symbolica import E, S
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hep import (
+    from symbolica.community.hepkit import (
         FeynmanDiagram,
         IntegralFamily,
         Kinematics,

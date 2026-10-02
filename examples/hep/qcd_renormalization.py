@@ -52,14 +52,14 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _():
-    from symbolica.community import hep
+    from symbolica.community import hepkit as hep
     from symbolica.community import tensor as sp
     import json
 
     import marimo as mo
     from symbolica import E, Matrix, Replacement, S, Symbol
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hep import (
+    from symbolica.community.hepkit import (
         IBPFamily,
         IntegralFamily,
         Kinematics,
@@ -94,7 +94,7 @@ def _():
 
 @app.cell(hide_code=True)
 def _():
-    from symbolica.community.hep import Symbols
+    from symbolica.community.hepkit import Symbols
 
     return (Symbols,)
 

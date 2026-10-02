@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 from symbolica import E
-from symbolica.community.hep import Model, SnailFilterOptions
+from symbolica.community.hepkit import Model, SnailFilterOptions
 
 
 @pytest.fixture(

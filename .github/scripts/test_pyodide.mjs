@@ -72,8 +72,8 @@ network = TensorNetwork(tensor.expression()(1, 1), library=library)
 network.execute(library=library)
 assert list(network.result_tensor(library=library)) == [E("x+4")]
 assert "symbolica.community.tensor_native" in sys.modules
-from symbolica.community import hep
-assert hep.FeynmanDiagram.__module__ == "symbolica.community.hep"
+from symbolica.community import hepkit as hep
+assert hep.FeynmanDiagram.__module__ == "symbolica.community.hepkit"
 model = hep.Model.from_json(hep_model_json)
 process = model.process(["scalar_0"], ["scalar_0", "scalar_0"])
 generated = process.generate_diagrams(loops=1, max_vertices=3, allow_self_loops=False)
@@ -96,10 +96,10 @@ reduced = hep.TensorReducer(D).with_integrated_vector(kv.to_expression()).reduce
 expected = (dot(kv, kv) * dot(pv, pv) / D).to_expression()
 assert (reduced - expected).expand() == E("0")
 assert hep.ThreeMomentum(3.0, 4.0, 0.0).on_shell().components() == (5.0, 3.0, 4.0, 0.0)
-assert "symbolica.community.hep_native" in sys.modules
+assert "symbolica.community.hepkit_native" in sys.modules
 assert not hasattr(evaluator, "compile")
 assert not hasattr(tensor_module, "CompiledTensorEvaluator")
-assert "symbolica.community.hep.vakint_native" not in sys.modules
+assert "symbolica.community.hepkit_vakint_native" not in sys.modules
 try:
     import symbolica.community.vakint
 except ImportError as error:

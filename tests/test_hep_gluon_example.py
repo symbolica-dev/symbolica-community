@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 from symbolica import E, S
-from symbolica.community.hep import Model
+from symbolica.community.hepkit import Model
 from symbolica.community.tensor import TensorExpression
 
 

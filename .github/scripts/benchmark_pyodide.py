@@ -7,7 +7,7 @@ import time
 from importlib.metadata import version
 
 from symbolica import E, S
-from symbolica.community import hep
+from symbolica.community import hepkit as hep
 from symbolica.community.tensor import Representation, Tensor, TensorLibrary, TensorName, TensorNetwork
 
 x, y, z, a, b = S("x", "y", "z", "a", "b")

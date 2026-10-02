@@ -17,16 +17,16 @@ pub fn register(hep: &Bound<'_, PyModule>) -> PyResult<()> {
     #[cfg(not(target_arch = "wasm32"))]
     let module = {
         oneloop_native::register_hep_module(hep)?;
-        hep.getattr("oneloop")?.cast_into::<PyModule>()?
+        hep.getattr("_oneloop_native")?.cast_into::<PyModule>()?
     };
     #[cfg(target_arch = "wasm32")]
     let module = {
-        let module = PyModule::new(hep.py(), "symbolica.community.hep.oneloop")?;
-        hep.add("oneloop", &module)?;
+        let module = PyModule::new(hep.py(), "symbolica.community.hepkit_oneloop_native")?;
+        hep.add("_oneloop_native", &module)?;
         hep.py()
             .import("sys")?
             .getattr("modules")?
-            .set_item("symbolica.community.hep.oneloop", &module)?;
+            .set_item("symbolica.community.hepkit_oneloop_native", &module)?;
         module
     };
 
@@ -62,8 +62,8 @@ mod native {
     /// Examples
     /// --------
     /// >>> from symbolica import S, E
-    /// >>> from symbolica.community import hep
-    /// >>> from symbolica.community.hep import oneloop
+    /// >>> from symbolica.community import hepkit as hep
+    /// >>> from symbolica.community.hepkit import oneloop
     /// >>> d, k, p, s = S("d", "k", "p", "s")
     /// >>> kin = hep.Kinematics(d, momenta=[k, p]).with_scalar_product(p, p, s)
     /// >>> family = hep.IntegralFamily([k], [p], [kin.scalar_product(k, k),

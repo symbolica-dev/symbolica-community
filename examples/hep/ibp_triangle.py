@@ -46,7 +46,7 @@ def _():
     import marimo as mo
     from symbolica import E, S
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hep import IBPFamily, IntegralFamily, Kinematics, oneloop
+    from symbolica.community.hepkit import IBPFamily, IntegralFamily, Kinematics, oneloop
 
     _set_namespace("formfactor")
     return E, IBPFamily, IntegralFamily, Kinematics, S, math, mo, oneloop

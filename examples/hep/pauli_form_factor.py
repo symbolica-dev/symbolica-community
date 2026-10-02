@@ -48,7 +48,7 @@ def _():
     import numpy as np
     from symbolica import S, Symbol
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hep import oneloop
+    from symbolica.community.hepkit import oneloop
 
     _set_namespace("pauli")
     return S, Symbol, mo, np, oneloop

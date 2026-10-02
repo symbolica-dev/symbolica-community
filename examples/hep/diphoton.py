@@ -48,7 +48,7 @@ def _():
 def _():
     from symbolica import E, S, N, Symbol
     from symbolica import set_namespace as _set_namespace, get_citations
-    from symbolica.community.hep import Kinematics, Model
+    from symbolica.community.hepkit import Kinematics, Model
 
     _set_namespace("diphoton")
     return E, Kinematics, Model, N, S, Symbol, get_citations

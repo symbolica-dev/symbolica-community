@@ -35,7 +35,8 @@ def _():
     import marimo as mo
     from symbolica import E, S
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community import hep, tensor
+    from symbolica.community import hepkit as hep
+    from symbolica.community import tensor
 
 
     _set_namespace("angular_demo")

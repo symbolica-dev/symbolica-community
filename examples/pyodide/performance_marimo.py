@@ -21,7 +21,7 @@ async def _(mo):
         _wheel = mo.notebook_location() / "symbolica-3.0.1-cp314-abi3-pyemscripten_2026_0_wasm32.whl"
         await micropip.install(str(_wheel))
     from symbolica import E, S
-    from symbolica.community import hep
+    from symbolica.community import hepkit as hep
     return E, S, hep
 
 

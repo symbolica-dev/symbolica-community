@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 from symbolica import E, Graph, Replacement, S
-from symbolica.community import hep
+from symbolica.community import hepkit as hep
 from symbolica.community import tensor as sp
 
 from examples.hep.generated_ladder_helpers import (

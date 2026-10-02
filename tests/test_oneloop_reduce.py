@@ -9,8 +9,8 @@ import sys
 import pytest
 
 from symbolica import E, Expression, Replacement, S
-from symbolica.community import hep
-from symbolica.community.hep import oneloop
+from symbolica.community import hepkit as hep
+from symbolica.community.hepkit import oneloop
 
 
 def evaluate_coefficients(reduction, parameters, values, mu_squared=None):
@@ -46,9 +46,12 @@ def scalar_family(masses, invariants, dimension=None):
 
 
 def test_namespace_exposes_reduction_without_duplicate_family_classes():
-    assert importlib.import_module("symbolica.community.hep.oneloop") is oneloop
-    for name in ("Reduction", "MasterIntegral"):
-        assert getattr(oneloop, name).__module__ == "symbolica.community.hep.oneloop"
+    assert importlib.import_module("symbolica.community.hepkit.oneloop") is oneloop
+    assert oneloop.__name__ == "symbolica.community.hepkit.oneloop"
+    assert oneloop.__path__
+    assert oneloop.__spec__.submodule_search_locations is not None
+    for name in ("Reduction", "MasterIntegral", "SharedExpression"):
+        assert getattr(oneloop, name).__module__ == "symbolica.community.hepkit.oneloop"
     assert not hasattr(oneloop, "Propagator")
     assert not hasattr(oneloop, "IntegralFamily")
     assert callable(oneloop.reduce)
@@ -150,8 +153,8 @@ def test_legacy_scale_is_rejected_at_every_expression_entrypoint(composite, entr
 def test_symbolic_reduction_keeps_numerical_initialization_lazy():
     script = """
 from symbolica import E, S
-from symbolica.community import hep
-from symbolica.community.hep import oneloop
+from symbolica.community import hepkit as hep
+from symbolica.community.hepkit import oneloop
 assert not oneloop.is_initialized()
 D, ell, external, s = S("lazy::D", "lazy::ell", "lazy::external", "s")
 kin = hep.Kinematics(D, momenta=[ell, external]).with_scalar_product(external, external, s)

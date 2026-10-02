@@ -1,11 +1,11 @@
 # HEP bindings
 
 The GammaLoop `feynkit` branch is bundled through `feynkit-py`. Its public API
-is flat under `symbolica.community.hep`, sharing the same Symbolica kernel as
+is flat under `symbolica.community.hepkit`, sharing the same Symbolica kernel as
 Spenso and Idenso:
 
 ```python
-from symbolica.community.hep import FeynmanDiagram, Model, TensorReducer
+from symbolica.community.hepkit import FeynmanDiagram, Model, TensorReducer
 ```
 
 | Component | Examples of public classes |
@@ -17,7 +17,7 @@ from symbolica.community.hep import FeynmanDiagram, Model, TensorReducer
 | `feynkit-py` | All of the above, plus models, UFO loading, kinematics, and jet clustering |
 
 Class identities and the exception hierarchy are preserved; their Python
-`__module__` and the bundled stubs name `symbolica.community.hep`.
+`__module__` and the bundled stubs name `symbolica.community.hepkit`.
 
 Start with [gamma algebra](gamma_simplification.py), then
 [color algebra](color_algebra.py) and [tensor reduction](tensor_reduction.py).
@@ -59,7 +59,7 @@ The Marimo directory server (`marimo edit examples/` from the repository root)
 provides separate worked IBP notebooks:
 
 - [One-loop reduction and master evaluation](oneloop_reduce.py): pass a shared
-  `hep.IntegralFamily` and explicit powers to `hep.oneloop.reduce` for primitive
+  `hepkit.IntegralFamily` and explicit powers to `hepkit.oneloop.reduce` for primitive
   `oneloopmaster::` symbols, exported as `oneloop.A0`, `B0`, `C0`, and `D0`
   and evaluated through their native Rust hooks.
   Interactive examples cover a triangle numerator, an exact dilogarithmic C0
@@ -75,9 +75,9 @@ provides separate worked IBP notebooks:
 - [Two-loop phi4 self-energy](ibp_phi4.py) and [vertex](phi4_two_loop_vertex.py):
   generated diagrams, reductions and counterterms.
 
-All these examples use the shared `hep.IntegralFamily` frontend with
-`hep.Kinematics` and a symbolic dimension. The one-loop example chooses
-`hep.oneloop.reduce` for reduction to OneLoopMaster symbols; `hep.IBPFamily`
+All these examples use the shared `hepkit.IntegralFamily` frontend with
+`hepkit.Kinematics` and a symbolic dimension. The one-loop example chooses
+`hepkit.oneloop.reduce` for reduction to OneLoopMaster symbols; `hepkit.IBPFamily`
 provides native RustRed reductions of the same families. Links inside each
 notebook stay on the same server.
 

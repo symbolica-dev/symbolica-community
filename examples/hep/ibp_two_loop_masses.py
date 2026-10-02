@@ -61,7 +61,7 @@ def _():
     from marimo import Html
     from symbolica import E, Expression, S
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hep import (
+    from symbolica.community.hepkit import (
         FeynmanDiagram,
         IBPFamily,
         IBPSolution,
