@@ -46,9 +46,113 @@ from symbolica.community.hep import FeynmanDiagram, Model, Generator, TensorRedu
 
 See the [HEP example](examples/hep/README.md) for a complete one-loop calculation.
 
+One-loop reduction from [one-loop-reduce](https://github.com/ecavan/one-loop-reduce)
+is available in `hep.oneloop`. Native builds also expose OneLoopMaster's scalar
+integral evaluation there, sharing the same Symbolica kernel:
+
+```python
+from symbolica.community.hep import FourMomentum, oneloop
+
+p = FourMomentum(3.0, 1.0, 0.0, 0.0)
+finite, pole, double_pole = oneloop.b0(p.mass_squared, 4.0, 4.0)
+```
+
+The uppercase exports `oneloop.A0`, `B0`, `dB0`, `C0`, and `D0` are primitive
+Symbolica symbols. Construct a symbolic master directly, for example
+`oneloop.B0(s, m0_squared, m1_squared, mu_squared)`. Lowercase `a0`, `b0`,
+`db0`, `c0`, and `d0` numerically return all three Laurent coefficients and
+accept the precision and backend options.
+
+Tagged master calls containing only numeric arguments evaluate through the
+native Rust hooks during construction when at least one argument is inexact,
+for example `oneloop.A0(0, Float("2", decimal_digits=50), 1)` after importing
+`Float` from Symbolica. Untagged calls and calls containing only exact arguments
+remain symbolic; `Expression.evaluate` also evaluates tagged calls explicitly.
+
+Reduce a family to OneLoopMaster's symbols, then evaluate its Laurent
+coefficients through their registered native Rust hooks:
+
+```python
+from symbolica import E, S
+from symbolica.community import hep
+from symbolica.community.hep import oneloop
+
+k, D, mass_squared = S("example::k", "example::D", "example::mass_squared")
+kinematics = hep.Kinematics(D, momenta=[k])
+family = hep.IntegralFamily(
+    [k], [], [kinematics.scalar_product(k, k) - mass_squared], kinematics=kinematics,
+)
+reduction = oneloop.reduce(family, [2]).simplify()
+coefficients = oneloop.reduction_coefficients(reduction, mu_squared=E("1"))
+print([c.evaluate({mass_squared: 2 + 0j}) for c in coefficients])  # [-log(2), 1, 0]
+```
+
+`oneloop.reduce` takes Feynkit's existing `hep.IntegralFamily` and one signed
+power per ordered denominator. The same family supports `hep.IBPFamily`,
+momentum mappings, completion, and diagram extraction. Zero powers omit a
+denominator; negative powers contribute to the numerator. Optional scalar
+numerators use the family's `Kinematics.scalar_product` notation. Feynkit's
+model-backed `hep.Propagator` remains the shared particle-propagator type.
+
+Use a symbolic kinematic dimension such as `D` for dimensional regularization.
+`Reduction.dimension` retains that symbol. `reduction_coefficients` expands it
+at `D = 4 - 2*eps` through the order needed for the finite term and
+returns `[finite, simple_pole, double_pole]`. It rejects coefficients with a pole
+at `D=4`, since those require positive-order master coefficients that
+OneLoopMaster does not supply. The masses, squared invariants, and squared scale
+must be independent of `D`. A family with fixed integer dimension is rejected
+instead of losing epsilon-dependent contributions to the finite term.
+
+`Reduction.to_expression(mu_squared=...)` uses the canonical
+`oneloopmaster::{A0,B0,C0,D0}` heads, appends the squared scale (default `1`), and
+retains exact dimension dependence. A single `master.to_expression()` from
+`reduction.terms` feeds directly into `oneloop.master_coefficients()` for tagged
+calls or `oneloop.get_expression()` for exact formulas. The leading tags
+`0`, `-1`, and `-2` select Laurent coefficients for numerical evaluation;
+untagged calls describe the whole master for symbolic inspection. No conversion
+between master namespaces is needed.
+
+The native hooks use OneLoopMaster's generated Rust arithmetic, without building
+an expression evaluator or loading its evaluator caches. For inspecting an
+analytical region, use `oneloop.select_branch(oneloop.get_expression(master),
+replacement_rules)`: the probe selects conditional branches while preserving
+symbolic kinematics. The [marimo example](examples/hep/oneloop_reduce.py) shows
+this for a nontrivial triangle C0.
+
+Master arguments use the AVH/OneLOop ordering. Invariants, masses, and momentum
+shifts are extracted from the shared family's actual inverse denominators and
+kinematics; users do not supply a second family or a separate invariant list.
+Numerical master evaluation requires a native build.
+
+The local host uses `../../oneloopmaster/python` and
+`../../one-loop-reduce/crates/one-loop-reduce-python`, and shares OneLoopMaster's
+pinned Symbolica revision. The local reducer checkout includes
+the canonical master symbols, scale-aware expressions, and feature selection needed
+by this host. Run
+`.venv-feynkit/bin/python examples/oneloop_smoke.py` to check numeric evaluation,
+SymJIT, arbitrary precision, and expressions shared with FeynKit. This example
+requires NumPy for Symbolica's expression evaluator. After rebuilding the host,
+restart any running Python or notebook kernel to load the updated extension.
+Run `python examples/oneloop_reduce.py` for reduction followed by master
+evaluation, and `python -m pytest tests/test_oneloop_reduce.py` for the integration
+checks. To regenerate the combined one-loop type hints, run
+`cargo run --no-default-features --features python_stubgen --bin stub_gen -- --oneloop-only`;
+native evaluator declarations are maintained in `stubs/oneloop.pyi`.
+
+The public Python packages and their type hints live together under
+`python/symbolica/community/tensor/` and
+`python/symbolica/community/hep/vakint/`. Import them with
+`from symbolica.community import tensor` and
+`from symbolica.community.hep.vakint import Vakint`.
+The older `community.spenso` and `community.vakint` paths re-export those APIs.
+Regenerate tensor hints with
+`cargo run --no-default-features --features python_stubgen --bin stub_gen -- --tensor-only`.
+Use `--vakint-only` with the same command to regenerate the Vakint hints.
+CI checks the packaged stub layout and type-checks these public imports.
+
 #### Installation 
 
-This package can be installed for Python 3.7 or newer using `pip`:
+This package can be installed for Python 3.9 or newer using `pip`:
 
 ```sh
 pip install symbolica
@@ -74,7 +178,9 @@ build without uploading it to PyPI.
 
 The WebAssembly build uses `--no-default-features --features wasm`, selecting
 Symbolica's Rust numeric backends and disabling native code generation.
-Native builds retain Symbolica's default features, including GMP and MPFR.
+Native builds use GMP, MPFR, and native code generation with the system allocator.
+Symbolica's optional mimalloc allocator is disabled because it can crash when
+Python imports the extension on a worker thread and later uses another thread.
 Native releases and PyEmscripten releases have separate publication jobs.
 
 The `release-small` Cargo profile optimizes for size (`opt-level = "z"`), uses
@@ -95,6 +201,57 @@ To build the same wheel locally after setting up the toolchain from the workflow
 ```sh
 pyodide build . --no-isolation -C maturin.build-args="--locked --profile release-small --no-default-features --features wasm -- -C link-arg=-sEXPORTED_FUNCTIONS=_PyInit_core"
 ```
+
+For a speed-oriented release, use `release-performance` (`opt-level = 3`, fat
+LTO, one codegen unit, stripped symbols, and panic unwinding). Symbolica 3.0.1
+requires Rust 1.96 or newer; Rust 1.98.0 was used with the Pyodide 314.0.7
+cross-build environment and Emscripten 5.0.3:
+
+```sh
+rustup toolchain install 1.98.0 --profile minimal --target wasm32-unknown-emscripten
+export RUSTUP_TOOLCHAIN=1.98.0
+bash scripts/build_wasm_performance.sh
+```
+
+The script builds into `dist/wasm-performance`, preserves the linked input in
+`compiler-output`, and runs the Pyodide smoke tests. It keeps LLVM's `-O3`
+optimization and uses Binaryen `-O0` postprocessing as a baseline for `wasm-opt`
+experiments. Set `WASM_OPT_LEVEL=-O3` (or `-O2`, `-Os`,
+`-Oz`) to choose additional Binaryen optimization. These passes can take a long
+time on this large module. This flag does not change Rust's optimization level.
+To compare Rust size optimization, set `WASM_RUST_PROFILE=release-small` and pass
+a separate output directory to the script. Existing compiler captures are never
+overwritten. A private optimizer wrapper keeps Emscripten linker settings fixed
+while selecting Binaryen optimization; it does not modify the installed SDK.
+Install the resulting wheel by URL with `await micropip.install(wheel_url)` in
+Pyodide 314.x or a marimo WebAssembly notebook using Python 3.14 and the
+`pyemscripten_2026_0_wasm32` platform. Serve the wheel with CORS headers when it
+is hosted on a different origin. `examples/pyodide/performance_marimo.py` is a
+marimo example; export it with `marimo export html-wasm` and place the wheel
+beside the exported `index.html`. Native-only Vakint, OneLOop, the RustRed IBP
+bridge, and native code generation are unavailable in this build.
+
+For browser delivery, a stored ZIP wheel compressed with HTTP Brotli can be
+substantially smaller than a conventional deflated wheel. Prepare it with
+`python scripts/prepare_browser_wheel.py WHEEL OUTPUT_DIRECTORY` (requires the
+Python `brotli` package). Serve the normal `.whl` URL with the adjacent `.whl.br`
+file as its body and `Content-Encoding: br`; install the `.whl` URL with
+`micropip`. `scripts/serve_wasm_bundle.py DIRECTORY` provides a local test server.
+The stored wheel is large without HTTP compression. This changes only delivery,
+not the package contents or execution speed.
+
+`scripts/measure_wheel_zstd.py STORED_WHEEL` (Python 3.14+) measures and saves
+zstd levels 3, 9, 19, and 22 using an 8 MiB window for HTTP delivery. Serve a
+chosen representation as `.whl.zst` beside the stored wheel; the test server
+negotiates `Content-Encoding: zstd` or Brotli based on client support and size.
+The HTTP window limit is specified in [RFC 9659](https://www.rfc-editor.org/rfc/rfc9659.html).
+
+For a smaller download, `--levels 22 --window-log 27` permits a larger zstd window.
+Serve that archive as ordinary `.zst` bytes without `Content-Encoding: zstd`.
+`examples/pyodide/performance_zstd_marimo.py` downloads it, decodes it using
+Python 3.14's built-in `compression.zstd`, and installs the wheel from Pyodide's
+filesystem. This path needs no additional decoder package. It adds a one-time
+decompression step while preserving the compiled code and execution speed.
 
 For a local browser playground using the built wheel, see
 [the Pyodide example](examples/pyodide/README.md).

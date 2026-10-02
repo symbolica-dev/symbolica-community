@@ -32,7 +32,7 @@ You are able to perform these operations from the comfort of a programming langu
 
 # Installation
 
-Symbolica can be installed for Python 3.7 or newer using `pip`:
+Symbolica can be installed for Python 3.9 or newer using `pip`:
 
 ```sh
 pip install symbolica

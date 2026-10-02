@@ -1,308 +1,7 @@
 import marimo
 
-__generated_with = "0.24.2"
+__generated_with = "0.24.0"
 app = marimo.App(width="medium", app_title="Feynman-parameter UV cross-check")
-
-
-@app.cell
-def _():
-    import marimo as mo
-    from copy import copy
-    from symbolica import S, E, N, Expression
-    from symbolica.community import idenso
-    from symbolica.community.spenso import TensorExpression, as_tensor
-    from symbolica.community.hep import Model, SnailFilterOptions, Particle, FeynmanDiagram, TensorReducer
-
-    return (
-        E,
-        Expression,
-        FeynmanDiagram,
-        SnailFilterOptions,
-        Model,
-        S,
-        TensorExpression,
-        as_tensor,
-        TensorReducer,
-        idenso,
-        mo,
-    )
-
-
-@app.cell
-def _(S):
-    D, eps, p2, ell2, x = S(
-        'hep_gluon::D', 'hep_gluon::eps', 'hep_gluon::p2',
-        'hep_gluon::ell2', 'hep_gluon::x',
-    )
-    P, K = S('hep_gluon::P', 'hep_gluon::K', tags=['spenso::tensor', 'spenso::rank1'])
-    L = S('hep_gluon::L')
-    RED_P = S('hep_gluon::reduction_P')
-    index_ = S('hep_gluon::index_')
-    mink, metric, dot = S('spenso::mink', 'spenso::g', 'spenso::dot')
-    MOMENTUM = S('FeynKit::Momentum')
-    k2, kp, t, Muv2 = S("hep_gluon::k2", "hep_gluon::kp", "hep_gluon::t", "hep_gluon::Muv2")
-    UV_K, UV_P = S("hep_gluon::uv_K", "hep_gluon::uv_P")
-    return (
-        D,
-        K,
-        L,
-        MOMENTUM,
-        P,
-        RED_P,
-        dot,
-        ell2,
-        eps,
-        index_,
-        metric,
-        mink,
-        p2,
-        x,
-    )
-
-
-@app.cell
-def _(D, FeynmanDiagram, TensorExpression, as_tensor, index_, mink):
-    def numerator_in_d(diagram: FeynmanDiagram) -> TensorExpression:
-        """Continue Lorentz slots to D, retaining the external tensor interface."""
-        return as_tensor(diagram.numerator_expression().replace(
-            mink(4, index_), mink(D, index_)
-        ))
-
-    return (numerator_in_d,)
-
-
-@app.cell
-def _(TensorExpression, as_tensor, idenso, qcd_color_factors):
-    def contract_indices(expression: TensorExpression) -> TensorExpression:
-        """Close internal Dirac, color, and Lorentz indices, retaining external ports."""
-        raw = expression.to_expression()
-        for _ in range(12):
-            simplified = idenso.simplify_metrics(
-                idenso.simplify_color(idenso.simplify_gamma(raw.expand()))
-            ).expand()
-            # This revision mistakes cas(..., coad(8)) for an unresolved tensor
-            # port. Evaluate the SU(3) scalar factors before re-inferring ports.
-            if simplified == raw:
-                return as_tensor(qcd_color_factors(simplified))
-            raw = simplified
-        raise RuntimeError('Tensor contractions did not reach a fixed point')
-
-    return (contract_indices,)
-
-
-@app.cell
-def _(D, FeynmanDiagram, P, TensorExpression, as_tensor, index_, metric, mink, p2):
-    def external_projector(diagram: FeynmanDiagram, *, longitudinal=False) -> TensorExpression:
-        """Color-average the transverse trace (or the longitudinal Ward check).
-
-        P_T = delta_ab (g_mu_nu - p_mu p_nu/p^2) / [8 (D-1)].
-        Thus P_T . [delta_ab (p^2 g_mu_nu - p_mu p_nu) Pi] = p^2 Pi.
-        """
-        slots = [slot.replace(mink(4, index_), mink(D, index_))
-                 for slot in diagram.numerator_expression().list_dangling()]
-        mu, nu = [slot for slot in slots if slot.get_name() == 'spenso::mink']
-        a, b = [slot for slot in slots if slot.get_name() == 'spenso::coad']
-        if longitudinal:
-            return as_tensor(metric(a, b) * P(mu) * P(nu) / (8 * p2))
-        return as_tensor(metric(a, b) * (metric(mu, nu) - P(mu) * P(nu) / p2) / (8 * (D - 1)))
-
-    def apply_projector(numerator: TensorExpression, projector: TensorExpression) -> TensorExpression:
-        """Contract every named external slot with its matching projector slot."""
-        if set(numerator.list_dangling()) != set(projector.list_dangling()):
-            raise ValueError('Numerator and projector must have matching external slots')
-        # Multiple compatible ports make typed multiplication ambiguous.
-        # The explicit Einstein indices specify all four contractions here.
-        return as_tensor(numerator.to_expression() * projector.to_expression())
-
-    return apply_projector, external_projector
-
-
-@app.cell
-def _(FeynmanDiagram):
-    def routing_coefficients(diagram: FeynmanDiagram) -> dict[int, tuple[int, int]]:
-        """Convert physical external momenta to source-to-target edge momenta."""
-        if diagram.loop_count != 1 or len(diagram.external_edges) != 2:
-            raise ValueError('This example requires a one-loop two-point graph')
-        vertices = {v.id: v for v in diagram.vertices}
-        result = {}
-        for edge in diagram.edges:
-            signature = diagram.loop_momentum_basis.edge_signatures[edge.id]
-            if len(signature.loops) != 1 or any(signature.external[1:]):
-                raise ValueError('Expected one independent external momentum')
-            loop, external = signature.loops[0], signature.external[0]
-            source, target = vertices[edge.source], vertices[edge.target]
-            if source.is_external or target.is_external:
-                vertex = source if source.is_external else target
-                # The basis stores physical incoming/outgoing p, whereas the
-                # UFO numerator uses Momentum(edge) along source -> target.
-                physical_into_graph = vertex.external_state == 'incoming'
-                edge_into_graph = source.is_external
-                if physical_into_graph != edge_into_graph:
-                    external = -external
-            result[edge.id] = (loop, external)
-        # Check conservation in the exact convention used by the numerator.
-        for vertex in diagram.vertices:
-            if vertex.is_external:
-                continue
-            for component in (0, 1):
-                balance = sum(
-                    ((edge.target == vertex.id) - (edge.source == vertex.id))
-                    * result[edge.id][component] for edge in diagram.edges
-                )
-                if balance:
-                    raise ValueError(f'Momentum is not conserved at vertex {vertex.id}')
-        return result
-
-    return (routing_coefficients,)
-
-
-@app.cell
-def _(FeynmanDiagram, K, MOMENTUM, P, TensorExpression, as_tensor, index_, numerator_in_d, routing_coefficients):
-    def route_numerator(diagram: FeynmanDiagram) -> TensorExpression:
-        expression = numerator_in_d(diagram).to_expression()
-        for edge_id, (loop, external) in routing_coefficients(diagram).items():
-            expression = expression.replace(
-                MOMENTUM(edge_id, index_), loop * K(index_) + external * P(index_)
-            )
-        return as_tensor(expression.expand())
-
-    return (route_numerator,)
-
-
-@app.cell
-def _(D, P, TensorExpression, as_tensor, contract_indices, dot, idenso, mink, p2):
-    def scalar_products(expression: TensorExpression) -> TensorExpression:
-        """Keep compact scalar products inside the structured tensor expression."""
-        return as_tensor(idenso.to_dots(contract_indices(expression).to_expression()).replace(
-            dot(P(mink(D)), P(mink(D))), p2
-        ).expand())
-
-    return (scalar_products,)
-
-
-@app.cell
-def _(Expression, FeynmanDiagram, Model, S, index_):
-    def diagram_weight(diagram: FeynmanDiagram, model: Model) -> Expression:
-        """Evaluate provenance factors and supply the closed-ghost-loop sign.
-
-        At pinned upstream 0ea21405, closed_fermion_loop_count only counts
-        is_fermion() particles (UFO spin 2), excluding spin -1 FP ghosts.
-        This example therefore includes their Grassmann minus explicitly.
-        """
-        factor = diagram.overall_factor_expression() * diagram.numerator_prefactor_expression()
-        for name in ('AutG', 'CouplingsMultiplicity', 'ExternalFermionOrderingSign',
-                     'InternalFermionLoopSign', 'AntiFermionSpinSumSign'):
-            factor = factor.replace(S('feynkit_generator_factor::' + name)(index_), index_)
-        if all(model.particle(edge.particle_name).spin == -1 for edge in diagram.internal_edges):
-            factor = -factor
-        return factor
-
-    return (diagram_weight,)
-
-
-@app.cell
-def _(E, Expression, Model, S, TensorExpression, as_tensor):
-    def qcd_color_factors(expression: Expression) -> Expression:
-        """Evaluate the scalar SU(3) invariants used by this example."""
-        return expression.replace(S('spenso::cas')(2, S('spenso::coad')(8)), 3).replace(
-            S('spenso::idx')(2, S('spenso::cof')(3)), E('1/2')
-        )
-
-    def resolve_qcd(expression: TensorExpression, model: Model) -> TensorExpression:
-        """Resolve QCD couplings and scalar SU(3) factors, preserving tensor type."""
-        result = as_tensor(expression).to_expression()
-        for coupling in model.couplings:
-            if coupling.name in ('GC_10', 'GC_11'):
-                result = result.replace(S('UFO::' + coupling.name), coupling.expression)
-        return as_tensor(qcd_color_factors(result).expand())
-
-    return qcd_color_factors, resolve_qcd
-
-
-@app.cell
-def _(
-    D,
-    E,
-    FeynmanDiagram,
-    K,
-    L,
-    Model,
-    P,
-    RED_P,
-    S,
-    TensorReducer,
-    as_tensor,
-    apply_projector,
-    diagram_weight,
-    dot,
-    ell2,
-    external_projector,
-    idenso,
-    index_,
-    mink,
-    p2,
-    resolve_qcd,
-    route_numerator,
-    routing_coefficients,
-    x,
-):
-    def bubble_uv_data(diagram: FeynmanDiagram, model: Model, *, longitudinal=False):
-        """Feynman-parameterize, shift, tensor-reduce and extract a bubble UV pole.
-
-        Nothing mutates the original graph. The returned coefficient excludes
-        1/eps and i/(16*pi^2), and includes diagram weights and model couplings.
-        """
-        copy = FeynmanDiagram.from_json(model, diagram.to_json())
-        if len(copy.internal_edges) != 2:
-            raise ValueError('UV example supports two-propagator bubbles only')
-        routing = routing_coefficients(copy)
-        chord = copy.loop_momentum_basis.loop_edges[0]
-        first = next(edge for edge in copy.internal_edges if edge.id == chord)
-        second = next(edge for edge in copy.internal_edges if edge.id != chord)
-        if routing[chord] != (1, 0):
-            raise ValueError('The first propagator must carry k')
-        loop, external = routing[second.id]
-        if abs(loop) != 1 or abs(external) != 1:
-            raise ValueError('Expected the second propagator to carry +/- (k +/- p)')
-        masses = [model.particle(edge.particle_name).mass_parameter for edge in (first, second)]
-        if masses[0] != masses[1]:
-            raise ValueError('This example requires equal propagator masses')
-        mass2 = E('0') if model.particle(first.particle_name).is_massless else S('UFO::' + masses[0])**2
-        delta = mass2 - x * (1 - x) * p2
-        shift_sign = external // loop
-        projector = external_projector(copy, longitudinal=longitudinal)
-        shifted = apply_projector(route_numerator(copy), projector).replace(
-            K(index_), L(index_) - shift_sign * x * P(index_)
-        ).replace(P(index_), RED_P(index_)).expand()
-        # Sew gamma chains before reduction; retain explicit loop-vector indices.
-        for _ in range(12):
-            new = idenso.simplify_gamma(idenso.simplify_color(shifted)).expand()
-            if new == shifted:
-                break
-            shifted = new
-        else:
-            raise RuntimeError('Dirac/color algebra did not converge')
-        reducer = TensorReducer(D).with_integrated_vector(L(mink(D)))
-        reduced = reducer.reduce(shifted)
-        reduced = reduced.replace(dot(RED_P(mink(D)), RED_P(mink(D))), p2)
-        reduced = reduced.replace(dot(L(mink(D)), L(mink(D))), ell2).expand()
-        # Mixed loop/external dots would indicate that reduction was incomplete.
-        if reduced.replace(L(index_), 0) != reduced:
-            raise ValueError('Unreduced loop momentum remains')
-        a = reduced.coefficient(ell2)
-        b = reduced.replace(ell2, 0)
-        if (reduced - a * ell2 - b).expand() != E('0'):
-            raise ValueError('Expected a numerator linear in ell^2 after reduction')
-        # For d^D ell/(i*pi^(D/2)): pole[J_2] = 1/eps and
-        # pole[ell^2 J_2] = 2*Delta/eps. Take D -> 4 only for the residue.
-        residue_x = (2 * delta * a + b).replace(D, 4).expand()
-        primitive = residue_x.integrate(x)
-        residue = (primitive.replace(x, 1) - primitive.replace(x, 0)).expand()
-        residue = resolve_qcd(as_tensor(residue * diagram_weight(copy, model)), model).to_expression()
-        return dict(diagram=copy, delta=delta, shifted=shifted, reducer=reducer,
-                    reduced=reduced, residue_x=residue_x, residue=residue)
-
-    return (bubble_uv_data,)
 
 
 @app.cell
@@ -317,9 +16,375 @@ def _(mo):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ## Setup and notebook helpers
+
+    Imports and supporting routines are folded below. Expand a cell’s code to
+    inspect or edit it; the calculation that follows shows the HEP operations.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    from symbolica.community import hep
+    from symbolica.community import tensor as sp
+    import marimo as mo
+    from symbolica import S, E, Expression
+    from symbolica.community.tensor import TensorExpression, as_tensor
+    from symbolica.community.hep import (
+        Model,
+        SnailFilterOptions,
+        FeynmanDiagram,
+        TensorReducer,
+    )
+
+    contraction_settings = dict()
+    return (
+        E,
+        Expression,
+        FeynmanDiagram,
+        Model,
+        S,
+        SnailFilterOptions,
+        TensorExpression,
+        TensorReducer,
+        as_tensor,
+        contraction_settings,
+        hep,
+        mo,
+        sp,
+    )
+
+
+@app.cell(hide_code=True)
+def _(D, FeynmanDiagram, TensorExpression):
+    def numerator_in_d(diagram: FeynmanDiagram) -> TensorExpression:
+        """Route into the loop basis and continue Lorentz slots to D before contraction."""
+        return diagram.numerator_expression(in_lmb=True).with_lorentz_dimension(D)
+
+    return (numerator_in_d,)
+
+
+@app.cell(hide_code=True)
+def _(
+    D,
+    FeynmanDiagram,
+    P,
+    TensorExpression,
+    as_tensor,
+    color_settings,
+    index_,
+    metric,
+    p2,
+    sp,
+):
+    def external_projector(
+        diagram: FeynmanDiagram, *, longitudinal=False
+    ) -> TensorExpression:
+        """Color-average the transverse trace (or the longitudinal Ward check).
+
+        P_T = delta_ab (g_mu_nu - p_mu p_nu/p^2) / [8 (D-1)].
+        Thus P_T . [delta_ab (p^2 g_mu_nu - p_mu p_nu) Pi] = p^2 Pi.
+        """
+        slots = [
+            slot.replace(
+                sp.PortPattern.exact(sp.Representation.mink(4), index_),
+                sp.PortPattern.exact(sp.Representation.mink(D), index_),
+            )
+            for slot in diagram.numerator_expression().list_dangling()
+        ]
+        mu, nu = [
+            slot
+            for slot in slots
+            if slot.get_name() == sp.Representation.mink(4).name.name
+        ]
+        a, b = [
+            slot
+            for slot in slots
+            if slot.get_name() == sp.Representation.coad(4).name.name
+        ]
+        if longitudinal:
+            return as_tensor(metric(a, b) * P(mu) * P(nu) / (8 * p2))
+        return as_tensor(
+            metric(a, b) * (metric(mu, nu) - P(mu) * P(nu) / p2) / (8 * (D - 1))
+        )
+
+    def apply_projector(
+        numerator: TensorExpression, projector: TensorExpression
+    ) -> TensorExpression:
+        """Contract every named external slot with its matching projector slot."""
+        if set(numerator.list_dangling()) != set(projector.list_dangling()):
+            raise ValueError(
+                "Numerator and projector must have matching external slots"
+            )
+        # The explicit Einstein indices specify all four contractions here.
+        # Native fixed-point simplifiers keep color and gamma expansion local.
+        # The network contracts connected factors before residual metric expansion.
+        return (
+            (numerator * projector)
+            .simplify_algebra(
+                contract="dots", **color_settings, gamma=True, epsilon=True
+            )
+            .expand(metric)
+            .contract()
+            .to_dots()
+        )
+
+    return apply_projector, external_projector
+
+
+@app.cell(hide_code=True)
+def _(FeynmanDiagram):
+    def routing_coefficients(diagram: FeynmanDiagram) -> dict[int, tuple[int, int]]:
+        """Read the signed coefficients from the native one-loop momentum basis."""
+        if diagram.loop_count != 1 or len(diagram.external_edges) != 2:
+            raise ValueError("This example requires a one-loop two-point graph")
+        result = {}
+        # The graph's native basis owns momentum routing and conservation.
+        for edge_id, signature in diagram.loop_momentum_basis.edge_signatures.items():
+            if len(signature.loops) != 1 or any(signature.external[1:]):
+                raise ValueError("Expected one independent external momentum")
+            result[edge_id] = (signature.loops[0], signature.external[0])
+        return result
+
+    return (routing_coefficients,)
+
+
+@app.cell(hide_code=True)
+def _(
+    FeynmanDiagram,
+    K,
+    P,
+    TensorExpression,
+    as_tensor,
+    hep,
+    index_,
+    numerator_in_d,
+):
+    def route_numerator(diagram: FeynmanDiagram) -> TensorExpression:
+        expression = numerator_in_d(diagram).to_expression()
+        expression = expression.replace(
+            hep.Kinematics.loop_momentum(0, index_), K(index_)
+        )
+        expression = expression.replace(
+            hep.Kinematics.external_momentum(0, index_), P(index_)
+        )
+        return as_tensor(expression)
+
+    return (route_numerator,)
+
+
+@app.cell(hide_code=True)
+def _(D, P, TensorExpression, dot, p2, sp):
+    def scalar_products(expression: TensorExpression) -> TensorExpression:
+        """Keep compact scalar products inside the structured tensor expression."""
+        return TensorExpression(
+            expression.contract()
+            .to_dots()
+            .to_expression()
+            .replace(
+                dot(
+                    P(sp.PortPattern.exact(sp.Representation.mink(D))),
+                    P(sp.PortPattern.exact(sp.Representation.mink(D))),
+                ),
+                p2,
+            )
+        )
+
+    return (scalar_products,)
+
+
+@app.cell(hide_code=True)
+def _(Expression, FeynmanDiagram):
+    def diagram_weight(diagram: FeynmanDiagram) -> Expression:
+        """Evaluate native graph factors, including the closed-ghost-loop sign once."""
+        return (
+            diagram.overall_factor_expression(evaluate=True)
+            * diagram.numerator_prefactor_expression()
+        )
+
+    return (diagram_weight,)
+
+
+@app.cell(hide_code=True)
+def _(E, Model, TensorExpression, sp):
+    def qcd_color_factors(expression: TensorExpression) -> TensorExpression:
+        """Evaluate the scalar SU(3) invariants used by this example."""
+        return TensorExpression(
+            expression.to_expression()
+            .replace(
+                sp.TensorPattern.casimir(
+                    2, sp.PortPattern.exact(sp.Representation.coad(8))
+                ),
+                3,
+            )
+            .replace(
+                sp.TensorPattern.dynkin_index(2, sp.Representation.cof(3)), E("1/2")
+            )
+        )
+
+    def resolve_qcd(expression: TensorExpression, model: Model) -> TensorExpression:
+        """Resolve QCD couplings and scalar SU(3) factors, preserving tensor type."""
+        return qcd_color_factors(model.expand_couplings(expression))
+
+    return (resolve_qcd,)
+
+
+@app.cell(hide_code=True)
+def _(
+    D,
+    E,
+    FeynmanDiagram,
+    K,
+    L,
+    Model,
+    P,
+    RED_P,
+    TensorReducer,
+    apply_projector,
+    as_tensor,
+    diagram_weight,
+    dot,
+    ell2,
+    external_projector,
+    index_,
+    p2,
+    resolve_qcd,
+    route_numerator,
+    routing_coefficients,
+    sp,
+    x,
+):
+    def bubble_uv_data(diagram: FeynmanDiagram, model: Model, *, longitudinal=False):
+        """Feynman-parameterize, shift, tensor-reduce and extract a bubble UV pole.
+
+        Nothing mutates the original graph. The returned coefficient excludes
+        1/eps and i/(16*pi^2), and includes diagram weights and model couplings.
+        """
+        copy = FeynmanDiagram.from_json(model, diagram.to_json())
+        if len(copy.internal_edges) != 2:
+            raise ValueError("UV example supports two-propagator bubbles only")
+        routing = routing_coefficients(copy)
+        chord = copy.loop_momentum_basis.loop_edges[0]
+        first = next(edge for edge in copy.internal_edges if edge.id == chord)
+        second = next(edge for edge in copy.internal_edges if edge.id != chord)
+        if routing[chord] != (1, 0):
+            raise ValueError("The first propagator must carry k")
+        loop, external = routing[second.id]
+        if abs(loop) != 1 or abs(external) != 1:
+            raise ValueError("Expected the second propagator to carry +/- (k +/- p)")
+        masses = [
+            model.particle(edge.particle_name).mass_parameter
+            for edge in (first, second)
+        ]
+        if masses[0] != masses[1]:
+            raise ValueError("This example requires equal propagator masses")
+        mass2 = model.particle(first.particle_name).mass ** 2
+        delta = mass2 - x * (1 - x) * p2
+        shift_sign = external // loop
+        projector = external_projector(copy, longitudinal=longitudinal)
+        shifted = (
+            apply_projector(route_numerator(copy), projector)
+            .to_expression()
+            .replace(K(index_), L(index_) - shift_sign * x * P(index_))
+            .replace(P(index_), RED_P(index_))
+        )
+        # Projector application already contracts color, Dirac, and Lorentz
+        # indices internally; only the selected loop vector is integrated below.
+        reducer = TensorReducer(
+            D, integrated=[L(sp.PortPattern.exact(sp.Representation.mink(D)))]
+        )
+        reduced = reducer.reduce(shifted)
+        reduced = reduced.replace(
+            dot(
+                RED_P(sp.PortPattern.exact(sp.Representation.mink(D))),
+                RED_P(sp.PortPattern.exact(sp.Representation.mink(D))),
+            ),
+            p2,
+        )
+        reduced = reduced.replace(
+            dot(
+                L(sp.PortPattern.exact(sp.Representation.mink(D))),
+                L(sp.PortPattern.exact(sp.Representation.mink(D))),
+            ),
+            ell2,
+        ).expand(ell2)
+        # Mixed loop/external dots would indicate that reduction was incomplete.
+        if reduced.replace(L(index_), 0) != reduced:
+            raise ValueError("Unreduced loop momentum remains")
+        a = reduced.coefficient(ell2)
+        b = reduced.replace(ell2, 0)
+        if any(
+            power not in (E("1"), ell2) for power, _ in reduced.coefficient_list(ell2)
+        ):
+            raise ValueError("Expected a numerator linear in ell^2 after reduction")
+        # For d^D ell/(i*pi^(D/2)): pole[J_2] = 1/eps and
+        # pole[ell^2 J_2] = 2*Delta/eps. Take D -> 4 only for the residue.
+        residue_x = (2 * delta * a + b).replace(D, 4).expand(x)
+        primitive = residue_x.integrate(x)
+        residue = primitive.replace(x, 1) - primitive.replace(x, 0)
+        residue = resolve_qcd(as_tensor(residue * diagram_weight(copy)), model)
+        return dict(
+            diagram=copy,
+            delta=delta,
+            shifted=shifted,
+            reducer=reducer,
+            reduced=reduced,
+            residue_x=residue_x,
+            residue=residue,
+        )
+
+    return (bubble_uv_data,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ## Calculation
+    """)
+    return
+
+
 @app.cell
-def _(Model, mo):
-    model = Model(mo.notebook_location() / "hep_sm.json")
+def _(S, hep, sp):
+    D, eps, p2, ell2 = S(
+        "hep_gluon::D",
+        "hep_gluon::eps",
+        "hep_gluon::p2",
+        "hep_gluon::ell2",
+    )
+    x = S("hep_gluon::x", is_scalar=True)
+    P, K = S(
+        "hep_gluon::P", "hep_gluon::K", tags=hep.Kinematics.external_momentum.get_tags()
+    )
+    L = sp.TensorName.vector("hep_gluon::L").to_expression()
+    RED_P = sp.TensorName.vector("hep_gluon::reduction_P").to_expression()
+    index_ = S("hep_gluon::index_")
+    mink, metric, dot = (
+        sp.Representation.mink,
+        sp.TensorName.g().to_expression(),
+        sp.TensorPattern.dot,
+    )
+    k2, kp, t, Muv2 = S(
+        "hep_gluon::k2", "hep_gluon::kp", "hep_gluon::t", "hep_gluon::Muv2"
+    )
+    UV_K, UV_P = S("hep_gluon::uv_K", "hep_gluon::uv_P")
+    return D, K, L, P, RED_P, dot, ell2, eps, index_, metric, p2, x
+
+
+@app.cell
+def _():
+    # Resolve scalar color invariants within the native color simplifier.
+    color_settings = dict(color=True, color_substitute_cof_dimension_invariants=True)
+    return (color_settings,)
+
+
+@app.cell
+def _(Model):
+    model = Model.standard_model()
     g = model.particle("g")
     g
     return g, model
@@ -339,11 +404,10 @@ def _(mo):
 
 @app.cell
 def _(SnailFilterOptions, g, model):
-    diagrams = model.generate_diagrams(
-        [g], [g], loops=1,
-        coupling_orders={"QCD": 2, "QED": 0},
-        particle_veto=["c", "t", "s", "u", "d"],
-        zero_snails=SnailFilterOptions(),
+    diagrams = model.process(
+        [g], [g], particle_veto=["c", "t", "s", "u", "d"]
+    ).generate_diagrams(
+        loops=1, coupling_orders={"QCD": 2, "QED": 0}, zero_snails=SnailFilterOptions()
     )
     return (diagrams,)
 
@@ -399,8 +463,10 @@ def _(diagram):
 
 
 @app.cell
-def _(contract_indices, diagram, numerator_in_d):
-    contracted_numerator = contract_indices(numerator_in_d(diagram))
+def _(color_settings, contraction_settings, diagram, numerator_in_d):
+    contracted_numerator = numerator_in_d(diagram).simplify_algebra(
+        contract="dots", **color_settings, gamma=True, epsilon=True
+    )
     contracted_numerator
     return
 
@@ -444,9 +510,16 @@ def _(apply_projector, diagram, projector, route_numerator, scalar_products):
 
 
 @app.cell
-def _(as_tensor, diagram, diagram_weight, model, projected_numerator, resolve_qcd):
+def _(
+    as_tensor,
+    diagram,
+    diagram_weight,
+    model,
+    projected_numerator,
+    resolve_qcd,
+):
     weighted_projected_numerator = resolve_qcd(
-        as_tensor(projected_numerator * diagram_weight(diagram, model)), model
+        as_tensor(projected_numerator * diagram_weight(diagram)), model
     )
     weighted_projected_numerator
     return
@@ -456,9 +529,9 @@ def _(as_tensor, diagram, diagram_weight, model, projected_numerator, resolve_qc
 def _(mo):
     mo.md("""
     The last expression includes the symmetry factor and closed-loop signs,
-    with the model couplings expressed through `UFO::G`.
-    At FeynKit revision `0ea21405`, the generator's loop-sign counter excludes
-    spin −1 ghosts: `diagram_weight` supplies their Grassmann minus explicitly.
+    with the model couplings expressed through the model’s strong coupling.
+    The native graph factor already includes the Grassmann minus for each
+    closed ghost loop; `diagram_weight` evaluates it without an extra sign.
     All algebra functions are defined in the notebook cells above.
 
     This optional reference notebook uses Feynman parameters to check the result.
@@ -538,9 +611,11 @@ def _(mo):
 
 
 @app.cell
-def _(D, L, TensorReducer, mink, uv_data):
-    tensor_reducer = TensorReducer(D).with_integrated_vector(L(mink(D)))
-    tensor_reduced = tensor_reducer.reduce(uv_data['shifted'])
+def _(D, L, TensorReducer, sp, uv_data):
+    tensor_reducer = TensorReducer(
+        D, integrated=[L(sp.PortPattern.exact(sp.Representation.mink(D)))]
+    )
+    tensor_reduced = tensor_reducer.reduce(uv_data["shifted"])
     tensor_reduced
     return
 
@@ -581,10 +656,8 @@ def _(uv_data):
 
 
 @app.cell
-def _(eps, uv_residue):
-    from symbolica import E as parse
-
-    loop_uv_pole = parse("1i") * uv_residue / (16 * parse("pi")**2 * eps)
+def _(E, eps, uv_residue):
+    loop_uv_pole = E("1i") * uv_residue / (16 * E("pi") ** 2 * eps)
     uv_counterterm = -loop_uv_pole
     uv_counterterm
     return
@@ -609,35 +682,38 @@ def _(mo):
 
 
 @app.cell
-def _(bubble_uv_data, diagrams, mo, model):
-    from symbolica import E as zero
-
+def _(E, bubble_uv_data, diagrams, mo, model):
     uv_results = [bubble_uv_data(_d, model) for _d in diagrams]
     ward_results = [bubble_uv_data(_d, model, longitudinal=True) for _d in diagrams]
-    total_residue = sum((_row["residue"] for _row in uv_results), zero("0")).expand()
+    total_residue = sum(
+        (_row["residue"].to_expression() for _row in uv_results), E("0")
+    )
     longitudinal_residue = sum(
-        (_row["residue"] for _row in ward_results), zero("0")
-    ).expand()
-    assert longitudinal_residue == zero("0"), "The UV pole is not transverse"
-    mo.ui.table([
-        {
-            "Loop": ", ".join(_edge.particle_name for _edge in _d.internal_edges),
-            "Transverse residue": _uv["residue"].format(color_top_level_sum=False, color_builtin_symbols=False),
-            "Longitudinal residue": _ward["residue"].format(color_top_level_sum=False, color_builtin_symbols=False),
-        }
-        for _d, _uv, _ward in zip(diagrams, uv_results, ward_results)
-    ], selection=None)
+        (_row["residue"].to_expression() for _row in ward_results), E("0")
+    ).together()
+    assert longitudinal_residue == E("0"), "The UV pole is not transverse"
+    mo.ui.table(
+        [
+            {
+                "Loop": ", ".join(_edge.particle_name for _edge in _d.internal_edges),
+                "Transverse residue": _uv["residue"]
+                .to_expression()
+                .format(color_top_level_sum=False, color_builtin_symbols=False),
+                "Longitudinal residue": _ward["residue"]
+                .to_expression()
+                .format(color_top_level_sum=False, color_builtin_symbols=False),
+            }
+            for _d, _uv, _ward in zip(diagrams, uv_results, ward_results)
+        ],
+        selection=None,
+    )
     return (total_residue,)
 
 
 @app.cell
-def _(eps, p2, total_residue):
-    from symbolica import E as expression
-
+def _(E, eps, p2, total_residue):
     # Amplitude counterterm = -i (p^2 g - p p) delta_ab delta_Z3.
-    delta_Z3_MS = (total_residue / p2).expand() / (
-        16 * expression("pi")**2 * eps
-    )
+    delta_Z3_MS = (total_residue / p2) / (16 * E("pi") ** 2 * eps)
     delta_Z3_MS
     return
 

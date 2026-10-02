@@ -1,427 +1,10 @@
 import marimo
 
-__generated_with = "0.24.2"
+__generated_with = "0.24.0"
 app = marimo.App(
     width="medium",
     app_title="One-loop gluon propagator and UV expansion",
 )
-
-
-@app.cell
-def _():
-    import marimo as mo
-    from copy import copy
-    from symbolica import S, E, N, Expression
-    from symbolica.community import hep as fk, idenso
-    from symbolica.community.spenso import TensorExpression, as_tensor
-    from symbolica.community.hep import Model, SnailFilterOptions, Particle, FeynmanDiagram
-
-    return (
-        E,
-        Expression,
-        FeynmanDiagram,
-        Model,
-        S,
-        SnailFilterOptions,
-        TensorExpression,
-        as_tensor,
-        copy,
-        fk,
-        idenso,
-        mo,
-    )
-
-
-@app.cell
-def _(S):
-    D, eps = S('hep_gluon::D', 'hep_gluon::eps')
-    P, K = S('hep_gluon::P', 'hep_gluon::K', tags=['spenso::tensor', 'spenso::rank1'])
-    index_ = S('hep_gluon::index_')
-    mink, metric, dot = S('spenso::mink', 'spenso::g', 'spenso::dot')
-    MOMENTUM = S('FeynKit::Momentum')
-    t = S("hep_gluon::t", is_scalar=True) # a scale that can move out of dot products
-    mUV = S("hep_gluon::mUV", is_scalar=True)
-    uv_probe = S("hep_gluon::uv_probe", is_scalar=True)
-    prop = S("hep_gluon::prop", is_scalar=True)
-    q_, mass2_ = S("hep_gluon::q_", "hep_gluon::mass2_")
-    # Python aliases for actual dot expressions, not substitute scalar symbols.
-    k2 = dot(K(mink(D)), K(mink(D)))
-    kp = dot(K(mink(D)), P(mink(D)))
-    p2 = dot(P(mink(D)), P(mink(D)))
-    UV_K, UV_P = S("hep_gluon::uv_K", "hep_gluon::uv_P", tags=['spenso::tensor', 'spenso::rank1'])
-    return (
-        D,
-        K,
-        MOMENTUM,
-        P,
-        UV_K,
-        UV_P,
-        dot,
-        eps,
-        index_,
-        k2,
-        kp,
-        mUV,
-        mass2_,
-        metric,
-        mink,
-        p2,
-        prop,
-        q_,
-        t,
-        uv_probe,
-    )
-
-
-@app.cell
-def _(D, FeynmanDiagram, TensorExpression, as_tensor, index_, mink):
-    def numerator_in_d(diagram: FeynmanDiagram) -> TensorExpression:
-        """Continue Lorentz slots to D, retaining the external tensor interface."""
-        return as_tensor(diagram.numerator_expression().replace(
-            mink(4, index_), mink(D, index_)
-        ))
-
-    return (numerator_in_d,)
-
-
-@app.cell
-def _(TensorExpression, as_tensor, idenso, qcd_color_factors):
-    def contract_indices(expression: TensorExpression) -> TensorExpression:
-        """Close internal Dirac, color, and Lorentz indices, retaining external ports."""
-        raw = expression.to_expression()
-        for _ in range(12):
-            simplified = idenso.simplify_metrics(
-                idenso.simplify_color(idenso.simplify_gamma(raw.expand()))
-            ).expand()
-            # This revision mistakes cas(..., coad(8)) for an unresolved tensor
-            # port. Evaluate the SU(3) scalar factors before re-inferring ports.
-            if simplified == raw:
-                return as_tensor(qcd_color_factors(simplified))
-            raw = simplified
-        raise RuntimeError('Tensor contractions did not reach a fixed point')
-
-    return (contract_indices,)
-
-
-@app.cell
-def _(
-    D,
-    FeynmanDiagram,
-    P,
-    TensorExpression,
-    as_tensor,
-    index_,
-    metric,
-    mink,
-    p2,
-):
-    def external_projector(diagram: FeynmanDiagram, *, longitudinal=False) -> TensorExpression:
-        """Color-average the transverse trace (or the longitudinal Ward check).
-
-        P_T = delta_ab (g_mu_nu - p_mu p_nu/p^2) / [8 (D-1)].
-        Thus P_T . [delta_ab (p^2 g_mu_nu - p_mu p_nu) Pi] = p^2 Pi.
-        """
-        slots = [slot.replace(mink(4, index_), mink(D, index_))
-                 for slot in diagram.numerator_expression().list_dangling()]
-        mu, nu = [slot for slot in slots if slot.get_name() == 'spenso::mink']
-        a, b = [slot for slot in slots if slot.get_name() == 'spenso::coad']
-        if longitudinal:
-            return as_tensor(metric(a, b) * P(mu) * P(nu) / (8 * p2))
-        return as_tensor(metric(a, b) * (metric(mu, nu) - P(mu) * P(nu) / p2) / (8 * (D - 1)))
-
-    def apply_projector(numerator: TensorExpression, projector: TensorExpression) -> TensorExpression:
-        """Contract every named external slot with its matching projector slot."""
-        if set(numerator.list_dangling()) != set(projector.list_dangling()):
-            raise ValueError('Numerator and projector must have matching external slots')
-        # Multiple compatible ports make typed multiplication ambiguous.
-        # The explicit Einstein indices specify all four contractions here.
-        return as_tensor(numerator.to_expression() * projector.to_expression())
-
-    return apply_projector, external_projector
-
-
-@app.cell
-def _(FeynmanDiagram):
-    def routing_coefficients(diagram: FeynmanDiagram) -> dict[int, tuple[int, int]]:
-        """Convert physical external momenta to source-to-target edge momenta."""
-        if diagram.loop_count != 1 or len(diagram.external_edges) != 2:
-            raise ValueError('This example requires a one-loop two-point graph')
-        vertices = {v.id: v for v in diagram.vertices}
-        result = {}
-        for edge in diagram.edges:
-            signature = diagram.loop_momentum_basis.edge_signatures[edge.id]
-            if len(signature.loops) != 1 or any(signature.external[1:]):
-                raise ValueError('Expected one independent external momentum')
-            loop, external = signature.loops[0], signature.external[0]
-            source, target = vertices[edge.source], vertices[edge.target]
-            if source.is_external or target.is_external:
-                vertex = source if source.is_external else target
-                # The basis stores physical incoming/outgoing p, whereas the
-                # UFO numerator uses Momentum(edge) along source -> target.
-                physical_into_graph = vertex.external_state == 'incoming'
-                edge_into_graph = source.is_external
-                if physical_into_graph != edge_into_graph:
-                    external = -external
-            result[edge.id] = (loop, external)
-        # Check conservation in the exact convention used by the numerator.
-        for vertex in diagram.vertices:
-            if vertex.is_external:
-                continue
-            for component in (0, 1):
-                balance = sum(
-                    ((edge.target == vertex.id) - (edge.source == vertex.id))
-                    * result[edge.id][component] for edge in diagram.edges
-                )
-                if balance:
-                    raise ValueError(f'Momentum is not conserved at vertex {vertex.id}')
-        return result
-
-    return (routing_coefficients,)
-
-
-@app.cell
-def _(
-    FeynmanDiagram,
-    K,
-    MOMENTUM,
-    P,
-    TensorExpression,
-    as_tensor,
-    index_,
-    numerator_in_d,
-    routing_coefficients,
-):
-    def route_numerator(diagram: FeynmanDiagram) -> TensorExpression:
-        expression = numerator_in_d(diagram).to_expression()
-        for edge_id, (loop, external) in routing_coefficients(diagram).items():
-            expression = expression.replace(
-                MOMENTUM(edge_id, index_), loop * K(index_) + external * P(index_)
-            )
-        return as_tensor(expression.expand())
-
-    return (route_numerator,)
-
-
-@app.cell
-def _(TensorExpression, as_tensor, contract_indices):
-    def scalar_products(expression: TensorExpression) -> TensorExpression:
-        """Keep compact scalar products inside the structured tensor expression."""
-        return as_tensor(contract_indices(expression).to_dots().to_expression().expand())
-
-    return (scalar_products,)
-
-
-@app.cell
-def _(Expression, FeynmanDiagram, Model, S, index_):
-    def diagram_weight(diagram: FeynmanDiagram, model: Model) -> Expression:
-        """Evaluate provenance factors and supply the closed-ghost-loop sign.
-
-        At pinned upstream 0ea21405, closed_fermion_loop_count only counts
-        is_fermion() particles (UFO spin 2), excluding spin -1 FP ghosts.
-        This example therefore includes their Grassmann minus explicitly.
-        """
-        factor = diagram.overall_factor_expression() * diagram.numerator_prefactor_expression()
-        for name in ('AutG', 'CouplingsMultiplicity', 'ExternalFermionOrderingSign',
-                     'InternalFermionLoopSign', 'AntiFermionSpinSumSign'):
-            factor = factor.replace(S('feynkit_generator_factor::' + name)(index_), index_)
-        if all(model.particle(edge.particle_name).spin == -1 for edge in diagram.internal_edges):
-            factor = -factor
-        return factor
-
-    return (diagram_weight,)
-
-
-@app.cell
-def _(E, Expression, Model, S, TensorExpression, as_tensor):
-    def qcd_color_factors(expression: Expression) -> Expression:
-        """Evaluate the scalar SU(3) invariants used by this example."""
-        return expression.replace(S('spenso::cas')(2, S('spenso::coad')(8)), 3).replace(
-            S('spenso::idx')(2, S('spenso::cof')(3)), E('1/2')
-        )
-
-    def resolve_qcd(expression: TensorExpression, model: Model) -> TensorExpression:
-        """Resolve QCD couplings and scalar SU(3) factors, preserving tensor type."""
-        result = as_tensor(expression).to_expression()
-        for coupling in model.couplings:
-            if coupling.name in ('GC_10', 'GC_11'):
-                result = result.replace(S('UFO::' + coupling.name), coupling.expression)
-        return as_tensor(qcd_color_factors(result).expand())
-
-    return qcd_color_factors, resolve_qcd
-
-
-@app.cell
-def _(TensorExpression, as_tensor):
-    def invariants(expression: TensorExpression) -> TensorExpression:
-        """Validate a scalar tensor while retaining its dot notation and interface."""
-        if not expression.is_scalar:
-            raise ValueError('Contract all external indices before taking the UV series')
-        return as_tensor(expression.to_expression().expand())
-
-    return (invariants,)
-
-
-@app.cell
-def _(
-    D,
-    E,
-    FeynmanDiagram,
-    K,
-    Model,
-    P,
-    S,
-    TensorExpression,
-    as_tensor,
-    mink,
-    prop,
-    routing_coefficients,
-):
-    def graph_propagators(diagram: FeynmanDiagram, model: Model) -> TensorExpression:
-        """Instantiate each internal edge's model denominator with graph routing."""
-        if len(diagram.internal_edges) != 2:
-            raise ValueError('This example supports two-propagator bubbles only')
-        routing = routing_coefficients(diagram)
-        ufo_momentum = S('UFO::P')(S('UFO::idx')(1, 1))
-        product = E('1')
-        for edge in diagram.internal_edges:
-            candidates = [item for item in model.propagators if item.particle == edge.particle_name]
-            if len(candidates) != 1:
-                raise ValueError(f'Expected one model propagator for {edge.particle_name}')
-            denominator = candidates[0].denominator
-            mass_squared = -denominator.replace(ufo_momentum**2, 0).expand()
-            if (denominator - ufo_momentum**2 + mass_squared).expand() != E('0'):
-                raise ValueError('Expected a quadratic UFO propagator denominator')
-            loop, external = routing[edge.id]
-            momentum = loop*K(mink(D)) + external*P(mink(D))
-            product *= prop(momentum, mass_squared)
-        return as_tensor(product)
-
-    return (graph_propagators,)
-
-
-@app.cell
-def _(
-    D,
-    Expression,
-    K,
-    TensorExpression,
-    as_tensor,
-    dot,
-    mUV,
-    mass2_,
-    mink,
-    prop,
-    q_,
-    t,
-):
-    def evaluate_propagators(expression: Expression) -> TensorExpression:
-        """Interpret prop(q, M2) as 1/(q.q-M2), retaining the model's mass term."""
-        return as_tensor(expression.replace(prop(q_, mass2_), 1/(dot(q_, q_)-mass2_)))
-
-    def uv_deform(expression: Expression) -> TensorExpression:
-        """Scale the full integrand and shift normalized propagator masses."""
-        scaled = expression.replace(K(mink(D)), K(mink(D))/t)
-        # Factoring t^2 from a rescaled propagator rescales its mass to t^2*m^2.
-        # Apply prop(q,M2) -> prop(q,M2+(1-t^2)*mUV^2) in that normalization.
-        return as_tensor(scaled.replace(
-            prop(q_, mass2_),
-            t**2 * prop(t*q_, t**2*mass2_ + (1-t**2)*mUV**2),
-        ))
-
-    return evaluate_propagators, uv_deform
-
-
-@app.cell
-def _(
-    D,
-    E,
-    Expression,
-    S,
-    TensorExpression,
-    UV_K,
-    UV_P,
-    as_tensor,
-    dot,
-    index_,
-    k2,
-    kp,
-    mink,
-    p2,
-):
-    def uv_tensor_input(expression: Expression) -> TensorExpression:
-        """Convert mixed dot powers to the indexed input FeynKit accepts.
-
-        This only changes notation; no angular averaging is performed here.
-        Each contraction receives independent dummy indices.
-        Radial dot(K,K) factors remain scalar coefficients.
-        """
-        indexed = E('0')
-        for power, coefficient in as_tensor(expression).to_expression().expand().coefficient_list(kp):
-            rank = 0 if power == E('1') else power.to_polynomial().degree(kp)
-            tensor = E('1')
-            for n in range(rank):
-                mu = S(f'hep_gluon::uv_mu{n}')
-                tensor *= UV_K(mink(D, mu)) * UV_P(mink(D, mu))
-            indexed += coefficient * tensor
-        return as_tensor(indexed)
-
-    def uv_scalar_invariants(expression: Expression) -> TensorExpression:
-        """Restore the original loop and external vectors inside scalar dots."""
-        reduced = expression.replace(dot(UV_K(mink(D)), UV_K(mink(D))), k2)
-        reduced = reduced.replace(dot(UV_P(mink(D)), UV_P(mink(D))), p2).expand()
-        if reduced.replace(UV_K(index_), 0).replace(UV_P(index_), 0) != reduced:
-            raise ValueError('Tensor reduction left an indexed momentum')
-        return as_tensor(reduced)
-
-    return uv_scalar_invariants, uv_tensor_input
-
-
-@app.cell
-def _(D, UV_K, fk, mink):
-    tensor_reducer = fk.TensorReducer(D).with_integrated_vector(UV_K(mink(D)))
-    return (tensor_reducer,)
-
-
-@app.cell
-def _(D, K, TensorExpression, as_tensor, k2, mink, uv_probe):
-    def uv_pole_residue(expression: TensorExpression) -> TensorExpression:
-        """Extract the logarithmic radial tail: its one-loop pole is i/(16*pi^2*eps)."""
-        tail = expression.to_expression().replace(K(mink(D)), K(mink(D))/uv_probe)
-        # Include the one-loop measure and keep its scale-independent term.
-        logarithmic = (tail/uv_probe**4).series(uv_probe, 0, 0)[0]
-        return as_tensor((logarithmic*k2**2).expand().cancel().replace(D, 4).expand())
-
-    return (uv_pole_residue,)
-
-
-@app.cell
-def _(
-    TensorExpression,
-    as_tensor,
-    copy,
-    evaluate_propagators,
-    t,
-    tensor_reducer,
-    uv_deform,
-    uv_pole_residue,
-    uv_scalar_invariants,
-    uv_tensor_input,
-):
-    def uv_expansion_data(expression: TensorExpression, *, loop_count: int):
-        """Expand an expression copy, with numerator and massive UV denominators together."""
-        uv_copy = as_tensor(copy(expression))
-        deformed = uv_deform(uv_copy)
-        measure_factor = t**(-4*loop_count)
-        with_measure = evaluate_propagators(deformed).to_expression() * measure_factor
-        # Retain every UV-divergent power, then remove the measure bookkeeping.
-        series = as_tensor((with_measure.series(t, 0, 0).to_expression()/measure_factor).expand())
-        reduced = uv_scalar_invariants(tensor_reducer.reduce(uv_tensor_input(series)))
-        counterterm = as_tensor(-reduced.to_expression().replace(t, 1).expand())
-        return {'copy': uv_copy, 'deformed': deformed, 'series': series,
-                'reduced': reduced, 'counterterm': counterterm,
-                'residue': -uv_pole_residue(counterterm)}
-
-    return (uv_expansion_data,)
 
 
 @app.cell(hide_code=True)
@@ -436,9 +19,373 @@ def _(mo):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ## Setup and notebook helpers
+
+    Imports and supporting routines are folded below. Expand a cell’s code to
+    inspect or edit it; the calculation that follows shows the HEP operations.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    from symbolica.community.hep import Symbols
+
+    return (Symbols,)
+
+
+@app.cell(hide_code=True)
+def _():
+    from symbolica.community import tensor as sp
+    import marimo as mo
+    from copy import copy
+    from typing import TypedDict
+    from symbolica import S, E, Expression, AtomType
+    from symbolica import set_namespace as _set_namespace
+    from symbolica.community.tensor import (
+        Representation,
+        TensorExpression,
+        TensorName,
+        TensorPattern,
+        dot,
+    )
+    from symbolica.community.hep import Model, FeynmanDiagram
+
+    _set_namespace("hep_gluon")
+
+    contraction_settings = dict()
+
+    class UVRow(TypedDict):
+        loop: str
+        transverse: TensorExpression
+        longitudinal: TensorExpression
+
+    return (
+        AtomType,
+        E,
+        Expression,
+        FeynmanDiagram,
+        Model,
+        Representation,
+        S,
+        TensorExpression,
+        TensorName,
+        TensorPattern,
+        UVRow,
+        contraction_settings,
+        copy,
+        dot,
+        mo,
+        sp,
+    )
+
+
+@app.cell(hide_code=True)
+def _(D, FeynmanDiagram, TensorExpression, adjoint):
+    color_settings = dict(color=True, color_substitute_cof_dimension_invariants=True)
+
+    def project_color(diagram: FeynmanDiagram) -> TensorExpression:
+        """Average external color, retaining the complete Lorentz/Dirac numerator."""
+        numerator = diagram.numerator_expression(in_lmb=True).with_lorentz_dimension(D)
+        a, b = [
+            slot for slot in numerator.structure.slots if slot.representation == adjoint
+        ]
+        projector = TensorExpression.g(adjoint)(a, b) / adjoint.dimension
+        projected = numerator * projector
+        return projected.simplify_algebra(
+            contract="selected", representations=[adjoint], **color_settings
+        ).to_dots()
+
+    return (project_color,)
+
+
+@app.cell(hide_code=True)
+def _(D, P, TensorExpression, contraction_settings, lorentz, p2, sp):
+    def external_projector(
+        numerator: TensorExpression, *, longitudinal=False
+    ) -> TensorExpression:
+        """Project the Lorentz trace after the separate color average.
+
+        P_T = (g_mu_nu - p_mu p_nu/p^2) / (D-1).
+        Thus P_T . [(p^2 g_mu_nu - p_mu p_nu) Pi] = p^2 Pi.
+        """
+        if numerator == 0:
+            return numerator
+        mu, nu = [
+            slot for slot in numerator.structure.slots if slot.representation == lorentz
+        ]
+        momentum_pair = P(mu).outer(P(nu)) / p2
+        if longitudinal:
+            return momentum_pair
+        lorentz_metric = TensorExpression.g(lorentz)(mu, nu)
+        return (lorentz_metric - momentum_pair) / (D - 1)
+
+    def apply_projector(
+        numerator: TensorExpression, projector: TensorExpression
+    ) -> TensorExpression:
+        """Contract every named external slot with its matching projector slot."""
+        if numerator == 0:
+            return numerator
+        if set(numerator.list_dangling()) != set(projector.list_dangling()):
+            raise ValueError(
+                "Numerator and projector must have matching external slots"
+            )
+        # Preserve the named Einstein indices when attaching the projector.
+        # Contract connected factors first. Only distribute residual metric
+        # structures; scalar coefficients and unrelated sums stay factored.
+        return (
+            (numerator * projector)
+            .contract()
+            .to_dots()
+            .expand(sp.TensorName.g().to_expression())
+            .contract(**contraction_settings)
+            .to_dots()
+        )
+
+    return apply_projector, external_projector
+
+
+@app.cell(hide_code=True)
+def _(Expression, FeynmanDiagram):
+    def diagram_weight(diagram: FeynmanDiagram) -> Expression:
+        """Evaluate native graph factors, including the closed-ghost-loop sign once."""
+        return (
+            diagram.overall_factor_expression(evaluate=True)
+            * diagram.numerator_prefactor_expression()
+        )
+
+    return (diagram_weight,)
+
+
+@app.cell(hide_code=True)
+def _(
+    AtomType,
+    E,
+    FeynmanDiagram,
+    K,
+    MOMENTUM,
+    P,
+    TensorExpression,
+    lorentz,
+    prop,
+):
+    def graph_propagators(diagram: FeynmanDiagram) -> TensorExpression:
+        """Keep the instantiated model denominators and native graph routing."""
+        if len(diagram.internal_edges) != 2:
+            raise ValueError("This example supports two-propagator bubbles only")
+        product = E("1")
+        for edge in diagram.internal_edges:
+            quadratic = edge.propagator.denominator
+            (model_momentum,) = [
+                variable
+                for variable in quadratic.get_all_indeterminates(enter_functions=False)
+                if variable.get_type() == AtomType.Fn
+            ]
+            mass_squared = -quadratic.replace(model_momentum, 0)
+            if (quadratic + mass_squared).expand() != model_momentum**2:
+                raise ValueError(
+                    "This example requires propagators of the form P^2 - M^2"
+                )
+            momentum = diagram.loop_momentum_basis.route_expression(
+                MOMENTUM(edge.id, lorentz), loop_momenta=[K], external_momenta=[P]
+            )
+            product *= prop(momentum.to_expression(), mass_squared)
+        return TensorExpression(product)
+
+    return (graph_propagators,)
+
+
+@app.cell(hide_code=True)
+def _(Expression, TensorExpression, dot_pattern, k, mUV, mass2_, prop, q_, t):
+    def evaluate_propagators(expression: Expression) -> TensorExpression:
+        """Interpret prop(q, M2) as 1/(q.q-M2), retaining the model's mass term."""
+        return TensorExpression(
+            expression.to_expression().replace(
+                prop(q_, mass2_), 1 / (dot_pattern(q_, q_) - mass2_)
+            )
+        )
+
+    def uv_deform(expression: Expression) -> TensorExpression:
+        """Scale the full integrand and shift normalized propagator masses."""
+        scaled = expression.to_expression().replace(k, k / t)
+        # Factoring t^2 from a rescaled propagator rescales its mass to t^2*m^2.
+        # Apply prop(q,M2) -> prop(q,M2+(1-t^2)*mUV^2) in that normalization.
+        return TensorExpression(
+            scaled.replace(
+                prop(q_, mass2_),
+                t**2 * prop(t * q_, t**2 * mass2_ + (1 - t**2) * mUV**2),
+            )
+        )
+
+    return evaluate_propagators, uv_deform
+
+
+@app.cell(hide_code=True)
+def _(
+    Expression,
+    FeynmanDiagram,
+    MOMENTUM,
+    TensorExpression,
+    TensorPattern,
+    dot,
+    index_,
+    k,
+    k2,
+    lorentz,
+):
+    def uv_tensor_input(
+        expression: Expression, diagram: FeynmanDiagram
+    ) -> TensorExpression:
+        """Name the loop vector with its graph edge, retaining compact dot products."""
+        (loop_edge,) = diagram.loop_momentum_basis.loop_edges
+        # The reducer handles mixed dot powers and their independent contractions;
+        # radial dot(Q,Q) factors remain scalar coefficients.
+        return TensorExpression(
+            expression.to_expression().replace(
+                k, MOMENTUM(loop_edge, lorentz).to_expression()
+            )
+        )
+
+    def uv_scalar_invariants(
+        expression: Expression, diagram: FeynmanDiagram
+    ) -> TensorExpression:
+        """Restore the notebook's loop square after reduction."""
+        (loop_edge,) = diagram.loop_momentum_basis.loop_edges
+        loop_vector = MOMENTUM(loop_edge, lorentz)
+        reduced = expression.to_expression().replace(
+            dot(loop_vector, loop_vector).to_expression(), k2
+        )
+        if (
+            reduced.replace(
+                TensorPattern(MOMENTUM, args=[loop_edge], ports=[index_]), 0
+            )
+            != reduced
+        ):
+            raise ValueError("Tensor reduction left an unreduced loop momentum")
+        return TensorExpression(reduced)
+
+    return uv_scalar_invariants, uv_tensor_input
+
+
+@app.cell(hide_code=True)
+def _(D, TensorExpression, k, k2, uv_probe):
+    def uv_pole_residue(expression: TensorExpression) -> TensorExpression:
+        """Extract the logarithmic radial tail: its one-loop pole is i/(16*pi^2*eps)."""
+        tail = expression.to_expression().replace(k, k / uv_probe)
+        # Include the one-loop measure and keep its scale-independent term.
+        logarithmic = (tail / uv_probe**4).series(uv_probe, 0, 0)[0]
+        return TensorExpression((logarithmic * k2**2).replace(D, 4).expand(k2))
+
+    return (uv_pole_residue,)
+
+
+@app.cell(hide_code=True)
+def _(
+    D,
+    FeynmanDiagram,
+    TensorExpression,
+    copy,
+    evaluate_propagators,
+    t,
+    uv_deform,
+    uv_pole_residue,
+    uv_scalar_invariants,
+    uv_tensor_input,
+):
+    def uv_expansion_data(
+        expression: TensorExpression, diagram: FeynmanDiagram
+    ) -> dict[str, TensorExpression]:
+        """Expand an expression copy, with numerator and massive UV denominators together."""
+        uv_copy = copy(expression)
+        deformed = uv_deform(uv_copy)
+        measure_factor = t ** (-4 * diagram.loop_count)
+        with_measure = evaluate_propagators(deformed) * measure_factor
+        # Retain every UV-divergent power, then remove the measure bookkeeping.
+        series = TensorExpression(
+            (
+                with_measure.to_expression().series(t, 0, 0).to_expression()
+                / measure_factor
+            ).expand(t)
+        )
+        reduced = uv_scalar_invariants(
+            diagram.tensor_reduce(D, expression=uv_tensor_input(series, diagram)),
+            diagram,
+        )
+        counterterm = TensorExpression(-reduced.to_expression().replace(t, 1))
+        return {
+            "copy": uv_copy,
+            "deformed": deformed,
+            "series": series,
+            "reduced": reduced,
+            "counterterm": counterterm,
+            "residue": -uv_pole_residue(counterterm),
+        }
+
+    return (uv_expansion_data,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ## Calculation
+    """)
+    return
+
+
 @app.cell
-def _(Model, mo):
-    model = Model(mo.notebook_location() / "hep_sm.json")
+def _(Representation, S, Symbols, TensorName, dot, sp):
+    D, eps = S("D", "eps")
+    lorentz = Representation.mink(D)
+    adjoint = Representation.coad(8)
+    P = TensorName.vector("p")
+    loop_momenta = [
+        TensorName.vector("k"),
+        TensorName.vector("l"),
+        TensorName.vector("m"),
+        TensorName.vector("n"),
+    ]
+    K = loop_momenta[0]
+    p, k = P(lorentz).to_expression(), K(lorentz).to_expression()
+    index_ = S("index_")
+    MOMENTUM = TensorName(Symbols.edge_momentum.get_name())
+    t = S("t", is_scalar=True)  # a scale that can move out of dot products
+    mUV = S("mUV", is_scalar=True)
+    uv_probe = S("uv_probe", is_scalar=True)
+    prop = S("prop", is_scalar=True)
+    q_, mass2_ = S("q_", "mass2_")
+    # Rewrite patterns contain wildcards rather than concrete rank-one tensors.
+    dot_pattern = sp.TensorPattern.dot
+    # Python aliases for actual dot expressions, not substitute scalar symbols.
+    k2, p2 = dot(k, k).to_expression(), dot(p, p).to_expression()
+    return (
+        D,
+        K,
+        MOMENTUM,
+        P,
+        adjoint,
+        dot_pattern,
+        eps,
+        index_,
+        k,
+        k2,
+        loop_momenta,
+        lorentz,
+        mUV,
+        mass2_,
+        p2,
+        prop,
+        q_,
+        t,
+        uv_probe,
+    )
+
+
+@app.cell
+def _(Model):
+    model = Model.standard_model()
     g = model.particle("g")
     g
     return g, model
@@ -457,23 +404,12 @@ def _(mo):
 
 
 @app.cell
-def _(SnailFilterOptions, g, mo, model):
-    with mo.status.spinner(title="Generating diagrams") as status:
-        def report(p):
-            status.update(
-                title=str(p.stage),
-                subtitle=f"{p.completed:,} processed",
-            )
-
-        loops = 1
-        diagrams = model.generate_diagrams(
-            [g], [g], loops=loops,
-            coupling_orders={"QCD": 2*loops, "QED": 0},
-            particle_veto=["c", "t", "s", "u", "d"],
-            zero_snails=SnailFilterOptions(),
-            progress=report,
-        )
-    return (diagrams,)
+def _(g, model):
+    loops = 1
+    diagrams = model.process(
+        [g], [g], particle_veto=["c", "t", "s", "u", "d"]
+    ).generate_diagrams(loops=loops, coupling_orders={"QCD": 2 * loops, "QED": 0})
+    return diagrams, loops
 
 
 @app.cell(hide_code=True)
@@ -488,12 +424,25 @@ def _(diagrams, mo):
 
 @app.cell(hide_code=True)
 def _(diagrams, mo):
+    _options = {
+        f"{i}: {', '.join(e.particle_name for e in d.internal_edges)}": i
+        for i, d in enumerate(diagrams)
+    }
+    _default = next(
+        (
+            label
+            for label, index in _options.items()
+            if len(diagrams[index].internal_edges) == 2
+            and all(
+                edge.particle_name == "g" for edge in diagrams[index].internal_edges
+            )
+        ),
+        next(iter(_options)),
+    )
     diagram_index = mo.ui.dropdown(
-        options={
-            f"{i}: {', '.join(e.particle_name for e in d.internal_edges)}": i
-            for i, d in enumerate(diagrams)
-        },
-        #value="1: g, g",
+        options=_options,
+        # Select the gluon bubble without assuming its generated diagram index.
+        value=_default,
         label="Particles in the loop",
     )
     diagram_index
@@ -508,42 +457,185 @@ def _(diagram_index, diagrams):
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md("""
-    ## Inspect the numerator
-
-    The Feynman rules return a `TensorExpression`. Below we contract internal
-    Dirac, color, and Lorentz indices, keeping the two external gluon indices.
-    Lorentz slots are continued to symbolic $D$ before contraction.
-    """)
-    return
+def _(diagram, mo):
+    _options = {
+        "None": ("none", None),
+        "Internal lines": ("internal", None),
+        "External lines": ("external", None),
+    }
+    _options.update(
+        {
+            f"{name} lines": ("particle", name)
+            for name in sorted({edge.particle_name for edge in diagram.edges})
+        }
+    )
+    highlight_selection = mo.ui.dropdown(
+        options=_options,
+        value="Internal lines",
+        label="Highlight subgraph",
+    )
+    highlight_selection
+    return (highlight_selection,)
 
 
 @app.cell
-def _(diagram):
-    r = diagram.numerator_expression()
-    r
-    return
-
-
-@app.cell
-def _(contract_indices, diagram, numerator_in_d):
-    contracted_numerator = contract_indices(numerator_in_d(diagram))
-    contracted_numerator
+def _(diagram, highlight_selection):
+    # Physics subgraphs retain the parent diagram and its particle drawing styles.
+    _kind, _particle = highlight_selection.value
+    if _kind == "internal":
+        highlighted_subgraph = diagram.filter(
+            edge=lambda edge: not edge.data.is_external
+        )
+    elif _kind == "external":
+        highlighted_subgraph = diagram.filter(edge=lambda edge: edge.data.is_external)
+    elif _kind == "particle":
+        highlighted_subgraph = diagram.filter(
+            edge=lambda edge: edge.data.particle_name == _particle
+        )
+    else:
+        highlighted_subgraph = None
+    highlighted_subgraph
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Project the external indices
+    ## Inspect the numerator
 
-    For off-shell $p^2\ne0$, use the transverse, color-averaged projector
-    $$\mathcal P^{ab}_{\mu\nu}=
-    \frac{\delta^{ab}}{8(D-1)}
+    The Feynman rules return a `TensorExpression`. First project the external
+    color indices with $\delta^{ab}/8$ and contract all color tensors.
+    Their scalar factors remain part of the projected numerator.
+    The remaining expressions contain only Lorentz and Dirac tensors, with
+    Lorentz slots continued to symbolic $D$ before contraction. Edge momenta
+    are routed into the graph's loop-momentum basis before these operations,
+    allowing equivalent terms to cancel during local tensor expansions.
+    """)
+    return
+
+
+@app.cell
+def _(diagram):
+    diagram.numerator_expression(in_lmb=True)
+    return
+
+
+@app.cell
+def _(diagram):
+    r = diagram.numerator_expression(in_lmb=False)
+    r
+    return (r,)
+
+
+@app.cell
+def _(r):
+    r.structure
+    return
+
+
+@app.cell
+def _(Representation, mo):
+    _display_rep = Representation.mink(4)
+    mo.hstack(
+        [
+            mo.as_html(_display_rep.name),
+            mo.as_html(_display_rep),
+            mo.as_html(_display_rep(1)),
+        ],
+        justify="start",
+        align="start",
+        gap=2,
+        wrap=True,
+    )
+    return
+
+
+@app.cell
+def _(TensorExpression):
+    TensorExpression.dirac_gamma(4)(1, 2, 1).structure
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### Project and contract color
+
+    Contract the numerator with the normalized adjoint projector. Scalar
+    color factors and the relative coefficients of different color structures
+    remain in the resulting Lorentz tensor.
+    """)
+    return
+
+
+@app.cell
+def _(diagram, project_color):
+    color_projected_numerator = project_color(diagram)
+    color_projected_numerator
+    return (color_projected_numerator,)
+
+
+@app.cell
+def _(color_projected_numerator):
+    color_projected_numerator
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### Collect bispinor chains
+
+    Choose a diagram containing a bottom-quark line in **Particles in the loop**
+    to see slash notation: $\not{q}=\gamma^\mu q_\mu$.
+    This view collects the bispinor factors into ordered chains and traces,
+    leaving the Dirac traces unevaluated.
+    """)
+    return
+
+
+@app.cell
+def _(color_projected_numerator):
+    bispinor_numerator = color_projected_numerator.contract().to_dots()
+    bispinor_numerator
+    return
+
+
+@app.cell
+def _(color_projected_numerator, contraction_settings):
+    # Edge momenta already use the same loop basis, so equivalent terms can
+    # cancel at each contraction. Expand only connected tensor sums, keeping
+    # unrelated scalar factors intact.
+    contracted_numerator = color_projected_numerator.simplify_algebra(
+        contract="dots", gamma=True, epsilon=True
+    )
+    contracted_numerator
+    return (contracted_numerator,)
+
+
+@app.cell
+def _(contracted_numerator):
+    dotted = contracted_numerator.to_dots()
+    return (dotted,)
+
+
+@app.cell
+def _(dotted):
+    dotted.to_expression().collect_factors().collect_num()
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Project the external Lorentz indices
+
+    Color has already been averaged. For off-shell $p^2\ne0$, use
+    $$\mathcal P_{\mu\nu}=
+    \frac{1}{D-1}
     \left(g_{\mu\nu}-\frac{p_\mu p_\nu}{p^2}\right).$$
     It extracts $p^2\Pi_T$ from
-    $\delta^{ab}(p^2g^{\mu\nu}-p^\mu p^\nu)\Pi_T$.
+    $(p^2g^{\mu\nu}-p^\mu p^\nu)\Pi_T$.
     This replaces the default external polarization vectors; it is not an
     additional polarization sum. The helper reads the actual external slots.
     """)
@@ -551,8 +643,8 @@ def _(mo):
 
 
 @app.cell
-def _(diagram, external_projector):
-    projector = external_projector(diagram)
+def _(color_projected_numerator, external_projector):
+    projector = external_projector(color_projected_numerator)
     projector
     return (projector,)
 
@@ -564,24 +656,29 @@ def _(diagram):
 
 
 @app.cell
-def _(apply_projector, diagram, projector, route_numerator, scalar_products):
-    routed_numerator = route_numerator(diagram)
-    projected_numerator = scalar_products(apply_projector(routed_numerator, projector))
+def _(
+    P,
+    apply_projector,
+    contracted_numerator,
+    diagram,
+    loop_momenta,
+    loops,
+    projector,
+):
+    routed_numerator = diagram.loop_momentum_basis.route_expression(
+        contracted_numerator, loop_momenta=loop_momenta[:loops], external_momenta=[P]
+    )
+    projected_numerator = (
+        apply_projector(routed_numerator, projector).contract().to_dots()
+    )
     projected_numerator
     return (projected_numerator,)
 
 
 @app.cell
-def _(
-    as_tensor,
-    diagram,
-    diagram_weight,
-    model,
-    projected_numerator,
-    resolve_qcd,
-):
-    weighted_projected_numerator = resolve_qcd(
-        as_tensor(projected_numerator * diagram_weight(diagram, model)), model
+def _(diagram, diagram_weight, model, projected_numerator):
+    weighted_projected_numerator = model.expand_couplings(
+        projected_numerator * diagram_weight(diagram)
     )
     weighted_projected_numerator
     return (weighted_projected_numerator,)
@@ -591,9 +688,10 @@ def _(
 def _(mo):
     mo.md("""
     The last expression includes the symmetry factor and closed-loop signs,
-    with the model couplings expressed through `UFO::G`.
-    At FeynKit revision `0ea21405`, the generator's loop-sign counter excludes
-    spin −1 ghosts: `diagram_weight` supplies their Grassmann minus explicitly.
+    with the model couplings expressed through the model’s strong coupling. The global
+    The color average is already included in this expression and the UV steps.
+    The native graph factor already includes the Grassmann minus for each
+    closed ghost loop; `diagram_weight` evaluates it without an extra sign.
     All algebra functions are defined in the notebook cells above.
 
     The cells below expand an expression copy, apply FeynKit's tensor reduction,
@@ -626,10 +724,11 @@ def _(mo):
     mo.md(r"""
     ## UV expansion on a copy of the expression
 
-    Read each internal edge's propagator denominator from the model and use
+    Read each internal edge's mass from the model and use
     the graph's momentum routing. Here `prop(q, M2)` denotes $1/(q^2-M^2)$.
-    Copy the full projected integrand and scale $k\to k/t$ in numerator and
-    propagators together. After extracting $t^2$ from each propagator, apply
+    Copy the projected integrand with $C_{\rm color}$ kept outside and scale
+    $k\to k/t$ in numerator and propagators together.
+    After extracting $t^2$ from each propagator, apply
     $$\operatorname{prop}(k+tp,t^2m^2)\longrightarrow
     \operatorname{prop}(k+tp,t^2m^2+(1-t^2)m_{\rm UV}^2).$$
     At $t=1$ this recovers the physical integrand; at $t=0$ the denominator is
@@ -645,40 +744,61 @@ def _(mo):
 
 
 @app.cell
-def _(
-    as_tensor,
-    diagram,
-    graph_propagators,
-    invariants,
-    model,
-    weighted_projected_numerator,
-):
-    graph_propagator_product = graph_propagators(diagram, model)
-    projected_integrand = as_tensor(invariants(weighted_projected_numerator) * graph_propagator_product)
+def _(diagram, graph_propagators, weighted_projected_numerator):
+    graph_propagator_product = graph_propagators(diagram)
+    if not weighted_projected_numerator.is_scalar:
+        raise ValueError("Contract all external indices before taking the UV series")
+    projected_integrand = weighted_projected_numerator * graph_propagator_product
     projected_integrand
-    return graph_propagator_product, projected_integrand
+    return (projected_integrand,)
 
 
 @app.cell
-def _(as_tensor, evaluate_propagators, graph_propagator_product):
-    graph_denominator = as_tensor(1 / evaluate_propagators(graph_propagator_product))
+def _(D, P, diagram, loop_momenta, loops):
+    graph_denominator = diagram.loop_momentum_basis.route_expression(
+        diagram.denominator_expression(dimension=D),
+        loop_momenta=loop_momenta[:loops],
+        external_momenta=[P],
+    )
     graph_denominator
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    The same massive expansion is available directly on a diagram. It retains
+    every UV-divergent order automatically and returns the additive local
+    counterterm in edge momenta with tagged `denom` propagators. Diagram-wide
+    weights and Lorentz projectors remain separate. Pass `numerator=` for a prepared
+    numerator, or call `diagram.filter(...).uv_counterterm(mUV)` to expand a selected region.
+    This is a single UV limit, before forest subtraction and pole integration.
+    """)
+    return
+
+
 @app.cell
-def _(as_tensor, copy, projected_integrand, uv_deform):
-    uv_expression_copy = as_tensor(copy(projected_integrand))
+def _(color_projected_numerator, diagram, mUV):
+    diagram_local_uv_counterterm = diagram.uv_counterterm(
+        mUV, numerator=color_projected_numerator
+    )
+    diagram_local_uv_counterterm
+    return
+
+
+@app.cell
+def _(copy, projected_integrand, uv_deform):
+    uv_expression_copy = copy(projected_integrand)
     uv_deformed_expression = uv_deform(uv_expression_copy)
     uv_deformed_expression
     return (uv_deformed_expression,)
 
 
 @app.cell
-def _(as_tensor, diagram, evaluate_propagators, t, uv_deformed_expression):
+def _(diagram, evaluate_propagators, t, uv_deformed_expression):
     uv_scaled_expression = evaluate_propagators(uv_deformed_expression)
-    uv_measure_factor = t**(-4*diagram.loop_count)
-    uv_with_measure = as_tensor(uv_scaled_expression.to_expression() * uv_measure_factor)
+    uv_measure_factor = t ** (-4 * diagram.loop_count)
+    uv_with_measure = uv_scaled_expression * uv_measure_factor
     uv_series = uv_with_measure.to_expression().series(t, 0, 0)
     uv_series
     return uv_measure_factor, uv_series
@@ -689,32 +809,43 @@ def _(mo):
     mo.md(r"""
     ## Tensor-reduce the UV expansion
 
-    Each expanded denominator depends only on $k^2$. The reducer is
-    `fk.TensorReducer(D).with_integrated_vector(UV_K(mink(D)))`, selecting
-    $k$ and keeping $p$ external. `uv_tensor_input` only restores explicit
-    indices for the mixed dots $(k\cdot p)^n$. FeynKit computes the
-    tensor reduction, including the vanishing odd-rank terms.
+    Each expanded denominator depends only on $k^2$.
+    `diagram.tensor_reduce(D, expression=uv_routed_series)` identifies the
+    internal momentum from the graph and keeps $p$ external.
+    `uv_tensor_input` names $k$ with its graph edge while retaining
+    compact dot products. FeynKit reduces the mixed powers $(k\cdot p)^n$
+    directly, including the vanishing odd-rank terms.
     """)
     return
 
 
 @app.cell
-def _(uv_measure_factor, uv_series, uv_tensor_input):
-    uv_indexed_series = uv_tensor_input(uv_series.to_expression()/uv_measure_factor)
-    return (uv_indexed_series,)
+def _(
+    TensorExpression,
+    diagram,
+    uv_measure_factor,
+    uv_series,
+    uv_tensor_input,
+):
+    uv_routed_series = uv_tensor_input(
+        TensorExpression(uv_series.to_expression() / uv_measure_factor), diagram
+    )
+    return (uv_routed_series,)
 
 
 @app.cell
-def _(as_tensor, tensor_reducer, uv_indexed_series):
-    uv_tensor_reduced = as_tensor(tensor_reducer.reduce(uv_indexed_series))
+def _(D, diagram, uv_routed_series):
+    uv_tensor_reduced = diagram.tensor_reduce(D, expression=uv_routed_series)
     uv_tensor_reduced
     return (uv_tensor_reduced,)
 
 
 @app.cell
-def _(as_tensor, t, uv_scalar_invariants, uv_tensor_reduced):
-    uv_reduced_series = uv_scalar_invariants(uv_tensor_reduced)
-    uv_reduced_expression = as_tensor(uv_reduced_series.to_expression().replace(t, 1).expand())
+def _(TensorExpression, diagram, t, uv_scalar_invariants, uv_tensor_reduced):
+    uv_reduced_series = uv_scalar_invariants(uv_tensor_reduced, diagram)
+    uv_reduced_expression = TensorExpression(
+        uv_reduced_series.to_expression().replace(t, 1)
+    )
     uv_reduced_expression
     return (uv_reduced_series,)
 
@@ -731,23 +862,26 @@ def _(mo):
     The integrated pole is determined by the coefficient of $1/(k^2)^2$
     in its large-$k$ radial expansion. With $D=4-2\epsilon$ and measure
     $d^Dk/(2\pi)^D$, multiply that coefficient by $i/(16\pi^2\epsilon)$.
-    The auxiliary $m_{\rm UV}$ cancels from this coefficient. Finite parts
-    are not evaluated.
+    The auxiliary $m_{\rm UV}$ cancels from this coefficient. The color
+    average is already included in the numerator.
+    Finite parts are not evaluated.
     """)
     return
 
 
 @app.cell
-def _(as_tensor, t, uv_reduced_series):
-    uv_counterterm_integrand = as_tensor(-uv_reduced_series.to_expression().replace(t, 1).expand())
+def _(TensorExpression, t, uv_reduced_series):
+    uv_counterterm_integrand = TensorExpression(
+        -uv_reduced_series.to_expression().replace(t, 1)
+    )
     uv_counterterm_integrand
     return (uv_counterterm_integrand,)
 
 
 @app.cell
-def _(E, as_tensor, eps, uv_counterterm_integrand, uv_pole_residue):
+def _(E, eps, uv_counterterm_integrand, uv_pole_residue):
     uv_residue = -uv_pole_residue(uv_counterterm_integrand)
-    uv_counterterm = as_tensor(-E('1i') * uv_residue / (16 * E('pi')**2 * eps))
+    uv_counterterm = -E("1i") * uv_residue / (16 * E("pi") ** 2 * eps)
     uv_counterterm
     return
 
@@ -766,48 +900,105 @@ def _(mo):
 
 @app.cell
 def _(
-    E,
+    K,
+    P,
+    UVRow,
     apply_projector,
-    as_tensor,
+    contraction_settings,
     diagram_weight,
     diagrams,
     external_projector,
     graph_propagators,
-    invariants,
-    mo,
     model,
-    resolve_qcd,
-    route_numerator,
-    scalar_products,
+    project_color,
     uv_expansion_data,
 ):
-    _uv_rows = []
+    uv_rows = []
     for _d in diagrams:
-        _propagators = graph_propagators(_d, model)
-        _weight = diagram_weight(_d, model)
-        _transverse = resolve_qcd(as_tensor(scalar_products(apply_projector(route_numerator(_d), external_projector(_d))) * _weight), model)
-        _longitudinal = resolve_qcd(as_tensor(scalar_products(apply_projector(route_numerator(_d), external_projector(_d, longitudinal=True))) * _weight), model)
-        _uv_rows.append({
-            'loop': ', '.join(_e.particle_name for _e in _d.internal_edges),
-            'transverse': uv_expansion_data(invariants(_transverse) * _propagators, loop_count=_d.loop_count)['residue'],
-            'longitudinal': uv_expansion_data(invariants(_longitudinal) * _propagators, loop_count=_d.loop_count)['residue'],
-        })
-    total_uv_residue = as_tensor(sum((_row['transverse'].to_expression() for _row in _uv_rows), E('0')).expand())
-    longitudinal_uv_residue = as_tensor(sum((_row['longitudinal'].to_expression() for _row in _uv_rows), E('0')).expand())
-    assert longitudinal_uv_residue == E('0')
-    mo.ui.table([
-        {'Loop': _row['loop'],
-         'Transverse residue': _row['transverse'].format_tensor(),
-         'Longitudinal residue': _row['longitudinal'].format_tensor()}
-        for _row in _uv_rows
-    ], selection=None)
-    return (total_uv_residue,)
+        _propagators = graph_propagators(_d)
+        _weight = diagram_weight(_d)
+        _stripped = project_color(_d)
+        _routed = _d.loop_momentum_basis.route_expression(
+            _stripped.simplify_algebra(contract="dots", gamma=True, epsilon=True),
+            loop_momenta=[K],
+            external_momenta=[P],
+        )
+        _transverse = (
+            apply_projector(_routed, external_projector(_routed)).contract().to_dots()
+        )
+        _longitudinal = (
+            apply_projector(_routed, external_projector(_routed, longitudinal=True))
+            .contract()
+            .to_dots()
+        )
+        _transverse = model.expand_couplings(_transverse * _weight)
+        _longitudinal = model.expand_couplings(_longitudinal * _weight)
+        if not _transverse.is_scalar or not _longitudinal.is_scalar:
+            raise ValueError(
+                "Contract all external indices before taking the UV series"
+            )
+        uv_rows.append(
+            UVRow(
+                loop=", ".join((_e.particle_name for _e in _d.internal_edges)),
+                transverse=uv_expansion_data(_transverse * _propagators, _d)["residue"],
+                longitudinal=uv_expansion_data(_longitudinal * _propagators, _d)[
+                    "residue"
+                ],
+            )
+        )
+    return (uv_rows,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ## Check the total ultraviolet pole
+    """)
+    return
 
 
 @app.cell
-def _(E, as_tensor, eps, total_uv_residue):
-    total_uv_counterterm = as_tensor(-E('1i') * total_uv_residue / (16 * E('pi')**2 * eps))
+def _(E, TensorExpression, uv_rows):
+    total_uv_residue = sum(
+        (_row["transverse"] for _row in uv_rows), TensorExpression(0)
+    )
+    longitudinal_uv_residue = (
+        sum((_row["longitudinal"] for _row in uv_rows), TensorExpression(0))
+        .to_expression()
+        .together()
+    )
+    assert longitudinal_uv_residue == E("0")
+    return (total_uv_residue,)
+
+
+@app.cell(hide_code=True)
+def _(mo, uv_rows):
+    mo.ui.table(
+        [
+            {
+                "Loop": _row["loop"],
+                "Transverse residue": _row["transverse"],
+                "Longitudinal residue": _row["longitudinal"],
+            }
+            for _row in uv_rows
+        ],
+        selection=None,
+    )
+    return
+
+
+@app.cell
+def _(E, eps, total_uv_residue):
+    total_uv_counterterm = -E("1i") * total_uv_residue / (16 * E("pi") ** 2 * eps)
     total_uv_counterterm
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    [Browse the separate HEP examples](/)
+    """)
     return
 
 
