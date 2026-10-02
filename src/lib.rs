@@ -7,14 +7,16 @@ use pyo3::{
 };
 use symbolica::{
     api::python::{
-        PythonIntegrationFunctions, PythonIntegrationStep, SymbolicaCommunityModule,
+        Citation, PythonIntegrationFunctions, PythonIntegrationStep, SymbolicaCommunityModule,
         create_symbolica_module, set_python_integration_functions,
     },
     atom::{Atom, Symbol},
 };
 use symbolica_integrate::Integrate;
 
+mod citations;
 mod hep;
+mod oneloop;
 
 #[cfg(feature = "python_stubgen")]
 use pyo3_stub_gen::define_stub_info_gatherer;
@@ -40,6 +42,7 @@ macro_rules! register_module {
 }
 
 fn integrate(expression: &Atom, variable: Symbol) -> Result<Atom, Atom> {
+    record_integration_usage();
     expression.integrate(variable)
 }
 
@@ -47,6 +50,7 @@ fn integrate_with_steps(
     expression: &Atom,
     variable: Symbol,
 ) -> (Result<Atom, Atom>, String, Vec<PythonIntegrationStep>) {
+    record_integration_usage();
     let explanation = expression.integrate_with_steps(variable);
     let overview = explanation.to_string();
     let steps = explanation
@@ -78,8 +82,7 @@ fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     })
     .map_err(PyRuntimeError::new_err)?;
     create_symbolica_module(m)?;
-    register_module!(m, idenso::python::IdensoModule);
-    register_module!(m, example_extension::CommunityModule);
+    m.add_function(wrap_pyfunction!(citations::get_citations, m)?)?;
     register_module!(m, spynso3::SpensoModule);
     register_module!(m, hep::HepModule);
     #[cfg(not(target_arch = "wasm32"))]
@@ -91,3 +94,48 @@ fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
 #[cfg(feature = "python_stubgen")]
 define_stub_info_gatherer!(stub_info);
+
+static INTEGRATION_USED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+#[inline]
+fn record_integration_usage() {
+    use std::sync::atomic::Ordering;
+    if !INTEGRATION_USED.load(Ordering::Relaxed) {
+        INTEGRATION_USED.store(true, Ordering::Relaxed);
+    }
+}
+
+fn integration_citations() -> Vec<Citation> {
+    if !INTEGRATION_USED.load(std::sync::atomic::Ordering::Relaxed) {
+        return Vec::new();
+    }
+    vec![
+        Citation {
+            id: "https://github.com/symbolica-dev/symbolica-integrate".into(),
+            reference: "Ben Ruijl. Symbolica-integrate (2026).".into(),
+            bibtex: r#"@software{symbolica_integrate,
+  author = {Ruijl, Ben},
+  title = {Symbolica-integrate},
+  year = {2026},
+  url = {https://github.com/symbolica-dev/symbolica-integrate}
+}"#
+            .into(),
+            reasons: vec!["Symbolic integration.".into()],
+            description: String::new(),
+            relevance: None,
+        },
+        Citation {
+            id: "https://rulebasedintegration.org".into(),
+            reference: "Albert D. Rich, Patrick Scheibe and contributors. Rubi.".into(),
+            bibtex: r#"@software{rubi,
+  author = {Rich, Albert D. and Scheibe, Patrick and {Rubi contributors}},
+  title = {Rubi},
+  url = {https://rulebasedintegration.org}
+}"#
+            .into(),
+            reasons: vec!["Integration rules used by Symbolica-integrate.".into()],
+            description: "Credits in the Symbolica-integrate README.".into(),
+            relevance: None,
+        },
+    ]
+}

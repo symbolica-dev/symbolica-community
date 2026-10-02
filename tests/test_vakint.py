@@ -3,7 +3,7 @@
 
 import os
 import pytest
-from symbolica.community.vakint import Vakint, VakintEvaluationMethod, VakintExpression, VakintNumericalResult
+from symbolica.community.hep.vakint import Vakint, VakintEvaluationMethod, VakintExpression, VakintNumericalResult
 from symbolica import E, S
 
 
