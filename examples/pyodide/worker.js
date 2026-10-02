@@ -11,7 +11,7 @@ self.onmessage = async ({ data }) => {
       await pyodide.loadPackage("micropip");
       send("status", { text: "Installing Symbolica community…" });
       pyodide.globals.set("wheel_url", new URL(data.wheel, self.location.origin).href);
-      await pyodide.runPythonAsync("import micropip\nawait micropip.install(wheel_url)\nfrom symbolica import E, S\nimport symbolica.community.spenso\nimport symbolica.community.idenso");
+      await pyodide.runPythonAsync("import micropip\nawait micropip.install(wheel_url)\nfrom symbolica import E, S\nimport symbolica.community.spenso");
       // Keep display helpers separate from the user's persistent Python globals.
       const formatterGlobals = pyodide.runPython("dict()");
       try {

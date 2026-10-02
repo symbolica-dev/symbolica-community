@@ -20,7 +20,9 @@ await pyodide.loadPackage("micropip");
 const wheel = wheels[0];
 const wheelBytes = await readFile(join(wheelDir, wheel));
 pyodide.FS.writeFile(`/${wheel}`, wheelBytes);
-pyodide.globals.set("wheel_uri", `emfs:/${wheel}`);
+pyodide.globals.set("wheel_uri", process.env.SYMBOLICA_WHEEL_URL || `emfs:/${wheel}`);
+assert(!(process.env.SYMBOLICA_WHEEL_URL && process.env.SYMBOLICA_ZSTD_URL), "Choose one HTTP delivery mode");
+pyodide.globals.set("wheel_zstd_url", process.env.SYMBOLICA_ZSTD_URL || "");
 pyodide.globals.set("expected_version", wheel.split("-")[1]);
 pyodide.globals.set("hep_model_json", await readFile(new URL("../../examples/hep/scalar_phi3.json", import.meta.url), "utf8"));
 await pyodide.runPythonAsync(`
@@ -28,6 +30,18 @@ import os
 import sys
 from importlib.metadata import version
 import micropip
+if wheel_zstd_url:
+    from compression import zstd
+    from pathlib import Path
+    from pyodide.http import pyfetch
+    response = await pyfetch(wheel_zstd_url)
+    assert response.status == 200
+    compressed = await response.bytes()
+    Path(wheel_uri.removeprefix("emfs:")).write_bytes(zstd.decompress(
+        compressed, options={zstd.DecompressionParameter.window_log_max: 27},
+    ))
+    print(f"Downloaded zstd archive: {len(compressed)} bytes")
+    del compressed
 await micropip.install(wheel_uri)
 
 from symbolica import E, S, set_license_key
@@ -43,12 +57,10 @@ assert result == expression.integrate(S("x")) == E("atan(x)")
 assert overview.strip()
 assert any(step.rule is not None and step.source and step.description for step in steps)
 assert version("symbolica") == expected_version
-from symbolica.community.example_extension import add_two
-from symbolica.community.idenso import simplify_metrics
-assert add_two(E("x")) == E("x+2")
-assert simplify_metrics(E("g(bis(4,1),bis(4,1))", default_namespace="spenso")) == E("4")
-import symbolica.community.spenso as spenso
-from symbolica.community.spenso import Representation, Tensor, TensorLibrary, TensorName, TensorNetwork
+import symbolica.community.tensor as tensor_module
+from symbolica.community.tensor import Representation, Tensor, TensorExpression, TensorLibrary, TensorName, TensorNetwork, dot
+metric = TensorExpression(E("g(bis(4,1),bis(4,1))", default_namespace="spenso"))
+assert metric.simplify_algebra(contract="dots").to_expression().to_expression() == E("4")
 rep = Representation.euc(2)
 tensor = Tensor.dense(TensorName("wasm_matrix")(rep, rep), [E("x"), E("2"), E("3"), E("4")])
 evaluator = tensor.evaluator(params=[S("x")], constants={}, funs={})
@@ -56,15 +68,15 @@ assert list(evaluator.evaluate_complex([[5.0]])[0]) == [5.0, 2.0, 3.0, 4.0]
 assert list(evaluator.evaluate_complex([[1.0 + 2.0j]])[0]) == [1.0 + 2.0j, 2.0, 3.0, 4.0]
 library = TensorLibrary.hep_lib()
 library.register(tensor)
-network = TensorNetwork(tensor.structure()(1, 1), library=library)
+network = TensorNetwork(tensor.expression()(1, 1), library=library)
 network.execute(library=library)
 assert list(network.result_tensor(library=library)) == [E("x+4")]
-assert "symbolica.community.spenso_native" in sys.modules
+assert "symbolica.community.tensor_native" in sys.modules
 from symbolica.community import hep
 assert hep.FeynmanDiagram.__module__ == "symbolica.community.hep"
 model = hep.Model.from_json(hep_model_json)
-options = hep.GenerationOptions(max_vertices=3, allow_self_loops=False)
-generated = model.generate_diagrams(["scalar_0"], ["scalar_0", "scalar_0"], loops=1, options=options)
+process = model.process(["scalar_0"], ["scalar_0", "scalar_0"])
+generated = process.generate_diagrams(loops=1, max_vertices=3, allow_self_loops=False)
 assert generated.report.completed and len(generated) > 0
 diagram = generated[0]
 assert isinstance(diagram, hep.FeynmanDiagram) and diagram.loop_count == 1
@@ -76,16 +88,18 @@ assert len(cff) > 0
 from symbolica import Expression
 assert isinstance(cff.to_expression(), Expression)
 D, mu, nu = S("hep_smoke::D", "hep_smoke::mu", "hep_smoke::nu")
-k, p = S("hep_smoke::k", "hep_smoke::p")
-mink, dot = S("spenso::mink", "spenso::dot")
-kv, pv = k(mink(D)), p(mink(D))
-numerator = k(mink(D, mu)) * k(mink(D, nu)) * p(mink(D, mu)) * p(mink(D, nu))
-assert hep.TensorReducer(D).with_integrated_vector(kv).reduce(numerator) == dot(kv, kv) * dot(pv, pv) / D
+k, p = TensorName.vector("hep_smoke::k"), TensorName.vector("hep_smoke::p")
+space = Representation.mink(D)
+kv, pv = k(space), p(space)
+numerator = (k(space(mu)) * k(space(nu)) * p(space(mu)) * p(space(nu))).to_expression()
+reduced = hep.TensorReducer(D).with_integrated_vector(kv.to_expression()).reduce(numerator)
+expected = (dot(kv, kv) * dot(pv, pv) / D).to_expression()
+assert (reduced - expected).expand() == E("0")
 assert hep.ThreeMomentum(3.0, 4.0, 0.0).on_shell().components() == (5.0, 3.0, 4.0, 0.0)
 assert "symbolica.community.hep_native" in sys.modules
 assert not hasattr(evaluator, "compile")
-assert not hasattr(spenso, "CompiledTensorEvaluator")
-assert "symbolica.community.vakint_native" not in sys.modules
+assert not hasattr(tensor_module, "CompiledTensorEvaluator")
+assert "symbolica.community.hep.vakint_native" not in sys.modules
 try:
     import symbolica.community.vakint
 except ImportError as error:
@@ -108,6 +122,10 @@ const allowedExports = new Set([
 const inventoryConstructors = [
   /^_ZN(?:9symbolica(?:14transcendental|5state)|19symbolica_integrate|6idenso|6spenso9shadowing|17feynkit_generator)1_6__CTOR17h[0-9a-f]{16}E$/,
   /^_RNvNv(?:Cs[0-9A-Za-z]+_(?:6idenso|19symbolica_integrate|17feynkit_generator)|NtCs[0-9A-Za-z]+_(?:6spenso9shadowing|9symbolica(?:14transcendental|5state)))1__6___CTOR$/,
+  /^_RNvNv(?:Cs[0-9A-Za-z]+_13feynkit_graph|NtCs[0-9A-Za-z]+_11feynkit_cff7symbols)1__6___CTOR$/,
+  // multiple-pymethods registers Python method blocks through inventory.
+  // Only accept constructor globals from the known binding namespaces.
+  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|7spynso3|20oneloopreduce_python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
 ];
 assert(exports.some(({ name }) => name === "PyInit_core"), "Missing Python module entry point");
 assert.deepEqual(
@@ -117,6 +135,6 @@ assert.deepEqual(
   [],
   "Unexpected public WebAssembly exports",
 );
-console.log(`WebAssembly exports (${exports.length}): ${exports.map(({ name }) => name).join(", ")}`);
+console.log(`WebAssembly exports: ${exports.length}; functions: ${exports.filter(({ kind }) => kind === "function").map(({ name }) => name).join(", ")}`);
 console.log(`Wheel: ${wheelBytes.length} bytes; WebAssembly module: ${wasmBytes.length} bytes.`);
 console.log("PyEmscripten wheel installed with micropip; smoke test passed.");

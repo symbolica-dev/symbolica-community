@@ -33,11 +33,11 @@ print("Matrix at x = 5:")
 print(values[:2])
 print(values[2:])` },
   { name: "Indices", subtitle: "Simplify with Idenso", description: "Contract a metric and take its trace.", code: `from symbolica import E
-from symbolica.community.idenso import simplify_metrics
+from symbolica.community.spenso import TensorExpression
 
-metric_trace = E("g(bis(4,1), bis(4,1))", default_namespace="spenso")
+metric_trace = TensorExpression(E("g(bis(4,1), bis(4,1))", default_namespace="spenso"))
 print("Metric trace:", metric_trace)
-print("Simplified:", simplify_metrics(metric_trace))` },
+print("Simplified:", metric_trace.simplify_metrics())` },
 ];
 const $ = id => document.getElementById(id);
 const output = $("output");
