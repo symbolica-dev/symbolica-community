@@ -176,6 +176,10 @@ import os
 import signal
 import sys
 import threading
+from symbolica import set_license_key
+
+if os.environ.get("SYMBOLICA_LICENSE_KEY"):
+    set_license_key(os.environ["SYMBOLICA_LICENSE_KEY"])
 from symbolica.community import hepkit as hep
 
 model = hep.Model(sys.argv[1])

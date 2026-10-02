@@ -35,8 +35,12 @@ def test_full_rate_and_independent_momentum_space_oracles(
         "samples_per_iteration": 20000,
     }
     script = r"""
+import os
 import json, math, runpy, sys
 import numpy as np
+from symbolica import set_license_key
+if os.environ.get("SYMBOLICA_LICENSE_KEY"):
+    set_license_key(os.environ["SYMBOLICA_LICENSE_KEY"])
 from symbolica import E
 parameters = json.loads(sys.argv[2])
 app = runpy.run_path(sys.argv[1])["app"]

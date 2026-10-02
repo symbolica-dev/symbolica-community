@@ -47,8 +47,12 @@ def test_current_tensor_api(path):
 def run_notebook(path, controls=None, models=()):
     pytest.importorskip("marimo", minversion="0.24.0")
     script = """
+import os
 import json, runpy, sys
 from types import SimpleNamespace
+from symbolica import set_license_key
+if os.environ.get("SYMBOLICA_LICENSE_KEY"):
+    set_license_key(os.environ["SYMBOLICA_LICENSE_KEY"])
 from symbolica.community.hepkit import Model
 sys.path.insert(0, sys.argv[1])
 controls, models = json.loads(sys.argv[3])

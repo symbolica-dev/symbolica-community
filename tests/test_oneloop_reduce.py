@@ -152,6 +152,10 @@ def test_legacy_scale_is_rejected_at_every_expression_entrypoint(composite, entr
 
 def test_symbolic_reduction_keeps_numerical_initialization_lazy():
     script = """
+import os
+from symbolica import set_license_key
+if os.environ.get("SYMBOLICA_LICENSE_KEY"):
+    set_license_key(os.environ["SYMBOLICA_LICENSE_KEY"])
 from symbolica import E, S
 from symbolica.community import hepkit as hep
 from symbolica.community.hepkit import oneloop

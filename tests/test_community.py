@@ -45,6 +45,10 @@ def test_vakint_import_paths_and_citations():
             sys.executable,
             "-c",
             """
+import os
+from symbolica import set_license_key
+if os.environ.get("SYMBOLICA_LICENSE_KEY"):
+    set_license_key(os.environ["SYMBOLICA_LICENSE_KEY"])
 from symbolica import E, get_citations
 before = {citation.id for citation in get_citations()}
 from symbolica.community.hepkit import vakint

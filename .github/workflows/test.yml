@@ -38,7 +38,7 @@ jobs:
             - name: Install package and test dependencies
               run: |
                   pip install dist/*.whl
-                  pip install pytest ty
+                  pip install pytest ty numpy "anywidget>=0.9,<1" "typst>=0.15,<0.16"
 
             - name: Check public community import types
               run: ty check --python-version 3.10 tests/typing/community_layout.py
