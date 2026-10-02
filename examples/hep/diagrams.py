@@ -2,14 +2,13 @@
 
 from pathlib import Path
 
-from symbolica.community import hep
+from symbolica.community.hep import FeynmanDiagram, Model
 
-model = hep.Model(str(Path(__file__).with_name("scalar_phi3.json")))
-process = hep.Process.amplitude(["scalar_0"], ["scalar_0", "scalar_0"]).with_loop_count(1, 1)
-options = hep.GenerationOptions(max_vertices=3, allow_self_loops=False)
-result = hep.Generator(model).generate(process, options)
+model = Model(str(Path(__file__).with_name("scalar_phi3.json")))
+process = model.process(["scalar_0"], ["scalar_0", "scalar_0"])
+result = process.generate_diagrams(loops=1, max_vertices=3, allow_self_loops=False)
 
-diagram: hep.FeynmanDiagram = result[0]
+diagram: FeynmanDiagram = result[0]
 diagram.validate()
 print("Diagram:", diagram.name)
 print("Loops:", diagram.loop_count)
