@@ -2182,7 +2182,7 @@ dependencies = [
 [[package]]
 name = "oneloop"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/oneloopmaster?branch=main#06a72bfb6ed6e8364a9459da3e0e294fa270962f"
+source = "git+https://github.com/alphal00p/oneloopmaster?branch=main#a42a60aa5fe0b3ba0a5b9bb37a17c8465c06ba5a"
 dependencies = [
  "bincode",
  "symbolica",
@@ -2192,7 +2192,7 @@ dependencies = [
 [[package]]
 name = "oneloop-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/oneloopmaster?branch=main#06a72bfb6ed6e8364a9459da3e0e294fa270962f"
+source = "git+https://github.com/alphal00p/oneloopmaster?branch=main#a42a60aa5fe0b3ba0a5b9bb37a17c8465c06ba5a"
 dependencies = [
  "oneloop",
  "pyo3",
