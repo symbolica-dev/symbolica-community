@@ -1,7 +1,9 @@
 """Keep grouped tensor expressions on the notebook's rich display path."""
 
+import runpy
 import sys
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 import pytest
 from symbolica import E
@@ -9,7 +11,6 @@ from symbolica.community.tensor import Representation, TensorExpression, TensorN
 
 
 def test_tensor_sum_factors_render_as_grouped_mathml():
-    pytest.importorskip("typst")
     mink = Representation.mink(4)
     k = TensorName.vector("display_regression::k")
     p = TensorName.vector("display_regression::p")
@@ -34,7 +35,6 @@ def test_tensor_sum_factors_render_as_grouped_mathml():
 
 
 def test_color_chain_stack_keeps_mathml_without_embedded_fonts():
-    pytest.importorskip("typst")
     mo = pytest.importorskip("marimo")
     generator = TensorExpression.color_t(8, 3)
     explicit_word = generator("a", "i", "k") * generator("b", "k", "j")
@@ -70,9 +70,12 @@ def test_color_chain_stack_keeps_mathml_without_embedded_fonts():
 
 @pytest.mark.parametrize("source", ["(a+b)*(c+d)", "a*(b+c)", "(a+b*(c+d))*(e+f)"])
 def test_scalar_tensor_rich_display_survives_symbolica_updates(source):
-    pytest.importorskip("typst")
     expression = TensorExpression(E(source))
     html = expression.to_html()
     assert "data-spenso-math" in html
     assert "<math" in html
     assert expression._repr_html_() is not None
+
+
+def test_rendering_without_python_rendering_packages():
+    runpy.run_path(str(Path(__file__).with_name("check_offline_rendering.py")))

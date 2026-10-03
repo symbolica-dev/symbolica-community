@@ -1,5 +1,5 @@
 [build-system]
-requires = ["maturin>=1.7,<2.0"]
+requires = ["maturin>=1.13.2,<2.0"]
 build-backend = "maturin"
 
 [project]
@@ -14,6 +14,7 @@ keywords = ["math", "algebra", "polynomial", "expression", "manipulation"]
 version = "3.0.0"
 readme = "Readme_pypi.md"
 requires-python = ">=3.9"
+license-files = ["LICENSE", "licenses/*"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Rust",
@@ -21,7 +22,8 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-notebook-display = ["anywidget>=0.9,<1; python_version >= '3.9'", "typst>=0.15,<0.16; python_version >= '3.9'"]
+numpy = ["numpy"]
+notebook-display = ["anywidget>=0.9,<1; python_version >= '3.9'"]
 
 [tool.maturin]
 features = ["pyo3/extension-module"]

@@ -41,10 +41,6 @@ jobs:
                       pip install "$wheel[notebook-display]"
                   done
                   pip install pytest ty numpy
-                  # Use Linnet from the same FeynKit revision as the wheel;
-                  # the PyPI release does not support our Python 3.10 job.
-                  linnet_manifest=$(cargo metadata --format-version 1 --locked | python -c 'import json, sys; print(next(p["manifest_path"] for p in json.load(sys.stdin)["packages"] if p["name"] == "linnet-py"))')
-                  pip install "$(dirname "$linnet_manifest")"
 
             - name: Check public community import types
               run: ty check --python-version 3.10 tests/typing/community_layout.py

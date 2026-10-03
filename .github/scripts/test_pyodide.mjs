@@ -63,6 +63,18 @@ assert any(citation.id == "https://github.com/symbolica-dev/symbolica-integrate"
 `);
 if (expectCommunity) {
 await pyodide.runPythonAsync(`
+import importlib.util
+assert importlib.util.find_spec("numpy") is None
+`);
+await pyodide.runPythonAsync(
+  await readFile(new URL("../../tests/check_offline_rendering.py", import.meta.url), "utf8"),
+);
+await pyodide.runPythonAsync(`
+assert importlib.util.find_spec("numpy") is None
+# Array conversion and evaluator tests opt into the NumPy extra separately.
+await micropip.install(f"symbolica[numpy] @ {wheel_uri}")
+`);
+await pyodide.runPythonAsync(`
 import symbolica.community.tensor as tensor_module
 from symbolica.community.tensor import Representation, Tensor, TensorExpression, TensorLibrary, TensorName, TensorNetwork, dot
 metric = TensorExpression(E("g(bis(4,1),bis(4,1))", default_namespace="spenso"))
