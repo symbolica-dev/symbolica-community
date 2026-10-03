@@ -90,6 +90,25 @@ network = TensorNetwork(tensor.expression()(1, 1), library=library)
 network.execute(library=library)
 assert list(network.result_tensor(library=library)) == [E("x+4")]
 assert "symbolica.community.tensor_native" in sys.modules
+# Large outputs must render and navigate without launching a Typst process.
+preview_value = TensorExpression(E("+".join(f"{i + 1}*wasm_paging::x^{i}" for i in range(301))))
+preview_original = preview_value.to_expression()
+preview = preview_value.paged()
+widget = preview._get_widget()
+preview._on_message(widget, {"action": "attach", "view": "wasm-smoke"}, [])
+assert widget.page["connected"] == "wasm-smoke"
+first_html = widget.page["html"]
+assert "<math" in first_html and "Page rendering failed" not in first_html
+assert len(first_html.encode()) <= 256 * 1024
+preview._on_message(widget, {"action": "next", "request": "next"}, [])
+assert widget.page["start"] == 25 and widget.page["request"] == "next"
+assert "<math" in widget.page["html"]
+preview._on_message(widget, {"action": "previous"}, [])
+assert widget.page["start"] == 0 and widget.page["html"] == first_html
+preview._on_message(widget, {"action": "size", "value": 100}, [])
+assert widget.page["page_size"] == 100 and widget.page["end"] == 100
+assert preview_value.to_expression() == preview_original
+preview.close()
 from symbolica.community import hepkit as hep
 assert hep.FeynmanDiagram.__module__ == "symbolica.community.hepkit"
 model = hep.Model.from_json(hep_model_json)
