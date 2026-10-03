@@ -94,7 +94,7 @@ class TestTensorNames:
 
     def test_create_tensor_names(self):
         """Test creating tensor names"""
-        gamma = N.gamma()
+        gamma = N.dirac_gamma()
         p = N("P")
         w = N("w")
         g = N.g()
@@ -119,7 +119,7 @@ class TestTensorIndices:
         self.k = self.bis(S("k"))
         self.mu = self.mink("mu")
         self.nu = self.mink("nu")
-        self.gamma = TensorExpression.gamma(4)
+        self.gamma = TensorExpression.dirac_gamma(4)
         self.p = N("P")
         self.w = N("w")
         self.g = TensorExpression.g(self.bis)
@@ -171,7 +171,7 @@ class TestTensorNetwork:
         self.k = self.bis(S("k"))
         self.mu = self.mink("mu")
         self.nu = self.mink("nu")
-        self.gamma = TensorExpression.gamma(4)
+        self.gamma = TensorExpression.dirac_gamma(4)
         self.p = N("P")
         self.w = N("w")
         self.g = TensorExpression.g(self.bis)
@@ -278,7 +278,7 @@ class TestTensorEvaluation:
         self.k = self.bis(S("k"))
         self.mu = self.mink("mu")
         self.nu = self.mink("nu")
-        self.gamma = TensorExpression.gamma(4)
+        self.gamma = TensorExpression.dirac_gamma(4)
         self.p = N("P")
         self.w = N("w")
         self.g = TensorExpression.g(self.bis)
@@ -368,11 +368,10 @@ class TestLibraryTensors:
     def test_dense_library_tensor_and_network(self):
         """Test creating dense library tensor and tensor network"""
         d = Representation("newrep", 3)
-        tname = S("test")
 
         # Dense tensors are built from a list of values in row-major order.
         t = Tensor.dense(
-            N("test")(d, d),
+            N("dense_library_test")(d, d),
             [0, 0, 123, 11, 3, 234, 234, 23, 44],
         )
 
@@ -416,7 +415,7 @@ class TestSymbolicOperations:
 
         self.to_expression = to_expression
 
-        self.gam = TensorExpression.gamma(4)
+        self.gam = TensorExpression.dirac_gamma(4)
 
         def p(i):
             m = to_expression(self.minkd(i))
@@ -453,9 +452,9 @@ class TestIdensoSimplifications:
         """Set up for idenso tests."""
         self.bis = Representation.bis(4)
         self.lib = TensorLibrary.hep_lib()
-        self.gam = TensorExpression.gamma(4)
+        self.gam = TensorExpression.dirac_gamma(4)
         self.fc = S("spenso::f")
-        self.ps = S("p")
+        self.ps = N("idenso_tests::p")
         self.coad = Representation("coad", 8)
 
         def f(i, j, k):
@@ -469,23 +468,23 @@ class TestIdensoSimplifications:
 
     def test_simplify_metrics_tensor(self):
         """Test metric simplification with tensor"""
-        result = (self.bis.g(4, 2) * self.gam(2, 3, 1)).simplify_metrics()
+        result = (self.bis.g(4, 2) * self.gam(2, 3, 1)).contract()
         assert result is not None
 
     def test_simplify_metrics_bis_trace(self):
         """Test metric simplification with bis trace"""
-        result = self.bis.g(1, 1).simplify_metrics()
+        result = self.bis.g(1, 1).contract()
         assert result is not None
 
     def test_simplify_metrics_euclidean_trace(self):
         """Test metric simplification with euclidean trace"""
-        result = Representation.euc("d").g(1, 1).simplify_metrics()
+        result = Representation.euc("d").g(1, 1).contract()
         assert result is not None
 
     @pytest.mark.parametrize("dimension", [4, S("D")])
     def test_simplify_gamma_chain(self, dimension):
         """Tr(gamma_mu gamma_nu gamma^mu gamma_rho) in a consistent dimension."""
-        gamma = TensorExpression.gamma(dimension)
+        gamma = TensorExpression.dirac_gamma(dimension)
         mink = Representation.mink(dimension)
         # Multiply explicit indexed expressions to retain this contracted basis.
         chain = TensorExpression(
@@ -495,32 +494,36 @@ class TestIdensoSimplifications:
             * gamma(4, 1, "rho").to_expression()
         )
         expected = 4 * (2 - dimension) * mink.g("nu", "rho").to_expression()
-        assert (chain.simplify_gamma().to_expression() - expected).expand() == 0
+        assert (chain.simplify_algebra(color=False).to_expression() - expected).expand() == 0
 
     @pytest.mark.parametrize("dimension", [4, S("D")])
     def test_to_dots_conversion(self, dimension):
         """Contract the gamma trace with two momenta and check its scalar value."""
-        gamma = TensorExpression.gamma(dimension)
+        gamma = TensorExpression.dirac_gamma(dimension)
         mink = Representation.mink(dimension)
         chain = TensorExpression(
             gamma(1, 2, "mu").to_expression()
             * gamma(2, 3, "nu").to_expression()
             * gamma(3, 4, "mu").to_expression()
             * gamma(4, 1, "rho").to_expression()
-            * self.ps(mink("nu").to_expression())
-            * self.ps(mink("rho").to_expression())
+            * self.ps(mink("nu")).to_expression()
+            * self.ps(mink("rho")).to_expression()
         )
-        result = chain.simplify_gamma().expand().simplify_metrics().to_dots()
-        momentum = self.ps(mink.to_expression())
+        result = chain.simplify_algebra(color=False).expand().contract().to_dots()
+        momentum = self.ps(mink).to_expression()
         expected = 4 * (2 - dimension) * S("spenso::dot")(momentum, momentum)
         assert result.rank == 0
-        assert (result.to_expression() - expected).expand() == 0
+        # Self-contractions may remain indexed squares. Compare canonical
+        # contractions so the identity is independent of notation/dummy names.
+        actual = result.canonize().to_expression()
+        expected = TensorExpression(expected).canonize().to_expression()
+        assert (actual - expected).expand() == 0
 
     def test_simplify_color_structure(self):
         """Test color structure simplification"""
         result = TensorExpression(
             self.f_func(1, 2, 3) * self.f_func(3, 2, 1)
-        ).simplify_color()
+        ).simplify_algebra(gamma=False)
         assert result is not None
 
 
@@ -536,11 +539,15 @@ def test_notebook_integration():
     i = bis("i")
 
     # Create tensor names
-    gamma = N.gamma()
+    gamma = N.dirac_gamma()
     w = N("w")
 
     # Create simple tensor expression
-    expr = TensorExpression.gamma(4)(i, i, mu) * w(1, mu)
+    # Keep explicit indices for component-network evaluation.
+    expr = TensorExpression(
+        TensorExpression.dirac_gamma(4)(i, i, mu).to_expression()
+        * w(1, mu).to_expression()
+    )
 
     # Create and execute tensor network
     tn = TensorNetwork(expr)

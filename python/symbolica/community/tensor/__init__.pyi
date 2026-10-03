@@ -29,6 +29,7 @@ import numpy
 import numpy.typing
 import symbolica.core
 import typing
+from typing_extensions import Unpack
 from symbolica import ComplexFloat, Float
 from symbolica.core import Condition, Expression, FormattedOutput, HeldExpression, PatternRestriction, Replacement, Transformer
 
@@ -1094,7 +1095,7 @@ class FactorProjector(typing.Generic[_Projected]):
         """
     @typing.overload
     @staticmethod
-    def symmetric(*factors: typing.Unpack[tuple[Tensor | TensorNetwork | FactorProjector[TensorNetwork], *tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], ...]]]) -> FactorProjector[TensorNetwork]:
+    def symmetric(*factors: Unpack[tuple[Tensor | TensorNetwork | FactorProjector[TensorNetwork], Unpack[tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], ...]]]]) -> FactorProjector[TensorNetwork]:
         r"""
         Average all permutations with weight 1/n!.
 
@@ -1121,7 +1122,7 @@ class FactorProjector(typing.Generic[_Projected]):
         """
     @typing.overload
     @staticmethod
-    def symmetric(*factors: typing.Unpack[tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], Tensor | TensorNetwork | FactorProjector[TensorNetwork], *tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], ...]]]) -> FactorProjector[TensorNetwork]:
+    def symmetric(*factors: Unpack[tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], Tensor | TensorNetwork | FactorProjector[TensorNetwork], Unpack[tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], ...]]]]) -> FactorProjector[TensorNetwork]:
         r"""
         Average all permutations with weight 1/n!.
 
@@ -1202,7 +1203,7 @@ class FactorProjector(typing.Generic[_Projected]):
         """
     @typing.overload
     @staticmethod
-    def antisymmetric(*factors: typing.Unpack[tuple[Tensor | TensorNetwork | FactorProjector[TensorNetwork], *tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], ...]]]) -> FactorProjector[TensorNetwork]:
+    def antisymmetric(*factors: Unpack[tuple[Tensor | TensorNetwork | FactorProjector[TensorNetwork], Unpack[tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], ...]]]]) -> FactorProjector[TensorNetwork]:
         r"""
         Average all signed permutations with weight 1/n!.
 
@@ -1229,7 +1230,7 @@ class FactorProjector(typing.Generic[_Projected]):
         """
     @typing.overload
     @staticmethod
-    def antisymmetric(*factors: typing.Unpack[tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], Tensor | TensorNetwork | FactorProjector[TensorNetwork], *tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], ...]]]) -> FactorProjector[TensorNetwork]:
+    def antisymmetric(*factors: Unpack[tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], Tensor | TensorNetwork | FactorProjector[TensorNetwork], Unpack[tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], ...]]]]) -> FactorProjector[TensorNetwork]:
         r"""
         Average all signed permutations with weight 1/n!.
 
@@ -1310,7 +1311,7 @@ class FactorProjector(typing.Generic[_Projected]):
         """
     @typing.overload
     @staticmethod
-    def cyclic(*factors: typing.Unpack[tuple[Tensor | TensorNetwork | FactorProjector[TensorNetwork], *tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], ...]]]) -> FactorProjector[TensorNetwork]:
+    def cyclic(*factors: Unpack[tuple[Tensor | TensorNetwork | FactorProjector[TensorNetwork], Unpack[tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], ...]]]]) -> FactorProjector[TensorNetwork]:
         r"""
         Average cyclic rotations with weight 1/n.
 
@@ -1337,7 +1338,7 @@ class FactorProjector(typing.Generic[_Projected]):
         """
     @typing.overload
     @staticmethod
-    def cyclic(*factors: typing.Unpack[tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], Tensor | TensorNetwork | FactorProjector[TensorNetwork], *tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], ...]]]) -> FactorProjector[TensorNetwork]:
+    def cyclic(*factors: Unpack[tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], Tensor | TensorNetwork | FactorProjector[TensorNetwork], Unpack[tuple[TensorExpression | _ScalarInput | Tensor | TensorNetwork | FactorProjector[TensorExpression] | FactorProjector[TensorNetwork], ...]]]]) -> FactorProjector[TensorNetwork]:
         r"""
         Average cyclic rotations with weight 1/n.
 

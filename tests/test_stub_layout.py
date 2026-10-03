@@ -33,7 +33,10 @@ def test_public_package_has_matching_stub(module_name, classes):
         assert module.__spec__.submodule_search_locations is not None
     stub = Path(module.__file__).with_suffix(".pyi")
     assert stub.is_file(), f"Missing packaged stub: {stub}"
-    declarations = ast.parse(stub.read_text(encoding="utf-8"), filename=str(stub))
+    # Check the minimum supported grammar even when tests run on newer Python.
+    declarations = ast.parse(
+        stub.read_text(encoding="utf-8"), filename=str(stub), feature_version=9
+    )
     declared_classes = {
         node.name for node in declarations.body if isinstance(node, ast.ClassDef)
     }

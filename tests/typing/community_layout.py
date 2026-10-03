@@ -35,3 +35,19 @@ def make_vakint(method: VakintEvaluationMethod) -> Vakint:
 
 def as_expression(engine: Vakint, result: VakintNumericalResult) -> Expression:
     return engine.numerical_result_to_expression(result)
+
+
+def factor_projectors(symbolic: tensor.TensorExpression, concrete: tensor.Tensor) -> None:
+    # The Python 3.9-compatible Unpack spelling must retain concrete overloads.
+    symbolic_group: tensor.FactorProjector[tensor.TensorExpression] = (
+        tensor.FactorProjector.symmetric(symbolic, symbolic)
+    )
+    symmetric: tensor.FactorProjector[tensor.TensorNetwork] = (
+        tensor.FactorProjector.symmetric(concrete, symbolic)
+    )
+    antisymmetric: tensor.FactorProjector[tensor.TensorNetwork] = (
+        tensor.FactorProjector.antisymmetric(symbolic, concrete)
+    )
+    cyclic: tensor.FactorProjector[tensor.TensorNetwork] = (
+        tensor.FactorProjector.cyclic(symbolic, concrete, symbolic)
+    )
