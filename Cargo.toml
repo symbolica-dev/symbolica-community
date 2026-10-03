@@ -40,18 +40,25 @@ strip = "symbols"
 [profile.release-performance]
 inherits = "release"
 opt-level = 3
-lto = "fat"
+lto = "thin"
 codegen-units = 1
 strip = "symbols"
 
 [features]
-default = ["module", "native"]
+default = ["module", "native", "community"]
 module = ["pyo3/abi3-py39"] # incompatible with stub_gen
+community = [
+    "dep:spynso3", "dep:feynkit-py", "dep:one-loop-reduce-python",
+    "dep:rustred-feynkit", "dep:oneloop-python", "dep:oneloop", "dep:vakint",
+]
 # Keep the system allocator: mimalloc can crash after Python's importing thread exits.
-native = ["symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3/native", "feynkit-py/native"]
-wasm = ["symbolica/wasm", "spynso3/wasm", "feynkit-py/wasm", "one-loop-reduce-python/wasm"]
+native = ["symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3?/native", "feynkit-py?/native"]
+# Use --no-default-features --features wasm-core for the kernel + integration only.
+wasm-core = ["symbolica/wasm"]
+wasm = ["wasm-core", "community", "spynso3/wasm", "feynkit-py/wasm", "one-loop-reduce-python/wasm"]
 python_stubgen = [
     "native",
+    "community",
     "pyo3-stub-gen",
     "symbolica/python_stubgen",
     "spynso3/python_stubgen",
@@ -61,10 +68,10 @@ python_stubgen = [
 ]
 
 [dependencies]
-one-loop-reduce-python = { git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
-spynso3 = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
+one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
+spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
 # Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.
-feynkit-py = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false, features = ["ufo"] }
+feynkit-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false, features = ["ufo"] }
 symbolica = { version = "3.0.1", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
 # Tensor bindings split methods across impl blocks on both native and WASM.
@@ -75,12 +82,12 @@ pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, f
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # Compile the IBP bridge into the host extension to share native Symbolica atoms.
-rustred-feynkit = { git = "https://github.com/alphal00p/rustred", branch = "main" }
+rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", branch = "main" }
 # Share the host kernel; OneLOop currently requires native numeric/JIT support.
-oneloop-python = { git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false, features = ["community"] }
-oneloop = { git = "https://github.com/alphal00p/oneloopmaster", branch = "main" }
+oneloop-python = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false, features = ["community"] }
+oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main" }
 # Vakint currently requires native dependencies, including GMP/MPFR.
-vakint = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", features = ["symbolica_community_module"] }
+vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", features = ["symbolica_community_module"] }
 
 # All community modules share the Symbolica kernel from its community branch.
 [patch.crates-io]

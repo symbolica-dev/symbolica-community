@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 
 const wheelDir = process.argv[2];
 const runtimeDir = process.env.PYODIDE_DIST_DIR;
+const expectCommunity = process.env.SYMBOLICA_EXPECT_COMMUNITY !== "0";
 assert(wheelDir && runtimeDir, "Pass the wheel directory and set PYODIDE_DIST_DIR");
 const wheels = (await readdir(wheelDir)).filter((name) =>
   name.endsWith("-pyemscripten_2026_0_wasm32.whl"),
@@ -57,6 +58,11 @@ assert result == expression.integrate(S("x")) == E("atan(x)")
 assert overview.strip()
 assert any(step.rule is not None and step.source and step.description for step in steps)
 assert version("symbolica") == expected_version
+from symbolica import get_citations
+assert any(citation.id == "https://github.com/symbolica-dev/symbolica-integrate" for citation in get_citations())
+`);
+if (expectCommunity) {
+await pyodide.runPythonAsync(`
 import symbolica.community.tensor as tensor_module
 from symbolica.community.tensor import Representation, Tensor, TensorExpression, TensorLibrary, TensorName, TensorNetwork, dot
 metric = TensorExpression(E("g(bis(4,1),bis(4,1))", default_namespace="spenso"))
@@ -107,6 +113,17 @@ except ImportError as error:
 else:
     raise AssertionError("vakint should require a native installation")
 `);
+} else {
+await pyodide.runPythonAsync(`
+import importlib.util
+import zipfile
+assert importlib.util.find_spec("symbolica.community") is None
+assert not any(name.startswith("symbolica.community") for name in sys.modules)
+with zipfile.ZipFile(wheel_uri.removeprefix("emfs:")) as archive:
+    assert not any(name.startswith("symbolica/community/") for name in archive.namelist())
+print("Core-only wheel: algebra and integration passed; community packages absent.")
+`);
+}
 const modulePath = pyodide.runPython("import symbolica.core; symbolica.core.__file__");
 const wasmBytes = pyodide.FS.readFile(modulePath);
 const wasm = await WebAssembly.compile(wasmBytes);
