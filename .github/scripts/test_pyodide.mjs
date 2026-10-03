@@ -102,6 +102,16 @@ reduced = hep.TensorReducer(D, integrated=[kv.to_expression()]).reduce(numerator
 expected = (dot(kv, kv) * dot(pv, pv) / D).to_expression()
 assert (reduced - expected).expand() == E("0")
 assert hep.ThreeMomentum(3.0, 4.0, 0.0).on_shell().components() == (5.0, 3.0, 4.0, 0.0)
+from symbolica.community.hepkit import oneloop
+d, ell, mass = S("oneloop_smoke::d", "oneloop_smoke::ell", "oneloop_smoke::m2")
+kinematics = hep.Kinematics(d, momenta=[ell])
+family = hep.IntegralFamily(
+    [ell], [], [kinematics.scalar_product(ell, ell) - mass], kinematics=kinematics,
+)
+reduction = oneloop.reduce(family, [1])
+assert reduction.to_expression() == E("oneloopmaster::A0")(mass, E("1"))
+assert not hasattr(oneloop, "Evaluator")
+assert not hasattr(oneloop, "compile_native")
 assert "symbolica.community.hepkit_native" in sys.modules
 assert not hasattr(evaluator, "compile")
 assert not hasattr(tensor_module, "CompiledTensorEvaluator")

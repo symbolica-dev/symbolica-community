@@ -40,6 +40,7 @@ strip = "symbols"
 [profile.release-performance]
 inherits = "release"
 opt-level = 3
+# Fat LTO exceeds the CI runner memory limit for the community WASM build.
 lto = "thin"
 codegen-units = 1
 strip = "symbols"
@@ -85,7 +86,8 @@ pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, f
 rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", branch = "main" }
 # Share the host kernel; OneLOop currently requires native numeric/JIT support.
 oneloop-python = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false, features = ["community"] }
-oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main" }
+# Keep embedded SymJIT caches and generated native evaluators out of wheels.
+oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false }
 # Vakint currently requires native dependencies, including GMP/MPFR.
 vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", features = ["symbolica_community_module"] }
 
