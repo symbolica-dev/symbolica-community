@@ -43,7 +43,7 @@ jobs:
                   pip install pytest ty numpy
 
             - name: Check public community import types
-              run: ty check --python-version 3.10 tests/typing/community_layout.py
+              run: ty check --python-version 3.10 tests/typing/community_layout.py tests/typing/expression_products.py
 
             - name: Run tests
               env:
