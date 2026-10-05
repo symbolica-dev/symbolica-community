@@ -3,6 +3,7 @@
 import importlib.util
 import hashlib
 from pathlib import Path
+from threading import Event, Lock
 from time import monotonic, sleep
 from types import SimpleNamespace
 
@@ -29,8 +30,7 @@ def session(tmp_path):
         session.close()
 
 
-def populate_banks(session):
-    """Use actual native persistence with a small, exactly constant system."""
+def constant_boundary_adder():
     x, epsilon, master = S("gg_hg_control::x", "gg_hg_control::eps", "gg_hg_control::I")
     flow = numerical.KinematicTransport(
         epsilon, {x: [[E("0")]]}, [master], E("1"), branch_domain="real x",
@@ -43,6 +43,12 @@ def populate_banks(session):
             provenance=provenance,
         )
 
+    return flow, x, add
+
+
+def populate_banks(session):
+    """Use actual native persistence with a small, exactly constant system."""
+    _, _, add = constant_boundary_adder()
     seed = add(session.seeds, "0", "exact constant seed")
     session.cache.extend(session.seeds)
     add(session.cache, "1", "accepted intermediate; source: exact constant seed")
@@ -222,3 +228,161 @@ def test_interruption_monitor_preserves_native_failures(session, acceptance):
     }
     with pytest.raises(numerical.IncompleteReductionError, match="no complete sample"):
         acceptance.interrupt_forced_boundaries(session, lambda: {}, 1, poll_interval=0.001)
+
+
+def configuration_indices(session):
+    def key(point):
+        return tuple(sorted((str(k), str(v)) for k, v in point.items()))
+
+    positions = {key(configuration.start): index
+                 for index, (_, configuration) in enumerate(session.configurations)}
+    return lambda point: positions[key(point)]
+
+
+def wait_for_saved_seeds(session, count):
+    deadline = monotonic() + 10
+    while monotonic() < deadline:
+        if len(numerical.BoundaryCache.load(session.directory / "seeds")) >= count:
+            return
+        sleep(0.001)
+    raise AssertionError("A completed configuration was not progressively persisted.")
+
+
+@pytest.mark.parametrize("workers,boundary_workers,per_configuration", [(5, 2, 2), (2, 4, 1)])
+def test_concurrent_boundaries_respect_budget_persist_progress_and_return_input_order(
+    session, monkeypatch, workers, boundary_workers, per_configuration,
+):
+    populate_banks(session)
+    session.configurations = session.configurations[:4]
+    session.workers, session.boundary_workers = workers, boundary_workers
+    position = configuration_indices(session)
+    _, _, add = constant_boundary_adder()
+    first_started, release_first = Event(), Event()
+    lock = Lock()
+    active = peak = 0
+    private_caches, initial_lengths, allocations = [], [], []
+    monkeypatch.setattr(numerical, "IntegralEvaluator", lambda *, options: SimpleNamespace(options=options))
+
+    def generate(evaluator, cache, point, *args, **kwargs):
+        nonlocal active, peak
+        index = position(point)
+        with lock:
+            active += 1
+            peak = max(active, peak)
+            private_caches.append(cache)
+            initial_lengths.append(len(cache))
+            allocations.append(evaluator.options.workers)
+        try:
+            if index == 0:
+                first_started.set()
+                assert release_first.wait(10)
+            else:
+                assert first_started.wait(10)
+            add(cache, str(index + 2), f"independent configuration {index}")
+            return SimpleNamespace(cache_hit=False)
+        finally:
+            with lock:
+                active -= 1
+
+    session.systems = {name: SimpleNamespace(generate_boundary=generate) for name in session.systems}
+    session.submit("boundaries")
+    try:
+        wait_for_saved_seeds(session, 2)
+        assert not session.snapshot()["done"]
+        assert peak == 2
+    finally:
+        release_first.set()
+    results = session.wait()
+    assert [label for label, _ in results] == [c.label for _, c in session.configurations]
+    assert allocations == [per_configuration] * 4
+    assert peak * per_configuration <= workers
+    assert initial_lengths == [1] * 4
+    assert len({id(cache) for cache in private_caches}) == 4
+    assert len(numerical.BoundaryCache.load(session.directory / "seeds")) == 5
+    assert len(numerical.BoundaryCache.load(session.directory / "transport")) == 6
+    timings = [entry for entry in session.snapshot()["timings"] if entry["stage"] == "boundary_configuration"]
+    assert len(timings) == 4
+    assert all(entry["sample_workers"] == per_configuration and entry["elapsed_ns"] > 0
+               for entry in timings)
+
+
+def test_concurrent_boundary_failure_preserves_completed_sibling_and_exception(session):
+    populate_banks(session)
+    session.configurations = session.configurations[:3]
+    session.workers = session.boundary_workers = 2
+    position = configuration_indices(session)
+    _, _, add = constant_boundary_adder()
+    fail, sibling_started, sibling_cancelled = Event(), Event(), Event()
+
+    def generate(evaluator, cache, point, *args, **kwargs):
+        if position(point) == 0:
+            add(cache, "2", "completed before sibling reduction failure")
+            return SimpleNamespace(cache_hit=False)
+        if position(point) == 1:
+            assert fail.wait(10) and sibling_started.wait(10)
+            raise numerical.IncompleteReductionError("independent configuration failed")
+        sibling_started.set()
+        deadline = monotonic() + 10
+        while not kwargs["control"].cancelled:
+            assert monotonic() < deadline
+            sleep(0.001)
+        sibling_cancelled.set()
+        cancelled()
+
+    session.systems = {name: SimpleNamespace(generate_boundary=generate) for name in session.systems}
+    session.submit("boundaries")
+    try:
+        wait_for_saved_seeds(session, 2)
+    finally:
+        fail.set()
+    with pytest.raises(numerical.IncompleteReductionError, match="independent configuration"):
+        session.wait()
+    assert session._control.cancelled
+    assert sibling_cancelled.is_set()
+    assert len(numerical.BoundaryCache.load(session.directory / "seeds")) == 2
+    assert len(numerical.BoundaryCache.load(session.directory / "transport")) == 3
+
+
+def test_concurrent_cancellation_keeps_completed_configurations(session):
+    populate_banks(session)
+    session.configurations = session.configurations[:3]
+    session.workers = session.boundary_workers = 2
+    position = configuration_indices(session)
+    _, _, add = constant_boundary_adder()
+
+    def generate(evaluator, cache, point, *args, **kwargs):
+        if position(point) == 0:
+            add(cache, "2", "completed before user cancellation")
+            return SimpleNamespace(cache_hit=False)
+        deadline = monotonic() + 10
+        while not kwargs["control"].cancelled:
+            assert monotonic() < deadline
+            sleep(0.001)
+        cancelled()
+
+    session.systems = {name: SimpleNamespace(generate_boundary=generate) for name in session.systems}
+    session.submit("boundaries")
+    wait_for_saved_seeds(session, 2)
+    session.cancel()
+    with pytest.raises(numerical.CalculationCancelled):
+        session.wait()
+    assert len(numerical.BoundaryCache.load(session.directory / "seeds")) == 2
+    assert len(numerical.BoundaryCache.load(session.directory / "transport")) == 3
+
+
+def test_concurrent_exact_cache_hits_preserve_both_banks(session):
+    populate_banks(session)
+    session.configurations = session.configurations[:4]
+    session.workers, session.boundary_workers = 8, 4
+    before = (SUPPORT.boundary_evidence(session.seeds), SUPPORT.boundary_evidence(session.cache))
+    flow, x, _ = constant_boundary_adder()
+
+    def generate(evaluator, cache, *args, **kwargs):
+        return flow.evaluate(cache, {x: E("0")}, 0, 0)
+
+    session.systems = {name: SimpleNamespace(generate_boundary=generate) for name in session.systems}
+    session.submit("boundaries")
+    assert all(result.cache_hit and result.steps == 0 for _, result in session.wait())
+    assert (SUPPORT.boundary_evidence(session.seeds), SUPPORT.boundary_evidence(session.cache)) == before
+    assert SUPPORT.boundary_evidence(numerical.BoundaryCache.load(session.directory / "seeds")) == before[0]
+    assert SUPPORT.boundary_evidence(numerical.BoundaryCache.load(session.directory / "transport")) == before[1]

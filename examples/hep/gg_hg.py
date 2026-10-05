@@ -79,6 +79,7 @@ def _(CalculationSession, Path, data_directory):
         seed_digits=30,
         digits=20,
         workers=1,
+        boundary_workers=1,
     )
     return (session,)
 

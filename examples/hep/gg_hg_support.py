@@ -4,7 +4,7 @@ No reference values enter this module. Only the scoped native model is loaded
 from disk; equations, exact basis maps and coordinates come from the extension.
 """
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import CancelledError, ThreadPoolExecutor, as_completed
 from pathlib import Path
 from threading import Lock
 from time import perf_counter_ns
@@ -30,7 +30,8 @@ def boundary_evidence(cache):
 
 
 class CalculationSession:
-    def __init__(self, model_path, directory, *, seed_digits=30, digits=20, workers=1):
+    def __init__(self, model_path, directory, *, seed_digits=30, digits=20, workers=1,
+                 boundary_workers=1):
         from symbolica import E
         from symbolica.community import hepkit as hep
         from symbolica.community.hep.integration import (
@@ -38,6 +39,8 @@ class CalculationSession:
             HiggsJetIntegralSystem,
         )
 
+        if workers < 1 or boundary_workers < 1:
+            raise ValueError("Worker budgets must be positive.")
         self.directory = Path(directory)
         self.model = hep.Model.from_json(Path(model_path).read_text())
         self.systems = {
@@ -57,6 +60,7 @@ class CalculationSession:
         self.seed_digits = seed_digits
         self.digits = digits
         self.workers = workers
+        self.boundary_workers = boundary_workers
         self.seeds = self._load_cache("seeds", BoundaryCache)
         self.cache = self._load_cache("transport", BoundaryCache)
         self.results = {}
@@ -77,14 +81,14 @@ class CalculationSession:
             return cache_type.load(path)
         return cache_type()
 
-    def _options(self, *, seeds=False, recompute=False):
+    def _options(self, *, seeds=False, recompute=False, workers=None):
         from symbolica.community.hep.integration import EvaluationOptions
 
         return EvaluationOptions(
             digits=self.seed_digits if seeds else self.digits,
             guard_digits=60,
             series_order=96,
-            workers=self.workers,
+            workers=self.workers if workers is None else workers,
             cache_directory=self.directory / "exact-reductions",
             sample_cache_directory=self.directory / "completed-samples",
             reuse_samples=not recompute,
@@ -161,7 +165,9 @@ class CalculationSession:
         self.observables = None
 
     def generate_boundaries(self, *, recompute=False):
-        from symbolica.community.hep.integration import BoundaryCache, IntegralEvaluator
+        from symbolica.community.hep.integration import (
+            BoundaryCache, CalculationCancelled, ComputationControl, IntegralEvaluator,
+        )
 
         self._invalidate_results()
         if recompute:
@@ -171,24 +177,80 @@ class CalculationSession:
             # make the previous transport bank reappear when the session reloads.
             self.cache = BoundaryCache()
             self.cache.save(self.directory / "transport")
-        evaluator = IntegralEvaluator(options=self._options(seeds=True, recompute=recompute))
-        completed = []
-        for topology, configuration in self.configurations:
-            result = self.systems[topology].generate_boundary(
-                evaluator, self.seeds, configuration.start, configuration.root_sheets,
-                recompute=recompute, control=self._control,
-            )
-            self.seeds.save(self.directory / "seeds")
-            completed.append((configuration.label, result))
-        # Preserve the seed-only bank, so forced transport can start without
-        # previously computed endpoints or intermediate transport values.
-        if recompute:
-            self.cache = BoundaryCache.load(self.directory / "seeds")
-        else:
-            # Loading seeds must not discard previously accepted intermediate
-            # points or endpoints from the progressively growing transport bank.
-            self.cache.extend(self.seeds)
-        self.cache.save(self.directory / "transport")
+        if not self.configurations:
+            return []
+        concurrent = min(self.boundary_workers, self.workers, len(self.configurations))
+        sample_workers = self.workers // concurrent
+        snapshot = BoundaryCache()
+        snapshot.extend(self.seeds)
+        with self._lock:
+            if self._control is None:
+                self._control = ComputationControl()
+            control = self._control
+        completed = [None] * len(self.configurations)
+
+        def evaluate(topology, configuration):
+            started = perf_counter_ns()
+            if control.cancelled:
+                raise CalculationCancelled("Boundary stage cancelled before configuration start.")
+            private_cache = BoundaryCache()
+            private_cache.extend(snapshot)
+            evaluator = IntegralEvaluator(options=self._options(
+                seeds=True, recompute=recompute, workers=sample_workers,
+            ))
+            with self._lock:
+                self.events.append(
+                    f"Starting boundary {configuration.label} with {sample_workers} sample workers."
+                )
+            outcome, cache_hit = "completed", None
+            try:
+                result = self.systems[topology].generate_boundary(
+                    evaluator, private_cache, configuration.start, configuration.root_sheets,
+                    recompute=recompute, control=control,
+                )
+                cache_hit = result.cache_hit
+            except Exception as exc:
+                outcome = f"{type(exc).__name__}: {exc}"
+                raise
+            finally:
+                with self._lock:
+                    self.timings.append({
+                        "stage": "boundary_configuration", "configuration": configuration.label,
+                        "seed_digits": self.seed_digits, "sample_workers": sample_workers,
+                        "elapsed_ns": perf_counter_ns() - started,
+                        "outcome": outcome, "cache_hit": cache_hit,
+                    })
+            return result, private_cache
+
+        failure = None
+        with ThreadPoolExecutor(max_workers=concurrent, thread_name_prefix="higgs-jet-boundary") as pool:
+            futures = {
+                pool.submit(evaluate, topology, configuration): (index, configuration.label)
+                for index, (topology, configuration) in enumerate(self.configurations)
+            }
+            for future in as_completed(futures):
+                index, label = futures[future]
+                try:
+                    result, private_cache = future.result()
+                    # Only this coordinator writes the growing banks. Merge
+                    # successful siblings even after cancellation or failure.
+                    self.seeds.extend(private_cache)
+                    self.seeds.save(self.directory / "seeds")
+                    self.cache.extend(private_cache)
+                    self.cache.save(self.directory / "transport")
+                    completed[index] = (label, result)
+                    with self._lock:
+                        self.events.append(f"Saved boundary {label}; cache hit: {result.cache_hit}.")
+                except CancelledError:
+                    continue  # A queued sibling cancelled after the original failure.
+                except Exception as exc:
+                    if failure is None:
+                        failure = exc
+                    control.cancel()
+                    for sibling in futures:
+                        sibling.cancel()
+            if failure is not None:
+                raise failure
         return completed
 
     def _destination(self, system, configuration):
