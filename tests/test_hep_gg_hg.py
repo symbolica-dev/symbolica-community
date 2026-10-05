@@ -306,13 +306,19 @@ def test_concurrent_boundaries_respect_budget_persist_progress_and_return_input_
                for entry in timings)
 
 
-def test_concurrent_boundary_failure_preserves_completed_sibling_and_exception(session):
+class NativePanicSurrogate(BaseException):
+    """PyO3 PanicException has the same direct BaseException ancestry."""
+
+
+@pytest.mark.parametrize("failure_type", [numerical.IncompleteReductionError, NativePanicSurrogate])
+def test_concurrent_boundary_failure_preserves_completed_sibling_and_exception(session, failure_type):
     populate_banks(session)
     session.configurations = session.configurations[:3]
     session.workers = session.boundary_workers = 2
     position = configuration_indices(session)
     _, _, add = constant_boundary_adder()
     fail, sibling_started, sibling_cancelled = Event(), Event(), Event()
+    original_failure = failure_type("independent configuration failed")
 
     def generate(evaluator, cache, point, *args, **kwargs):
         if position(point) == 0:
@@ -320,7 +326,7 @@ def test_concurrent_boundary_failure_preserves_completed_sibling_and_exception(s
             return SimpleNamespace(cache_hit=False)
         if position(point) == 1:
             assert fail.wait(10) and sibling_started.wait(10)
-            raise numerical.IncompleteReductionError("independent configuration failed")
+            raise original_failure
         sibling_started.set()
         deadline = monotonic() + 10
         while not kwargs["control"].cancelled:
@@ -335,10 +341,17 @@ def test_concurrent_boundary_failure_preserves_completed_sibling_and_exception(s
         wait_for_saved_seeds(session, 2)
     finally:
         fail.set()
-    with pytest.raises(numerical.IncompleteReductionError, match="independent configuration"):
+    with pytest.raises(failure_type, match="independent configuration") as raised:
         session.wait()
+    assert raised.value is original_failure
     assert session._control.cancelled
     assert sibling_cancelled.is_set()
+    state = session.snapshot()
+    assert failure_type.__name__ in state["status"]
+    failed_label = session.configurations[1][1].label
+    assert any(entry.get("configuration") == failed_label
+               and entry["outcome"].startswith(failure_type.__name__)
+               for entry in state["timings"])
     assert len(numerical.BoundaryCache.load(session.directory / "seeds")) == 2
     assert len(numerical.BoundaryCache.load(session.directory / "transport")) == 3
 
