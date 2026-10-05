@@ -187,6 +187,13 @@ interrupted forced-refinement, resumed refinement and nearby timings, retaining
 the requested seed precision on every stage. Reference access begins only after the
 first native amplitude exists, and reference precision caps remain in the
 comparison report. The first report is written before expensive work starts.
+While a stage is running, `acceptance.json` is replaced atomically every five
+seconds with the stage status, elapsed time, recent native events, completed
+configuration timings and completed-sample file count. It is also updated at
+stage completion; warm cache hits return immediately without waiting for the
+polling interval. Observing progress neither changes numerical results nor
+admits new boundary evidence. A failure or external interrupt is recorded
+before waiting for native workers to stop.
 
 Independent native planar and nonplanar Euclidean-anchor validation is a
 separate prerequisite, performed by the Rust library's `gg_hg_boundaries`
