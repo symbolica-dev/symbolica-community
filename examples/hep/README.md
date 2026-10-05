@@ -74,7 +74,7 @@ provides separate worked IBP notebooks:
   combinations, and exact checks of the defining IBP identities.
 - [Two-loop phi4 self-energy](ibp_phi4.py) and [vertex](phi4_two_loop_vertex.py):
   generated diagrams, reductions and counterterms.
-- [Four-loop vacuum IBP laboratory](rustred_four_loop_campaign.py): standard
+- [Four-loop vacuum IBP laboratory](four_loop_reduction.py): standard
   DOT graphs for H, X, BMW and FG become routed HEPKit families, then run a
   native single-worker RustRed candidate search with streamed progress and
   lazy rule, guard and terminal inspection. It generates the candidates live;
@@ -97,7 +97,7 @@ with the project's native build dependencies and a suitable Symbolica license:
 ```sh
 pip install 'maturin>=1.13.2,<2' 'marimo>=0.24.2,<0.25'
 maturin develop --release --locked
-marimo edit examples/hep/rustred_four_loop_campaign.py
+marimo edit examples/hep/four_loop_reduction.py
 ```
 
 Select **Generate H → X → BMW → FG** explicitly. The notebook's collapsed setup and reusable
@@ -155,6 +155,17 @@ the numerical master inputs are supplied by Vakint, not newly computed here.
 This single integral test does not establish arbitrary-index family closure.
 The initial state never evaluates it; an explicit click is required after
 generation drains, and the result is cached against reactive UI reruns.
+
+`vakint.integral_from_diagram(...)` is a native binding to Vakint's Rust
+`VakintExpression::from_diagram`, not a Python graph/algebra adapter. It consumes
+FeynKit's stored routing and validates the family without rematching the graph.
+The standalone Rust entry is available through Vakint's `feynkit-ingress` feature.
+RustRed use also registers the SpideR strategy paper (arXiv:2604.25916) with
+Symbolica's process-wide `get_citations()`; importing the module alone does not.
+The native-ingress follow-up passes 136 installed-host tests, including the
+unchanged 32-digit H reference with an invalid FORM path, simultaneous scalar
+substitutions, general mappings and selected-view validation. This regression
+check does not repeat the generation workload reported below.
 
 ### Measured notebook validation
 

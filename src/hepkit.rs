@@ -25,6 +25,28 @@ impl SymbolicaCommunityModule for HepKitModule {
                 description: String::new(),
                 relevance: None,
             });
+            citations.push(Citation {
+                id: "arXiv:2604.25916".into(),
+                reference: "Christoph Dlapa, Gregor Kälin, Zhengwen Liu and Rafael A. Porto. Nonlocal-in-time tail effects in gravitational scattering to fifth post-Minkowskian and tenth self-force orders. Phys. Rev. D 114, 024029 (2026). doi:10.1103/wkp4-vy6g.".into(),
+                bibtex: r#"@article{Dlapa:2026oyq,
+  author = {Dlapa, Christoph and K{\"a}lin, Gregor and Liu, Zhengwen and Porto, Rafael A.},
+  title = {Nonlocal-in-time tail effects in gravitational scattering to fifth post-Minkowskian and tenth self-force orders},
+  eprint = {2604.25916},
+  archivePrefix = {arXiv},
+  primaryClass = {hep-th},
+  reportNumber = {DESY 26-055},
+  doi = {10.1103/wkp4-vy6g},
+  journal = {Phys. Rev. D},
+  volume = {114},
+  number = {2},
+  pages = {024029},
+  year = {2026}
+}"#
+                .into(),
+                reasons: vec!["Describes the sparse parametric IBP strategy underlying RustRed's SpIReD-inspired solver.".into()],
+                description: String::new(),
+                relevance: None,
+            });
         }
         citations
     }

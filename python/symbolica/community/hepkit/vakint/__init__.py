@@ -8,7 +8,7 @@ FORM-independent runtime path. Historical AlphaLoop, MATAD and FMFT reduction
 backends remain available and retain their external-executable requirements.
 
 `integral_from_diagram` accepts an existing HEPKit vacuum graph, its routed
-family and a native scalar numerator. The result is a rich `VakintExpression`;
+family and a native scalar numerator through Vakint's Rust bindings. The result is a rich `VakintExpression`;
 numerical Laurent results support precision-preserving `to_expression()` and
 Symbolica's `formatted()` display. `to_list()` remains a convenience f64 view.
 
@@ -129,5 +129,3 @@ from symbolica.community.hepkit_vakint_native import *
 initialize_module()
 
 del initialize_module
-
-from .graph_adapter import integral_from_diagram
