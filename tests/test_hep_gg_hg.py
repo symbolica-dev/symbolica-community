@@ -1,7 +1,9 @@
 """Lightweight stage safety checks; these never compute two-loop boundaries."""
 
 import importlib.util
+import hashlib
 from pathlib import Path
+from time import monotonic, sleep
 from types import SimpleNamespace
 
 import pytest
@@ -162,3 +164,61 @@ def test_loading_boundaries_preserves_accumulated_points_and_provenance(session)
 def test_repeated_hit_check_requires_completed_transport(session):
     with pytest.raises(RuntimeError, match="Complete transport"):
         session.restart_and_repeat()
+
+
+@pytest.fixture
+def acceptance(monkeypatch):
+    monkeypatch.syspath_prepend(str(EXAMPLES))
+    spec = importlib.util.spec_from_file_location("gg_hg_acceptance_test", EXAMPLES / "gg_hg_acceptance.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_forced_refinement_interruption_retains_only_new_precision_restart_state(session, acceptance):
+    populate_banks(session)
+    session.seed_digits = 40
+    directory = session.directory / "completed-samples"
+    directory.mkdir()
+    (directory / "sample-cold-30.bin").write_bytes(b"previous cold work")
+
+    def samples():
+        return {path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in directory.glob("sample-*.bin")}
+
+    def new_sample_then_cancel(evaluator, cache, *args, **kwargs):
+        assert kwargs["recompute"] is True
+        assert len(cache) == 0
+        (directory / "sample-forced-40.bin").write_bytes(b"new complete refined sample")
+        deadline = monotonic() + 5
+        while not kwargs["control"].cancelled:
+            if monotonic() >= deadline:
+                raise AssertionError("Interruption monitor did not request cancellation.")
+            sleep(0.001)
+        cancelled()
+
+    session.systems = {
+        name: SimpleNamespace(generate_boundary=new_sample_then_cancel) for name in session.systems
+    }
+    record, persisted = acceptance.interrupt_forced_boundaries(
+        session, samples, 1, poll_interval=0.001,
+    )
+    assert record["phase"] == "forced_refinement" and record["seed_digits"] == 40
+    assert record["baseline_sample_files"] == record["new_complete_samples"] == 1
+    assert record["retained_sample_files"] == 2
+    assert record["elapsed_ns"] > record["cancellation_latency_ns"] > 0
+    assert record["verified_configurations_before_cancel"] == 0
+    assert persisted == samples()
+    assert len(numerical.BoundaryCache.load(session.directory / "seeds")) == 0
+    assert len(numerical.BoundaryCache.load(session.directory / "transport")) == 0
+
+
+def test_interruption_monitor_preserves_native_failures(session, acceptance):
+    def reduction_failure(*args, **kwargs):
+        raise numerical.IncompleteReductionError("no complete sample exists")
+
+    session.systems = {
+        name: SimpleNamespace(generate_boundary=reduction_failure) for name in session.systems
+    }
+    with pytest.raises(numerical.IncompleteReductionError, match="no complete sample"):
+        acceptance.interrupt_forced_boundaries(session, lambda: {}, 1, poll_interval=0.001)
