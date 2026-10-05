@@ -319,6 +319,11 @@ regardless of `IntegrationOptions.parallel`. IBP retains native-only availabilit
 See `examples/hep_integration.py` for explicit integration of HEPkit Symanzik
 polynomials with stated normalization and projective gauge.
 
+The Marimo notebook [A two-loop master integral](examples/hep/hep_two_loop_kite.py)
+generates and displays the massless kite with HEPkit, derives its integral family
+and Symanzik polynomials, evaluates its coefficient as
+`6*zeta(3)`, and compares with numerical quadrature.
+
 Integration types are generated from Hyperbolica's binding metadata by
 `stub_gen --hepkit-only`; no separate Symbolica expression class is declared.
 The standalone Hyperbolica wheel has been retired. Import expression

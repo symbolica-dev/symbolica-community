@@ -1496,7 +1496,7 @@ dependencies = [
 [[package]]
 name = "hyperbolica"
 version = "0.1.0"
-source = "git+https://github.com/benruijl/hyperbolica?rev=6acf21500c4807ac1fbd67e1429efcad90791de1#6acf21500c4807ac1fbd67e1429efcad90791de1"
+source = "git+https://github.com/benruijl/hyperbolica?rev=482d590da1562443204b9d340db76a1fb3bcd6b6#482d590da1562443204b9d340db76a1fb3bcd6b6"
 dependencies = [
  "pyo3",
  "pyo3-stub-gen",

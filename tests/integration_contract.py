@@ -7,6 +7,12 @@ from symbolica.community.hepkit import integration as api
 
 
 def check_integration_contract():
+    mzv = api.mzv_symbol()
+    assert type(mzv) is Expression
+    assert mzv == S("hyperbolica::MZV")
+    assert pickle.loads(pickle.dumps(mzv(3))) == mzv(3)
+    assert "mzv_symbol" in api.__all__
+    assert api.mzv_symbol.__module__ == "symbolica.community.hepkit.integration"
     x, a = S("integration_contract::x", "integration_contract::a")
     expr = 1 / (x + 1)**2
     for parallel in (False, True):
