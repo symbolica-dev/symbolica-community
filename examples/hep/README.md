@@ -148,14 +148,24 @@ python examples/hep/gg_hg_acceptance.py --directory /path/to/empty-run
 python examples/hep/gg_hg_acceptance.py --directory /path/to/run --resume
 ```
 
-Add `--interrupt-after-samples 1` to exercise typed cancellation after a complete
-sample checkpoint, followed by reload and continuation in the same run. Once
-all sixteen native physical seeds are generated, the runner checks 4,360
+Add `--interrupt-after-samples 1` to exercise typed cancellation during the
+forced higher-precision boundary run, after a complete sample checkpoint and
+before its first verified configuration. The initial cold run is completed
+without this interruption. After cancellation, the runner reloads and resumes
+the new precision's completed samples; its previously cleared boundary banks
+remain empty. Both the total interrupted work and cancellation latency are
+reported. With the defaults, the cold run starts with 30-digit seeds and forced
+refinement requests ten extra digits (40 unless observable error propagation
+already required stronger seeds). These are different precision workloads, so
+their timings are not a same-precision speedup measurement.
+
+Once all sixteen native physical seeds are generated, the runner checks 4,360
 transport coefficients and the coherent EW/HEFT/interference observables. It
 then checks binary reload with exact repeated hits and retained provenance,
 forced recomputation at increased seed precision, and nearby evaluation from
 accumulated physical points. Its JSON report distinguishes cold, resumed, warm,
-forced-refinement and nearby timings. Reference access begins only after the
+interrupted forced-refinement, resumed refinement and nearby timings, retaining
+the requested seed precision on every stage. Reference access begins only after the
 first native amplitude exists, and reference precision caps remain in the
 comparison report. The first report is written before expensive work starts.
 
