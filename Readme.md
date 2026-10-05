@@ -66,12 +66,12 @@ Run it with `marimo edit examples/hep/gg_hg.py`. Long numerical acceptance lives
 in `examples/hep/gg_hg_acceptance.py`, separately from lightweight smoke tests.
 
 Builds currently require the native owner patches and Cargo overrides documented
-in [the pinned integration dependency guide](https://github.com/alphal00p/RustFlow/blob/1b69fb7ecb062df62730cef1ecd5009e40907e86/docs/dependency-embedding.md).
+in [the pinned integration dependency guide](https://github.com/alphal00p/RustFlow/blob/6e86afd9bed4cde2d10a466fe7cb0aab4094c78b/docs/dependency-embedding.md).
 Generate these hints with `stub_gen --hepkit-only`; the public package and stubs
 are under `python/symbolica/community/hep/integration/`. This module is excluded
 from browser builds, and existing `hepkit` and Hyperbolica imports are preserved.
 
-The Git dependency is pinned to RustFlow commit `1b69fb7ecb062df62730cef1ecd5009e40907e86`.
+The Git dependency is pinned to RustFlow commit `6e86afd9bed4cde2d10a466fe7cb0aab4094c78b`.
 The checked-in lockfile records the validated development configuration: a local
 RustFlow checkout and the patched HEPKit owner packages. To reproduce it, check
 out that RustFlow commit, apply the owner patches from the pinned guide, and
