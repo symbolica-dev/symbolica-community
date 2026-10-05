@@ -66,10 +66,30 @@ Run it with `marimo edit examples/hep/gg_hg.py`. Long numerical acceptance lives
 in `examples/hep/gg_hg_acceptance.py`, separately from lightweight smoke tests.
 
 Builds currently require the native owner patches and Cargo overrides documented
-in [the integration dependency guide](https://github.com/alphal00p/RustFlow/blob/main/docs/dependency-embedding.md).
+in [the pinned integration dependency guide](https://github.com/alphal00p/RustFlow/blob/0ed48dfd583b56cb35403dde63bbb57956e2385a/docs/dependency-embedding.md).
 Generate these hints with `stub_gen --hepkit-only`; the public package and stubs
 are under `python/symbolica/community/hep/integration/`. This module is excluded
 from browser builds, and existing `hepkit` and Hyperbolica imports are preserved.
+
+The Git dependency is pinned to RustFlow commit `0ed48dfd583b56cb35403dde63bbb57956e2385a`.
+The checked-in lockfile records the validated development configuration: a local
+RustFlow checkout and the patched HEPKit owner packages. To reproduce it, check
+out that RustFlow commit, apply the owner patches from the pinned guide, and
+configure its complete HEPKit patch table in Cargo configuration, together with:
+
+```toml
+[patch."https://github.com/alphal00p/RustFlow"]
+symbolica-amflow = { path = "/path/to/RustFlow" }
+```
+
+Keep these machine-local paths outside tracked files, for example in an isolated
+`CARGO_HOME/config.toml`. A path patch takes precedence over the Git revision;
+the numerical cache fingerprint records the actual source contents, including
+local changes. To consume RustFlow directly from its pinned Git source, remove
+only its path patch and regenerate the lockfile once with `cargo metadata`;
+subsequent builds can use `--locked`. The HEPKit owner patches remain required.
+The validated owner checkout corresponds to `fc9ee6aa5`, based on `9d086ce`;
+the lock pins Symbolica's shared graph at `942bd2c0` and RustRed at `b3cecd6a`.
 
 One-loop reduction from [one-loop-reduce](https://github.com/ecavan/one-loop-reduce)
 is available in `hep.oneloop`. Native builds also expose OneLoopMaster's scalar
