@@ -51,7 +51,7 @@ def _():
     import json
     from pathlib import Path
     import marimo as mo
-    from symbolica import E, Float
+    from symbolica import ComplexFloat, E, Float
     from symbolica.community.hep.integration import (
         BoundaryCache,
         EvaluationOptions,
@@ -66,7 +66,7 @@ def _():
     CalculationSession = _support.CalculationSession
     data_directory = _directory / "data" / "gg_hg"
     return (
-        BoundaryCache, CalculationSession, E, EvaluationOptions, Float,
+        BoundaryCache, CalculationSession, ComplexFloat, E, EvaluationOptions, Float,
         IntegralEvaluator, KinematicTransport, Path, data_directory, json, mo,
     )
 
@@ -178,12 +178,31 @@ def _(mo, session, state):
 
 
 @app.cell(hide_code=True)
-def _(E, Float, data_directory, json, mo, session, state):
+def _(ComplexFloat, E, Float, data_directory, json, mo, session, state):
     mo.stop(not state["done"] or session.observables is None, mo.md("Assemble the amplitude to view observables and uncertainties."))
     _result = session.observables
     # Comparison data is loaded only here, after the native result exists.
     _reference = json.loads((data_directory / "amplitude-validation.json").read_text())
     _same_point = session.point == [E(value) for value in _reference["physical_s_t_MH_squared"]]
+    _factor_reference = {block["mass"]: block["values"] for block in _reference["form_factors"]}
+    _factor_rows = []
+    for _mass in ("W", "Z"):
+        _factors = session.form_factors[_mass]
+        for _index, (_value, _error, _digits, _expected) in enumerate(zip(
+            _factors.values, _factors.absolute_errors, _factors.verified_relative_digits,
+            _factor_reference[_mass], strict=True,
+        ), start=1):
+            _reference_value = ComplexFloat(_expected["real"], _expected["imaginary"], decimal_digits=100)
+            _reference_error = Float(_expected["absolute_error"], decimal_digits=100)
+            _factor_rows.append({
+                "form factor": f"{_mass}{_index}",
+                "native result": str(_value),
+                "propagated absolute uncertainty": str(_error),
+                "achieved relative digits": _digits,
+                "reference at recorded point": str(_reference_value) if _same_point else "different kinematics",
+                "reference absolute uncertainty": str(_reference_error) if _same_point else "—",
+                "absolute difference": str(abs(_value - _reference_value)) if _same_point else "—",
+            })
     _rows = []
     for _name, _value in _result.values.items():
         _ref = Float(_reference["expected_observables"][_name], decimal_digits=80)
@@ -201,6 +220,9 @@ def _(E, Float, data_directory, json, mo, session, state):
             "absolute difference": str(abs(_value - _ref)) if _same_point else "—",
         })
     mo.vstack([
+        mo.md("## W/Z form factors"),
+        mo.md(f"Current exact kinematics: s = {session.point[0]}, t = {session.point[1]}, m_H² = {session.point[2]}."),
+        mo.ui.table(_factor_rows, label="Native W/Z form factors and propagated uncertainties"),
         mo.md("## Coherent observables"),
         mo.ui.table(_rows),
         mo.md("The archived reference has its own input-accuracy limits. Extra printed digits do not strengthen its uncertainty. Nearby evaluations use new kinematics-dependent projections; the original-point comparison is then omitted."),

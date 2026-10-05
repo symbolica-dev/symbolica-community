@@ -54,6 +54,9 @@ def runtime_attestation():
         "execution_sources": {
             "acceptance": file_attestation(__file__),
             "controller": file_attestation(CalculationSession.__init__.__code__.co_filename),
+            "notebook": file_attestation(
+                Path(CalculationSession.__init__.__code__.co_filename).with_name("gg_hg.py"),
+            ),
         },
         "python": {"version": sys.version, "executable": sys.executable},
     }
@@ -62,6 +65,62 @@ def runtime_attestation():
 def verify_runtime_attestation(recorded):
     if runtime_attestation() != recorded:
         raise RuntimeError("The native extension or acceptance sources changed during this run.")
+
+
+def check_coefficient_refinement(previous, result, *, label, tolerance, one):
+    """Check both requested accuracy and the native uncertainty estimates."""
+    count = 0
+    rows = zip(
+        previous.coefficients, result.coefficients,
+        previous.comparison_errors, result.comparison_errors, strict=True,
+    )
+    for old_row, new_row, old_errors, new_errors in rows:
+        for old, new, old_error, new_error in zip(
+            old_row, new_row, old_errors, new_errors, strict=True,
+        ):
+            assert old_error.is_finite() and old_error >= 0, label
+            assert new_error.is_finite() and new_error >= 0, label
+            difference = abs(old - new)
+            assert difference <= tolerance * max(one, abs(new)), (label, "mixed accuracy target")
+            assert difference <= old_error + new_error, (label, "coefficient uncertainty estimates")
+            count += 1
+    return count
+
+
+def compare_form_factors(native, reference):
+    """Compare all W/Z components using the archived absolute allowances."""
+    from symbolica import ComplexFloat, Float
+
+    assert set(native) == {"W", "Z"}
+    references = {entry["mass"]: entry["values"] for entry in reference["form_factors"]}
+    assert len(reference["form_factors"]) == len(references) == 2
+    assert set(references) == set(native)
+    comparison = {}
+    count = 0
+    for mass in ("W", "Z"):
+        assert [entry["index"] for entry in references[mass]] == [1, 2, 3, 4]
+        comparison[mass] = []
+        rows = zip(
+            native[mass].values, native[mass].absolute_errors,
+            native[mass].verified_relative_digits, references[mass], strict=True,
+        )
+        for value, error, digits, expected in rows:
+            expected_value = ComplexFloat(expected["real"], expected["imaginary"], decimal_digits=100)
+            expected_error = Float(expected["absolute_error"], decimal_digits=100)
+            assert error.is_finite() and error >= 0, mass
+            assert expected_error.is_finite() and expected_error >= 0, mass
+            difference = abs(value - expected_value)
+            assert difference <= error + expected_error, (mass, expected["index"], "form-factor uncertainty estimates")
+            comparison[mass].append({
+                "index": expected["index"], "value": str(value),
+                "absolute_difference": str(difference),
+                "native_absolute_error": str(error),
+                "native_verified_relative_digits": digits,
+                "reference_absolute_error": expected["absolute_error"],
+            })
+            count += 1
+    assert count == 8
+    return {"components": count, "comparison": comparison}
 
 
 def write_acceptance_report(directory, report):
@@ -151,6 +210,8 @@ def interrupt_forced_boundaries(session, samples, after_samples, *, poll_interva
 
 
 def main():
+    if not __debug__:
+        raise RuntimeError("Acceptance requires enabled assertions; remove -O or PYTHONOPTIMIZE.")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--resume", action="store_true")
@@ -280,6 +341,9 @@ def main():
             for name, value in observables.values.items()
         }
         observable_reference = json.loads((data / "amplitude-validation.json").read_text())
+        report["form_factor_comparison"] = compare_form_factors(
+            session.form_factors, observable_reference,
+        )
         report["observable_comparison"] = {}
         for name, value in observables.values.items():
             expected = Float(observable_reference["expected_observables"][name], decimal_digits=100)
@@ -352,12 +416,14 @@ def main():
         )
         refined = run("transport", mode="forced_refinement", recompute=True)
         assert any(not r.cache_hit for r in refined.values())
+        refined_count = 0
         for label, result in refined.items():
-            previous = original[label]
-            for old_row, new_row in zip(previous.coefficients, result.coefficients, strict=True):
-                for old, new in zip(old_row, new_row, strict=True):
-                    assert abs(old - new) <= tolerance * max(one, abs(new)), label
+            refined_count += check_coefficient_refinement(
+                original[label], result, label=label, tolerance=tolerance, one=one,
+            )
+        assert refined_count == 4360
         refined_observables = run("amplitude", mode="forced_refinement", recompute=True)
+        refined_form_factors = compare_form_factors(session.form_factors, observable_reference)
         for name, value in refined_observables.values.items():
             assert refined_observables.verified_relative_digits[name] >= 20
             assert abs(value - observables.values[name]) <= (
@@ -367,6 +433,8 @@ def main():
             "seed_digits": session.seed_digits, "old_numerical_caches_bypassed": True,
             "new_precision_samples_resumed": bool(args.interrupt_after_samples),
             "exact_reductions_reusable": True, "checked_mixed_digits": 20,
+            "coefficients_with_consistent_uncertainties": refined_count,
+            "form_factor_comparison": refined_form_factors,
         }
         accumulated = session.cache.entries()
         seeds = session.seeds.entries()
