@@ -1,4 +1,4 @@
-"""The public definite integrator uses HEPkit's shared kernel and IBP objects."""
+"""The definite integrator shares HEPkit's kernel and preserves its IBP API."""
 import subprocess
 import sys
 
@@ -13,10 +13,10 @@ def test_hepkit_symanzik_integral():
     check_symanzik_example()
 
 
-def test_ibp_identity():
+def test_existing_ibp_api():
     from symbolica.community.hepkit import integration, ibp, IBPFamily
-    assert integration.ibp is ibp
-    assert integration.ibp.IBPFamily is IBPFamily
+    assert ibp.IBPFamily is IBPFamily
+    assert not hasattr(integration, "ibp")
 
 
 def test_citations_and_import_order():

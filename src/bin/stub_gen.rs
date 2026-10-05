@@ -41,11 +41,7 @@ fn main() -> Result<()> {
             })?;
         write_package(
             "symbolica.community.hepkit.integration",
-            &format!(
-                "{}\n{}\nfrom .. import ibp as ibp\n",
-                integration,
-                hyperbolica::python::STUB_EXTRAS,
-            ),
+            &format!("{}\n{}\n", integration, hyperbolica::python::STUB_EXTRAS),
         )?;
     }
     if matches!(only, Some("tensor" | "vakint")) {
