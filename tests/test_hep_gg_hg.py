@@ -476,3 +476,43 @@ def test_headless_progress_wait_preserves_original_failures(session, acceptance,
     with pytest.raises(failure_type) as raised:
         acceptance.wait_for_stage(session, lambda state: None, poll_interval=0.01)
     assert raised.value is original
+
+
+def test_acceptance_attests_loaded_extension_and_native_source_identity(acceptance):
+    import symbolica.core as core
+
+    evidence = acceptance.runtime_attestation()
+    extension = evidence["loaded_extension"]
+    assert Path(extension["path"]) == Path(core.__file__).resolve()
+    assert extension["size_bytes"] == Path(core.__file__).stat().st_size
+    assert len(extension["sha256"]) == 64
+    x, epsilon, master = S(
+        "integration_acceptance_attestation_v1::x",
+        "integration_acceptance_attestation_v1::epsilon",
+        "integration_acceptance_attestation_v1::master",
+    )
+    native = numerical.KinematicTransport(
+        epsilon, {x: [[E("0")]]}, [master], E("1"),
+        branch_domain="native source attestation v1",
+    )
+    assert evidence["native_identity_witness"]["identity"] == native.identity
+    assert evidence["execution_sources"]["controller"]["path"] == str(EXAMPLES / "gg_hg_support.py")
+    acceptance.verify_runtime_attestation(evidence)
+
+
+@pytest.mark.parametrize("changed", ["execution_source", "extension"])
+def test_acceptance_rejects_changed_execution_input(acceptance, tmp_path, monkeypatch, changed):
+    import symbolica.core as core
+
+    source = tmp_path / "steering.py"
+    source.write_text("original executed source\n")
+    monkeypatch.setattr(acceptance if changed == "execution_source" else core, "__file__", str(source))
+    evidence = acceptance.runtime_attestation()
+    source.write_text("changed source after computation started\n")
+    with pytest.raises(RuntimeError, match="changed during this run"):
+        acceptance.verify_runtime_attestation(evidence)
+    original = (evidence["execution_sources"]["acceptance"] if changed == "execution_source"
+                else evidence["loaded_extension"])
+    assert original["sha256"] == hashlib.sha256(
+        b"original executed source\n"
+    ).hexdigest()
