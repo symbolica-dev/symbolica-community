@@ -14,7 +14,48 @@ import hashlib
 from gg_hg_support import CalculationSession, boundary_evidence
 
 
-def interrupt_forced_boundaries(session, samples, after_samples, *, poll_interval=1):
+def write_acceptance_report(directory, report):
+    temporary = directory / "acceptance.json.tmp"
+    temporary.write_text(json.dumps(report, indent=2) + "\n")
+    temporary.replace(directory / "acceptance.json")
+
+
+def persist_progress(directory, report, state, *, stage, mode, elapsed_ns,
+                     seed_digits, archived_timings=()):
+    """Write observed progress without touching numerical caches or results."""
+    report["progress"] = {
+        "stage": stage, "mode": mode, "elapsed_ns": elapsed_ns,
+        "seed_digits": seed_digits, "status": state["status"], "done": state["done"],
+        "recent_events": state["events"],
+        "completed_sample_files": sum(1 for _ in (directory / "completed-samples").glob("sample-*.bin")),
+    }
+    report["timings"] = list(archived_timings) + state["timings"]
+    write_acceptance_report(directory, report)
+
+
+def wait_for_stage(session, on_progress, *, poll_interval=5):
+    """Poll long work, but return immediately when a warm stage completes."""
+    if poll_interval <= 0:
+        raise ValueError("The progress interval must be positive.")
+    while True:
+        on_progress(session.snapshot())
+        try:
+            value = session.wait(timeout=poll_interval)
+        except TimeoutError:
+            if not session.snapshot()["done"]:
+                continue
+            # A calculation can itself raise TimeoutError. Re-read a completed
+            # future to preserve its original exception instead of polling forever.
+            value = session.wait()
+        except BaseException:
+            on_progress(session.snapshot())
+            raise
+        on_progress(session.snapshot())
+        return value
+
+
+def interrupt_forced_boundaries(session, samples, after_samples, *, poll_interval=1,
+                                on_progress=None):
     """Cancel new higher-precision work before its first verified configuration."""
     from symbolica.community.hep.integration import CalculationCancelled
 
@@ -23,18 +64,24 @@ def interrupt_forced_boundaries(session, samples, after_samples, *, poll_interva
     before = samples()
     started = perf_counter_ns()
     session.submit("boundaries", recompute=True)
-    while not session.snapshot()["done"]:
+    while True:
+        state = session.snapshot()
+        if on_progress is not None:
+            on_progress(state)
+        if state["done"]:
+            session.wait()  # Preserve any typed failure instead of hiding it.
+            raise AssertionError("Boundary generation finished before the requested interruption.")
         persisted = samples()
         if len(persisted.keys() - before.keys()) >= after_samples:
             break
         sleep(poll_interval)
-    else:
-        session.wait()  # Preserve any typed failure instead of hiding it.
-        raise AssertionError("Boundary generation finished before the requested interruption.")
     cancelled_at = perf_counter_ns()
     session.cancel()
     try:
-        session.wait()
+        if on_progress is None:
+            session.wait()
+        else:
+            wait_for_stage(session, on_progress, poll_interval=poll_interval)
     except CalculationCancelled:
         pass
     else:
@@ -97,15 +144,20 @@ def main():
     archived_timings = []
 
     def write_report():
-        temporary = args.directory / "acceptance.json.tmp"
-        temporary.write_text(json.dumps(report, indent=2) + "\n")
-        temporary.replace(args.directory / "acceptance.json")
+        write_acceptance_report(args.directory, report)
+
+    def progress_callback(stage, mode, started):
+        return lambda state: persist_progress(
+            args.directory, report, state, stage=stage, mode=mode,
+            elapsed_ns=perf_counter_ns() - started,
+            seed_digits=session.seed_digits, archived_timings=archived_timings,
+        )
 
     def run(stage, *, mode=None, **kwargs):
         initial_seed_digits = session.seed_digits
         started = perf_counter_ns()
         session.submit(stage, **kwargs)
-        value = session.wait()
+        value = wait_for_stage(session, progress_callback(stage, mode, started))
         report["stages"].append({
             "stage": stage, "mode": mode,
             "seed_digits": initial_seed_digits, "final_seed_digits": session.seed_digits,
@@ -215,6 +267,7 @@ def main():
         if args.interrupt_after_samples:
             interruption, interrupted_samples = interrupt_forced_boundaries(
                 session, samples, args.interrupt_after_samples,
+                on_progress=progress_callback("boundaries", "forced_refinement_interrupted", perf_counter_ns()),
             )
             report["interruption"] = interruption
             report["stages"].append({
@@ -293,6 +346,7 @@ def main():
         session.cancel()
         report["status"] = "incomplete_or_failed"
         report["failure"] = {"type": type(exc).__name__, "message": str(exc)}
+        write_report()  # Record cancellation/failure before native workers drain.
         raise
     finally:
         session.close()

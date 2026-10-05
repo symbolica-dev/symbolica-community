@@ -148,9 +148,9 @@ class CalculationSession:
                 "done": self._future is None or self._future.done(),
             }
 
-    def wait(self):
+    def wait(self, timeout=None):
         """Headless entry point: propagate typed native errors to the caller."""
-        return None if self._future is None else self._future.result()
+        return None if self._future is None else self._future.result(timeout=timeout)
 
     def close(self):
         """Join computation before releasing a headless or replaced session."""

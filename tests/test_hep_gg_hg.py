@@ -2,6 +2,8 @@
 
 import importlib.util
 import hashlib
+import json
+from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 from threading import Event, Lock
 from time import monotonic, sleep
@@ -399,3 +401,78 @@ def test_concurrent_exact_cache_hits_preserve_both_banks(session):
     assert (SUPPORT.boundary_evidence(session.seeds), SUPPORT.boundary_evidence(session.cache)) == before
     assert SUPPORT.boundary_evidence(numerical.BoundaryCache.load(session.directory / "seeds")) == before[0]
     assert SUPPORT.boundary_evidence(numerical.BoundaryCache.load(session.directory / "transport")) == before[1]
+
+
+def test_headless_progress_is_persisted_while_a_configuration_is_running(session, acceptance):
+    populate_banks(session)
+    session.configurations = session.configurations[:2]
+    session.workers = session.boundary_workers = 2
+    position = configuration_indices(session)
+    _, _, add = constant_boundary_adder()
+    release, progress_saved = Event(), Event()
+    report = {"status": "running"}
+    previous_timing = {"stage": "previous_session", "elapsed_ns": 123}
+
+    def generate(evaluator, cache, point, *args, **kwargs):
+        index = position(point)
+        if index == 1:
+            assert release.wait(10)
+        add(cache, str(index + 2), f"configuration {index} with durable progress")
+        return SimpleNamespace(cache_hit=False)
+
+    def publish(state):
+        acceptance.persist_progress(
+            session.directory, report, state, stage="boundaries", mode="cold",
+            elapsed_ns=456, seed_digits=30, archived_timings=[previous_timing],
+        )
+        if not state["done"] and any(entry["outcome"] == "completed" for entry in state["timings"]):
+            progress_saved.set()
+
+    session.systems = {name: SimpleNamespace(generate_boundary=generate) for name in session.systems}
+    session.submit("boundaries")
+    with ThreadPoolExecutor(max_workers=1) as monitor:
+        future = monitor.submit(acceptance.wait_for_stage, session, publish, poll_interval=0.01)
+        try:
+            assert progress_saved.wait(10)
+            wait_for_saved_seeds(session, 2)
+            partial = json.loads((session.directory / "acceptance.json").read_text())
+            assert partial["progress"]["done"] is False
+            assert partial["progress"]["stage"] == "boundaries"
+            assert partial["progress"]["seed_digits"] == 30
+            assert partial["timings"][0] == previous_timing
+            assert partial["progress"]["recent_events"]
+            assert len(session.seeds) == 2 and len(session.cache) == 3
+            assert session.results == {} and session.observables is None
+        finally:
+            release.set()
+        assert len(future.result(timeout=10)) == 2
+    final = json.loads((session.directory / "acceptance.json").read_text())
+    assert final["progress"]["done"] is True
+    assert final["timings"][0] == previous_timing
+    assert not (session.directory / "acceptance.json.tmp").exists()
+
+
+def test_headless_warm_completion_does_not_wait_for_poll_interval(session, acceptance, monkeypatch):
+    value = object()
+    session._future = Future()
+    session._future.set_result(value)
+    updates = []
+
+    def unexpected_sleep(*args):
+        raise AssertionError("Completed work must not wait for a polling sleep.")
+
+    monkeypatch.setattr(acceptance, "sleep", unexpected_sleep)
+    started = monotonic()
+    assert acceptance.wait_for_stage(session, updates.append, poll_interval=60) is value
+    assert monotonic() - started < 1
+    assert updates[-1]["done"]
+
+
+@pytest.mark.parametrize("failure_type", [TimeoutError, NativePanicSurrogate])
+def test_headless_progress_wait_preserves_original_failures(session, acceptance, failure_type):
+    original = failure_type("original computation failure")
+    session._future = Future()
+    session._future.set_exception(original)
+    with pytest.raises(failure_type) as raised:
+        acceptance.wait_for_stage(session, lambda state: None, poll_interval=0.01)
+    assert raised.value is original
