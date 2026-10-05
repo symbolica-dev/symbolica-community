@@ -24,11 +24,13 @@ def _(mo):
     Native typed errors remain visible if a reduction or accuracy check fails.
     No Mathematica installation or plugin runtime is used.
 
-    **Current validation:** exact basis maps and native amplitude assembly pass
-    their component tests. The complete calculation from empty numerical caches
-    is still undergoing validation; the boundary stage can return a typed
-    reduction or recursive-boundary failure. Archived numerical seeds are never
-    substituted to make this stage succeed.
+    **Current validation:** the native cold calculation generated all sixteen
+    physical starting configurations from empty numerical caches. All 4,360
+    transport coefficients, eight W/Z form factors and three observables passed
+    comparisons at their recorded reference precision. Independent 40-digit
+    regeneration and restart acceptance are tracked in
+    [the validation report](https://github.com/alphal00p/RustFlow/blob/main/docs/python-notebook-status.md).
+    Published numerical reference values are comparison data only.
     """)
     return
 
@@ -95,9 +97,11 @@ def _(mo, session):
     We use $m_W^2=5399/13074$, $m_Z^2=7775/14631$, $\alpha=1/128$ and
     $\alpha_s=118/1000$. Every input is an exact Symbolica expression.
 
-    The canonical integral measure is $e^{{2\gamma_E\epsilon}}$ times the
-    ordinary two-loop measure, with $D=4-2\epsilon$, $m_V^2=\mu^2=1$ and
-    $+i0$. Each physical form factor includes
+    The canonical integral measure is
+    $$e^{{2\gamma_E\epsilon}}\prod_{{j=1}}^2
+      \frac{{d^D k_j}}{{i\pi^{{D/2}}}},\qquad D=4-2\epsilon.$$
+    Canonical kinematics use $m_V^2=\mu^2=1$ and the $+i0$ prescription.
+    Each physical form factor includes
     $-1/[m_V^4(4\pi)^4]$ exactly once. HEPKit supplies the model couplings,
     Lorentz/color contractions and incoming spin/color average ($1/256$).
     Observables contain no phase-space or flux factor. Finite-top QCD is outside
