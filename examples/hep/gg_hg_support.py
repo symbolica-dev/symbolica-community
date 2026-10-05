@@ -10,6 +10,25 @@ from threading import Lock
 from time import perf_counter_ns
 
 
+def boundary_evidence(cache):
+    """Stable inspection of every numerical value and its retained evidence."""
+    records = [
+        (
+            entry.identity,
+            tuple(sorted((str(k), str(v)) for k, v in entry.coordinates.items())),
+            tuple(sorted((str(k), v) for k, v in entry.root_sheets.items())),
+            entry.leading_power, entry.verified_digits, entry.input_verified_digits,
+            entry.working_bits, entry.provenance,
+            tuple(tuple(row) for row in entry.coefficients),
+            tuple(tuple(row) for row in entry.comparison_errors),
+        )
+        for entry in cache.entries()
+    ]
+    # Sort through a printable key, but compare native arbitrary-precision
+    # objects themselves so reload checks do not lose digits to formatting.
+    return sorted(records, key=lambda record: tuple(str(value) for value in record))
+
+
 class CalculationSession:
     def __init__(self, model_path, directory, *, seed_digits=30, digits=20, workers=1):
         from symbolica import E
@@ -134,12 +153,24 @@ class CalculationSession:
         self.cancel()
         self._pool.shutdown(wait=True)
 
+    def _invalidate_results(self):
+        # A partial stage must never leave a mixture of old and new kinematics
+        # that could pass the sixteen-configuration amplitude admission check.
+        self.results = {}
+        self.form_factors = {}
+        self.observables = None
+
     def generate_boundaries(self, *, recompute=False):
         from symbolica.community.hep.integration import BoundaryCache, IntegralEvaluator
 
+        self._invalidate_results()
         if recompute:
             self.seeds = BoundaryCache()
             self.seeds.save(self.directory / "seeds")
+            # Persist invalidation before expensive work. Cancellation must not
+            # make the previous transport bank reappear when the session reloads.
+            self.cache = BoundaryCache()
+            self.cache.save(self.directory / "transport")
         evaluator = IntegralEvaluator(options=self._options(seeds=True, recompute=recompute))
         completed = []
         for topology, configuration in self.configurations:
@@ -158,8 +189,6 @@ class CalculationSession:
             # points or endpoints from the progressively growing transport bank.
             self.cache.extend(self.seeds)
         self.cache.save(self.directory / "transport")
-        self.results.clear()
-        self.observables = None
         return completed
 
     def _destination(self, system, configuration):
@@ -173,11 +202,12 @@ class CalculationSession:
         from symbolica import E
         from symbolica.community.hep.integration import BoundaryCache
 
+        self._invalidate_results()
         if recompute:
             self.cache = BoundaryCache.load(self.directory / "seeds")
+            self.cache.save(self.directory / "transport")
         if nearby:
             self.point = [self.point[0] + E("1/100000"), *self.point[1:]]
-        self.observables = None
         for topology, configuration in self.configurations:
             system = self.systems[topology]
             result = system.evaluate(
@@ -247,9 +277,13 @@ class CalculationSession:
     def restart_and_repeat(self):
         from symbolica.community.hep.integration import BoundaryCache
 
+        if len(self.results) != len(self.configurations):
+            raise RuntimeError("Complete transport before checking an exact repeated hit.")
         before = {name: result.coefficients for name, result in self.results.items()}
+        evidence = boundary_evidence(self.cache)
         self.cache.save(self.directory / "transport")
         self.cache = BoundaryCache.load(self.directory / "transport")
+        assert boundary_evidence(self.cache) == evidence
         result = self.transport()
         assert all(value.cache_hit and value.steps == 0 for value in result.values())
         assert before == {name: value.coefficients for name, value in result.items()}

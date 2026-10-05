@@ -115,6 +115,57 @@ two-loop notebook:
 python -m pytest tests/test_loop_integration_reductions.py -q
 ```
 
+### Higgs-plus-jet calculation and acceptance
+
+The [gg→Hg notebook](gg_hg.py) separates native boundary generation, physical
+transport and coherent amplitude assembly. All three stages use one loaded
+HEPKit model. HEPKit supplies diagrams, state sums and model-parameter
+expansion; Spenso and Idenso supply tensor and color contractions. The physical
+form-factor projections depend on the actual kinematics, including nearby
+evaluations. Numerical references never supply boundary or amplitude inputs.
+
+The load-or-compute controls preserve accumulated intermediate points. Forced
+boundary recomputation clears both verified-boundary banks before starting,
+ignores numerical sample reuse, and retains exact reduction data. Forced
+transport resets its bank to the saved seed-only bank. Cancellation can leave
+completed samples or complete configurations for restart; it never admits a
+partial set of transported configurations to amplitude assembly. Native
+cancellation checks occur between algebra/reducer operations, so stopping a
+large operation may take time. Use one live session per cache directory.
+
+The lightweight controller and notebook checks start no two-loop evaluation:
+
+```sh
+python -m pytest tests/test_hep_gg_hg.py tests/test_hep_notebooks.py -k gg_hg -q
+```
+
+The separate long runner requires a release-built native extension. Use an
+empty directory for a cold run; completed numerical samples are kept apart
+from verified boundaries:
+
+```sh
+python examples/hep/gg_hg_acceptance.py --directory /path/to/empty-run
+python examples/hep/gg_hg_acceptance.py --directory /path/to/run --resume
+```
+
+Add `--interrupt-after-samples 1` to exercise typed cancellation after a complete
+sample checkpoint, followed by reload and continuation in the same run. Once
+all sixteen native physical seeds are generated, the runner checks 4,360
+transport coefficients and the coherent EW/HEFT/interference observables. It
+then checks binary reload with exact repeated hits and retained provenance,
+forced recomputation at increased seed precision, and nearby evaluation from
+accumulated physical points. Its JSON report distinguishes cold, resumed, warm,
+forced-refinement and nearby timings. Reference access begins only after the
+first native amplitude exists, and reference precision caps remain in the
+comparison report. The first report is written before expensive work starts.
+
+Independent native planar and nonplanar Euclidean-anchor validation is a
+separate prerequisite, performed by the Rust library's `gg_hg_boundaries`
+runner. The Python runner does not perform that gate. Its success alone, or
+success of these lightweight tests, must not be reported as completion of the
+entire native-boundary acceptance. The full cold numerical calculation and
+its performance measurements remain pending until the long runs finish.
+
 ## Notebook tensor displays
 
 Install the optional live-display dependencies alongside the community package:

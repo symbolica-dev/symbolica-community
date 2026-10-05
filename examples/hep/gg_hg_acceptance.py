@@ -11,7 +11,7 @@ from pathlib import Path
 from time import perf_counter_ns, sleep
 import hashlib
 
-from gg_hg_support import CalculationSession
+from gg_hg_support import CalculationSession, boundary_evidence
 
 
 def main():
@@ -35,18 +35,30 @@ def main():
         data / "native-model.json", args.directory,
         seed_digits=args.seed_digits, workers=args.workers,
     )
-    report = {"status": "running", "mode": "resumed" if args.resume else "cold", "stages": []}
+    report = {
+        "status": "running", "mode": "resumed" if args.resume else "cold", "stages": [],
+        "scope": "Physical seeds, transport, amplitude and restart; independent Euclidean anchor reports are a separate prerequisite.",
+        "inputs": {
+            "model_sha256": hashlib.sha256((data / "native-model.json").read_bytes()).hexdigest(),
+            "point": [str(value) for value in session.point],
+            "mass_squared": {name: str(value) for name, value in session.masses.items()},
+            "systems": {name: system.provenance for name, system in session.systems.items()},
+        },
+    }
 
     def write_report():
         temporary = args.directory / "acceptance.json.tmp"
         temporary.write_text(json.dumps(report, indent=2) + "\n")
         temporary.replace(args.directory / "acceptance.json")
 
-    def run(stage, **kwargs):
+    def run(stage, *, mode=None, **kwargs):
         started = perf_counter_ns()
         session.submit(stage, **kwargs)
         value = session.wait()
-        report["stages"].append({"stage": stage, "elapsed_ns": perf_counter_ns() - started, **kwargs})
+        report["stages"].append({
+            "stage": stage, "mode": mode,
+            "elapsed_ns": perf_counter_ns() - started, **kwargs,
+        })
         write_report()
         return value
 
@@ -54,7 +66,9 @@ def main():
         return {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                 for p in (args.directory / "completed-samples").glob("sample-*.bin")}
 
+    write_report()
     try:
+        interrupted_samples = None
         if args.interrupt_after_samples:
             from symbolica.community.hep.integration import CalculationCancelled
 
@@ -78,6 +92,7 @@ def main():
                 raise AssertionError("Expected typed cancellation after complete sample checkpoint.")
             after = samples()
             assert all(after.get(name) == digest for name, digest in persisted.items())
+            interrupted_samples = after
             report["interruption"] = {
                 "retained_samples": len(after),
                 "cancellation_latency_ns": perf_counter_ns() - cancelled_at,
@@ -89,9 +104,27 @@ def main():
                 seed_digits=args.seed_digits, workers=args.workers,
             )
             write_report()
-        run("boundaries")
-        run("transport")
-        observables = run("amplitude")
+        seeds = run("boundaries", mode="resumed" if args.resume or interrupted_samples is not None else "cold")
+        assert len(seeds) == 16
+        assert all(
+            result.verified_digits >= session.seed_digits
+            and "no numerical reference seed" in result.provenance
+            for _, result in seeds
+        )
+        report["native_seeds"] = {
+            label: {
+                "identity": result.identity, "working_bits": result.working_bits,
+                "verified_digits": result.verified_digits, "provenance": result.provenance,
+            }
+            for label, result in seeds
+        }
+        if interrupted_samples is not None:
+            resumed_samples = samples()
+            assert all(resumed_samples.get(name) == digest
+                       for name, digest in interrupted_samples.items())
+            report["interruption"]["sample_payloads_preserved_after_resume"] = True
+        run("transport", mode="resumed" if args.resume else "cold")
+        observables = run("amplitude", mode="cold")
         assert all(d is not None and d >= 20 for d in observables.verified_relative_digits.values())
         assert all(r.verified_digits >= 20 for r in session.results.values())
 
@@ -105,7 +138,9 @@ def main():
         tolerance = Float("1e-20", decimal_digits=100)
         for case in reference["cases"]:
             result = session.results[case["label"]]
+            assert case["source_verified_digits_cap"] >= 20
             assert result.leading_power == 0
+            assert "Native automatic auxiliary-mass boundary;" in result.provenance
             for native_row, reference_row in zip(result.coefficients, case["reference_values"], strict=True):
                 for value, expected in zip(native_row, reference_row, strict=True):
                     expected = ComplexFloat(expected["real"], expected["imaginary"], decimal_digits=100)
@@ -119,6 +154,10 @@ def main():
             "coefficients": count, "checked_mixed_digits": 20,
             "maximum_scaled_difference": str(max_scaled_difference),
             "reference_precision": "Preserved component source caps/precision and endpoint delta in coherent-reference.json",
+            "source_verified_digits_caps": {
+                case["label"]: case["source_verified_digits_cap"] for case in reference["cases"]
+            },
+            "endpoint_deltas": {case["label"]: case["endpoint_delta"] for case in reference["cases"]},
         }
         report["observables"] = {
             name: {"value": str(value), "absolute_error": str(observables.absolute_errors[name]),
@@ -139,8 +178,14 @@ def main():
                 "reference_absolute_uncertainty": str(reference_error),
                 "reference_conditional_relative_digits": metadata["conditional_relative_digits"],
             }
-        run("restart")
-        warm = run("transport")
+        evidence = boundary_evidence(session.cache)
+        run("restart", mode="reloaded")
+        assert boundary_evidence(session.cache) == evidence
+        report["binary_restart"] = {
+            "entries": len(evidence), "values_and_evidence_preserved": True,
+            "exact_repeat_without_steps": True,
+        }
+        warm = run("transport", mode="warm")
         assert all(r.cache_hit and r.steps == 0 for r in warm.values())
 
         # Independent precision refinement forces new numerical work while
@@ -148,16 +193,16 @@ def main():
         # afresh from the newly verified seeds, not old endpoints.
         original = {name: result for name, result in session.results.items()}
         session.seed_digits += args.refine_digits
-        refined_seeds = run("boundaries", recompute=True)
+        refined_seeds = run("boundaries", mode="forced_refinement", recompute=True)
         assert all(not result.cache_hit for _, result in refined_seeds)
-        refined = run("transport", recompute=True)
+        refined = run("transport", mode="forced_refinement", recompute=True)
         assert any(not r.cache_hit for r in refined.values())
         for label, result in refined.items():
             previous = original[label]
             for old_row, new_row in zip(previous.coefficients, result.coefficients, strict=True):
                 for old, new in zip(old_row, new_row, strict=True):
                     assert abs(old - new) <= tolerance * max(one, abs(new)), label
-        refined_observables = run("amplitude", recompute=True)
+        refined_observables = run("amplitude", mode="forced_refinement", recompute=True)
         for name, value in refined_observables.values.items():
             assert refined_observables.verified_relative_digits[name] >= 20
             assert abs(value - observables.values[name]) <= (
@@ -167,13 +212,29 @@ def main():
             "seed_digits": session.seed_digits, "numerical_caches_bypassed": True,
             "exact_reductions_reusable": True, "checked_mixed_digits": 20,
         }
-        nearby = run("transport", nearby=True)
+        accumulated = session.cache.entries()
+        seeds = session.seeds.entries()
+        nearby = run("transport", mode="nearby", nearby=True)
         assert any(not r.cache_hit for r in nearby.values())
-        run("amplitude", recompute=True)
+        reused = []
+        for label, result in nearby.items():
+            candidates = [entry for entry in accumulated
+                          if entry.identity == result.identity
+                          and entry.coordinates == result.starting_coordinates
+                          and entry.provenance in result.provenance]
+            assert candidates, (label, "selected source is absent from the retained bank")
+            if not any(entry.identity == result.identity
+                       and entry.coordinates == result.starting_coordinates for entry in seeds):
+                reused.append(label)
+            assert "Native automatic auxiliary-mass boundary;" in result.provenance
+        assert reused, "Nearby transport did not reuse any accumulated physical point."
+        run("amplitude", mode="nearby", recompute=True)
         report["nearby"] = {
             "point": [str(a) for a in session.point],
             "sources": {name: str(result.starting_coordinates) for name, result in nearby.items()},
             "inserted_points": sum(result.inserted_points for result in nearby.values()),
+            "configurations_using_accumulated_points": reused,
+            "source_provenance_preserved": True,
         }
         report["status"] = "passed"
     except BaseException as exc:
