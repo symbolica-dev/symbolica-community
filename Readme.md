@@ -66,14 +66,14 @@ Run it with `marimo edit examples/hep/gg_hg.py`. Long numerical acceptance lives
 in `examples/hep/gg_hg_acceptance.py`, separately from lightweight smoke tests.
 
 Builds currently require the native owner patches and Cargo overrides documented
-in [the pinned integration dependency guide](https://github.com/alphal00p/RustFlow/blob/6e86afd9bed4cde2d10a466fe7cb0aab4094c78b/docs/dependency-embedding.md).
+in [the pinned integration dependency guide](https://github.com/alphal00p/RustFlow/blob/4c48358185ec68de86f6acc6b195a201adbe2bae/docs/dependency-embedding.md).
 For a setup using published Git sources and reproducible HEPKit patches, follow
-the [clean community build recipe](https://github.com/alphal00p/RustFlow/blob/1224ca6f125a82df12953ee44fce785de2201fd4/docs/clean-community-build.md).
+the [clean community build recipe](https://github.com/alphal00p/RustFlow/blob/3b78629a4fc93a4b7c9070536639dc841ef38716/docs/clean-community-build.md).
 Generate these hints with `stub_gen --hepkit-only`; the public package and stubs
 are under `python/symbolica/community/hep/integration/`. This module is excluded
 from browser builds, and existing `hepkit` and Hyperbolica imports are preserved.
 
-The Git dependency is pinned to RustFlow commit `6e86afd9bed4cde2d10a466fe7cb0aab4094c78b`.
+The Git dependency is pinned to RustFlow commit `4c48358185ec68de86f6acc6b195a201adbe2bae`.
 The checked-in lockfile records the validated development configuration: a local
 RustFlow checkout and the patched HEPKit owner packages. To reproduce it, check
 out that RustFlow commit, apply the owner patches from the pinned guide, and
@@ -91,7 +91,7 @@ local changes. To consume RustFlow directly from its pinned Git source, remove
 only its path patch and regenerate the lockfile once with `cargo metadata`;
 subsequent builds can use `--locked`. The HEPKit owner patches remain required.
 The validated HEPKit owner checkout corresponds to `fc9ee6aa5`, based on
-`9d086ce`; RustRed remains pinned at `b3cecd6a`.
+`9d086ce`; RustRed is pinned at `7c1ed037`.
 
 Symbolica, Numerica and Graphica resolve together from official community
 commit `c3408e4ba1d3bdd4ea55678fad50e27009be13d4`, selected by `Cargo.lock`.
