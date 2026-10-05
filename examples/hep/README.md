@@ -19,6 +19,26 @@ from symbolica.community.hepkit import FeynmanDiagram, Model, TensorReducer
 Class identities and the exception hierarchy are preserved; their Python
 `__module__` and the bundled stubs name `symbolica.community.hepkit`.
 
+Numerical external states use the shared GammaLoop/MadGraph conventions:
+
+```python
+from symbolica.community import hepkit as hep
+
+p = hep.FourMomentum(150.0, 0.0, 0.0, 150.0)
+epsilon = p.wavefunction("epsilon", hep.Helicity.PLUS)
+components = epsilon.components
+assert epsilon.bar().bar() == epsilon
+```
+
+`FourMomentum.wavefunction` accepts `scalar`, `epsilon`, `epsilon_bar`, `u`,
+`u_bar`, `v` and `v_bar`. Scalars use zero helicity; spinors use plus or minus;
+massive vectors also admit zero helicity. The inherited longitudinal convention
+is undefined at rest or zero mass and raises `KinematicsError`. Vector components
+follow `(E,x,y,z)` with metric `+---`; spinors use the chiral gamma basis and
+`bar()` takes the Dirac adjoint. These numerical external states have four
+components (one for scalars), independently of the symbolic internal dimension.
+They include no couplings, helicity sum or averaging.
+
 Start with [gamma algebra](gamma_simplification.py), then
 [color algebra](color_algebra.py) and [tensor reduction](tensor_reduction.py).
 [Higgs diphoton decay](Higgs_diphoton_decay.py) follows a generated fermion loop
