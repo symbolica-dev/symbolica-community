@@ -1,0 +1,11 @@
+digraph BMW {
+    // Explicit HEPKit edge IDs preserve the reference propagator order.
+    v1 -> v2 [id=0, particle="phi", lmb_id=0];
+    v2 -> v5 [id=1, particle="phi", lmb_id=1];
+    v3 -> v4 [id=2, particle="phi", lmb_id=2];
+    v4 -> v5 [id=3, particle="phi", lmb_id=3];
+    v2 -> v3 [id=4, particle="phi"];
+    v4 -> v1 [id=5, particle="phi"];
+    v5 -> v3 [id=6, particle="phi"];
+    v1 -> v5 [id=7, particle="phi"];
+}

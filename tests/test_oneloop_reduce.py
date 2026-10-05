@@ -59,7 +59,7 @@ def test_namespace_exposes_reduction_without_duplicate_family_classes():
 
 
 @pytest.mark.parametrize("name", ["A0", "B0", "dB0", "C0", "D0"])
-def test_exported_master_primitives_accept_symbolic_arguments_and_carry_native_hooks(name):
+def test_exported_master_primitives_accept_symbolic_arguments_and_carry_numeric_hooks(name):
     primitive = getattr(oneloop, name)
     assert callable(primitive)
     assert not oneloop.is_initialized()
@@ -81,7 +81,7 @@ def test_exported_master_primitives_accept_symbolic_arguments_and_carry_native_h
     point = {mass: 1, invariant: -1, scale: 5}
     values = [coefficient.evaluate(point) for coefficient in coefficients]
     numeric_arguments = [argument.evaluate(point) for argument in arguments]
-    expected = getattr(oneloop, name.lower())(*numeric_arguments, backend="native")
+    expected = getattr(oneloop, name.lower())(*numeric_arguments)
     assert values == pytest.approx(expected, rel=1e-11, abs=1e-12)
     assert not oneloop.is_initialized()
 

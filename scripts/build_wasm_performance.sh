@@ -8,6 +8,11 @@ outdir="${1:-dist/wasm-performance}"
 # wrapper captures LLVM's output before applying the requested Binaryen level.
 wasm_opt_level="${WASM_OPT_LEVEL:--O0}"
 rust_profile="${WASM_RUST_PROFILE:-release-performance}"
+wasm_features="${WASM_FEATURES:-wasm}"
+case "$wasm_features" in
+  wasm|wasm-core) ;;
+  *) echo "Invalid WASM_FEATURES: $wasm_features (expected wasm or wasm-core)" >&2; exit 2 ;;
+esac
 case "$wasm_opt_level" in
   -O0|-O1|-O2|-O3|-Os|-Oz) ;;
   *) echo "Invalid WASM_OPT_LEVEL: $wasm_opt_level" >&2; exit 2 ;;
@@ -39,8 +44,18 @@ export WASM_OPT_CAPTURE_INPUT_NAME=symbolica_community.wasm
 export WASM_OPT_FORCE_LEVEL="$wasm_opt_level"
 # Use the same Emscripten linker settings at every Binaryen level; changing the
 # linker's -O flag can also change its defaults outside wasm-opt.
+# Bind internal references locally so ThinLTO does not expose Rust symbols
+# through self-imports in the side module's global offset table.
 pyodide build . --outdir "$outdir" --no-isolation \
-  -C "maturin.build-args=--locked --profile $rust_profile --no-default-features --features wasm -- -C link-arg=-sEXPORTED_FUNCTIONS=_PyInit_core -C link-arg=-O3"
-export PYODIDE_DIST_DIR
-PYODIDE_DIST_DIR="$(pyodide config get dist_dir)"
-node .github/scripts/test_pyodide.mjs "$outdir"
+  -C "maturin.build-args=--locked --profile $rust_profile --no-default-features --features $wasm_features -- -C link-arg=-sEXPORTED_FUNCTIONS=_PyInit_core -C link-arg=-Wl,-Bsymbolic -C link-arg=-O3"
+export SYMBOLICA_EXPECT_COMMUNITY=1
+if [[ "$wasm_features" == wasm-core ]]; then
+  python scripts/prepare_core_wheel.py "$outdir"/*-pyemscripten_2026_0_wasm32.whl
+  export SYMBOLICA_EXPECT_COMMUNITY=0
+fi
+# CI tests separately after recompressing the wheel for distribution.
+if [[ "${WASM_SKIP_TESTS:-0}" != 1 ]]; then
+  export PYODIDE_DIST_DIR
+  PYODIDE_DIST_DIR="$(pyodide config get dist_dir)"
+  node .github/scripts/test_pyodide.mjs "$outdir"
+fi

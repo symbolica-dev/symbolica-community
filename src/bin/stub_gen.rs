@@ -1,6 +1,9 @@
 use pyo3_stub_gen::Result;
 use symbolica_community::stub_info;
 
+#[path = "stub_gen/compat.rs"]
+mod compat;
+
 fn main() -> Result<()> {
     let only = match std::env::args().skip(1).collect::<Vec<_>>().as_slice() {
         [] => None,
@@ -22,6 +25,7 @@ fn main() -> Result<()> {
     let write_package = |module_name: &str, source: &str| -> std::io::Result<()> {
         let directory = stub.python_root.join(module_name.replace('.', "/"));
         std::fs::create_dir_all(&directory)?;
+        let source = compat::python_39_stub_source(source);
         let source = source
             .lines()
             .map(str::trim_end)
@@ -153,7 +157,7 @@ other : object
     let source = hepkit
         + "\n"
         + include_str!("../../stubs/ibp.pyi")
-        + "\nfrom . import integration as integration\nfrom . import ibp as ibp\nfrom . import oneloop as oneloop\nfrom . import vakint as vakint\n";
+        + "\nfrom . import integration as integration\nfrom . import ibp as ibp\nfrom . import rustred as rustred\nfrom . import oneloop as oneloop\nfrom . import vakint as vakint\n";
     write_package("symbolica.community.hepkit", &source)?;
     Ok(())
 }

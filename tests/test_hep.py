@@ -43,6 +43,7 @@ def test_flat_namespace_and_stubs():
         "CffResult",
         "TensorReducer",
         "FourMomentum",
+        "Wavefunction",
         "ThreeMomentum",
         "JetDefinition",
         "UfoLoader",

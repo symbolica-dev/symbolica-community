@@ -33,11 +33,11 @@ def test_public_heads_match_typed_tensors_and_generated_momenta():
     gamma = tensor.TensorName.dirac_gamma()
     lorentz = tensor.Representation.mink(4)
     assert (
-        tensor.TensorExpression.g(lorentz).structure.name.to_expression()
+        tensor.TensorExpression.g(lorentz).name.to_expression()
         == metric.to_expression()
     )
     assert (
-        tensor.TensorExpression.dirac_gamma(4).structure.name.to_expression()
+        tensor.TensorExpression.dirac_gamma(4).name.to_expression()
         == gamma.to_expression()
     )
     amplitude = (
@@ -139,6 +139,9 @@ def test_electric_charge_uses_vertex_expressions_and_normalization():
 def test_notebook_sources_do_not_fetch_internal_namespace_symbols():
     examples = Path(__file__).parents[1] / "examples"
     for path in examples.rglob("*"):
+        # Some examples link to an optional external development checkout.
+        if not path.is_file():
+            continue
         if path.suffix == ".ipynb":
             sources = [
                 "".join(cell["source"])

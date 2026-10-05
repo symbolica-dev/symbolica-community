@@ -170,7 +170,142 @@ def test_interrupted_forced_boundaries_cannot_restore_old_numerical_banks(sessio
     assert options[0]["reuse_samples"] is False
     assert options[0]["cache_directory"] == exact.parent
     assert exact.read_text() == "retained exact work"
-    assert sample.exists()
+    assert not sample.exists()
+    generation = session.numerical_generation()
+    archived = session.directory / generation["archive_directory"]
+    assert (archived / "completed-samples" / sample.name).read_text() == (
+        "retained checkpoint, ignored during forced recomputation"
+    )
+    assert len(numerical.BoundaryCache.load(archived / "seeds")) == 1
+    assert len(numerical.BoundaryCache.load(archived / "transport")) == 2
+
+
+@pytest.mark.parametrize("complete_configuration", [False, True])
+def test_same_precision_forced_restart_excludes_untouched_old_samples(
+    session, monkeypatch, complete_configuration,
+):
+    populate_banks(session)
+    session.configurations = [
+        session.configurations[0],
+        next(item for item in session.configurations if item[0] == "nonplanar"),
+    ]
+    raw = session.directory / "completed-samples"
+    raw.mkdir()
+    (raw / "sample-planar.bin").write_bytes(b"deterministic planar payload")
+    (raw / "sample-nonplanar.bin").write_bytes(b"old untouched nonplanar payload")
+    exact = session.directory / "exact-reductions" / "entry"
+    exact.parent.mkdir()
+    exact.write_bytes(b"retained exact reduction")
+    _, _, add = constant_boundary_adder()
+    options = []
+    native_options = numerical.EvaluationOptions
+
+    def capture(**kwargs):
+        options.append(kwargs)
+        return native_options(**kwargs)
+
+    monkeypatch.setattr(numerical, "EvaluationOptions", capture)
+
+    def planar(evaluator, cache, *args, **kwargs):
+        assert not (raw / "sample-nonplanar.bin").exists()
+        # Recomputed same-precision values may have identical keys AND bytes.
+        (raw / "sample-planar.bin").write_bytes(b"deterministic planar payload")
+        if not complete_configuration:
+            cancelled()
+        add(cache, "2", "new planar boundary")
+        return SimpleNamespace(cache_hit=False)
+
+    session.systems = {
+        "planar": SimpleNamespace(generate_boundary=planar),
+        "nonplanar": SimpleNamespace(generate_boundary=cancelled),
+    }
+    session.submit("boundaries", recompute=True)
+    with pytest.raises(numerical.CalculationCancelled):
+        session.wait()
+    generation = session.numerical_generation()
+    assert all(option["digits"] == 30 and not option["reuse_samples"] for option in options)
+    assert len(session.seeds) == int(complete_configuration)
+    session.close()
+    resumed = SUPPORT.CalculationSession(
+        EXAMPLES / "data" / "gg_hg" / "native-model.json", session.directory,
+        seed_digits=30,
+    )
+    try:
+        resumed.configurations = session.configurations
+        assert resumed.numerical_generation() == generation
+        assert len(resumed.seeds) == int(complete_configuration)
+        resumed_options = len(options)
+
+        def reuse_planar(*args, **kwargs):
+            assert (raw / "sample-planar.bin").read_bytes() == b"deterministic planar payload"
+            assert not (raw / "sample-nonplanar.bin").exists()
+            return SimpleNamespace(cache_hit=False)
+
+        def compute_nonplanar(*args, **kwargs):
+            assert not (raw / "sample-nonplanar.bin").exists()
+            (raw / "sample-nonplanar.bin").write_bytes(b"new nonplanar work")
+            return SimpleNamespace(cache_hit=False)
+
+        resumed.systems = {
+            "planar": SimpleNamespace(generate_boundary=reuse_planar),
+            "nonplanar": SimpleNamespace(generate_boundary=compute_nonplanar),
+        }
+        resumed.submit("boundaries")
+        assert len(resumed.wait()) == 2
+        assert all(option["reuse_samples"] and option["digits"] == 30
+                   for option in options[resumed_options:])
+        assert resumed.numerical_generation() == generation
+        archived = session.directory / generation["archive_directory"] / "completed-samples"
+        assert (archived / "sample-nonplanar.bin").read_bytes() == b"old untouched nonplanar payload"
+        assert exact.read_bytes() == b"retained exact reduction"
+    finally:
+        resumed.close()
+
+
+def test_force_preparation_failure_requires_explicit_recovery_in_fresh_session(session, monkeypatch):
+    populate_banks(session)
+    raw = session.directory / "completed-samples"
+    raw.mkdir()
+    (raw / "sample-old.bin").write_bytes(b"pre-force sample")
+    real_rename = Path.rename
+    failed = False
+
+    def interrupted_rename(path, target):
+        nonlocal failed
+        if path == session.directory / "transport" and not failed:
+            failed = True
+            raise OSError("controlled failure between numerical-bank renames")
+        return real_rename(path, target)
+
+    monkeypatch.setattr(Path, "rename", interrupted_rename)
+    session.submit("boundaries", recompute=True)
+    with pytest.raises(OSError, match="between numerical-bank renames"):
+        session.wait()
+    assert (session.directory / "force-preparation-pending.json").exists()
+    assert (session.directory / "transport" / "physical-boundaries.bin").exists()
+    session.close()
+    recovery = SUPPORT.CalculationSession(
+        EXAMPLES / "data" / "gg_hg" / "native-model.json", session.directory,
+    )
+    try:
+        assert len(recovery.seeds) == len(recovery.cache) == 0
+        for stage in ("boundaries", "transport", "amplitude", "restart"):
+            recovery.submit(stage)
+            with pytest.raises(RuntimeError, match="Recompute boundaries"):
+                recovery.wait()
+        recovery.systems = {name: SimpleNamespace(generate_boundary=cancelled)
+                            for name in recovery.systems}
+        recovery.submit("boundaries", recompute=True)
+        with pytest.raises(numerical.CalculationCancelled):
+            recovery.wait()
+        assert not (session.directory / "force-preparation-pending.json").exists()
+        assert recovery.numerical_generation()["generation"] != "initial"
+        assert not list(raw.glob("sample-*.bin"))
+        history = session.directory / "numerical-history"
+        assert [p.read_bytes() for p in history.rglob("sample-old.bin")] == [b"pre-force sample"]
+        assert len(list(history.rglob("previous-preparation.json"))) == 1
+    finally:
+        recovery.close()
 
 
 def test_interrupted_forced_transport_persists_only_saved_seeds(session):
@@ -203,6 +338,81 @@ def test_repeated_hit_check_requires_completed_transport(session):
         session.restart_and_repeat()
 
 
+@pytest.mark.parametrize("failure_stage", ["admission", "second_projection", "observable_evaluation"])
+def test_forced_amplitude_failure_cannot_restore_old_derived_values(session, monkeypatch, failure_stage):
+    old = SimpleNamespace(verified_relative_digits={"ew": 60})
+    session.observables, session.form_factors = old, {"old": object()}
+    if failure_stage != "admission":
+        session.results = {configuration.label: object() for _, configuration in session.configurations}
+    calls = []
+
+    def project(*args):
+        calls.append(args)
+        if len(calls) == 2 and failure_stage == "second_projection":
+            cancelled()
+        return SimpleNamespace(values=[], absolute_errors=[], provenance="new projection")
+
+    exact_kernel = SimpleNamespace(evaluate=cancelled)
+    session.amplitude = exact_kernel
+    monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector", lambda: SimpleNamespace(evaluate=project))
+    session.submit("amplitude", recompute=True)
+    with pytest.raises(RuntimeError if failure_stage == "admission" else numerical.CalculationCancelled):
+        session.wait()
+    assert session.observables is None and session.form_factors == {}
+    assert session.amplitude is exact_kernel
+    if failure_stage != "admission":
+        assert len(session.results) == 16
+
+        def restarted_projection(*args):
+            raise RuntimeError("load-or-assemble must retry projection")
+
+        monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector",
+                            lambda: SimpleNamespace(evaluate=restarted_projection))
+        session.submit("amplitude")
+        with pytest.raises(RuntimeError, match="must retry projection"):
+            session.wait()
+
+
+def test_forced_amplitude_uses_current_exact_kinematics_and_all_transport_blocks(session, monkeypatch):
+    old = SimpleNamespace(verified_relative_digits={"ew": 60})
+    new = SimpleNamespace(verified_relative_digits={"ew": 60, "heft": 60, "interference": 60})
+    session.observables, session.form_factors = old, {"old": object()}
+    session.results = {configuration.label: object() for _, configuration in session.configurations}
+    session.point = [E("71"), E("-29/3"), E("1")]
+    projection_calls, evaluation_calls = [], []
+    projected = []
+
+    def project(*args):
+        projection_calls.append(args)
+        mass = ("W", "Z")[len(projection_calls) - 1]
+        assert list(args[:3]) == session.point and args[3] == session.masses[mass]
+        for topology, actual in zip(("planar", "nonplanar"), args[4:]):
+            ordered = sorted((c for name, c in session.configurations
+                              if name == topology and c.mass == mass), key=lambda c: c.permutation)
+            assert actual == [session.results[c.label] for c in ordered]
+        result = SimpleNamespace(values=[mass], absolute_errors=[mass + " error"], provenance="current " + mass)
+        projected.append(result)
+        return result
+
+    def evaluate(*args, **kwargs):
+        evaluation_calls.append((args, kwargs))
+        assert list(args[:3]) == session.point
+        assert list(args[3:]) == [projected[0].values, projected[1].values,
+                                 projected[0].absolute_errors, projected[1].absolute_errors]
+        assert "current W" in kwargs["provenance"] and "current Z" in kwargs["provenance"]
+        return new
+
+    exact_kernel = SimpleNamespace(evaluate=evaluate)
+    session.amplitude = exact_kernel
+    monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector", lambda: SimpleNamespace(evaluate=project))
+    assert session.assemble() is old
+    session.submit("amplitude", recompute=True)
+    assert session.wait() is new
+    assert session.amplitude is exact_kernel
+    assert len(projection_calls) == 2 and len(evaluation_calls) == 1
+    assert session.form_factors == dict(zip(("W", "Z"), projected))
+
+
 @pytest.fixture
 def acceptance(monkeypatch):
     monkeypatch.syspath_prepend(str(EXAMPLES))
@@ -212,9 +422,10 @@ def acceptance(monkeypatch):
     return module
 
 
-def test_forced_refinement_interruption_retains_only_new_precision_restart_state(session, acceptance):
+@pytest.mark.parametrize("seed_digits", [30, 40])
+def test_forced_interruption_retains_only_new_generation_restart_state(session, acceptance, seed_digits):
     populate_banks(session)
-    session.seed_digits = 40
+    session.seed_digits = seed_digits
     directory = session.directory / "completed-samples"
     directory.mkdir()
     (directory / "sample-cold-30.bin").write_bytes(b"previous cold work")
@@ -226,7 +437,12 @@ def test_forced_refinement_interruption_retains_only_new_precision_restart_state
     def new_sample_then_cancel(evaluator, cache, *args, **kwargs):
         assert kwargs["recompute"] is True
         assert len(cache) == 0
-        (directory / "sample-forced-40.bin").write_bytes(b"new complete refined sample")
+        if seed_digits == 30:
+            # Neither filename nor deterministic payload distinguishes fresh
+            # work; the durable generation must drive the interruption gate.
+            (directory / "sample-cold-30.bin").write_bytes(b"previous cold work")
+        else:
+            (directory / "sample-forced-40.bin").write_bytes(b"new complete refined sample")
         deadline = monotonic() + 5
         while not kwargs["control"].cancelled:
             if monotonic() >= deadline:
@@ -240,9 +456,14 @@ def test_forced_refinement_interruption_retains_only_new_precision_restart_state
     record, persisted = acceptance.interrupt_forced_boundaries(
         session, samples, 1, poll_interval=0.001,
     )
-    assert record["phase"] == "forced_refinement" and record["seed_digits"] == 40
+    assert record["phase"] == "forced_refinement" and record["seed_digits"] == seed_digits
     assert record["baseline_sample_files"] == record["new_complete_samples"] == 1
-    assert record["retained_sample_files"] == 2
+    assert record["retained_sample_files"] == record["archived_sample_files"] == 1
+    assert record["archived_sample_payloads_preserved"]
+    assert record["numerical_generation"] == session.numerical_generation()
+    assert record["previous_generation"]["generation"] == "initial"
+    assert all(timing["numerical_generation"] == record["numerical_generation"]
+               for timing in session.snapshot()["timings"])
     assert record["elapsed_ns"] > record["cancellation_latency_ns"] > 0
     assert record["verified_configurations_before_cancel"] == 0
     assert persisted == samples()

@@ -12,6 +12,7 @@ from time import perf_counter_ns, sleep
 import hashlib
 import importlib
 import sys
+from typing import Any
 
 from gg_hg_support import CalculationSession, boundary_evidence
 
@@ -65,6 +66,75 @@ def runtime_attestation():
 def verify_runtime_attestation(recorded):
     if runtime_attestation() != recorded:
         raise RuntimeError("The native extension or acceptance sources changed during this run.")
+
+
+def verify_anchor_report(path, current_runtime):
+    """Require the separate Euclidean proof from this installed native graph.
+
+    Only the proof is inspected here. Numerical comparison fixtures are not
+    opened and no anchor coefficients are supplied to the physical evaluator.
+    Files may be relocated; their contents and the native identity must agree.
+    """
+    from gg_hg_anchor_acceptance import ANCHORS, SCHEMA, check_coefficient_evidence
+    from symbolica import ComplexFloat, Float
+
+    payload = Path(path).read_bytes()
+    report = json.loads(payload)
+    try:
+        if (report["schema"] != SCHEMA or report["status"] != "passed"
+                or report["runtime_attestation_verified_at_completion"] is not True
+                or report["references_loaded"] is not True or report["checked_coefficients"] != 545
+                or report["options"]["digits"] < 20
+                or set(report["native"]) != set(ANCHORS)
+                or set(report["comparisons"]) != set(ANCHORS)):
+            raise ValueError("Anchor report has no complete passed 20-digit Euclidean proof.")
+        recorded = report["runtime_attestation"]
+        if recorded["native_identity_witness"] != current_runtime["native_identity_witness"]:
+            raise ValueError("Anchor report was computed with a different native source identity.")
+        for key in ("sha256", "size_bytes"):
+            if recorded["loaded_extension"][key] != current_runtime["loaded_extension"][key]:
+                raise ValueError("Anchor report was computed with a different installed extension.")
+        for name in ("acceptance", "controller", "notebook"):
+            if recorded["execution_sources"][name]["sha256"] != current_runtime["execution_sources"][name]["sha256"]:
+                raise ValueError("Anchor report used different acceptance steering sources.")
+        runner = file_attestation(Path(__file__).with_name("gg_hg_anchor_acceptance.py"))
+        if report["anchor_runner"]["sha256"] != runner["sha256"]:
+            raise ValueError("Anchor report used a different anchor runner.")
+        for topology, expected in ANCHORS.items():
+            native, comparison = report["native"][topology], report["comparisons"][topology]
+            if (not isinstance(native["identity"], str) or not native["identity"]
+                    or native["coordinates"] != expected["coordinates"] or native["root_sheets"] != "principal"
+                    or native["dimension"] != expected["dimension"] or native["leading_power"] != 0
+                    or native["last_power"] != 4 or native["verified_digits"] < report["options"]["digits"]
+                    or native["uncertainties_within_requested_budget"] is not True
+                    or "no numerical reference seed" not in native["provenance"]
+                    or comparison["passed"] is not True or comparison["failures"]
+                    or comparison["checked_coefficients"] != 5 * expected["dimension"]
+                    or comparison["reference_accuracy_cap_digits"] != 40
+                    or comparison["reference_loaded_after_both_native_successes"] is not True
+                    or comparison["reference"]["sha256"] != expected["reference_sha256"]):
+                raise ValueError(f"Incomplete Euclidean anchor evidence for {topology}.")
+            if (any(not isinstance(value[part], str) for row in native["coefficients"]
+                    for value in row for part in ("real", "imaginary"))
+                    or any(not isinstance(value, str) for row in native["comparison_errors"] for value in row)):
+                raise ValueError("Anchor report numerical evidence must retain decimal strings.")
+            precision = max(100, report["options"]["digits"] + 40)
+            check_coefficient_evidence(
+                [[ComplexFloat(value["real"], value["imaginary"], decimal_digits=precision)
+                  for value in row] for row in native["coefficients"]],
+                [[Float(value, decimal_digits=precision) for value in row]
+                 for row in native["comparison_errors"]],
+                expected["dimension"], report["options"]["digits"],
+            )
+    except (KeyError, TypeError) as error:
+        raise ValueError("Malformed Euclidean anchor report.") from error
+    return {
+        "path": str(Path(path).resolve()), "sha256": hashlib.sha256(payload).hexdigest(),
+        "checked_coefficients": 545, "minimum_verified_digits": min(
+            result["verified_digits"] for result in report["native"].values()
+        ),
+        "native_source_identity_matched": True, "installed_extension_matched": True,
+    }
 
 
 def check_coefficient_refinement(previous, result, *, label, tolerance, one):
@@ -136,6 +206,7 @@ def persist_progress(directory, report, state, *, stage, mode, elapsed_ns,
         "stage": stage, "mode": mode, "elapsed_ns": elapsed_ns,
         "seed_digits": seed_digits, "status": state["status"], "done": state["done"],
         "recent_events": state["events"],
+        "numerical_generation": state.get("numerical_generation"),
         "completed_sample_files": sum(1 for _ in (directory / "completed-samples").glob("sample-*.bin")),
     }
     report["timings"] = list(archived_timings) + state["timings"]
@@ -165,12 +236,13 @@ def wait_for_stage(session, on_progress, *, poll_interval=5):
 
 def interrupt_forced_boundaries(session, samples, after_samples, *, poll_interval=1,
                                 on_progress=None):
-    """Cancel new higher-precision work before its first verified configuration."""
+    """Cancel new-generation work before its first verified configuration."""
     from symbolica.community.hep.integration import CalculationCancelled
 
     if after_samples <= 0:
         raise ValueError("The interruption sample count must be positive.")
     before = samples()
+    previous_generation = session.numerical_generation()
     started = perf_counter_ns()
     session.submit("boundaries", recompute=True)
     while True:
@@ -180,8 +252,11 @@ def interrupt_forced_boundaries(session, samples, after_samples, *, poll_interva
         if state["done"]:
             session.wait()  # Preserve any typed failure instead of hiding it.
             raise AssertionError("Boundary generation finished before the requested interruption.")
-        persisted = samples()
-        if len(persisted.keys() - before.keys()) >= after_samples:
+        generation = session.numerical_generation()
+        # At equal precision even freshly computed payloads and filenames may
+        # be identical. Only the committed generation proves they are new work.
+        persisted = samples() if generation is not None and generation != previous_generation else {}
+        if len(persisted) >= after_samples:
             break
         sleep(poll_interval)
     cancelled_at = perf_counter_ns()
@@ -197,12 +272,21 @@ def interrupt_forced_boundaries(session, samples, after_samples, *, poll_interva
         raise AssertionError("Expected typed cancellation after complete sample checkpoint.")
     finished = perf_counter_ns()
     after = samples()
+    assert generation is not None
+    assert session.numerical_generation() == generation
     assert all(after.get(name) == digest for name, digest in persisted.items())
     assert len(session.seeds) == 0, "Interruption occurred after a verified configuration was saved."
+    archive = session.directory / generation["archive_directory"]
+    assert all(
+        hashlib.sha256((archive / "completed-samples" / name).read_bytes()).hexdigest() == digest
+        for name, digest in before.items()
+    ), "Pre-force samples must be retained only in the archived generation."
     return {
         "phase": "forced_refinement", "seed_digits": session.seed_digits,
         "baseline_sample_files": len(before), "retained_sample_files": len(after),
-        "new_complete_samples": len(after.keys() - before.keys()),
+        "new_complete_samples": len(after), "archived_sample_files": len(before),
+        "previous_generation": previous_generation, "numerical_generation": generation,
+        "archived_sample_payloads_preserved": True,
         "elapsed_ns": finished - started,
         "cancellation_latency_ns": finished - cancelled_at,
         "sample_payloads_preserved": True, "verified_configurations_before_cancel": 0,
@@ -224,6 +308,8 @@ def main():
                         help="During higher-precision forced refinement, cancel after this many new complete samples, then reload and resume.")
     parser.add_argument("--refine-digits", type=int, default=10,
                         help="Extra seed digits for forced independent recomputation (must be positive).")
+    parser.add_argument("--anchor-report", type=Path,
+                        help="Require a passed Euclidean-anchor report from this installed native graph.")
     args = parser.parse_args()
     if args.refine_digits <= 0 or args.interrupt_after_samples < 0 or min(args.workers, args.boundary_workers) < 1:
         parser.error("Refinement and worker budgets must be positive; interruption sample count must be nonnegative.")
@@ -231,13 +317,16 @@ def main():
         parser.error("Cold acceptance requires an empty directory; use --resume to reuse it.")
     args.directory.mkdir(parents=True, exist_ok=True)
     data = Path(__file__).parent / "data" / "gg_hg"
+    attestation = runtime_attestation()
+    anchor_evidence = verify_anchor_report(args.anchor_report, attestation) if args.anchor_report else None
     session = CalculationSession(
         data / "native-model.json", args.directory,
         seed_digits=args.seed_digits, workers=args.workers, boundary_workers=args.boundary_workers,
     )
-    report = {
+    report: dict[str, Any] = {
         "status": "running", "mode": "resumed" if args.resume else "cold", "stages": [],
-        "runtime_attestation": runtime_attestation(),
+        "runtime_attestation": attestation,
+        "euclidean_anchor_proof": anchor_evidence,
         "scope": "Physical seeds, transport, amplitude and restart; independent Euclidean anchor reports are a separate prerequisite.",
         "resources": {
             "sample_worker_budget": args.workers, "boundary_workers": args.boundary_workers,
@@ -399,9 +488,10 @@ def main():
                 seed_digits=seed_digits, workers=args.workers, boundary_workers=args.boundary_workers,
             )
             write_report()
-            # The new precision has distinct sample keys. Resume the completed
-            # forced-refinement samples while the old boundary banks stay empty.
+            # Resume only this forced generation's completed samples, including
+            # when filenames happen to equal those from archived generations.
             assert len(session.seeds) == len(session.cache) == 0
+            assert session.numerical_generation() == interruption["numerical_generation"]
             refined_seeds = run("boundaries", mode="resumed_refinement")
             resumed_samples = samples()
             assert all(resumed_samples.get(name) == digest

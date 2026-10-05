@@ -3241,13 +3241,13 @@ class FeynmanDiagram:
         >>> restored = hep.FeynmanDiagram.from_dot(model, dot)
         >>> restored.validate()
         """
-    def to_linnest(self, *, config: linnet.RenderConfig | None = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
+    def to_linnest(self, *, config: builtins.dict[builtins.str, typing.Any] | None = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
         r"""
-        Emit the exact Typst source used by ``render`` without compiling it.
+        Export a self-contained Typst document embedding the rendered SVG.
 
         Uses the same ``config``, ``momenta``, ``lmb`` and ``highlight`` settings
-        as ``render``. The shared Linnest/Kurvst and physics assets must be available
-        beneath the Typst project root when compiling this source separately.
+        as ``render``. Labels are already typeset; compiling the exported source
+        needs no Linnest, Kurvst, MiTeX, or model assets.
 
         Examples
         --------
@@ -3258,7 +3258,7 @@ class FeynmanDiagram:
 
         Parameters
         ----------
-        config : linnet.RenderConfig or None, optional
+        config : dict or None, optional
             Layout, drawing, style and physics settings, as in ``render``.
         momenta : bool, optional
             Draw momentum arrows and labels in the stored basis.
@@ -3267,34 +3267,30 @@ class FeynmanDiagram:
         highlight : Subgraph or linnet.Subgraph or None, optional
             Region to highlight in the complete diagram.
         """
-    def render(self, *, config: linnet.RenderConfig | None = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
+    def render(self, *, config: builtins.dict[builtins.str, typing.Any] | None = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
         r"""
         Render an interactive, transparent SVG using the shared physics renderer.
 
-        Amplitudes are laid out and drawn natively, with Typst typesetting only
-        their labels. Templates, selectors, graph styles, drawing options,
-        titles and cross sections compile the complete Typst renderer instead.
-        ``LayoutOptions(impred_labels=True)`` refines the layout around the drawn
-        labels.
+        All graph geometry is drawn in Rust; the embedded Typst compiler typesets
+        labels and titles. ``layouts={"impred_labels": True}`` refines the layout
+        around the drawn labels. No Python renderer or Typst graph package is needed.
 
         Examples
         --------
         Using the setup in the ``FeynmanDiagram`` class example:
 
-        >>> import linnet as ln
-        >>> svg = diagram.render(momenta=True, config=ln.RenderConfig(
-        ...     layouts=ln.LayoutOptions(external_label_length_scale=0.7),
-        ...     template_options={"show-particle": False},
-        ... ))
+        >>> svg = diagram.render(momenta=True, config={
+        ...     "layouts": {"impred_steps": 100},
+        ...     "template_options": {"show-particle": False},
+        ... })
         >>> svg = diagram.render(lmb=next(iter(diagram.loop_momentum_bases())))
 
         Parameters
         ----------
-        config : linnet.RenderConfig or None, optional
-            Typed ``layouts``, ``drawing`` and ``style`` groups. Physics controls
-            use ``template_options`` with the same names as ``just draw --input``:
-            ``show-particle``, ``show-edge-index``, ``show-node-index``, ``debug``,
-            ``momentum-arrows`` and the ``momentum-arrow-*``/``momentum-label-*`` options.
+        config : dict or None, optional
+            Native ``layouts``, ``drawing`` and ``style`` dictionaries. Boolean physics
+            controls in ``template_options`` include ``show-particle``, ``show-momentum``,
+            ``show-edge-index``, ``show-node-index``, ``debug``, and ``momentum-arrows``.
             Cross sections open their initial-state connections by default; set
             ``split-initial-state`` to ``False`` to draw the sewn graph.
         momenta : bool, optional
@@ -3307,7 +3303,7 @@ class FeynmanDiagram:
             Highlight a region while preserving the full diagram as muted context.
             A Subgraph highlights its own region by default.
         """
-    def to_html(self, *, config: linnet.RenderConfig | None = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
+    def to_html(self, *, config: builtins.dict[builtins.str, typing.Any] | None = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
         r"""
         Render an HTML figure with the same options and hover information as ``render``.
 
@@ -3320,7 +3316,7 @@ class FeynmanDiagram:
 
         Parameters
         ----------
-        config : linnet.RenderConfig or None, optional
+        config : dict or None, optional
             Layout, drawing, style and physics settings, as in ``render``.
         momenta : bool, optional
             Draw momentum arrows and labels in the stored basis.
@@ -3668,6 +3664,32 @@ class FourMomentum:
         pz : float
             Momentum along the z axis.
         """
+    def wavefunction(self, kind: builtins.str, helicity: Helicity) -> Wavefunction:
+        r"""
+        Construct a fixed scalar, vector or spinor external state.
+
+        ``kind`` is ``scalar``, ``epsilon``, ``epsilon_bar``, ``u``, ``u_bar``,
+        ``v`` or ``v_bar``. Scalar helicity is zero; spinors use plus or minus.
+        A massive vector also admits zero helicity for a longitudinal state.
+        The inherited longitudinal convention is undefined at rest or zero mass
+        and raises ``KinematicsError``. All states use four-dimensional external
+        components and GammaLoop's MadGraph phases; no averaging is included.
+
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> p = hep.FourMomentum(150.0, 0.0, 0.0, 150.0)
+        >>> eps = p.wavefunction("epsilon", hep.Helicity.PLUS)
+        >>> assert len(eps.components) == 4 and eps.bar().bar() == eps
+
+        Parameters
+        ----------
+        kind : str
+            Scalar, vector or spinor state kind, including the barred variants above.
+        helicity : Helicity
+            Fixed helicity; zero for scalars, plus/minus for spinors, and also zero
+            for a massive longitudinal vector with nonzero spatial momentum.
+        """
     def components(self) -> tuple[builtins.float, builtins.float, builtins.float, builtins.float]:
         r"""
         Return ``(energy, px, py, pz)``.
@@ -3904,7 +3926,7 @@ class GenerationProgress:
     def stage(self) -> builtins.str:
         r"""
         Pipeline stage: topologies, topology_filters, interactions,
-        interaction_filters, numerators, selection, grouping_preparation,
+        interaction_filters, numerators, selection, filter_zero_color, grouping_preparation,
         grouping_samples, grouping_comparison, grouping, complete or cancelled.
 
         Examples
@@ -3943,6 +3965,21 @@ class GenerationProgress:
         >>> def report(progress):
         ...     totals.append((progress.stage, progress.total))
         >>> result = process.generate_diagrams(progress=report)
+        """
+    @property
+    def zero_numerator_count(self) -> builtins.int:
+        r"""
+        Zero numerators filtered so far in this generation run.
+
+        Examples
+        --------
+        Using the setup in the ``GenerationProgress`` class example:
+
+        >>> zeroes = []
+        >>> result = process.generate_diagrams(
+        ...     filter_zero_color=True,
+        ...     progress=lambda progress: zeroes.append(progress.zero_numerator_count))
+        >>> assert zeroes[-1] == result.report.zero_numerator_count
         """
 
 @typing.final
@@ -5372,56 +5409,11 @@ class Kinematics:
     --------
     >>> from symbolica import S, E
     >>> from symbolica.community import hepkit as hep
-    >>> P = hep.Kinematics.external_momentum
+    >>> P = hep.Kinematics.external_momentum()
     >>> p1, p2, p3, p4 = [P(i) for i in range(4)]
-    >>> s, t, u = hep.Kinematics.s, hep.Kinematics.t, hep.Kinematics.u
+    >>> s, t, u = hep.Kinematics.s(), hep.Kinematics.t(), hep.Kinematics.u()
     >>> kin = hep.Kinematics.mandelstam([p1, p2, p3, p4], [E("0")]*4, [s, t, u])
     >>> assert kin.scalar_product(p1, p2) == s/2
-    """
-    s: Expression
-    r"""
-    Mandelstam invariant ``s=(p1+p2)^2`` for ``p1 + p2 -> p3 + p4``.
-
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> s = hep.Kinematics.s
-    """
-    t: Expression
-    r"""
-    Mandelstam invariant ``t=(p1-p3)^2`` for ``p1 + p2 -> p3 + p4``.
-
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> t = hep.Kinematics.t
-    """
-    u: Expression
-    r"""
-    Mandelstam invariant ``u=(p1-p4)^2`` for ``p1 + p2 -> p3 + p4``.
-
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> u = hep.Kinematics.u
-    """
-    external_momentum: Expression
-    r"""
-    External momentum family indexed by physical leg.
-
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> reference = hep.Kinematics.external_momentum
-    """
-    loop_momentum: Expression
-    r"""
-    Loop momentum family indexed by loop basis position.
-
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> reference = hep.Kinematics.loop_momentum
     """
     @property
     def dimension(self) -> Expression:
@@ -5433,6 +5425,56 @@ class Kinematics:
         Using the setup in the ``Kinematics`` class example:
 
         >>> assert hep.Kinematics(S("D")).dimension == S("D")
+        """
+    @staticmethod
+    def s() -> Expression:
+        r"""
+        Mandelstam invariant ``s=(p1+p2)^2`` for ``p1 + p2 -> p3 + p4``.
+
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> s = hep.Kinematics.s()
+        """
+    @staticmethod
+    def t() -> Expression:
+        r"""
+        Mandelstam invariant ``t=(p1-p3)^2`` for ``p1 + p2 -> p3 + p4``.
+
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> t = hep.Kinematics.t()
+        """
+    @staticmethod
+    def u() -> Expression:
+        r"""
+        Mandelstam invariant ``u=(p1-p4)^2`` for ``p1 + p2 -> p3 + p4``.
+
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> u = hep.Kinematics.u()
+        """
+    @staticmethod
+    def external_momentum() -> Expression:
+        r"""
+        External momentum family indexed by physical leg.
+
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> reference = hep.Kinematics.external_momentum()
+        """
+    @staticmethod
+    def loop_momentum() -> Expression:
+        r"""
+        Loop momentum family indexed by loop basis position.
+
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> reference = hep.Kinematics.loop_momentum()
         """
     def __new__(cls, dimension: typing.Optional[Expression] = None, *, momenta: typing.Optional[typing.Sequence[Expression]] = None) -> Kinematics:
         r"""
@@ -6988,7 +7030,7 @@ class MomentumSignature:
 @typing.final
 class NumeratorGrouping:
     r"""
-    Choose numerator zero detection and cross-diagram grouping.
+    Choose cross-diagram numerator grouping.
 
     Examples
     --------
@@ -6998,9 +7040,10 @@ class NumeratorGrouping:
 
     Parameters
     ----------
-    mode : {"none", "zeroes", "identical", "up_to_sign", "up_to_scalar"}
-        Disable parsing/grouping, detect only zeroes, or compare numerators
-        exactly, up to a sign, or up to a scalar factor.
+    mode : {"none", "identical", "up_to_sign", "up_to_scalar"}
+        Disable grouping, or compare numerators exactly, up to a sign, or up
+        to a scalar factor. To remove diagrams with vanishing color without
+        comparing numerators, pass ``filter_zero_color=True`` to generation.
     numerical_sample_seed : int, optional
         Deterministic seed used to choose numerical substitution values.
     number_of_numerical_samples : int, optional
@@ -7016,7 +7059,7 @@ class NumeratorGrouping:
     """
     def __new__(cls, mode: builtins.str, *, numerical_sample_seed: builtins.int = 3, number_of_numerical_samples: builtins.int = 5, differentiate_particle_masses_only: builtins.bool = True, fully_numerical_substitution: builtins.bool = False, check_canonical_numerator: builtins.bool = False, symmetric_polarizations: builtins.bool = False) -> NumeratorGrouping:
         r"""
-        Choose numerator zero detection and cross-diagram grouping.
+        Choose cross-diagram numerator grouping.
 
         Examples
         --------
@@ -7026,9 +7069,10 @@ class NumeratorGrouping:
 
         Parameters
         ----------
-        mode : {"none", "zeroes", "identical", "up_to_sign", "up_to_scalar"}
-            Disable parsing/grouping, detect only zeroes, or compare numerators
-            exactly, up to a sign, or up to a scalar factor.
+        mode : {"none", "identical", "up_to_sign", "up_to_scalar"}
+            Disable grouping, or compare numerators exactly, up to a sign, or up
+            to a scalar factor. To remove diagrams with vanishing color without
+            comparing numerators, pass ``filter_zero_color=True`` to generation.
         numerical_sample_seed : int, optional
             Deterministic seed used to choose numerical substitution values.
         number_of_numerical_samples : int, optional
@@ -7063,7 +7107,7 @@ class Parameter:
     def symbol(self) -> Expression:
         r"""
         Return the symbolic reference used by this model's expressions.
-        TeX and Typst output use the parameter's ``texname``. Plain output keeps
+        TeX and Typst output use ``texname`` and ``typstname``, respectively. Plain output keeps
         its symbolic name; no defining expression or numerical value is substituted.
 
         Examples
@@ -7073,6 +7117,17 @@ class Parameter:
         >>> reference = model.parameter("ee").symbol
         >>> mass = model.parameter("Me").symbol
         >>> assert "m_e" in (mass**2).to_latex()
+        """
+    @property
+    def typstname(self) -> typing.Optional[builtins.str]:
+        r"""
+        Native Typst math label, without dollar delimiters.
+
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> hep.Model.standard_model().parameter("aS").typstname
+        'alpha_s'
         """
     @property
     def name(self) -> builtins.str:
@@ -7089,7 +7144,7 @@ class Parameter:
     def texname(self) -> typing.Optional[builtins.str]:
         r"""
         The model's LaTeX display label, or None when no label was supplied.
-        MiTeX renders this label in Typst and notebook math output.
+        Native Typst output uses ``typstname`` independently.
 
         >>> hep.Model.standard_model().parameter("ee").texname
         'e'
@@ -7400,6 +7455,28 @@ class Particle:
     >>> electron = model.particle_by_pdg(11)
     >>> assert electron.name == "e-"
     """
+    @property
+    def typstname(self) -> typing.Optional[builtins.str]:
+        r"""
+        Native Typst math label, without dollar delimiters.
+
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> hep.Model.qcd().particle("g").typstname
+        'g'
+        """
+    @property
+    def antitypstname(self) -> typing.Optional[builtins.str]:
+        r"""
+        Native Typst math label of the antiparticle, without dollar delimiters.
+
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> hep.Model.qcd().particle("u").antitypstname
+        'overline(u)'
+        """
     @property
     def name(self) -> builtins.str:
         r"""
@@ -8078,7 +8155,7 @@ class Process:
         >>> repr(process)
         'Process("sm": [e-, e+] -> [mu-, mu+])'
         """
-    def render(self, *, config: linnet.RenderConfig | None = None) -> builtins.str:
+    def render(self, *, config: builtins.dict[builtins.str, typing.Any] | linnet.RenderConfig | None = None) -> builtins.str:
         r"""
         Render a blob with the process's physical incoming and outgoing particles.
         Alternative final states are displayed as separate schematics.
@@ -8091,7 +8168,7 @@ class Process:
 
         Parameters
         ----------
-        config : linnet.RenderConfig or None, optional
+        config : dict or linnet.RenderConfig or None, optional
             Particle-label, layout and drawing overrides shared with Feynman diagrams.
         """
     def _repr_svg_(self) -> builtins.str:
@@ -8156,7 +8233,7 @@ class Process:
         vertex_veto : sequence[VertexRule | str] or None, optional
             Replace the excluded interaction rules.
         """
-    def generate_diagrams(self, *, loops: builtins.int | tuple[builtins.int, builtins.int] = 0, symmetrize_initial: builtins.bool = False, symmetrize_final: typing.Optional[builtins.bool] = None, symmetrize_left_right: builtins.bool = False, symmetrize_external_fermions: builtins.bool = False, threads: typing.Optional[builtins.int] = None, max_vertices: typing.Optional[builtins.int] = None, allow_self_loops: builtins.bool = True, allow_zero_flow_edges: builtins.bool = False, graph_prefix: typing.Optional[builtins.str] = None, maximum_bridges: int | None | types.EllipsisType = ..., self_energy: SelfEnergyFilterOptions | types.EllipsisType | None = ..., tadpoles: TadpoleFilterOptions | types.EllipsisType | None = ..., zero_snails: SnailFilterOptions | types.EllipsisType | None = ..., coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, fermion_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, factorized_loop_topologies_count_range: tuple[int, int] | types.EllipsisType | None = ..., blob_range: tuple[int, int] | types.EllipsisType | None = ..., spectator_range: tuple[int, int] | types.EllipsisType | None = ..., perturbative_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int]] = None, sewn_tadpoles: typing.Optional[builtins.bool] = None, cut_amplitude_coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, cut_amplitude_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, select_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, veto_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, loop_momentum_bases: typing.Optional[typing.Sequence[tuple[FeynmanDiagram | builtins.str, typing.Sequence[builtins.int]]]] = None, numerator_prefactor: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, numerator_grouping: typing.Optional[NumeratorGrouping] = None, cancellation_token: typing.Optional[CancellationToken] = None, progress: typing.Literal['auto'] | collections.abc.Callable[[GenerationProgress], None] | None = 'auto', filter: collections.abc.Callable[[symbolica.core.Graph, int], bool] | None = None) -> GenerationResult:
+    def generate_diagrams(self, *, loops: builtins.int | tuple[builtins.int, builtins.int] = 0, symmetrize_initial: builtins.bool = False, symmetrize_final: typing.Optional[builtins.bool] = None, symmetrize_left_right: builtins.bool = False, symmetrize_external_fermions: builtins.bool = False, threads: typing.Optional[builtins.int] = None, max_vertices: typing.Optional[builtins.int] = None, allow_self_loops: builtins.bool = True, allow_zero_flow_edges: builtins.bool = False, graph_prefix: typing.Optional[builtins.str] = None, maximum_bridges: int | None | types.EllipsisType = ..., self_energy: SelfEnergyFilterOptions | types.EllipsisType | None = ..., tadpoles: TadpoleFilterOptions | types.EllipsisType | None = ..., zero_snails: SnailFilterOptions | types.EllipsisType | None = ..., coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, fermion_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, factorized_loop_topologies_count_range: tuple[int, int] | types.EllipsisType | None = ..., blob_range: tuple[int, int] | types.EllipsisType | None = ..., spectator_range: tuple[int, int] | types.EllipsisType | None = ..., perturbative_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int]] = None, sewn_tadpoles: typing.Optional[builtins.bool] = None, cut_amplitude_coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, cut_amplitude_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, select_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, veto_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, loop_momentum_bases: typing.Optional[typing.Sequence[tuple[FeynmanDiagram | builtins.str, typing.Sequence[builtins.int]]]] = None, numerator_prefactor: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, numerator_grouping: typing.Optional[NumeratorGrouping] = None, filter_zero_color: builtins.bool = False, cancellation_token: typing.Optional[CancellationToken] = None, progress: typing.Literal['auto'] | collections.abc.Callable[[GenerationProgress], None] | None = 'auto', filter: collections.abc.Callable[[symbolica.core.Graph, int], bool] | None = None) -> GenerationResult:
         r"""
         Generate and optionally group all diagrams matching a process.
 
@@ -8241,7 +8318,10 @@ class Process:
             Override external-state contraction; S("1") disables external wavefunctions.
         numerator_grouping : NumeratorGrouping or None, optional
             Defaults to None: no numerator comparison or grouping. Diagrams still
-            contain numerators. Pass NumeratorGrouping to enable zero detection or grouping.
+            contain numerators. Pass NumeratorGrouping to compare and group them.
+        filter_zero_color : bool, optional
+            Discard diagrams whose color algebra proves the numerator is zero,
+            before numerator grouping. Defaults to False, independently of grouping.
         progress : {"auto"}, Callable[[GenerationProgress], None] or None, optional
             Defaults to "auto": show progress when marimo.running_in_notebook()
             is true, with stage, counts, and elapsed time. None disables progress.
@@ -8261,7 +8341,7 @@ class Process:
             returns an incomplete result; Python signal-handler exceptions, including
             KeyboardInterrupt, stop generation and propagate to the caller.
         """
-    def generate_amplitude(self, *, dimension: typing.Optional[Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal]] = None, real: typing.Optional[typing.Sequence[Expression]] = None, loops: builtins.int | tuple[builtins.int, builtins.int] = 0, symmetrize_initial: builtins.bool = False, symmetrize_final: typing.Optional[builtins.bool] = None, symmetrize_left_right: builtins.bool = False, symmetrize_external_fermions: builtins.bool = False, threads: typing.Optional[builtins.int] = None, max_vertices: typing.Optional[builtins.int] = None, allow_self_loops: builtins.bool = True, allow_zero_flow_edges: builtins.bool = False, graph_prefix: typing.Optional[builtins.str] = None, maximum_bridges: int | None | types.EllipsisType = ..., self_energy: SelfEnergyFilterOptions | types.EllipsisType | None = ..., tadpoles: TadpoleFilterOptions | types.EllipsisType | None = ..., zero_snails: SnailFilterOptions | types.EllipsisType | None = ..., coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, fermion_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, factorized_loop_topologies_count_range: tuple[int, int] | types.EllipsisType | None = ..., blob_range: tuple[int, int] | types.EllipsisType | None = ..., spectator_range: tuple[int, int] | types.EllipsisType | None = ..., perturbative_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int]] = None, sewn_tadpoles: typing.Optional[builtins.bool] = None, cut_amplitude_coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, cut_amplitude_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, select_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, veto_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, loop_momentum_bases: typing.Optional[typing.Sequence[tuple[FeynmanDiagram | builtins.str, typing.Sequence[builtins.int]]]] = None, numerator_prefactor: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, numerator_grouping: typing.Optional[NumeratorGrouping] = None, cancellation_token: typing.Optional[CancellationToken] = None, progress: typing.Literal['auto'] | collections.abc.Callable[[GenerationProgress], None] | None = 'auto', filter: collections.abc.Callable[[symbolica.core.Graph, int], bool] | None = None) -> Amplitude:
+    def generate_amplitude(self, *, dimension: typing.Optional[Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal]] = None, real: typing.Optional[typing.Sequence[Expression]] = None, loops: builtins.int | tuple[builtins.int, builtins.int] = 0, symmetrize_initial: builtins.bool = False, symmetrize_final: typing.Optional[builtins.bool] = None, symmetrize_left_right: builtins.bool = False, symmetrize_external_fermions: builtins.bool = False, threads: typing.Optional[builtins.int] = None, max_vertices: typing.Optional[builtins.int] = None, allow_self_loops: builtins.bool = True, allow_zero_flow_edges: builtins.bool = False, graph_prefix: typing.Optional[builtins.str] = None, maximum_bridges: int | None | types.EllipsisType = ..., self_energy: SelfEnergyFilterOptions | types.EllipsisType | None = ..., tadpoles: TadpoleFilterOptions | types.EllipsisType | None = ..., zero_snails: SnailFilterOptions | types.EllipsisType | None = ..., coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, fermion_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, factorized_loop_topologies_count_range: tuple[int, int] | types.EllipsisType | None = ..., blob_range: tuple[int, int] | types.EllipsisType | None = ..., spectator_range: tuple[int, int] | types.EllipsisType | None = ..., perturbative_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int]] = None, sewn_tadpoles: typing.Optional[builtins.bool] = None, cut_amplitude_coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, cut_amplitude_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, select_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, veto_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, loop_momentum_bases: typing.Optional[typing.Sequence[tuple[FeynmanDiagram | builtins.str, typing.Sequence[builtins.int]]]] = None, numerator_prefactor: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, numerator_grouping: typing.Optional[NumeratorGrouping] = None, filter_zero_color: builtins.bool = False, cancellation_token: typing.Optional[CancellationToken] = None, progress: typing.Literal['auto'] | collections.abc.Callable[[GenerationProgress], None] | None = 'auto', filter: collections.abc.Callable[[symbolica.core.Graph, int], bool] | None = None) -> Amplitude:
         r"""
         Generate a coherent symbolic amplitude for this process.
         Cancelled or empty generation cannot produce an amplitude.
@@ -8351,7 +8431,10 @@ class Process:
             Override external-state contraction; S("1") disables external wavefunctions.
         numerator_grouping : NumeratorGrouping or None, optional
             Defaults to None: no numerator comparison or grouping. Diagrams still
-            contain numerators. Pass NumeratorGrouping to enable zero detection or grouping.
+            contain numerators. Pass NumeratorGrouping to compare and group them.
+        filter_zero_color : bool, optional
+            Discard diagrams whose color algebra proves the numerator is zero,
+            before numerator grouping. Defaults to False, independently of grouping.
         progress : {"auto"}, Callable[[GenerationProgress], None] or None, optional
             Defaults to "auto": show progress when marimo.running_in_notebook()
             is true, with stage, counts, and elapsed time. None disables progress.
@@ -8371,7 +8454,7 @@ class Process:
             returns an incomplete result; Python signal-handler exceptions, including
             KeyboardInterrupt, stop generation and propagate to the caller.
         """
-    def generate_cross_section(self, *, loops: builtins.int | tuple[builtins.int, builtins.int] = 0, symmetrize_initial: builtins.bool = False, symmetrize_final: typing.Optional[builtins.bool] = None, symmetrize_left_right: builtins.bool = False, symmetrize_external_fermions: builtins.bool = False, threads: typing.Optional[builtins.int] = None, max_vertices: typing.Optional[builtins.int] = None, allow_self_loops: builtins.bool = True, allow_zero_flow_edges: builtins.bool = False, graph_prefix: typing.Optional[builtins.str] = None, maximum_bridges: int | None | types.EllipsisType = ..., self_energy: SelfEnergyFilterOptions | types.EllipsisType | None = ..., tadpoles: TadpoleFilterOptions | types.EllipsisType | None = ..., zero_snails: SnailFilterOptions | types.EllipsisType | None = ..., coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, fermion_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, factorized_loop_topologies_count_range: tuple[int, int] | types.EllipsisType | None = ..., blob_range: tuple[int, int] | types.EllipsisType | None = ..., spectator_range: tuple[int, int] | types.EllipsisType | None = ..., perturbative_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int]] = None, sewn_tadpoles: typing.Optional[builtins.bool] = None, cut_amplitude_coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, cut_amplitude_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, select_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, veto_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, loop_momentum_bases: typing.Optional[typing.Sequence[tuple[FeynmanDiagram | builtins.str, typing.Sequence[builtins.int]]]] = None, numerator_prefactor: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, numerator_grouping: typing.Optional[NumeratorGrouping] = None, cancellation_token: typing.Optional[CancellationToken] = None, progress: typing.Literal['auto'] | collections.abc.Callable[[GenerationProgress], None] | None = 'auto', filter: collections.abc.Callable[[symbolica.core.Graph, int], bool] | None = None) -> GenerationResult:
+    def generate_cross_section(self, *, loops: builtins.int | tuple[builtins.int, builtins.int] = 0, symmetrize_initial: builtins.bool = False, symmetrize_final: typing.Optional[builtins.bool] = None, symmetrize_left_right: builtins.bool = False, symmetrize_external_fermions: builtins.bool = False, threads: typing.Optional[builtins.int] = None, max_vertices: typing.Optional[builtins.int] = None, allow_self_loops: builtins.bool = True, allow_zero_flow_edges: builtins.bool = False, graph_prefix: typing.Optional[builtins.str] = None, maximum_bridges: int | None | types.EllipsisType = ..., self_energy: SelfEnergyFilterOptions | types.EllipsisType | None = ..., tadpoles: TadpoleFilterOptions | types.EllipsisType | None = ..., zero_snails: SnailFilterOptions | types.EllipsisType | None = ..., coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, fermion_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, factorized_loop_topologies_count_range: tuple[int, int] | types.EllipsisType | None = ..., blob_range: tuple[int, int] | types.EllipsisType | None = ..., spectator_range: tuple[int, int] | types.EllipsisType | None = ..., perturbative_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int]] = None, sewn_tadpoles: typing.Optional[builtins.bool] = None, cut_amplitude_coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, cut_amplitude_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, select_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, veto_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, loop_momentum_bases: typing.Optional[typing.Sequence[tuple[FeynmanDiagram | builtins.str, typing.Sequence[builtins.int]]]] = None, numerator_prefactor: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, numerator_grouping: typing.Optional[NumeratorGrouping] = None, filter_zero_color: builtins.bool = False, cancellation_token: typing.Optional[CancellationToken] = None, progress: typing.Literal['auto'] | collections.abc.Callable[[GenerationProgress], None] | None = 'auto', filter: collections.abc.Callable[[symbolica.core.Graph, int], bool] | None = None) -> GenerationResult:
         r"""
         Generate sewn forward diagrams and their physical final-state cuts.
         The result contains diagrams and cut metadata, before phase-space integration.
@@ -8462,7 +8545,10 @@ class Process:
             Override external-state contraction; S("1") disables external wavefunctions.
         numerator_grouping : NumeratorGrouping or None, optional
             Defaults to None: no numerator comparison or grouping. Diagrams still
-            contain numerators. Pass NumeratorGrouping to enable zero detection or grouping.
+            contain numerators. Pass NumeratorGrouping to compare and group them.
+        filter_zero_color : bool, optional
+            Discard diagrams whose color algebra proves the numerator is zero,
+            before numerator grouping. Defaults to False, independently of grouping.
         progress : {"auto"}, Callable[[GenerationProgress], None] or None, optional
             Defaults to "auto": show progress when marimo.running_in_notebook()
             is true, with stage, counts, and elapsed time. None disables progress.
@@ -9178,6 +9264,7 @@ class Symbols:
     Canonical expression heads owned by diagrams and imported models.
 
     Tensor and representation vocabulary belongs to `symbolica.community.tensor`.
+    Symbols are constructed on demand so importing the module leaves time to set a license key.
     Use these references for diagram patterns and momentum construction without
     depending on internal namespaces. External and loop momenta belong to
     ``Kinematics``. Model parameters and couplings belong to
@@ -9187,101 +9274,111 @@ class Symbols:
     Examples
     --------
     >>> from symbolica.community import hepkit as hep
-    >>> Q = hep.Symbols.edge_momentum
+    >>> Q = hep.Symbols.edge_momentum()
     >>> edge_momentum = Q(0)
     >>> mass = hep.Model.standard_model().particle("e-").mass
     """
-    edge_momentum: Expression
-    r"""
-    Momentum family indexed by graph edge.
+    @staticmethod
+    def edge_momentum() -> Expression:
+        r"""
+        Momentum family indexed by graph edge.
 
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> reference = hep.Symbols.edge_momentum
-    """
-    denominator: Expression
-    r"""
-    Tagged propagator denominator head; its fourth argument is the inverse denominator.
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> reference = hep.Symbols.edge_momentum()
+        """
+    @staticmethod
+    def denominator() -> Expression:
+        r"""
+        Tagged propagator denominator head; its fourth argument is the inverse denominator.
 
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> reference = hep.Symbols.denominator
-    """
-    dimension: Expression
-    r"""
-    Lorentz dimension used by generated diagram expressions.
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> reference = hep.Symbols.denominator()
+        """
+    @staticmethod
+    def dimension() -> Expression:
+        r"""
+        Lorentz dimension used by generated diagram expressions.
 
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> reference = hep.Symbols.dimension
-    """
-    half_edge: Expression
-    r"""
-    Half-edge index family used to match external tensor slots.
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> reference = hep.Symbols.dimension()
+        """
+    @staticmethod
+    def half_edge() -> Expression:
+        r"""
+        Half-edge index family used to match external tensor slots.
 
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> reference = hep.Symbols.half_edge
-    """
-    polarization: Expression
-    r"""
-    Vector polarization wavefunction head.
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> reference = hep.Symbols.half_edge()
+        """
+    @staticmethod
+    def polarization() -> Expression:
+        r"""
+        Vector polarization wavefunction head.
 
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> reference = hep.Symbols.polarization
-    """
-    polarization_conjugate: Expression
-    r"""
-    Conjugated vector polarization wavefunction head.
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> reference = hep.Symbols.polarization()
+        """
+    @staticmethod
+    def polarization_conjugate() -> Expression:
+        r"""
+        Conjugated vector polarization wavefunction head.
 
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> reference = hep.Symbols.polarization_conjugate
-    """
-    ufo_metric: Expression
-    r"""
-    Metric head in model propagator definitions.
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> reference = hep.Symbols.polarization_conjugate()
+        """
+    @staticmethod
+    def ufo_metric() -> Expression:
+        r"""
+        Metric head in model propagator definitions.
 
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> reference = hep.Symbols.ufo_metric
-    """
-    ufo_index: Expression
-    r"""
-    Index placeholder head in model propagator definitions.
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> reference = hep.Symbols.ufo_metric()
+        """
+    @staticmethod
+    def ufo_index() -> Expression:
+        r"""
+        Index placeholder head in model propagator definitions.
 
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> reference = hep.Symbols.ufo_index
-    """
-    ufo_momentum: Expression
-    r"""
-    Momentum head in model propagator definitions.
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> reference = hep.Symbols.ufo_index()
+        """
+    @staticmethod
+    def ufo_momentum() -> Expression:
+        r"""
+        Momentum head in model propagator definitions.
 
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> reference = hep.Symbols.ufo_momentum
-    """
-    model_conjugate: Expression
-    r"""
-    Complex-conjugation helper used in imported model formulas.
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> reference = hep.Symbols.ufo_momentum()
+        """
+    @staticmethod
+    def model_conjugate() -> Expression:
+        r"""
+        Complex-conjugation helper used in imported model formulas.
 
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> model = hep.Model.standard_model()
-    >>> conjugate = hep.Symbols.model_conjugate(model.parameter("CKM1x1").symbol)
-    """
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> model = hep.Model.standard_model()
+        >>> conjugate = hep.Symbols.model_conjugate()(model.parameter("CKM1x1").symbol)
+        """
 
 @typing.final
 class TadpoleFilterOptions:
@@ -10352,6 +10449,97 @@ class VertexRule:
         """
 
 @typing.final
+class Wavefunction:
+    r"""
+    A fixed numerical external state in GammaLoop's MadGraph phase convention.
+
+    Obtain states from ``FourMomentum.wavefunction(kind, helicity)``. Vector
+    components use ``(E,x,y,z)`` and signature ``+---``; spinors use the chiral
+    gamma-matrix basis. These external states have four components independently
+    of the dimension used for internal symbolic Lorentz/Dirac algebra. A scalar
+    has one component. No helicity sum, spin average or coupling is included.
+
+    Examples
+    --------
+    >>> from symbolica.community import hepkit as hep
+    >>> momentum = hep.FourMomentum(150.0, 0.0, 0.0, 150.0)
+    >>> state = momentum.wavefunction("epsilon", hep.Helicity.PLUS)
+    >>> assert state.kind == "epsilon" and len(state) == 4
+    """
+    @property
+    def kind(self) -> builtins.str:
+        r"""
+        One of ``scalar``, ``epsilon``, ``epsilon_bar``, ``u``, ``u_bar``, ``v``, ``v_bar``.
+
+        Examples
+        --------
+        Using the setup in the ``Wavefunction`` class example:
+
+        >>> assert state.kind == "epsilon"
+        """
+    @property
+    def components(self) -> builtins.list[complex]:
+        r"""
+        Return a copy of the numerical components as native Python complex values.
+
+        Examples
+        --------
+        Using the setup in the ``Wavefunction`` class example:
+
+        >>> values = state.components
+        >>> assert len(values) == 4 and values[0] == 0j
+        >>> assert abs(values[1] + 2**-0.5) < 1e-14
+        """
+    def bar(self) -> Wavefunction:
+        r"""
+        Conjugate a scalar/vector or take the chiral Dirac adjoint of a spinor.
+
+        Calling this twice restores both the original components and state kind.
+
+        Examples
+        --------
+        Using the setup in the ``Wavefunction`` class example:
+
+        >>> assert state.bar().kind == "epsilon_bar"
+        >>> assert state.bar().bar() == state
+        """
+    def __len__(self) -> builtins.int:
+        r"""
+        Return one for scalar states and four for vector or spinor states.
+
+        Examples
+        --------
+        Using the setup in the ``Wavefunction`` class example:
+
+        >>> assert len(state) == 4
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Describe the numerical state kind and its components.
+
+        Examples
+        --------
+        Using the setup in the ``Wavefunction`` class example:
+
+        >>> assert "Wavefunction" in repr(state)
+        """
+    def __eq__(self, other: Wavefunction) -> builtins.bool:
+        r"""
+        Compare both the external-state kind and its numerical components.
+
+        Examples
+        --------
+        Using the setup in the ``Wavefunction`` class example:
+
+        >>> assert state == state.bar().bar()
+
+        Parameters
+        ----------
+        other : Wavefunction
+            State to compare with this one.
+        """
+
+@typing.final
 class Axis(enum.Enum):
     r"""
     A Cartesian axis used to specify spatial rotations.
@@ -10519,6 +10707,34 @@ class IBPFamily:
 
         >>> assert ibp.denominator_count == len(family.denominators)
         """
+    @property
+    def parameter_bindings(self) -> list[tuple[Expression, Expression]]:
+        """Internal polynomial parameters paired with original HEPKit atoms.
+
+        A presentation legend, not a replacement of serialized artifact names.
+        """
+        ...
+    def start_generation(self, *, event_capacity: int = 256, **options: object) -> rustred.CandidateGenerationSession:
+        """Start native generation from this exact routed family, without re-parsing.
+
+        Poll the bounded stream for progress; cancellation drains at native safe
+        boundaries. Output is a generated candidate, not a closure certificate.
+        ``nonpositive_indices`` identifies auxiliary scalar-product slots.
+        Cut families currently use the existing cut-aware finite/parametric APIs.
+        """
+        ...
+    def normalize_candidate_terminals(
+        self, artifact: rustred.CandidateArtifact, *, max_terminals: int = 1000000,
+        max_supports: int = 100000, max_matrix_cells: int = 1000000,
+        max_output_terms: int = 4000000,
+    ) -> rustred.TerminalNormalization:
+        """Explicit exact normalization of saved finite residuals in this family.
+
+        Uses native unit aliases and weighted polynomial-numerator relations;
+        it does not regenerate candidates, solve ordinary IBPs, certify closure,
+        or prove master independence. Native family identity must match.
+        """
+        ...
     def ibp_identities(self) -> list[list[tuple[list[Expression], Expression]]]:
         r"""
         Generate the L*(L+E) ordinary IBP equations with symbolic indices.
@@ -10987,5 +11203,6 @@ class IBPCertificate:
 
 from . import integration as integration
 from . import ibp as ibp
+from . import rustred as rustred
 from . import oneloop as oneloop
 from . import vakint as vakint

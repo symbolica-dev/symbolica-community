@@ -35,3 +35,34 @@ def make_vakint(method: VakintEvaluationMethod) -> Vakint:
 
 def as_expression(engine: Vakint, result: VakintNumericalResult) -> Expression:
     return engine.numerical_result_to_expression(result)
+
+
+def factor_projectors(symbolic: tensor.TensorExpression, concrete: tensor.Tensor) -> None:
+    # The Python 3.9-compatible Unpack spelling must retain concrete overloads.
+    symbolic_group: tensor.FactorProjector[tensor.TensorExpression] = (
+        tensor.FactorProjector.symmetric(symbolic, symbolic)
+    )
+    symmetric: tensor.FactorProjector[tensor.TensorNetwork] = (
+        tensor.FactorProjector.symmetric(concrete, symbolic)
+    )
+    antisymmetric: tensor.FactorProjector[tensor.TensorNetwork] = (
+        tensor.FactorProjector.antisymmetric(symbolic, concrete)
+    )
+    cyclic: tensor.FactorProjector[tensor.TensorNetwork] = (
+        tensor.FactorProjector.cyclic(symbolic, concrete, symbolic)
+    )
+
+
+def routed_campaign(
+    family: hep.IBPFamily, artifact: hep.rustred.CandidateArtifact,
+) -> tuple[list[tuple[Expression, Expression]], hep.rustred.CandidateGenerationSession,
+           hep.rustred.TerminalNormalization]:
+    bindings: list[tuple[Expression, Expression]] = family.parameter_bindings
+    generation: hep.rustred.CandidateGenerationSession = family.start_generation(
+        event_capacity=64, nonpositive_indices=[0],
+    )
+    terminals: hep.rustred.TerminalNormalization = family.normalize_candidate_terminals(
+        artifact, max_terminals=10, max_supports=10, max_matrix_cells=100,
+        max_output_terms=100,
+    )
+    return bindings, generation, terminals
