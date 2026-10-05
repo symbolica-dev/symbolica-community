@@ -76,8 +76,12 @@ offline export.
 
 The native run, browser import, rendered controls, cancellation/resume and bounded
 numerical checks are separate validation gates. A successful export alone passes
-none of the numerical gates. The gg → HH example remains outside this notebook
-until ordinary native feasibility is demonstrated.
+none of the numerical gates. The
+[gg → HH example](https://github.com/alphal00p/fastSecDec/blob/main/examples/gghh_double_box/README.md)
+passed ordinary native feasibility: generation took 61.285 seconds, followed by
+8.781 seconds of integration on eight workers, with about 1.03% relative standard
+error for the finite coefficient. Browser generation and integration costs remain
+unmeasured, so this example stays outside the browser selector.
 
 The control and output APIs were checked against installed marimo 0.24.2. Related
 upstream documentation: [refresh](https://docs.marimo.io/api/inputs/refresh/),

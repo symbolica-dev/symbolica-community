@@ -253,8 +253,12 @@ def _(asset_description, fs, mo):
 
     Native wheels use `native_o2`; portable builds use `portable_interpreted`.
     The backend displayed with a result comes from its actual kernels. This
-    notebook contains no prepared numerical results. The advanced gg → HH
-    example is excluded pending native feasibility.
+    notebook contains no prepared numerical results. The advanced
+    [gg → HH example](https://github.com/alphal00p/fastSecDec/blob/main/examples/gghh_double_box/README.md)
+    passed native feasibility: 61.285 s generation and 8.781 s integration on
+    eight workers, with about 1.03% relative standard error for the finite
+    coefficient. Browser cost remains unmeasured, so it stays outside this
+    notebook's selector.
 
     **Assets:** {asset_description}. **Bridge present:** {fs is not None}.
     Browser exports require the explicit bundled wheel and fixtures described
