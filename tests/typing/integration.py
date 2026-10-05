@@ -1,6 +1,5 @@
 from symbolica import E, S, Expression
-from symbolica.community.hepkit import integration
-from symbolica.community.hepkit.integration import ibp
+from symbolica.community.hepkit import integration, ibp
 
 x = S("x")
 options = integration.IntegrationOptions(parallel=False)

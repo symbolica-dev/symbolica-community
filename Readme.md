@@ -311,8 +311,8 @@ This shared-kernel API is backed by Hyperbolica. `integrate` uses `[0,+Infinity)
 in the supplied variable order; `integrate_over` accepts directed intervals.
 `prepare` reuses lowered inputs, and the detailed variants return expression
 and algebraic-letter metadata. `Expression.integrate(x)` remains the separate
-antiderivative API. On native installations `integration.ibp` references the
-existing HEPkit IBP module, without automatically evaluating reduced masters.
+antiderivative API. Use `from symbolica.community.hepkit import ibp` for the
+existing native IBP tools. Reduction and master evaluation remain separate.
 
 The same expression API is available in Pyodide, where execution is serial
 regardless of `IntegrationOptions.parallel`. IBP retains native-only availability.

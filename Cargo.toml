@@ -58,7 +58,7 @@ python_stubgen = [
 ]
 
 [dependencies]
-hyperbolica = { git = "https://github.com/benruijl/hyperbolica", rev = "89edca653ab21128d10cb338250e77fdd144b10e", default-features = false, features = ["python"] }
+hyperbolica = { git = "https://github.com/benruijl/hyperbolica", rev = "6acf21500c4807ac1fbd67e1429efcad90791de1", default-features = false, features = ["python"] }
 one-loop-reduce-python = { git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
 spynso3 = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
 # Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.

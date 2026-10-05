@@ -380,5 +380,3 @@ class ContextError(AlgebraError):
 __version__: str
 __symbolica_version__: str
 __api_version__: int
-
-from .. import ibp as ibp
