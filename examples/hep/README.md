@@ -81,6 +81,40 @@ All these examples use the shared `hepkit.IntegralFamily` frontend with
 provides native RustRed reductions of the same families. Links inside each
 notebook stay on the same server.
 
+## Numerical transport and supplied reductions
+
+Native numerical loop evaluation lives under
+`symbolica.community.hep.integration`. The [Higgs-jet notebook](gg_hg.py) uses
+these classes with the same HEPKit model, families and exact kinematics as the
+other examples. Its complete empty-cache two-loop boundary acceptance is still
+pending; opening the notebook starts no boundary calculation.
+
+`IntegralEvaluator(reductions=tables)` accepts a `ReductionTables` collection.
+Use `with_family` to add exact rules and declared residual masters for a native
+`hepkit.IntegralFamily`; it returns a new collection and rejects duplicate scopes
+or uncovered rule leaves. Rules use the family's original epsilon symbol with
+the dimension convention already substituted. Propagator order, routing,
+parameter namespaces, dimension and numerator-slot roles belong to the scope.
+Equivalent rational coefficient forms share a scope, while original denominator
+restrictions remain distinct. Preserve uncancelled expressions when admitting
+rules, or pass their exclusions explicitly as `nonzero_conditions`.
+
+Auxiliary deformations, specialized kinematics and recursive boundary families
+need their own admitted tables. Supplied identities remain the caller's
+mathematical contract; admission checks scope and consistency of the reduction
+graph. `PreparedIntegralFamily` exposes the retained basis, target reductions
+and nonzero conditions for inspection. `BoundaryCache` separates entries for
+different ordered bases, normalizations and conditions, including after binary
+reload. A condition omitted from a simplified differential matrix still
+restricts endpoint and path admissibility.
+
+Focused native-object examples and regressions are executable without the
+two-loop notebook:
+
+```sh
+python -m pytest tests/test_loop_integration_reductions.py -q
+```
+
 ## Notebook tensor displays
 
 Install the optional live-display dependencies alongside the community package:
