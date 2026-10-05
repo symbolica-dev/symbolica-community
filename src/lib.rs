@@ -17,6 +17,8 @@ use symbolica_integrate::Integrate;
 mod citations;
 mod hepkit;
 mod integration;
+#[cfg(not(target_arch = "wasm32"))]
+mod loop_integration;
 mod oneloop;
 
 #[cfg(feature = "python_stubgen")]

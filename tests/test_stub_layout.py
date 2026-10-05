@@ -11,6 +11,14 @@ import pytest
     ("module_name", "classes"),
     [
         (
+            "symbolica.community.hep.integration",
+            {
+                "IntegralEvaluator", "PreparedIntegralFamily", "KinematicTransport",
+                "BoundaryCache", "EvaluationOptions", "DifferentialSystem",
+                "BoundaryData", "LaurentExpansion", "TransportResult",
+            },
+        ),
+        (
             "symbolica.community.tensor",
             {"Tensor", "TensorExpression", "Representation"},
         ),

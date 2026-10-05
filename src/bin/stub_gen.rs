@@ -33,6 +33,16 @@ fn main() -> Result<()> {
         )
     };
     if only.is_none() || only == Some("hepkit") {
+        let numerical = stub
+            .modules
+            .remove("symbolica.community.hep.integration")
+            .ok_or_else(|| {
+                std::io::Error::other("Numerical loop integration did not register stub metadata")
+            })?;
+        write_package(
+            "symbolica.community.hep.integration",
+            &numerical.to_string(),
+        )?;
         let integration = stub
             .modules
             .remove("symbolica.community.hepkit.integration")
@@ -117,7 +127,7 @@ other : object
             community.submodules.remove("spenso");
             community.submodules.remove("vakint");
             community.submodules.insert("tensor".to_owned());
-            community.submodules.remove("hep");
+            community.submodules.insert("hep".to_owned());
         }
         // Keep the shipped canonical Symbolica stub and its community citation API.
         // Binding metadata does not include all of the canonical overloads.
