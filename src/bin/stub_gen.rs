@@ -32,6 +32,22 @@ fn main() -> Result<()> {
             source.trim_end().to_owned() + "\n",
         )
     };
+    if only.is_none() || only == Some("hepkit") {
+        let integration = stub
+            .modules
+            .remove("symbolica.community.hepkit.integration")
+            .ok_or_else(|| {
+                std::io::Error::other("Integration bindings did not register stub metadata")
+            })?;
+        write_package(
+            "symbolica.community.hepkit.integration",
+            &format!(
+                "{}\n{}\nfrom .. import ibp as ibp\n",
+                integration,
+                hyperbolica::python::STUB_EXTRAS,
+            ),
+        )?;
+    }
     if matches!(only, Some("tensor" | "vakint")) {
         let module_name = if only == Some("tensor") {
             "symbolica.community.tensor"
@@ -131,7 +147,7 @@ other : object
     let source = hepkit
         + "\n"
         + include_str!("../../stubs/ibp.pyi")
-        + "\nfrom . import ibp as ibp\nfrom . import oneloop as oneloop\nfrom . import vakint as vakint\n";
+        + "\nfrom . import integration as integration\nfrom . import ibp as ibp\nfrom . import oneloop as oneloop\nfrom . import vakint as vakint\n";
     write_package("symbolica.community.hepkit", &source)?;
     Ok(())
 }

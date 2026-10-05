@@ -8,7 +8,7 @@ license = "MIT"
 name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
-rust-version = "1.89"
+rust-version = "1.96"
 version = "3.0.1"
 exclude = ["dist"]
 
@@ -44,9 +44,10 @@ strip = "symbols"
 default = ["module", "native"]
 module = ["pyo3/abi3-py39"] # incompatible with stub_gen
 # Keep the system allocator: mimalloc can crash after Python's importing thread exits.
-native = ["symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3/native", "feynkit-py/native"]
-wasm = ["symbolica/wasm", "spynso3/wasm", "feynkit-py/wasm", "one-loop-reduce-python/wasm"]
+native = ["hyperbolica/native", "symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3/native", "feynkit-py/native"]
+wasm = ["hyperbolica/wasm", "symbolica/wasm", "spynso3/wasm", "feynkit-py/wasm", "one-loop-reduce-python/wasm"]
 python_stubgen = [
+    "hyperbolica/python_stubgen",
     "native",
     "pyo3-stub-gen",
     "symbolica/python_stubgen",
@@ -57,6 +58,7 @@ python_stubgen = [
 ]
 
 [dependencies]
+hyperbolica = { git = "https://github.com/benruijl/hyperbolica", rev = "89edca653ab21128d10cb338250e77fdd144b10e", default-features = false, features = ["python"] }
 one-loop-reduce-python = { git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
 spynso3 = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
 # Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.

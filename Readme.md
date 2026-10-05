@@ -296,3 +296,30 @@ Then try recompiling with the following rust flag:
 ```bash
 RUSTFLAGS="-L/opt/local/lib/libgcc -l dylib=gcc_s"
 ```
+
+
+### Exact definite integration
+
+```python
+from symbolica import S
+from symbolica.community.hepkit import integration
+x = S("x")
+assert integration.integrate(1/(x+1)**2, [x]) == 1
+```
+
+This shared-kernel API is backed by Hyperbolica. `integrate` uses `[0,+Infinity)`
+in the supplied variable order; `integrate_over` accepts directed intervals.
+`prepare` reuses lowered inputs, and the detailed variants return expression
+and algebraic-letter metadata. `Expression.integrate(x)` remains the separate
+antiderivative API. On native installations `integration.ibp` references the
+existing HEPkit IBP module, without automatically evaluating reduced masters.
+
+The same expression API is available in Pyodide, where execution is serial
+regardless of `IntegrationOptions.parallel`. IBP retains native-only availability.
+See `examples/hep_integration.py` for explicit integration of HEPkit Symanzik
+polynomials with stated normalization and projective gauge.
+
+Integration types are generated from Hyperbolica's binding metadata by
+`stub_gen --hepkit-only`; no separate Symbolica expression class is declared.
+The standalone Hyperbolica wheel has been retired. Import expression
+constructors from `symbolica` and catch `integration.IntegrationError`.

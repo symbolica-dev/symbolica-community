@@ -16,6 +16,7 @@ use symbolica_integrate::Integrate;
 
 mod citations;
 mod hepkit;
+mod integration;
 mod oneloop;
 
 #[cfg(feature = "python_stubgen")]

@@ -26,6 +26,7 @@ impl SymbolicaCommunityModule for HepKitModule {
                 relevance: None,
             });
         }
+        citations.extend(hyperbolica::python::CommunityModule::get_citations());
         citations
     }
 
@@ -35,6 +36,7 @@ impl SymbolicaCommunityModule for HepKitModule {
 
     fn register_module(module: &Bound<'_, PyModule>) -> PyResult<()> {
         feynkit_py::initialize_feynkit(module)?;
+        crate::integration::register(module)?;
         crate::oneloop::register(module)?;
         #[cfg(not(target_arch = "wasm32"))]
         rustred_feynkit::register_hep_module(module)?;
@@ -43,6 +45,7 @@ impl SymbolicaCommunityModule for HepKitModule {
 
     fn initialize(py: Python<'_>) -> PyResult<()> {
         feynkit_py::FeynkitModule::initialize(py)?;
+        hyperbolica::python::CommunityModule::initialize(py)?;
         oneloopreduce_python::CommunityModule::initialize(py)?;
         #[cfg(not(target_arch = "wasm32"))]
         oneloop_native::CommunityModule::initialize(py)?;
