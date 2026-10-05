@@ -67,6 +67,8 @@ in `examples/hep/gg_hg_acceptance.py`, separately from lightweight smoke tests.
 
 Builds currently require the native owner patches and Cargo overrides documented
 in [the pinned integration dependency guide](https://github.com/alphal00p/RustFlow/blob/6e86afd9bed4cde2d10a466fe7cb0aab4094c78b/docs/dependency-embedding.md).
+For a setup using published Git sources and reproducible HEPKit patches, follow
+the [clean community build recipe](https://github.com/alphal00p/RustFlow/blob/1224ca6f125a82df12953ee44fce785de2201fd4/docs/clean-community-build.md).
 Generate these hints with `stub_gen --hepkit-only`; the public package and stubs
 are under `python/symbolica/community/hep/integration/`. This module is excluded
 from browser builds, and existing `hepkit` and Hyperbolica imports are preserved.
@@ -88,8 +90,18 @@ the numerical cache fingerprint records the actual source contents, including
 local changes. To consume RustFlow directly from its pinned Git source, remove
 only its path patch and regenerate the lockfile once with `cargo metadata`;
 subsequent builds can use `--locked`. The HEPKit owner patches remain required.
-The validated owner checkout corresponds to `fc9ee6aa5`, based on `9d086ce`;
-the lock pins Symbolica's shared graph at `942bd2c0` and RustRed at `b3cecd6a`.
+The validated HEPKit owner checkout corresponds to `fc9ee6aa5`, based on
+`9d086ce`; RustRed remains pinned at `b3cecd6a`.
+
+Symbolica, Numerica and Graphica resolve together from official community
+commit `c3408e4ba1d3bdd4ea55678fad50e27009be13d4`, selected by `Cargo.lock`.
+It contains the [exact-division correction](https://github.com/symbolica-dev/symbolica/commit/c3408e4ba1d3bdd4ea55678fad50e27009be13d4)
+identified by the [standalone reproducer](https://github.com/alphal00p/RustFlow/blob/1224ca6f125a82df12953ee44fce785de2201fd4/docs/symbolica-exact-division-mre.md).
+The local Symbolica patch is retained as diagnostic history; builds use the
+official upstream source. Local Cargo configuration retains the required
+HEPKit overrides and lets the manifest select these three algebra packages.
+This dependency update creates a new numerical cache identity; results from
+the previous graph remain separate evidence.
 
 One-loop reduction from [one-loop-reduce](https://github.com/ecavan/one-loop-reduce)
 is available in `hep.oneloop`. Native builds also expose OneLoopMaster's scalar
