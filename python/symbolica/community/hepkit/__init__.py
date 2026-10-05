@@ -13,3 +13,9 @@ initialize_module()
 del initialize_module
 
 from . import oneloop as oneloop
+
+from symbolica.community import hepkit_native as _native
+
+if hasattr(_native, "_fastsecdec_native"):
+    from . import fastsecdec as fastsecdec
+del _native

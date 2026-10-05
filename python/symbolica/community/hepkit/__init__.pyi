@@ -11197,4 +11197,5 @@ class IBPCertificate:
 from . import ibp as ibp
 from . import rustred as rustred
 from . import oneloop as oneloop
+from . import fastsecdec as fastsecdec
 from . import vakint as vakint

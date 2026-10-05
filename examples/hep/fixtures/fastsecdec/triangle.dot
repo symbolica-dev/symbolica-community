@@ -1,0 +1,12 @@
+// Native HEPKit compact DOT. Model: ../models/massless_phi3.json.
+digraph triangle {
+    incoming [style=invis];
+    outgoing1 [style=invis];
+    outgoing2 [style=invis];
+    incoming -> a [id=0, particle="phi"];
+    b -> outgoing1 [id=1, particle="phi"];
+    c -> outgoing2 [id=2, particle="phi"];
+    a -> b [id=3, particle="phi", lmb_id=0];
+    b -> c [id=4, particle="phi"];
+    c -> a [id=5, particle="phi"];
+}

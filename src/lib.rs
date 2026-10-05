@@ -15,6 +15,8 @@ use symbolica::{
 use symbolica_integrate::Integrate;
 
 mod citations;
+#[cfg(feature = "experimental-fastsecdec")]
+mod fastsecdec;
 #[cfg(feature = "community")]
 mod hepkit;
 #[cfg(feature = "community")]

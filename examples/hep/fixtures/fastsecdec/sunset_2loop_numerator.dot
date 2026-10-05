@@ -1,0 +1,13 @@
+digraph sunset_2loop_numerator {
+  graph [label="sunset_2loop_numerator"];
+  ext0 [style=invis];
+  ext1 [style=invis];
+  v0 [num="gammalooprs::K(0,spenso::mink(4,mu))*gammalooprs::K(1,spenso::mink(4,mu))+2*gammalooprs::K(0,spenso::mink(4,nu))*gammalooprs::P(0,spenso::mink(4,nu))"];
+  v1;
+
+  v0 -> ext0 [id=0, particle="phi"];
+  v1 -> ext1 [id=1, particle="phi"];
+  v0 -> v1 [id=2, particle="phi", lmb_id=0];
+  v0 -> v1 [id=3, particle="phi", lmb_id=1];
+  v0 -> v1 [id=4, particle="phi"];
+}

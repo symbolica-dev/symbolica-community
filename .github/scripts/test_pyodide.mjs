@@ -72,7 +72,8 @@ await pyodide.runPythonAsync(
 await pyodide.runPythonAsync(`
 assert importlib.util.find_spec("numpy") is None
 # Array conversion and evaluator tests opt into the NumPy extra separately.
-await micropip.install(f"symbolica[numpy] @ {wheel_uri}")
+await micropip.install("numpy")
+import numpy
 `);
 await pyodide.runPythonAsync(`
 import symbolica.community.tensor as tensor_module
@@ -81,7 +82,7 @@ metric = TensorExpression(E("g(bis(4,1),bis(4,1))", default_namespace="spenso"))
 assert metric.simplify_algebra(contract="dots").to_expression() == E("4")
 rep = Representation.euc(2)
 tensor = Tensor.dense(TensorName("wasm_matrix")(rep, rep), [E("x"), E("2"), E("3"), E("4")])
-evaluator = tensor.evaluator(params=[S("x")], constants={}, funs={})
+evaluator = tensor.evaluator(params=[S("x")], jit_compile=False)
 assert list(evaluator.evaluate_complex([[5.0]])[0]) == [5.0, 2.0, 3.0, 4.0]
 assert list(evaluator.evaluate_complex([[1.0 + 2.0j]])[0]) == [1.0 + 2.0j, 2.0, 3.0, 4.0]
 library = TensorLibrary.hep_lib()

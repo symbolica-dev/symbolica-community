@@ -1,0 +1,18 @@
+digraph box {
+  graph [label="box"];
+  ext1 [style=invis];
+  ext2 [style=invis];
+  ext3 [style=invis];
+  ext4 [style=invis];
+  v1; v2; v3; v4;
+
+  v1 -> ext1 [id=0, particle="phi"];
+  v2 -> ext2 [id=1, particle="phi"];
+  v3 -> ext3 [id=2, particle="phi"];
+  v4 -> ext4 [id=3, particle="phi"];
+
+  v1 -> v2 [id=4, particle="phi"];
+  v2 -> v3 [id=5, particle="phi"];
+  v3 -> v4 [id=6, particle="phi"];
+  v4 -> v1 [id=7, particle="phi"];
+}

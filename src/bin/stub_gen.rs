@@ -8,16 +8,23 @@ fn main() -> Result<()> {
     let only = match std::env::args().skip(1).collect::<Vec<_>>().as_slice() {
         [] => None,
         [arg] if arg == "--hepkit-only" => Some("hepkit"),
+        [arg] if arg == "--fastsecdec-only" => Some("fastsecdec"),
         [arg] if arg == "--tensor-only" || arg == "--spenso-only" => Some("tensor"),
         [arg] if arg == "--oneloop-only" => Some("oneloop"),
         [arg] if arg == "--vakint-only" => Some("vakint"),
         _ => {
             return Err(std::io::Error::other(
-                "Usage: stub_gen [--hepkit-only | --tensor-only | --spenso-only | --oneloop-only | --vakint-only]",
+                "Usage: stub_gen [--hepkit-only | --fastsecdec-only | --tensor-only | --spenso-only | --oneloop-only | --vakint-only]",
             )
             .into());
         }
     };
+    if only == Some("fastsecdec") && !cfg!(feature = "experimental-fastsecdec") {
+        return Err(std::io::Error::other(
+            "--fastsecdec-only requires --features experimental-fastsecdec",
+        )
+        .into());
+    }
     let mut stub = stub_info()?;
     if let Some(module) = stub.modules.get_mut("symbolica.community.tensor") {
         spynso3::SpensoModule::prepare_stub_module(module);
@@ -53,6 +60,14 @@ fn main() -> Result<()> {
             module.to_string()
         };
         write_package(module_name, &source)?;
+        return Ok(());
+    }
+    if let Some(module) = stub.modules.remove("symbolica.community.hepkit.fastsecdec") {
+        let source = module.to_string()
+            + "\nclass FastSecDecError(RuntimeError):\n    stage: str\n\nclass CancelledError(FastSecDecError): ...\n";
+        write_package("symbolica.community.hepkit.fastsecdec", &source)?;
+    }
+    if only == Some("fastsecdec") {
         return Ok(());
     }
     let mut reducer = stub
@@ -135,7 +150,7 @@ other : object
     let source = hepkit
         + "\n"
         + include_str!("../../stubs/ibp.pyi")
-        + "\nfrom . import ibp as ibp\nfrom . import oneloop as oneloop\nfrom . import vakint as vakint\n";
+        + "\nfrom . import ibp as ibp\nfrom . import oneloop as oneloop\nfrom . import fastsecdec as fastsecdec\nfrom . import vakint as vakint\n";
     write_package("symbolica.community.hepkit", &source)?;
     Ok(())
 }
