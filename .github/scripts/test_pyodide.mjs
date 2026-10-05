@@ -84,7 +84,7 @@ metric = TensorExpression(E("g(bis(4,1),bis(4,1))", default_namespace="spenso"))
 assert metric.simplify_algebra(contract="dots").to_expression() == E("4")
 rep = Representation.euc(2)
 tensor = Tensor.dense(TensorName("wasm_matrix")(rep, rep), [E("x"), E("2"), E("3"), E("4")])
-evaluator = tensor.evaluator(params=[S("x")], constants={}, funs={})
+evaluator = tensor.evaluator(params=[S("x")], jit_compile=False)
 assert list(evaluator.evaluate_complex([[5.0]])[0]) == [5.0, 2.0, 3.0, 4.0]
 assert list(evaluator.evaluate_complex([[1.0 + 2.0j]])[0]) == [1.0 + 2.0j, 2.0, 3.0, 4.0]
 library = TensorLibrary.hep_lib()
@@ -156,6 +156,15 @@ except ImportError as error:
     assert "native Symbolica installation" in str(error)
 else:
     raise AssertionError("vakint should require a native installation")
+# Loop-integral evaluation belongs to the native host; the existing browser
+# HEPKit and Hyperbolica APIs remain available and are exercised below.
+assert "symbolica.community.hep_integration_native" not in sys.modules
+try:
+    import symbolica.community.hep.integration
+except ModuleNotFoundError as error:
+    assert error.name == "symbolica.community.hep_integration_native", error
+else:
+    raise AssertionError("Loop-integral evaluation should require a native installation")
 `);
 const integrationContract = await readFile(new URL("../../tests/integration_contract.py", import.meta.url), "utf8");
 await pyodide.runPythonAsync(integrationContract + "\ncheck_integration_contract()\ncheck_symanzik_example()\nassert not hasattr(api, 'ibp')\n");
