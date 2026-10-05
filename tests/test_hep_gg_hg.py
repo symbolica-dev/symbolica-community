@@ -3,6 +3,9 @@
 import importlib.util
 import hashlib
 import json
+import runpy
+import subprocess
+import sys
 from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 from threading import Event, Lock
@@ -542,3 +545,129 @@ def test_acceptance_rejects_changed_execution_input(acceptance, tmp_path, monkey
     assert original["sha256"] == hashlib.sha256(
         b"original executed source\n"
     ).hexdigest()
+
+
+def test_acceptance_rejects_optimized_python_before_starting_work(acceptance, tmp_path):
+    destination = tmp_path / "must-not-start"
+    process = subprocess.run(
+        [sys.executable, "-O", acceptance.__file__, "--directory", str(destination)],
+        capture_output=True, text=True, timeout=30,
+    )
+    assert process.returncode != 0
+    assert "Acceptance requires enabled assertions" in process.stderr
+    assert not destination.exists()
+
+
+@pytest.mark.parametrize("change,error,message", [
+    ("1e-22", "1e-30", "coefficient uncertainty estimates"),
+    ("1e-18", "1e-16", "mixed accuracy target"),
+])
+def test_refinement_rejects_underreported_errors_and_insufficient_accuracy(
+    acceptance, change, error, message,
+):
+    value = ComplexFloat("1", decimal_digits=90)
+    allowance = Float(error, decimal_digits=90)
+    previous = SimpleNamespace(coefficients=[[value]], comparison_errors=[[allowance]])
+    result = SimpleNamespace(
+        coefficients=[[value + ComplexFloat(change, decimal_digits=90)]],
+        comparison_errors=[[allowance]],
+    )
+    with pytest.raises(AssertionError, match=message):
+        acceptance.check_coefficient_refinement(
+            previous, result, label="controlled refinement",
+            tolerance=Float("1e-20", decimal_digits=90), one=Float("1", decimal_digits=90),
+        )
+
+
+def test_refinement_accepts_difference_covered_by_combined_native_errors(acceptance):
+    value = ComplexFloat("1", decimal_digits=90)
+    previous = SimpleNamespace(
+        coefficients=[[value]], comparison_errors=[[Float("6e-26", decimal_digits=90)]],
+    )
+    result = SimpleNamespace(
+        coefficients=[[value + ComplexFloat("1e-25", decimal_digits=90)]],
+        comparison_errors=[[Float("6e-26", decimal_digits=90)]],
+    )
+    assert acceptance.check_coefficient_refinement(
+        previous, result, label="controlled refinement",
+        tolerance=Float("1e-20", decimal_digits=90), one=Float("1", decimal_digits=90),
+    ) == 1
+
+
+def test_form_factor_comparison_uses_all_recorded_reference_allowances(acceptance):
+    reference = json.loads((EXAMPLES / "data/gg_hg/amplitude-validation.json").read_text())
+    native = {
+        block["mass"]: SimpleNamespace(
+            values=[ComplexFloat(row["real"], row["imaginary"], decimal_digits=100)
+                    + ComplexFloat(row["absolute_error"], decimal_digits=100) / 2
+                    for row in block["values"]],
+            absolute_errors=[Float("1e-50", decimal_digits=100) for _ in block["values"]],
+            verified_relative_digits=[40 for _ in block["values"]],
+        )
+        for block in reference["form_factors"]
+    }
+    report = acceptance.compare_form_factors(native, reference)
+    assert report["components"] == 8
+    for block in reference["form_factors"]:
+        assert [row["reference_absolute_error"] for row in report["comparison"][block["mass"]]] == [
+            row["absolute_error"] for row in block["values"]
+        ]
+    allowance = reference["form_factors"][0]["values"][0]["absolute_error"]
+    native["W"].values[0] += ComplexFloat(allowance, decimal_digits=100) * 2
+    with pytest.raises(AssertionError, match="form-factor uncertainty estimates"):
+        acceptance.compare_form_factors(native, reference)
+
+
+@pytest.mark.parametrize("nearby", [False, True])
+def test_notebook_displays_eight_native_form_factors_at_the_current_point(monkeypatch, nearby):
+    marimo = pytest.importorskip("marimo", minversion="0.24.0")
+    reference = json.loads((EXAMPLES / "data/gg_hg/amplitude-validation.json").read_text())
+    point = [E(value) for value in reference["physical_s_t_MH_squared"]]
+    if nearby:
+        point[0] += E("1/100000")
+    form_factors = {
+        block["mass"]: SimpleNamespace(
+            values=[ComplexFloat(row["real"], row["imaginary"], decimal_digits=100)
+                    for row in block["values"]],
+            absolute_errors=[Float("1e-40", decimal_digits=100) for _ in block["values"]],
+            verified_relative_digits=[30 for _ in block["values"]],
+        )
+        for block in reference["form_factors"]
+    }
+    native_values = {name: Float(value, decimal_digits=100)
+                     for name, value in reference["expected_observables"].items()}
+    display_session = SimpleNamespace(
+        point=point, masses={"W": E("5399/13074"), "Z": E("7775/14631")},
+        results={}, amplitude=SimpleNamespace(diagrams=[]), form_factors=form_factors,
+        observables=SimpleNamespace(
+            values=native_values,
+            absolute_errors={name: Float("1e-40", decimal_digits=100) for name in native_values},
+            verified_relative_digits={name: 30 for name in native_values},
+            provenance="Synthetic display fixture; no native computation requested",
+        ),
+        snapshot=lambda: {"done": True, "status": "ready", "timings": [], "events": []},
+    )
+    captured = []
+    table = marimo.ui.table
+
+    def record_table(data, *args, **kwargs):
+        if kwargs.get("label") == "Native W/Z form factors and propagated uncertainties":
+            captured.extend(data)
+        return table(data, *args, **kwargs)
+
+    monkeypatch.setattr(marimo.ui, "table", record_table)
+    app = runpy.run_path(str(EXAMPLES / "gg_hg.py"), run_name="notebook_display_test")["app"]
+    app.run(defs={"session": display_session})
+    assert [row["form factor"] for row in captured] == [f"{mass}{i}" for mass in ("W", "Z") for i in range(1, 5)]
+    for row in captured:
+        mass, index = row["form factor"][0], int(row["form factor"][1]) - 1
+        assert row["native result"] == str(form_factors[mass].values[index])
+        assert row["propagated absolute uncertainty"] == str(form_factors[mass].absolute_errors[index])
+        assert row["achieved relative digits"] == 30
+        if nearby:
+            assert row["reference at recorded point"] == "different kinematics"
+            assert row["reference absolute uncertainty"] == row["absolute difference"] == "—"
+        else:
+            assert row["reference at recorded point"] == row["native result"]
+            assert row["reference absolute uncertainty"] != "—"
+            assert Float(row["absolute difference"], decimal_digits=100) == 0
