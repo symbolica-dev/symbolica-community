@@ -231,9 +231,15 @@ await micropip.install("symbolica")
 or can be manually built using `maturin`:
 
 ```bash
-cargo run --features "python_stubgen" --no-default-features # generate type hints
-maturin build --release
+RUSTFLOW_WORKSPACE_FEATURES=python_stubgen RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES=1 \
+  cargo run --locked --features python_stubgen --no-default-features --bin stub_gen
+RUSTFLOW_WORKSPACE_FEATURES=pyo3/extension-module RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES=0 \
+  maturin build --release --locked
 ```
+
+The native build forwards the `pyo3/extension-module` feature selected by
+`pyproject.toml` so numerical-cache fingerprints describe the actual host
+dependency graph. Stub generation uses its separate feature selection.
 
 
 ## For developers

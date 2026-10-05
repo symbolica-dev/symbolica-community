@@ -276,7 +276,8 @@ with the project's native build dependencies and a suitable Symbolica license:
 
 ```sh
 pip install 'maturin>=1.13.2,<2' 'marimo>=0.24.2,<0.25'
-maturin develop --release --locked
+RUSTFLOW_WORKSPACE_FEATURES=pyo3/extension-module RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES=0 \
+  maturin develop --release --locked --extras notebook-display
 marimo edit examples/hep/four_loop_reduction.py
 ```
 
