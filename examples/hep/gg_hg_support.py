@@ -121,7 +121,7 @@ class CalculationSession:
             else:
                 result = self.restart_and_repeat()
             return result
-        except Exception as exc:
+        except BaseException as exc:
             outcome = f"{type(exc).__name__}: {exc}"
             raise
         finally:
@@ -209,7 +209,7 @@ class CalculationSession:
                     recompute=recompute, control=control,
                 )
                 cache_hit = result.cache_hit
-            except Exception as exc:
+            except BaseException as exc:
                 outcome = f"{type(exc).__name__}: {exc}"
                 raise
             finally:
@@ -243,7 +243,9 @@ class CalculationSession:
                         self.events.append(f"Saved boundary {label}; cache hit: {result.cache_hit}.")
                 except CancelledError:
                     continue  # A queued sibling cancelled after the original failure.
-                except Exception as exc:
+                except BaseException as exc:
+                    # PyO3 native panics derive directly from BaseException.
+                    # Preserve their type while cooperatively stopping siblings.
                     if failure is None:
                         failure = exc
                     control.cancel()
