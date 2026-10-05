@@ -26,6 +26,9 @@ jobs:
           python-version: "3.10"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
+        env:
+          RUSTFLOW_WORKSPACE_FEATURES: pyo3/extension-module
+          RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES: "0"
         with:
           target: ${{ matrix.runner[1] }}
           args: --release --out dist --sdist
@@ -49,6 +52,9 @@ jobs:
           python-version: "3.10"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
+        env:
+          RUSTFLOW_WORKSPACE_FEATURES: pyo3/extension-module
+          RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES: "0"
         with:
           target: ${{ matrix.runner[1] }}
           args: --release --out dist
@@ -86,6 +92,8 @@ jobs:
         shell: msys2 {0}
         env:
           CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+          RUSTFLOW_WORKSPACE_FEATURES: pyo3/extension-module
+          RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES: "0"
         run: |
           pip install maturin delvewheel
           maturin build --release --out dist

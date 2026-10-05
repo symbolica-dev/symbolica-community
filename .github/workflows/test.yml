@@ -27,6 +27,10 @@ jobs:
 
             - name: Build wheel
               uses: PyO3/maturin-action@v1
+              env:
+                  # Match tool.maturin.features when fingerprinting the host graph.
+                  RUSTFLOW_WORKSPACE_FEATURES: pyo3/extension-module
+                  RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES: "0"
               with:
                   command: build
                   args: --out dist
