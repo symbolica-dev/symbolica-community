@@ -84,6 +84,32 @@ def test_native_inputs_do_not_read_numerical_references(tmp_path, monkeypatch):
         session.close()
 
 
+def test_boundary_step_budget_preserves_precision_and_physical_transport(session, monkeypatch):
+    native_options = numerical.EvaluationOptions
+    requested = []
+
+    def record_options(**kwargs):
+        requested.append(kwargs)
+        return native_options(**kwargs)
+
+    monkeypatch.setattr(numerical, "EvaluationOptions", record_options)
+    session.seed_digits = 40
+    physical = session._options()
+    boundary = session._options(seeds=True)
+    assert requested[0]["max_steps"] == 1000
+    assert requested[1]["max_steps"] == 2000
+    assert physical.digits == session.digits
+    assert boundary.digits == 40
+    for options in (physical, boundary):
+        assert options.guard_digits == 60
+        assert options.series_order == 96
+        # Exercise the native options handoff without evaluating an integral.
+        prepared = numerical.IntegralEvaluator(options=options).options
+        assert prepared.digits == options.digits
+        assert prepared.guard_digits == options.guard_digits
+        assert prepared.series_order == options.series_order
+
+
 def test_interrupted_nearby_transport_cannot_mix_physical_points(session):
     old = SimpleNamespace(coefficients=[["old point"]])
     session.results = {configuration.label: old for _, configuration in session.configurations}
