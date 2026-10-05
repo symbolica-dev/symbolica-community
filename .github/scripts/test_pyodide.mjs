@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 
 const wheelDir = process.argv[2];
 const runtimeDir = process.env.PYODIDE_DIST_DIR;
+const expectCommunity = process.env.SYMBOLICA_EXPECT_COMMUNITY !== "0";
 assert(wheelDir && runtimeDir, "Pass the wheel directory and set PYODIDE_DIST_DIR");
 const wheels = (await readdir(wheelDir)).filter((name) =>
   name.endsWith("-pyemscripten_2026_0_wasm32.whl"),
@@ -60,6 +61,23 @@ assert result == expression.integrate(S("x")) == E("atan(x)")
 assert overview.strip()
 assert any(step.rule is not None and step.source and step.description for step in steps)
 assert version("symbolica") == expected_version
+from symbolica import get_citations
+assert any(citation.id == "https://github.com/symbolica-dev/symbolica-integrate" for citation in get_citations())
+`);
+if (expectCommunity) {
+await pyodide.runPythonAsync(`
+import importlib.util
+assert importlib.util.find_spec("numpy") is None
+`);
+await pyodide.runPythonAsync(
+  await readFile(new URL("../../tests/check_offline_rendering.py", import.meta.url), "utf8"),
+);
+await pyodide.runPythonAsync(`
+assert importlib.util.find_spec("numpy") is None
+# Array conversion and evaluator tests opt into the NumPy extra separately.
+await micropip.install(f"symbolica[numpy] @ {wheel_uri}")
+`);
+await pyodide.runPythonAsync(`
 import symbolica.community.tensor as tensor_module
 from symbolica.community.tensor import Representation, Tensor, TensorExpression, TensorLibrary, TensorName, TensorNetwork, dot
 metric = TensorExpression(E("g(bis(4,1),bis(4,1))", default_namespace="spenso"))
@@ -75,6 +93,25 @@ network = TensorNetwork(tensor.expression()(1, 1), library=library)
 network.execute(library=library)
 assert list(network.result_tensor(library=library)) == [E("x+4")]
 assert "symbolica.community.tensor_native" in sys.modules
+# Large outputs must render and navigate without launching a Typst process.
+preview_value = TensorExpression(E("+".join(f"{i + 1}*wasm_paging::x^{i}" for i in range(301))))
+preview_original = preview_value.to_expression()
+preview = preview_value.paged()
+widget = preview._get_widget()
+preview._on_message(widget, {"action": "attach", "view": "wasm-smoke"}, [])
+assert widget.page["connected"] == "wasm-smoke"
+first_html = widget.page["html"]
+assert "<math" in first_html and "Page rendering failed" not in first_html
+assert len(first_html.encode()) <= 256 * 1024
+preview._on_message(widget, {"action": "next", "request": "next"}, [])
+assert widget.page["start"] == 25 and widget.page["request"] == "next"
+assert "<math" in widget.page["html"]
+preview._on_message(widget, {"action": "previous"}, [])
+assert widget.page["start"] == 0 and widget.page["html"] == first_html
+preview._on_message(widget, {"action": "size", "value": 100}, [])
+assert widget.page["page_size"] == 100 and widget.page["end"] == 100
+assert preview_value.to_expression() == preview_original
+preview.close()
 from symbolica.community import hepkit as hep
 assert hep.FeynmanDiagram.__module__ == "symbolica.community.hepkit"
 model = hep.Model.from_json(hep_model_json)
@@ -99,6 +136,16 @@ reduced = hep.TensorReducer(D, integrated=[kv.to_expression()]).reduce(numerator
 expected = (dot(kv, kv) * dot(pv, pv) / D).to_expression()
 assert (reduced - expected).expand() == E("0")
 assert hep.ThreeMomentum(3.0, 4.0, 0.0).on_shell().components() == (5.0, 3.0, 4.0, 0.0)
+from symbolica.community.hepkit import oneloop
+d, ell, mass = S("oneloop_smoke::d", "oneloop_smoke::ell", "oneloop_smoke::m2")
+kinematics = hep.Kinematics(d, momenta=[ell])
+family = hep.IntegralFamily(
+    [ell], [], [kinematics.scalar_product(ell, ell) - mass], kinematics=kinematics,
+)
+reduction = oneloop.reduce(family, [1])
+assert reduction.to_expression() == E("oneloopmaster::A0")(mass, E("1"))
+assert not hasattr(oneloop, "Evaluator")
+assert not hasattr(oneloop, "compile_native")
 assert "symbolica.community.hepkit_native" in sys.modules
 assert not hasattr(evaluator, "compile")
 assert not hasattr(tensor_module, "CompiledTensorEvaluator")
@@ -113,6 +160,18 @@ else:
 const integrationContract = await readFile(new URL("../../tests/integration_contract.py", import.meta.url), "utf8");
 await pyodide.runPythonAsync(integrationContract + "\ncheck_integration_contract()\ncheck_symanzik_example()\nassert not hasattr(api, 'ibp')\n");
 console.log("Shared integration fixtures and HEPkit Symanzik example passed (parallel=False/True).");
+
+} else {
+await pyodide.runPythonAsync(`
+import importlib.util
+import zipfile
+assert importlib.util.find_spec("symbolica.community") is None
+assert not any(name.startswith("symbolica.community") for name in sys.modules)
+with zipfile.ZipFile(wheel_uri.removeprefix("emfs:")) as archive:
+    assert not any(name.startswith("symbolica/community/") for name in archive.namelist())
+print("Core-only wheel: algebra and integration passed; community packages absent.")
+`);
+}
 const modulePath = pyodide.runPython("import symbolica.core; symbolica.core.__file__");
 const wasmBytes = pyodide.FS.readFile(modulePath);
 const wasm = await WebAssembly.compile(wasmBytes);
@@ -133,7 +192,7 @@ const inventoryConstructors = [
   /^_ZN11hyperbolica7symbols1_6__CTOR17h[0-9a-f]{16}E$/,
   // multiple-pymethods registers Python method blocks through inventory.
   // Only accept constructor globals from the known binding namespaces.
-  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|9linnet_py|7spynso3|20oneloopreduce_python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
+  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|7spynso3|9linnet_py|20oneloopreduce_python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
 ];
 assert(exports.some(({ name }) => name === "PyInit_core"), "Missing Python module entry point");
 assert.deepEqual(

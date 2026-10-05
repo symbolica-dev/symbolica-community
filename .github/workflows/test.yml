@@ -40,21 +40,23 @@ jobs:
 
             - name: Install package and test dependencies
               run: |
-                  pip install dist/*.whl
-                  pip install pytest ty
+                  for wheel in dist/*.whl; do
+                      pip install "$wheel[notebook-display]"
+                  done
+                  pip install pytest ty numpy
 
             - name: Check public community import types
-              run: ty check --python-version 3.10 tests/typing/community_layout.py tests/typing/integration.py
+              run: ty check --python-version 3.10 tests/typing/community_layout.py tests/typing/expression_products.py tests/typing/integration.py tests/typing/loop_integration.py tests/typing/scoped_reductions.py
 
             - name: Run tests
               env:
-                  SYMBOLICA_LICENSE_KEY: ${{ secrets.SYMBOLICA_LICENSE_KEY }}
+                  SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
               run: pytest tests/ -v
 
             - name: Run tests with coverage
               if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'
               env:
-                  SYMBOLICA_LICENSE_KEY: ${{ secrets.SYMBOLICA_LICENSE_KEY }}
+                  SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
               run: |
                   pip install pytest-cov
                   pytest tests/ --cov=symbolica --cov-report=xml --cov-report=term
@@ -66,3 +68,12 @@ jobs:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   files: ./coverage.xml
                   fail_ci_if_error: false
+
+            # Install Marimo after the broad suite so only this focused smoke
+            # check enables notebook execution; no two-loop boundaries run here.
+            - name: Render the Higgs-jet notebook and check its controller
+              env:
+                  SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
+              run: |
+                  pip install 'marimo>=0.24.2,<0.25'
+                  python -m pytest -q tests/test_hep_gg_hg.py tests/test_hep_notebooks.py -k gg_hg

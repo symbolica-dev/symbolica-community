@@ -101,6 +101,34 @@ class IBPFamily:
 
         >>> assert ibp.denominator_count == len(family.denominators)
         """
+    @property
+    def parameter_bindings(self) -> list[tuple[Expression, Expression]]:
+        """Internal polynomial parameters paired with original HEPKit atoms.
+
+        A presentation legend, not a replacement of serialized artifact names.
+        """
+        ...
+    def start_generation(self, *, event_capacity: int = 256, **options: object) -> rustred.CandidateGenerationSession:
+        """Start native generation from this exact routed family, without re-parsing.
+
+        Poll the bounded stream for progress; cancellation drains at native safe
+        boundaries. Output is a generated candidate, not a closure certificate.
+        ``nonpositive_indices`` identifies auxiliary scalar-product slots.
+        Cut families currently use the existing cut-aware finite/parametric APIs.
+        """
+        ...
+    def normalize_candidate_terminals(
+        self, artifact: rustred.CandidateArtifact, *, max_terminals: int = 1000000,
+        max_supports: int = 100000, max_matrix_cells: int = 1000000,
+        max_output_terms: int = 4000000,
+    ) -> rustred.TerminalNormalization:
+        """Explicit exact normalization of saved finite residuals in this family.
+
+        Uses native unit aliases and weighted polynomial-numerator relations;
+        it does not regenerate candidates, solve ordinary IBPs, certify closure,
+        or prove master independence. Native family identity must match.
+        """
+        ...
     def ibp_identities(self) -> list[list[tuple[list[Expression], Expression]]]:
         r"""
         Generate the L*(L+E) ordinary IBP equations with symbolic indices.

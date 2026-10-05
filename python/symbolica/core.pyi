@@ -20,8 +20,15 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Callable, Iterator, Literal, Sequence, overload
 
+import typing
+
 import numpy as np
 import numpy.typing as npt
+
+_ExpressionProductT_co = typing.TypeVar("_ExpressionProductT_co", covariant=True)
+
+class _ExpressionProduct(typing.Protocol[_ExpressionProductT_co]):
+    def __symbolica_rmul__(self, left: Expression, /) -> _ExpressionProductT_co: ...
 
 class Float:
     """An immutable real number with arbitrary binary precision.
@@ -3365,16 +3372,28 @@ class Expression:
             The other operand to combine or compare with.
         """
 
+    @overload
+    def __mul__(self, rhs: _ExpressionProduct[_ExpressionProductT_co]) -> _ExpressionProductT_co:
+        """Multiply by an extension operand, preserving its declared result type."""
+
+    @overload
     def __mul__(
-        self, other: Expression | int | float | complex | Float | ComplexFloat | Decimal
+        self, rhs: Expression | int | float | complex | Float | ComplexFloat | Decimal
     ) -> Expression:
-        """
-        Multiply this expression with `other`, returning the result.
+        """Multiply this expression by a scalar or an extension operand.
+
+        Extension operands implementing ``__symbolica_rmul__(left)`` retain
+        their declared result type. Other operands use scalar multiplication.
 
         Parameters
         ----------
-        other: Expression | int | float | complex | Float | ComplexFloat | Decimal
-            The other operand to combine or compare with.
+        rhs : Expression | int | float | complex | Float | ComplexFloat | Decimal
+            Right operand, or an extension supporting ``__symbolica_rmul__``.
+
+        Returns
+        -------
+        Expression or extension result
+            The scalar product, or the extension's multiplication result.
         """
 
     def __rmul__(
@@ -12779,7 +12798,6 @@ class Integer:
         gamma: Float | float | Decimal | None
             The PSLQ gamma parameter controlling the reduction strategy.
         """
-
 
 def get_citations() -> list[Citation]:
     """Return cumulative references for Symbolica and the community features used."""

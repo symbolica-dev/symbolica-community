@@ -211,7 +211,6 @@ def test_three_rung_ladder_pages_keep_factorization_and_budgets():
     """The 6,001-term example that formerly produced 380,000 MathML nodes."""
     from symbolica import Graph
     from symbolica.community.hepkit import Model
-    from symbolica.community.tensor import Representation
 
     target = Graph()
     for _ in range(8):
@@ -243,11 +242,12 @@ def test_three_rung_ladder_pages_keep_factorization_and_budgets():
             diagram.numerator_expression(in_lmb=True).to_expression()
         )
     ).with_lorentz_dimension(dimension)
+    slots = [slot.dual() for slot in numerator.structure.slots()]
     projector = (
-        TensorExpression.g(Representation.mink(dimension))
-        * TensorExpression.g(Representation.coad(8))
+        TensorExpression.g(slots[0], slots[1])
+        * TensorExpression.g(slots[2], slots[3])
         / 8
-    ).index(*(slot.dual() for slot in numerator.structure.slots))
+    )
     value = (
         (projector * numerator)
         .simplify_algebra(

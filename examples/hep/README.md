@@ -19,6 +19,26 @@ from symbolica.community.hepkit import FeynmanDiagram, Model, TensorReducer
 Class identities and the exception hierarchy are preserved; their Python
 `__module__` and the bundled stubs name `symbolica.community.hepkit`.
 
+Numerical external states use the shared GammaLoop/MadGraph conventions:
+
+```python
+from symbolica.community import hepkit as hep
+
+p = hep.FourMomentum(150.0, 0.0, 0.0, 150.0)
+epsilon = p.wavefunction("epsilon", hep.Helicity.PLUS)
+components = epsilon.components
+assert epsilon.bar().bar() == epsilon
+```
+
+`FourMomentum.wavefunction` accepts `scalar`, `epsilon`, `epsilon_bar`, `u`,
+`u_bar`, `v` and `v_bar`. Scalars use zero helicity; spinors use plus or minus;
+massive vectors also admit zero helicity. The inherited longitudinal convention
+is undefined at rest or zero mass and raises `KinematicsError`. Vector components
+follow `(E,x,y,z)` with metric `+---`; spinors use the chiral gamma basis and
+`bar()` takes the Dirac adjoint. These numerical external states have four
+components (one for scalars), independently of the symbolic internal dimension.
+They include no couplings, helicity sum or averaging.
+
 Start with [gamma algebra](gamma_simplification.py), then
 [color algebra](color_algebra.py) and [tensor reduction](tensor_reduction.py).
 [Higgs diphoton decay](Higgs_diphoton_decay.py) follows a generated fermion loop
@@ -74,6 +94,11 @@ provides separate worked IBP notebooks:
   combinations, and exact checks of the defining IBP identities.
 - [Two-loop phi4 self-energy](ibp_phi4.py) and [vertex](phi4_two_loop_vertex.py):
   generated diagrams, reductions and counterterms.
+- [Four-loop vacuum IBP laboratory](four_loop_reduction.py): standard
+  DOT graphs for H, X, BMW and FG become routed HEPKit families, then run a
+  native single-worker RustRed candidate search with streamed progress and
+  lazy rule, guard and terminal inspection. It generates the candidates live;
+  it does not load a prepared rule catalog or assert full-family closure.
 
 All these examples use the shared `hepkit.IntegralFamily` frontend with
 `hepkit.Kinematics` and a symbolic dimension. The one-loop example chooses
@@ -125,11 +150,19 @@ form-factor projections depend on the actual kinematics, including nearby
 evaluations. Numerical references never supply boundary or amplitude inputs.
 
 The load-or-compute controls preserve accumulated intermediate points. Forced
-boundary recomputation clears both verified-boundary banks before starting,
-ignores numerical sample reuse, and retains exact reduction data. Forced
+boundary recomputation archives both verified-boundary banks and all completed
+numerical samples under `numerical-history/` before starting, while retaining
+exact reduction data. A durable generation record lets a restarted session
+reuse only new work, even at unchanged precision with identical sample keys.
+If preparation is interrupted between directory moves, ordinary stages fail
+closed; create or reuse a session and select **Recompute boundaries** again to
+recover. Prior numerical files remain in the history directories. Forced
 transport resets its bank to the saved seed-only bank. Cancellation can leave
 completed samples or complete configurations for restart; it never admits a
-partial set of transported configurations to amplitude assembly. Native
+partial set of transported configurations to amplitude assembly. Forced
+amplitude assembly clears derived values before projection, reuses its exact
+contraction kernel, and publishes new form factors and observables only after
+successful evaluation at the current kinematics. Native
 cancellation checks occur between algebra/reducer operations, so stopping a
 large operation may take time. Use one live session per cache directory.
 
@@ -139,13 +172,41 @@ The lightweight controller and notebook checks start no two-loop evaluation:
 python -m pytest tests/test_hep_gg_hg.py tests/test_hep_notebooks.py -k gg_hg -q
 ```
 
-The separate long runner requires a release-built native extension. Use an
-empty directory for a cold run; completed numerical samples are kept apart
-from verified boundaries:
+The long runners require the same release-built native extension. First run the
+independent Euclidean-anchor check with an empty output directory:
 
 ```sh
-python examples/hep/gg_hg_acceptance.py --directory /path/to/empty-run
-python examples/hep/gg_hg_acceptance.py --directory /path/to/run --resume
+python examples/hep/gg_hg_anchor_acceptance.py --directory /path/to/euclidean-anchors --workers 16
+```
+
+This computes the planar point `(-1/10,-1/25,-1/50)` and nonplanar point
+`(-1/10,-1/5,-1)` with principal roots. These exact inputs are independent of
+the comparison files. Both native calculations must finish before either
+archived numerical reference is opened. All 240 planar and 305 nonplanar
+coefficients through epsilon power four are checked against their recorded
+40-digit allowances and native uncertainty estimates, with at least 20 digits
+of independently checked native accuracy. No Mathematica or plugin runtime is
+required. The output is `/path/to/euclidean-anchors/anchor-acceptance.json`;
+individual run reports remain under `runs/`.
+
+Use `--resume` to continue completed configurations and samples. `--force`
+archives both old numerical banks and sample directories before either family
+starts, retaining exact reductions. An interrupted forced run can then resume
+only its new numerical work. `--cancel-file PATH` requests cooperative native
+cancellation when that file exists. Verified banks and completed samples are
+stored separately. If interruption occurs while the old directories are being
+archived, restart with `--force`; a persisted marker refuses ordinary resume
+until both families have been safely prepared.
+
+Pass the anchor report to the full physical run to require matching native
+source identity, installed extension and steering sources before computation.
+Use an empty directory for a cold physical run:
+
+```sh
+python examples/hep/gg_hg_acceptance.py --directory /path/to/empty-run \
+  --anchor-report /path/to/euclidean-anchors/anchor-acceptance.json
+python examples/hep/gg_hg_acceptance.py --directory /path/to/run --resume \
+  --anchor-report /path/to/euclidean-anchors/anchor-acceptance.json
 ```
 
 Configuration concurrency is optional and defaults to one. To run four
@@ -154,7 +215,8 @@ sample workers, use:
 
 ```sh
 python examples/hep/gg_hg_acceptance.py --directory /path/to/empty-run \
-  --boundary-workers 4 --workers 64 --interrupt-after-samples 1
+  --boundary-workers 4 --workers 64 --interrupt-after-samples 1 \
+  --anchor-report /path/to/euclidean-anchors/anchor-acceptance.json
 ```
 
 The controller caps configuration concurrency at the total worker budget and
@@ -171,8 +233,10 @@ Add `--interrupt-after-samples 1` to exercise typed cancellation during the
 forced higher-precision boundary run, after a complete sample checkpoint and
 before its first verified configuration. The initial cold run is completed
 without this interruption. After cancellation, the runner reloads and resumes
-the new precision's completed samples; its previously cleared boundary banks
-remain empty. Both the total interrupted work and cancellation latency are
+the new generation's completed samples; its previously cleared boundary banks
+remain empty. Archived pre-force samples and active new samples are counted
+separately, with retained-payload checks for both. Progress and timing records
+include the numerical generation. Both interrupted work and cancellation latency are
 reported. With the defaults, the cold run starts with 30-digit seeds and forced
 refinement requests ten extra digits (40 unless observable error propagation
 already required stronger seeds). These are different precision workloads, so
@@ -195,12 +259,127 @@ polling interval. Observing progress neither changes numerical results nor
 admits new boundary evidence. A failure or external interrupt is recorded
 before waiting for native workers to stop.
 
-Independent native planar and nonplanar Euclidean-anchor validation is a
-separate prerequisite, performed by the Rust library's `gg_hg_boundaries`
-runner. The Python runner does not perform that gate. Its success alone, or
-success of these lightweight tests, must not be reported as completion of the
-entire native-boundary acceptance. The full cold numerical calculation and
-its performance measurements remain pending until the long runs finish.
+Independent native planar and nonplanar Euclidean-anchor validation is the
+separate prerequisite described above. Supply its report with `--anchor-report`
+to associate the full physical run with that matching-source evidence. Success
+of the lightweight tests alone must not be reported as completion of the
+native-boundary acceptance. The full cold numerical calculation and its
+performance measurements remain pending until the long runs finish.
+
+## Live RustRed generation and artifact exploration
+
+The four-loop laboratory needs a native community build containing the
+`rustred-feynkit/campaign-api` feature, enabled in this checkout. It uses the
+host's existing Symbolica kernel; do not install a separate RustRed extension
+to provide the notebook's native objects. From an activated virtual environment
+with the project's native build dependencies and a suitable Symbolica license:
+
+```sh
+pip install 'maturin>=1.13.2,<2' 'marimo>=0.24.2,<0.25'
+maturin develop --release --locked
+marimo edit examples/hep/four_loop_reduction.py
+```
+
+Select **Generate H → X → BMW → FG** explicitly. The notebook's collapsed setup and reusable
+`rustred_campaign_support.py` handle presentation and polling; the RustRed
+engine owns generation, events, cancellation and artifact access. Each family
+runs its physical positive-sector downset with auxiliary ISP coordinates
+nonpositive, exact sparse arithmetic and numerical search depth two. The
+visible configuration cell controls the worker count and search settings.
+Native session elapsed time includes preparation, solving and bundle assembly;
+the native timing report separates these phases. Artifact writing and explicit
+view-call timings are recorded separately.
+
+Sessions do not call back into Python from native worker threads. Polling
+returns bounded batches and a current aggregate snapshot; a slow consumer can
+lose intermediate events, with their count reported explicitly. **Cancel** is
+cooperative, not a promise to interrupt the current algebra operation. Keep
+refresh enabled to move to the next family. These sessions and lazy views must
+not be inherited across `fork`; start a new process using `spawn` instead.
+
+Generated candidate artifacts can be reopened with
+`hepkit.rustred.CandidateArtifact.open_file(path, bundle_max_entries=10_000_000)`.
+The example uses the same explicit collection-entry allowance for saving and
+reopening; this changes transport capacity, not the search or integral scope.
+Sector/rule/terminal pages
+and metadata do not decode all coefficient polynomials. Table search filters
+only the current fetched page (up to 25 rows), not the full artifact; use the
+page offsets to browse other pages. Rule structure is capped at 64 KiB by
+default, with explicit larger allowances. RHS and guard previews contain ten
+rows, not the entire selected rule; their raw JSON is bounded to the same page.
+Changing a coefficient ID does not decode it: click **Render** explicitly for
+an 8 KiB native printer preview, with larger budgets available on request.
+Rendering is disabled during generation; reopen the artifact after it drains.
+The shared Symbolica state is imported once and decoded coefficients are cached.
+Encoded artifact bytes and structural records still occupy memory; lazy browsing
+avoids eager coefficient decoding and large initial HTML, not all file loading.
+Displays are bounded previews, not an alternate serialization
+format; the binary artifact remains authoritative. Open only trusted generated
+artifacts. A finite list of residual terminals or a completed generation session
+is not a certificate of closure, termination or master minimality.
+
+After generation drains, **Normalize completed terminal sets** explicitly calls
+the existing native family-local normalization. It reports raw records, distinct
+keys, unit aliases and weighted outputs separately, with paged relations and
+lazy coefficient views. Unsupported shapes remain outputs. The discussion
+compares this convention with FMFT's 19 symbolic representatives, without
+equating those representatives to raw residuals or numerical Laurent constants.
+Neither a favorable count nor this normalization proves master independence.
+
+The optional **Evaluate H numerator once** action is a separate post-generation
+calculation. It uses the same H graph with a new symbolic-mass family, native
+FeynKit tensor reduction and Vakint's shipped RustRed assets, not the candidate
+files just generated. It compares five computed Laurent coefficients with the
+existing 32-digit H rank-four reference at the stated scales. FORM is not run;
+the numerical master inputs are supplied by Vakint, not newly computed here.
+This single integral test does not establish arbitrary-index family closure.
+The initial state never evaluates it; an explicit click is required after
+generation drains, and the result is cached against reactive UI reruns.
+
+`vakint.integral_from_diagram(...)` is a native binding to Vakint's Rust
+`VakintExpression::from_diagram`, not a Python graph/algebra adapter. It consumes
+FeynKit's stored routing and validates the family without rematching the graph.
+The standalone Rust entry is available through Vakint's `feynkit-ingress` feature.
+RustRed use also registers the SpideR strategy paper (arXiv:2604.25916) with
+Symbolica's process-wide `get_citations()`; importing the module alone does not.
+The native-ingress follow-up passes 136 installed-host tests, including the
+unchanged 32-digit H reference with an invalid FORM path, simultaneous scalar
+substitutions, general mappings and selected-view validation. This regression
+check does not repeat the generation workload reported below.
+
+### Measured notebook validation
+
+On 5 October 2026, one explicit **Generate** click completed a fresh H → X →
+BMW → FG run with one native worker and the settings above. No checkpoints or
+precomputed candidates were reused, and no sector failed.
+
+| Family | Sectors | Native generation (s) | Rules | Raw residuals | Normalized outputs |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| H | 314 | 91.753 | 21,318 | 386 | 22 |
+| X | 328 | 281.629 | 19,907 | 445 | 19 |
+| BMW | 134 | 110.898 | 9,018 | 179 | 17 |
+| FG | 124 | 57.284 | 9,266 | 145 | 16 |
+
+The native sessions totaled 541.563 seconds (9.03 minutes); the notebook
+controller took 544.258 seconds including artifact collection, writing and
+polling. Compilation is separate and excluded. These are shared-host
+observations, not runtime guarantees or reduction/closure benchmarks.
+
+Live browsing, page-local search and paging passed. Each artifact also reopened
+in a fresh process in 0.108–0.511 seconds: structural browsing decoded zero
+recurrence coefficients, and one explicit render decoded exactly one. These
+are fresh-process observations, not cold operating-system-cache timings.
+Normalization took 0.098–0.315 seconds per family. The resulting integer key
+sets exactly matched the corresponding shipped Vakint normalized output sets;
+this does not establish byte-identical programs, coefficient-by-coefficient
+equivalence or automatic installation of the new candidates.
+
+The separate H numerator evaluation matched all five 32-digit reference
+coefficients at relative tolerance `1e-30`, with an invalid FORM executable
+path. Native symbolic evaluation took 8.941 seconds and numerical substitution
+0.002 seconds. It used Vakint's shipped assets, not the freshly generated
+programs. **Generation and terminal normalization are not closure proofs or
+proofs of an independent master basis.**
 
 ## Notebook tensor displays
 

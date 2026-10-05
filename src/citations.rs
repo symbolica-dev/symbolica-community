@@ -1,4 +1,6 @@
-use symbolica::api::python::{Citation, SymbolicaCommunityModule};
+use symbolica::api::python::Citation;
+#[cfg(feature = "community")]
+use symbolica::api::python::SymbolicaCommunityModule;
 
 /// Return cumulative citations for the Symbolica features used in this process.
 /// Importing a community module does not count as using it. Calls never reset
@@ -26,10 +28,13 @@ pub fn get_citations() -> Vec<Citation> {
         relevance: None,
     }];
     let mut community = Vec::new();
-    community.extend(crate::hepkit::HepKitModule::get_citations());
-    community.extend(spynso3::SpensoModule::get_citations());
-    #[cfg(not(target_arch = "wasm32"))]
-    community.extend(vakint::symbolica_community_module::VakintWrapper::get_citations());
+    #[cfg(feature = "community")]
+    {
+        community.extend(crate::hepkit::HepKitModule::get_citations());
+        community.extend(spynso3::SpensoModule::get_citations());
+        #[cfg(not(target_arch = "wasm32"))]
+        community.extend(vakint::symbolica_community_module::VakintWrapper::get_citations());
+    }
     community.extend(crate::integration_citations());
     for citation in community {
         if let Some(existing) = citations.iter_mut().find(|entry| entry.id == citation.id) {

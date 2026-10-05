@@ -5,9 +5,26 @@ from disk; equations, exact basis maps and coordinates come from the extension.
 """
 
 from concurrent.futures import CancelledError, ThreadPoolExecutor, as_completed
+import json
+import os
 from pathlib import Path
 from threading import Lock
 from time import perf_counter_ns
+from uuid import uuid4
+
+
+def _atomic_json(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
+    try:
+        with temporary.open("x") as output:
+            json.dump(value, output, indent=2)
+            output.write("\n")
+            output.flush()
+            os.fsync(output.fileno())
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def boundary_evidence(cache):
@@ -76,10 +93,81 @@ class CalculationSession:
         self._control = None
 
     def _load_cache(self, name, cache_type):
+        # Allow constructing a recovery session even if a previous force was
+        # interrupted between directory moves. Only explicit force may proceed.
+        if self._preparation_pending():
+            return cache_type()
         path = self.directory / name
         if (path / "physical-boundaries.bin").exists():
             return cache_type.load(path)
         return cache_type()
+
+    def _preparation_pending(self):
+        return (self.directory / "force-preparation-pending.json").exists()
+
+    def numerical_generation(self):
+        """Return committed numerical-generation evidence, or None during reset."""
+        with self._lock:
+            return self._read_numerical_generation()
+
+    def _read_numerical_generation(self):
+        if self._preparation_pending():
+            return None
+        path = self.directory / "numerical-generation.json"
+        if not path.exists():
+            return {"schema": 1, "generation": "initial", "archive_directory": None}
+        try:
+            record = json.loads(path.read_text())
+            generation = record["generation"]
+            if (record["schema"] != 1 or not isinstance(generation, str)
+                    or len(generation) != 32
+                    or any(c not in "0123456789abcdef" for c in generation)
+                    or record["archive_directory"] != f"numerical-history/{generation}"):
+                raise ValueError("Invalid numerical-generation record")
+            return record
+        except (ValueError, KeyError, TypeError) as error:
+            raise RuntimeError(
+                "Invalid numerical generation; run Recompute boundaries to recover."
+            ) from error
+
+    def _require_numerical_generation(self):
+        if self.numerical_generation() is None:
+            raise RuntimeError(
+                "Forced boundary preparation was interrupted; run Recompute boundaries "
+                "(recompute=True) before loading or computing other stages."
+            )
+
+    def _generation_evidence(self):
+        # Progress/finally reporting must preserve the original stage failure.
+        try:
+            return self._read_numerical_generation()
+        except (OSError, RuntimeError) as error:
+            return {"status": "unavailable", "error": str(error)}
+
+    def _prepare_forced_boundaries(self, cache_type):
+        """Archive numerical work before any new sample, keeping exact reductions."""
+        generation = uuid4().hex
+        archive = self.directory / "numerical-history" / generation
+        archive.mkdir(parents=True)
+        pending = self.directory / "force-preparation-pending.json"
+        if pending.exists():
+            # Preserve the prior interrupted preparation's history on recovery.
+            (archive / "previous-preparation.json").write_bytes(pending.read_bytes())
+        record = {
+            "schema": 1, "generation": generation,
+            "archive_directory": f"numerical-history/{generation}",
+        }
+        _atomic_json(pending, record)
+        for name in ("seeds", "transport", "completed-samples", "numerical-generation.json"):
+            old = self.directory / name
+            if old.exists():
+                old.rename(archive / name)
+        self.seeds, self.cache = cache_type(), cache_type()
+        self.seeds.save(self.directory / "seeds")
+        self.cache.save(self.directory / "transport")
+        (self.directory / "completed-samples").mkdir()
+        _atomic_json(self.directory / "numerical-generation.json", record)
+        pending.unlink()
 
     def _options(self, *, seeds=False, recompute=False, workers=None):
         """Budget extra step attempts for the long auxiliary-mass boundary path.
@@ -137,6 +225,7 @@ class CalculationSession:
                 self.timings.append({
                     "stage": stage, "recompute": recompute, "nearby": nearby,
                     "elapsed_ns": perf_counter_ns() - started, "outcome": outcome,
+                    "numerical_generation": self._generation_evidence(),
                 })
 
     def cancel(self):
@@ -152,6 +241,7 @@ class CalculationSession:
             return {
                 "status": self.status, "events": list(self.events),
                 "timings": list(self.timings),
+                "numerical_generation": self._generation_evidence(),
                 "done": self._future is None or self._future.done(),
             }
 
@@ -178,12 +268,10 @@ class CalculationSession:
 
         self._invalidate_results()
         if recompute:
-            self.seeds = BoundaryCache()
-            self.seeds.save(self.directory / "seeds")
-            # Persist invalidation before expensive work. Cancellation must not
-            # make the previous transport bank reappear when the session reloads.
-            self.cache = BoundaryCache()
-            self.cache.save(self.directory / "transport")
+            with self._lock:
+                self._prepare_forced_boundaries(BoundaryCache)
+        else:
+            self._require_numerical_generation()
         if not self.configurations:
             return []
         concurrent = min(self.boundary_workers, self.workers, len(self.configurations))
@@ -226,6 +314,7 @@ class CalculationSession:
                         "seed_digits": self.seed_digits, "sample_workers": sample_workers,
                         "elapsed_ns": perf_counter_ns() - started,
                         "outcome": outcome, "cache_hit": cache_hit,
+                        "numerical_generation": self._generation_evidence(),
                     })
             return result, private_cache
 
@@ -273,6 +362,7 @@ class CalculationSession:
         from symbolica import E
         from symbolica.community.hep.integration import BoundaryCache
 
+        self._require_numerical_generation()
         self._invalidate_results()
         if recompute:
             self.cache = BoundaryCache.load(self.directory / "seeds")
@@ -295,6 +385,9 @@ class CalculationSession:
             AccuracyError, HiggsJetAmplitude, HiggsJetFormFactorProjector,
         )
 
+        if recompute:
+            self.form_factors, self.observables = {}, None
+        self._require_numerical_generation()
         if self.observables is not None and not recompute and all(
             value is not None and value >= self.digits
             for value in self.observables.verified_relative_digits.values()
@@ -304,7 +397,9 @@ class CalculationSession:
             raise RuntimeError("Transport all sixteen configurations before amplitude assembly.")
         if self.amplitude is None:
             self.amplitude = HiggsJetAmplitude(self.model, control=self._control)
+        s, t, higgs_mass_squared = self.point
         projector = HiggsJetFormFactorProjector()
+        form_factors = {}
         for mass in ("W", "Z"):
             blocks = {}
             for topology in ("planar", "nonplanar"):
@@ -313,10 +408,10 @@ class CalculationSession:
                     key=lambda c: c.permutation,
                 )
                 blocks[topology] = [self.results[c.label] for c in configurations]
-            self.form_factors[mass] = projector.evaluate(
-                *self.point, self.masses[mass], blocks["planar"], blocks["nonplanar"],
+            form_factors[mass] = projector.evaluate(
+                s, t, higgs_mass_squared, self.masses[mass], blocks["planar"], blocks["nonplanar"],
             )
-        w, z = self.form_factors["W"], self.form_factors["Z"]
+        w, z = form_factors["W"], form_factors["Z"]
         mw2, mz2 = self.masses["W"], self.masses["Z"]
         parameters = {
             self.model.parameter("aEWM1").symbol: E("128"),
@@ -325,13 +420,13 @@ class CalculationSession:
             self.model.parameter("Gf").symbol:
                 E("𝜋") * E("1/128") * mz2 / (E("2").sqrt() * mw2 * (mz2 - mw2)),
         }
-        self.observables = self.amplitude.evaluate(
-            *self.point, w.values, z.values, w.absolute_errors, z.absolute_errors,
+        observables = self.amplitude.evaluate(
+            s, t, higgs_mass_squared, w.values, z.values, w.absolute_errors, z.absolute_errors,
             parameters=parameters,
             provenance="Native canonical boundaries and physical transport; " + w.provenance + "; " + z.provenance,
             digits=self.digits, control=self._control,
         )
-        achieved = self.observables.verified_relative_digits
+        achieved = observables.verified_relative_digits
         if any(value is None or value < self.digits for value in achieved.values()):
             if _refinements >= 2:
                 raise AccuracyError(
@@ -343,11 +438,13 @@ class CalculationSession:
             self.generate_boundaries(recompute=True)
             self.transport()
             return self.assemble(recompute=True, _refinements=_refinements + 1)
+        self.form_factors, self.observables = form_factors, observables
         return self.observables
 
     def restart_and_repeat(self):
         from symbolica.community.hep.integration import BoundaryCache
 
+        self._require_numerical_generation()
         if len(self.results) != len(self.configurations):
             raise RuntimeError("Complete transport before checking an exact repeated hit.")
         before = {name: result.coefficients for name, result in self.results.items()}

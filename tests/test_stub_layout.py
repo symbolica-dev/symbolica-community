@@ -41,7 +41,10 @@ def test_public_package_has_matching_stub(module_name, classes):
         assert module.__spec__.submodule_search_locations is not None
     stub = Path(module.__file__).with_suffix(".pyi")
     assert stub.is_file(), f"Missing packaged stub: {stub}"
-    declarations = ast.parse(stub.read_text(encoding="utf-8"), filename=str(stub))
+    # Check the minimum supported grammar even when tests run on newer Python.
+    declarations = ast.parse(
+        stub.read_text(encoding="utf-8"), filename=str(stub), feature_version=9
+    )
     declared_classes = {
         node.name for node in declarations.body if isinstance(node, ast.ClassDef)
     }
@@ -70,3 +73,29 @@ def test_ibp_package_stub_reexports_canonical_types():
     for name in classes:
         assert getattr(ibp, name) is getattr(hepkit, name)
         assert getattr(ibp, name).__module__ == "symbolica.community.hepkit"
+
+
+def test_ibp_campaign_api_survives_stub_regeneration():
+    hepkit = importlib.import_module("symbolica.community.hepkit")
+    if not hasattr(hepkit, "IBPFamily"):
+        pytest.skip("IBP is native-only")
+    maintained = Path(__file__).parents[1] / "stubs" / "ibp.pyi"
+    generated = Path(hepkit.__file__).with_suffix(".pyi")
+    source_ast = ast.parse(maintained.read_text(), feature_version=9)
+    generated_ast = ast.parse(generated.read_text(), feature_version=9)
+
+    def family_methods(tree):
+        family = next(node for node in tree.body
+                      if isinstance(node, ast.ClassDef) and node.name == "IBPFamily")
+        return {node.name: node for node in family.body if isinstance(node, ast.FunctionDef)}
+
+    source_methods, generated_methods = family_methods(source_ast), family_methods(generated_ast)
+    for name in ("parameter_bindings", "start_generation", "normalize_candidate_terminals"):
+        assert name in source_methods and name in generated_methods
+        assert ast.dump(source_methods[name]) == ast.dump(generated_methods[name])
+        assert hasattr(hepkit.IBPFamily, name)
+    assert any(
+        isinstance(node, ast.ImportFrom) and node.level == 1 and node.module is None
+        and any(alias.name == alias.asname == "rustred" for alias in node.names)
+        for node in generated_ast.body
+    )

@@ -1,29 +1,38 @@
 use pyo3::{
-    Bound, PyResult, Python,
+    Bound, PyResult,
     exceptions::PyRuntimeError,
-    pyfunction, pymodule,
-    types::{PyAnyMethods, PyModule, PyModuleMethods},
+    pymodule,
+    types::{PyModule, PyModuleMethods},
     wrap_pyfunction,
 };
 use symbolica::{
     api::python::{
-        Citation, PythonIntegrationFunctions, PythonIntegrationStep, SymbolicaCommunityModule,
-        create_symbolica_module, set_python_integration_functions,
+        Citation, PythonIntegrationFunctions, PythonIntegrationStep, create_symbolica_module,
+        set_python_integration_functions,
     },
     atom::{Atom, Symbol},
 };
 use symbolica_integrate::Integrate;
 
 mod citations;
+#[cfg(feature = "community")]
 mod hepkit;
+#[cfg(feature = "community")]
 mod integration;
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(all(feature = "community", not(target_arch = "wasm32")))]
 mod loop_integration;
+#[cfg(feature = "community")]
 mod oneloop;
+
+#[cfg(feature = "community")]
+use pyo3::{Python, pyfunction, types::PyAnyMethods};
+#[cfg(feature = "community")]
+use symbolica::api::python::SymbolicaCommunityModule;
 
 #[cfg(feature = "python_stubgen")]
 use pyo3_stub_gen::define_stub_info_gatherer;
 
+#[cfg(feature = "community")]
 macro_rules! register_module {
     ($m:expr, $module_type:ty) => {{
         let native_name = format!("{}_native", <$module_type>::get_name());
@@ -86,10 +95,11 @@ fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     .map_err(PyRuntimeError::new_err)?;
     create_symbolica_module(m)?;
     m.add_function(wrap_pyfunction!(citations::get_citations, m)?)?;
-    register_module!(m, spynso3::SpensoModule);
-    register_module!(m, hepkit::HepKitModule);
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(feature = "community")]
     {
+        register_module!(m, spynso3::SpensoModule);
+        register_module!(m, hepkit::HepKitModule);
+        #[cfg(not(target_arch = "wasm32"))]
         register_module!(m, vakint::symbolica_community_module::VakintWrapper);
     }
     Ok(())
