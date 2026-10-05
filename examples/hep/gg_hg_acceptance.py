@@ -157,6 +157,39 @@ def check_coefficient_refinement(previous, result, *, label, tolerance, one):
     return count
 
 
+def load_comparison_reference(path):
+    """Identify the exact comparison payload; call only after native evaluation."""
+    path = Path(path).resolve()
+    payload = path.read_bytes()
+    reference = json.loads(payload)
+    return reference, {
+        "path": str(path), "size_bytes": len(payload),
+        "sha256": hashlib.sha256(payload).hexdigest(),
+        "schema": reference["schema"],
+        "provenance": {
+            name: reference[name] for name in (
+                "provenance", "purpose", "scope", "source_input_sha256",
+                "references", "reference_accuracy", "physical_s_t_MH_squared",
+            ) if name in reference
+        },
+    }
+
+
+def check_transport_reference_coverage(native, reference, expected_labels):
+    """Require each physical configuration exactly once, with all coefficients."""
+    expected = set(expected_labels)
+    assert len(expected_labels) == len(expected) == 16, "Expected sixteen unique configurations."
+    assert set(native) == expected, "Native configuration coverage is incomplete."
+    cases = reference["cases"]
+    labels = [case["label"] for case in cases]
+    assert len(labels) == len(set(labels)) == 16, "Reference labels must be sixteen unique configurations."
+    assert set(labels) == expected, "Reference configuration coverage differs from native inputs."
+    native_count = sum(len(row) for result in native.values() for row in result.coefficients)
+    reference_count = sum(len(row) for case in cases for row in case["reference_values"])
+    assert native_count == reference_count == 4360, "Expected all 4,360 transport coefficients."
+    return reference_count
+
+
 def compare_form_factors(native, reference):
     """Compare all W/Z components using the archived absolute allowances."""
     from symbolica import ComplexFloat, Float
@@ -396,7 +429,11 @@ def main():
         # Reference access is confined to comparison, after the result exists.
         from symbolica import ComplexFloat, Float
 
-        reference = json.loads((data / "coherent-reference.json").read_text())
+        reference, reference_evidence = load_comparison_reference(data / "coherent-reference.json")
+        report["reference_inputs"] = {"transport_coefficients": reference_evidence}
+        expected_count = check_transport_reference_coverage(
+            session.results, reference, [configuration.label for _, configuration in session.configurations],
+        )
         count = 0
         max_scaled_difference = Float("0", decimal_digits=100)
         one = Float("1", decimal_digits=100)
@@ -414,9 +451,11 @@ def main():
                     assert difference <= tolerance, (case["label"], str(difference))
                     max_scaled_difference = max(max_scaled_difference, difference)
                     count += 1
-        assert count == 4360
+        assert count == expected_count == 4360
         report["reference_comparison"] = {
             "coefficients": count, "checked_mixed_digits": 20,
+            "configurations": len(reference["cases"]),
+            "labels": [case["label"] for case in reference["cases"]],
             "maximum_scaled_difference": str(max_scaled_difference),
             "reference_precision": "Preserved component source caps/precision and endpoint delta in coherent-reference.json",
             "source_verified_digits_caps": {
@@ -429,7 +468,8 @@ def main():
                    "relative_digits": observables.verified_relative_digits[name]}
             for name, value in observables.values.items()
         }
-        observable_reference = json.loads((data / "amplitude-validation.json").read_text())
+        observable_reference, observable_evidence = load_comparison_reference(data / "amplitude-validation.json")
+        report["reference_inputs"]["amplitude"] = observable_evidence
         report["form_factor_comparison"] = compare_form_factors(
             session.form_factors, observable_reference,
         )

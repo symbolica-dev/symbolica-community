@@ -815,6 +815,66 @@ def test_refinement_accepts_difference_covered_by_combined_native_errors(accepta
     ) == 1
 
 
+@pytest.fixture
+def transport_reference_coverage():
+    reference = json.loads((EXAMPLES / "data" / "gg_hg" / "coherent-reference.json").read_text())
+    labels = [case["label"] for case in reference["cases"]]
+    native = {
+        case["label"]: SimpleNamespace(coefficients=[list(row) for row in case["reference_values"]])
+        for case in reference["cases"]
+    }
+    return reference, native, labels
+
+
+def test_transport_reference_coverage_includes_all_sixteen_configurations(acceptance, transport_reference_coverage):
+    reference, native, labels = transport_reference_coverage
+    assert acceptance.check_transport_reference_coverage(native, reference, labels) == 4360
+
+
+@pytest.mark.parametrize("mutation, message", [
+    ("duplicate_reference", "unique configurations"),
+    ("missing_reference", "unique configurations"),
+    ("unknown_reference", "differs from native inputs"),
+    ("missing_native", "Native configuration coverage"),
+    ("reference_coefficient", "4,360 transport coefficients"),
+    ("native_coefficient", "4,360 transport coefficients"),
+])
+def test_transport_reference_coverage_rejects_missing_or_duplicate_data(
+    acceptance, transport_reference_coverage, mutation, message,
+):
+    reference, native, labels = transport_reference_coverage
+    if mutation == "duplicate_reference":
+        reference["cases"][1]["label"] = labels[0]
+    elif mutation == "missing_reference":
+        reference["cases"].pop()
+    elif mutation == "unknown_reference":
+        reference["cases"][0]["label"] = "unknown physical configuration"
+    elif mutation == "missing_native":
+        native.pop(labels[0])
+    elif mutation == "reference_coefficient":
+        reference["cases"][0]["reference_values"][0].pop()
+    else:
+        native[labels[0]].coefficients[0].pop()
+    with pytest.raises(AssertionError, match=message):
+        acceptance.check_transport_reference_coverage(native, reference, labels)
+
+
+@pytest.mark.parametrize("filename", ["coherent-reference.json", "amplitude-validation.json"])
+def test_comparison_reference_records_exact_payload_hash_and_provenance(acceptance, filename):
+    path = EXAMPLES / "data" / "gg_hg" / filename
+    payload = path.read_bytes()
+    expected = json.loads(payload)
+    reference, evidence = acceptance.load_comparison_reference(path)
+    assert reference == expected
+    assert evidence["path"] == str(path.resolve())
+    assert evidence["size_bytes"] == len(payload)
+    assert evidence["sha256"] == hashlib.sha256(payload).hexdigest()
+    assert evidence["schema"] == expected["schema"]
+    keys = (("provenance", "purpose") if filename == "coherent-reference.json" else
+            ("source_input_sha256", "references", "scope", "reference_accuracy", "physical_s_t_MH_squared"))
+    assert evidence["provenance"] == {name: expected[name] for name in keys}
+
+
 def test_form_factor_comparison_uses_all_recorded_reference_allowances(acceptance):
     reference = json.loads((EXAMPLES / "data/gg_hg/amplitude-validation.json").read_text())
     native = {
