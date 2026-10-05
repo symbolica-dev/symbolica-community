@@ -1494,6 +1494,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "hyperbolica"
+version = "0.1.0"
+source = "git+https://github.com/benruijl/hyperbolica?rev=89edca653ab21128d10cb338250e77fdd144b10e#89edca653ab21128d10cb338250e77fdd144b10e"
+dependencies = [
+ "pyo3",
+ "pyo3-stub-gen",
+ "rayon",
+ "serde",
+ "serde_json",
+ "symbolica",
+ "thiserror 2.0.20",
+]
+
+[[package]]
 name = "iana-time-zone"
 version = "0.1.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3127,6 +3141,7 @@ version = "1.0.151"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14"
 dependencies = [
+ "indexmap",
  "itoa",
  "memchr",
  "serde",
@@ -3497,6 +3512,7 @@ name = "symbolica_community"
 version = "3.0.1"
 dependencies = [
  "feynkit-py",
+ "hyperbolica",
  "one-loop-reduce-python",
  "oneloop",
  "oneloop-python",

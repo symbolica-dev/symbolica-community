@@ -32,6 +32,9 @@ jobs:
                   args: --out dist
                   sccache: "true"
 
+            - name: Check integration wheel and shared kernel
+              run: python .github/scripts/check_integration_package.py dist/*.whl
+
             - name: Check core citation stub in source and wheel
               run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/*.whl
 
@@ -41,7 +44,7 @@ jobs:
                   pip install pytest ty
 
             - name: Check public community import types
-              run: ty check --python-version 3.10 tests/typing/community_layout.py
+              run: ty check --python-version 3.10 tests/typing/community_layout.py tests/typing/integration.py
 
             - name: Run tests
               env:

@@ -13,3 +13,5 @@ initialize_module()
 del initialize_module
 
 from . import oneloop as oneloop
+
+from . import integration as integration

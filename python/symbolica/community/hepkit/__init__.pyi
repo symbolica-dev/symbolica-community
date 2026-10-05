@@ -16,6 +16,7 @@ import typing
 from symbolica import ComplexFloat, Float
 from symbolica.community.tensor import Slot, TensorExpression, TensorName
 from symbolica.core import Expression
+from . import integration
 from . import oneloop
 from . import vakint
 
@@ -10926,6 +10927,7 @@ class IBPSolution:
         >>> summary = repr(solution)
         """
 
+from . import integration as integration
 from . import ibp as ibp
 from . import oneloop as oneloop
 from . import vakint as vakint
