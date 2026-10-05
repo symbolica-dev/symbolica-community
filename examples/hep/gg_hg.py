@@ -33,7 +33,19 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ## Setup and notebook helpers
+
+    Imports, the stage controller and controls are folded below. Opening the
+    notebook only loads exact inputs and existing caches; use the controls to
+    start numerical work.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
 def _():
     import importlib.util
     import json
@@ -59,7 +71,7 @@ def _():
     )
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(CalculationSession, Path, data_directory):
     session = CalculationSession(
         data_directory / "native-model.json",
@@ -143,11 +155,13 @@ def _(mo, session, state):
         {
             "configuration": label,
             "checked digits": result.verified_digits,
+            "input checked digits": result.input_verified_digits,
             "working bits": result.working_bits,
             "exact cache hit": result.cache_hit,
             "steps": result.steps,
             "inserted points": result.inserted_points,
             "selected source": str(result.starting_coordinates),
+            "source history": result.provenance,
         }
         for label, result in session.results.items()
     ]
