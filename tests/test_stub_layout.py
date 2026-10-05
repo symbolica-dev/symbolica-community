@@ -2,6 +2,7 @@
 
 import ast
 import importlib
+import inspect
 from pathlib import Path
 
 import pytest
@@ -73,6 +74,18 @@ def test_ibp_package_stub_reexports_canonical_types():
     for name in classes:
         assert getattr(ibp, name) is getattr(hepkit, name)
         assert getattr(ibp, name).__module__ == "symbolica.community.hepkit"
+
+
+def test_tensor_evaluator_stub_matches_loaded_signature():
+    tensor = importlib.import_module("symbolica.community.tensor")
+    stub = Path(tensor.__file__).with_suffix(".pyi")
+    declarations = ast.parse(stub.read_text(), feature_version=9)
+    tensor_class = next(node for node in declarations.body
+                        if isinstance(node, ast.ClassDef) and node.name == "Tensor")
+    evaluator = next(node for node in tensor_class.body
+                     if isinstance(node, ast.FunctionDef) and node.name == "evaluator")
+    declared = [arg.arg for arg in evaluator.args.posonlyargs + evaluator.args.args]
+    assert declared == list(inspect.signature(tensor.Tensor.evaluator).parameters)
 
 
 def test_ibp_campaign_api_survives_stub_regeneration():
