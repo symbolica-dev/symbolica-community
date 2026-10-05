@@ -2992,7 +2992,7 @@ dependencies = [
 [[package]]
 name = "rustred"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#b3cecd6ae9b7683ae639204e43fa05685c6a5802"
+source = "git+https://github.com/alphal00p/rustred?branch=main#7c1ed03722b8c05daf60c89ba4ecc79457ed2ada"
 dependencies = [
  "bincode",
  "blake3",
@@ -3005,7 +3005,7 @@ dependencies = [
 [[package]]
 name = "rustred-feynkit"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#b3cecd6ae9b7683ae639204e43fa05685c6a5802"
+source = "git+https://github.com/alphal00p/rustred?branch=main#7c1ed03722b8c05daf60c89ba4ecc79457ed2ada"
 dependencies = [
  "pyo3",
  "rustred",
@@ -3015,7 +3015,7 @@ dependencies = [
 [[package]]
 name = "rustred-order"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#b3cecd6ae9b7683ae639204e43fa05685c6a5802"
+source = "git+https://github.com/alphal00p/rustred?branch=main#7c1ed03722b8c05daf60c89ba4ecc79457ed2ada"
 
 [[package]]
 name = "rustversion"
