@@ -82,12 +82,19 @@ class CalculationSession:
         return cache_type()
 
     def _options(self, *, seeds=False, recompute=False, workers=None):
+        """Budget extra step attempts for the long auxiliary-mass boundary path.
+
+        Nonplanar seed propagation can exhaust 1,000 accepted/rejected trials
+        while still advancing with valid local error checks. Allow 2,000 for
+        seeds; physical transport keeps 1,000. Precision and order stay fixed.
+        """
         from symbolica.community.hep.integration import EvaluationOptions
 
         return EvaluationOptions(
             digits=self.seed_digits if seeds else self.digits,
             guard_digits=60,
             series_order=96,
+            max_steps=2000 if seeds else 1000,
             workers=self.workers if workers is None else workers,
             cache_directory=self.directory / "exact-reductions",
             sample_cache_directory=self.directory / "completed-samples",
