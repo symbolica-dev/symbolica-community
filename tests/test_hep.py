@@ -66,11 +66,20 @@ def test_flat_namespace_and_stubs():
 
 
 @pytest.mark.parametrize(
-    "module_name", ["symbolica.hep", "symbolica.community.hep", "symbolica.hepkit"]
+    "module_name", ["symbolica.hep", "symbolica.hepkit"]
 )
 def test_superseded_hep_import_is_removed(module_name):
     with pytest.raises(ModuleNotFoundError):
         importlib.import_module(module_name)
+
+
+def test_numerical_integration_namespace_preserves_existing_integrator():
+    numerical = importlib.import_module("symbolica.community.hep.integration")
+    definite = importlib.import_module("symbolica.community.hepkit.integration")
+    assert numerical is not definite
+    assert numerical.IntegralEvaluator.__module__ == "symbolica.community.hep.integration"
+    assert definite.integrate.__module__ == "symbolica.community.hepkit.integration"
+    assert importlib.import_module("symbolica.community.hepkit") is hep
 
 
 @pytest.mark.skipif(not hasattr(hep, "IBPFamily"), reason="IBP is native-only")

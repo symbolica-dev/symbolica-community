@@ -46,6 +46,31 @@ from symbolica.community.hepkit import FeynmanDiagram, Model, Generator, TensorR
 
 See the [HEP example](examples/hep/README.md) for a complete one-loop calculation.
 
+Native numerical loop integration is available in a separate namespace, using
+the same HEPKit families, diagrams, kinematics, and Symbolica expressions:
+
+```python
+from symbolica.community.hep.integration import (
+    IntegralEvaluator, KinematicTransport, BoundaryCache, EvaluationOptions,
+)
+```
+
+The bindings live in the `symbolica-amflow` dependency and register in this
+shared extension. They preserve arbitrary precision, supply typed errors and
+cancellation, and retain reusable intermediate points in binary boundary caches.
+The [gg → Hg Marimo notebook](examples/hep/gg_hg.py) stages native boundary
+generation, physical transport, and coherent EW/HEFT amplitude assembly. Opening
+it starts no two-loop evaluation. Its complete empty-cache boundary acceptance
+is still pending; archived numerical seeds are never an evaluation fallback.
+Run it with `marimo edit examples/hep/gg_hg.py`. Long numerical acceptance lives
+in `examples/hep/gg_hg_acceptance.py`, separately from lightweight smoke tests.
+
+Builds currently require the native owner patches and Cargo overrides documented
+in [the integration dependency guide](https://github.com/alphal00p/RustFlow/blob/main/docs/dependency-embedding.md).
+Generate these hints with `stub_gen --hepkit-only`; the public package and stubs
+are under `python/symbolica/community/hep/integration/`. This module is excluded
+from browser builds, and existing `hepkit` and Hyperbolica imports are preserved.
+
 One-loop reduction from [one-loop-reduce](https://github.com/ecavan/one-loop-reduce)
 is available in `hep.oneloop`. Native builds also expose OneLoopMaster's scalar
 integral evaluation there, sharing the same Symbolica kernel:

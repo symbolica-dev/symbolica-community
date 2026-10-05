@@ -1,1 +1,3 @@
 [env]
+# Embedded numerical caches fingerprint the dependencies resolved by this host.
+RUSTFLOW_WORKSPACE_MANIFEST = { value = "Cargo.toml", relative = true }

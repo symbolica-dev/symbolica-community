@@ -19,7 +19,8 @@ class IBPFamily:
     returned rules and residual integrals before using a reduction. Searches are
     bounded: they do not certify a complete master-integral basis.
 
-    Searches accept 1–12 denominators and integer powers from -64 through 63.
+    Searches use the compiled runtime arity registry (by default 1–16 denominators)
+    and integer powers from -64 through 63.
     Applying a discovered rule accepts signed 64-bit powers. Booleans are not powers.
 
     Examples
@@ -42,7 +43,7 @@ class IBPFamily:
     name : str, optional
         Family label used in diagnostic output; default "F".
     """
-    def __init__(self, family: IntegralFamily, *, name: str = "F") -> None:
+    def __init__(self, family: IntegralFamily, *, name: str = "F", cut: list[bool] | None = None) -> None:
         r"""
         Prepare a complete denominator basis for exact IBP searches.
 
@@ -67,6 +68,12 @@ class IBPFamily:
         name : str, optional
             Diagnostic family label; default "F".
         """
+    @staticmethod
+    def compiled_runtime_arities() -> list[int]:
+        """Solver entry points compiled into this host, not a mathematical bound."""
+    @property
+    def cut(self) -> list[bool]:
+        """Reverse-unitarity flags in denominator order; nonpositive cut powers vanish."""
     @property
     def index_symbols(self) -> list[Expression]:
         r"""
@@ -159,6 +166,8 @@ class IBPFamily:
         max_depth: int = 2,
         include_lorentz: bool = False,
         max_targets: int = 1024,
+        preferred_masters: list[list[int]] | None = None,
+        until_stable: bool = False,
     ) -> IBPSolution:
         r"""
         Reduce requested integer-power integrals by exact finite-target elimination.
@@ -436,6 +445,24 @@ class IBPSolution:
         >>> assert solution.stats["rows"] > 0
         >>> seed_count = solution.stats["seeds"]
         """
+    @property
+    def depth(self) -> int | None:
+        """Seed depth of a Laporta search; None for parametric rules."""
+    @property
+    def stable_depth(self) -> int | None:
+        """First depth reproduced by the next two depths; a stability heuristic."""
+    @property
+    def preferred_masters(self) -> list[tuple[list[int], str]]:
+        """Requested powers and their replaced/residual status, in request order."""
+    @property
+    def replaced(self) -> list[list[int]]:
+        """Search residuals replaced by the preferred masters."""
+    def certify(self, *, count_masters: bool = True, replay: bool = True, seed: int = 0) -> IBPCertificate:
+        """Replay exact Laporta identities and optionally check generic sector master counts.
+
+        Parametric solutions cannot be certified. A count-consistent result is
+        not a proof that all residual integrals are independent.
+        """
     @overload
     def reduce(
         self, powers: list[int], *, integral: None = None
@@ -508,3 +535,34 @@ class IBPSolution:
 
         >>> summary = repr(solution)
         """
+
+
+class IBPCertificate:
+    """Evidence returned by IBPSolution.certify; no public constructor."""
+    @property
+    def reduction(self) -> str:
+        """Exact identity replay status: verified or unchecked."""
+    @property
+    def masters(self) -> str:
+        """unchecked, incomplete, no-verdict, or count-consistent."""
+    @property
+    def master_counts(self) -> dict[tuple[bool, ...], int | None] | None:
+        """Generic count per residual sector; None where no verdict is available."""
+    @property
+    def residual_counts(self) -> dict[tuple[bool, ...], int] | None:
+        """Number of search residuals in each checked sector."""
+    @property
+    def excess_sectors(self) -> list[list[bool]]:
+        """Sectors with more residuals than the counted master number."""
+    @property
+    def no_verdict(self) -> dict[tuple[bool, ...], str] | None:
+        """Explanation for sectors without a count verdict."""
+    @property
+    def stable_depth(self) -> int | None: ...
+    @property
+    def replayed_rules(self) -> int | None: ...
+    @property
+    def identities(self) -> int | None: ...
+    @property
+    def seed(self) -> int | None: ...
+    def __repr__(self) -> str: ...
