@@ -3,7 +3,11 @@
 
 import builtins
 import typing
-from symbolica.core import Expression
+from symbolica.core import Expression, FormattedOutput
+from symbolica.community.hepkit import FeynmanDiagram, IntegralFamily
+
+def integral_from_diagram(diagram: FeynmanDiagram, family: IntegralFamily, numerator: Expression, *, powers: typing.Optional[typing.Sequence[int]] = None, parameter_substitutions: typing.Optional[typing.Mapping[Expression, Expression]] = None, external_momenta: typing.Sequence[Expression] = ()) -> VakintExpression:
+    """Checked scalar-vacuum ingress from the graph's stored routing; no text parsing."""
 
 @typing.final
 class Vakint:
@@ -255,6 +259,13 @@ class VakintEvaluationMethod:
         String representation of the evaluation method.
         """
     @classmethod
+    def new_rustred_method(cls, substitute_masters: typing.Optional[bool] = None) -> VakintEvaluationMethod:
+        """Native scalar reduction; pair with the default FeynKit tensor backend for no FORM.
+
+        Four-loop shipped candidates are checked at each requested integral;
+        successful evaluation is not unrestricted family closure.
+        """
+    @classmethod
     def new_alphaloop_method(cls) -> VakintEvaluationMethod:
         r"""
         Create a new VakintEvaluationMethod instance representing the AlphaLoop method.
@@ -387,6 +398,8 @@ class VakintExpression:
 
     Construct this wrapper from a Symbolica expression before applying Vakint operations.
     """
+    def _repr_html_(self) -> str: ...
+    def formatted(self, **options: typing.Any) -> FormattedOutput: ...
     def __str__(self) -> builtins.str:
         r"""
         String representation of the VakintExpression.
@@ -446,6 +459,10 @@ class VakintNumericalResult:
     r"""
     Numerical Laurent series in the dimensional-regularization parameter epsilon.
     """
+    def to_expression(self, epsilon_symbol: typing.Optional[Expression] = None) -> Expression:
+        """Native arbitrary-precision Laurent expression; default variable vakint::ε."""
+    def _repr_html_(self) -> str: ...
+    def formatted(self, **options: typing.Any) -> FormattedOutput: ...
     def __str__(self) -> builtins.str:
         r"""
         String representation of the numerical result.

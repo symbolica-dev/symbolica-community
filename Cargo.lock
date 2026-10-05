@@ -3527,7 +3527,7 @@ dependencies = [
 [[package]]
 name = "rustred"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#79a508481491477ab64874b2c0e97330ff065322"
+source = "git+https://github.com/alphal00p/rustred?rev=986c427f36b280a2c741d52d0401152a1f90e4d6#986c427f36b280a2c741d52d0401152a1f90e4d6"
 dependencies = [
  "bincode",
  "blake3",
@@ -3538,19 +3538,46 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustred-app"
+version = "0.1.0"
+source = "git+https://github.com/alphal00p/rustred?rev=986c427f36b280a2c741d52d0401152a1f90e4d6#986c427f36b280a2c741d52d0401152a1f90e4d6"
+dependencies = [
+ "bincode",
+ "blake3",
+ "rayon",
+ "rustred",
+ "serde",
+ "serde_json",
+ "symbolica",
+ "toml 1.1.6+spec-1.1.0",
+]
+
+[[package]]
 name = "rustred-feynkit"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#79a508481491477ab64874b2c0e97330ff065322"
+source = "git+https://github.com/alphal00p/rustred?rev=986c427f36b280a2c741d52d0401152a1f90e4d6#986c427f36b280a2c741d52d0401152a1f90e4d6"
 dependencies = [
  "pyo3",
  "rustred",
+ "rustred-python",
  "symbolica",
 ]
 
 [[package]]
 name = "rustred-order"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#79a508481491477ab64874b2c0e97330ff065322"
+source = "git+https://github.com/alphal00p/rustred?rev=986c427f36b280a2c741d52d0401152a1f90e4d6#986c427f36b280a2c741d52d0401152a1f90e4d6"
+
+[[package]]
+name = "rustred-python"
+version = "0.1.0"
+source = "git+https://github.com/alphal00p/rustred?rev=986c427f36b280a2c741d52d0401152a1f90e4d6#986c427f36b280a2c741d52d0401152a1f90e4d6"
+dependencies = [
+ "pyo3",
+ "rustred-app",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "rustversion"
@@ -5216,19 +5243,22 @@ dependencies = [
 [[package]]
 name = "vakint"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#8f834d9c62ae06fb327e4ef0b14abffda755b610"
+source = "git+https://github.com/alphal00p/gammaloop?rev=f8ff93b0f9a20930e80674aea74656e75be57188#f8ff93b0f9a20930e80674aea74656e75be57188"
 dependencies = [
  "ahash 0.8.12",
  "arrayvec",
  "colored 3.1.1",
  "eyre",
  "feynkit-tensor",
+ "flate2",
  "log",
  "phf 0.13.1",
  "pyo3",
  "pyo3-stub-gen",
  "regex",
  "rug",
+ "rustred",
+ "rustred-app",
  "spenso",
  "spenso-macros",
  "string-template-plus",

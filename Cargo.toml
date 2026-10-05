@@ -12,6 +12,10 @@ rust-version = "1.89"
 version = "3.0.1"
 exclude = ["dist"]
 
+# Keep this host independent when checked out inside another Rust workspace.
+[workspace]
+resolver = "3"
+
 [[bin]]
 name = "stub_gen"
 required-features = ["python_stubgen"]
@@ -83,13 +87,13 @@ pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, f
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # Compile the IBP bridge into the host extension to share native Symbolica atoms.
-rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", branch = "main" }
+rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", rev = "986c427f36b280a2c741d52d0401152a1f90e4d6", features = ["campaign-api"] }
 # Share the host kernel; OneLOop currently requires native numeric/JIT support.
 oneloop-python = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false, features = ["community"] }
 # Keep embedded SymJIT caches and generated native evaluators out of wheels.
 oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false }
-# Vakint currently requires native dependencies, including GMP/MPFR.
-vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", features = ["symbolica_community_module"] }
+# RustRed-enabled Vakint, with the same modern FeynKit tensor bridge as this host.
+vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "f8ff93b0f9a20930e80674aea74656e75be57188", features = ["symbolica_community_module"] }
 
 # All community modules share the Symbolica kernel from its community branch.
 [patch.crates-io]

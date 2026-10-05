@@ -10504,7 +10504,8 @@ class IBPFamily:
     returned rules and residual integrals before using a reduction. Searches are
     bounded: they do not certify a complete master-integral basis.
 
-    Searches accept 1–12 denominators and integer powers from -64 through 63.
+    ``compiled_runtime_arities()`` reports this host's compiled arity entry points;
+    it is not a mathematical limit. Integer search powers range from -64 through 63.
     Applying a discovered rule accepts signed 64-bit powers. Booleans are not powers.
 
     Examples
@@ -10527,12 +10528,12 @@ class IBPFamily:
     name : str, optional
         Family label used in diagnostic output; default "F".
     """
-    def __init__(self, family: IntegralFamily, *, name: str = "F") -> None:
+    def __init__(self, family: IntegralFamily, *, name: str = "F", cut: list[bool] | None = None) -> None:
         r"""
         Prepare a complete denominator basis for exact IBP searches.
 
         Raises ``ValueError`` for an incomplete/dependent basis, unsupported
-        kinematics, or too many denominators. Complete missing coordinates before
+        kinematics, or an invalid cut mask. Complete missing coordinates before
         constructing this object; dependent propagators require partial fractions.
 
         Examples
@@ -10579,6 +10580,42 @@ class IBPFamily:
 
         >>> assert ibp.denominator_count == len(family.denominators)
         """
+    @staticmethod
+    def compiled_runtime_arities() -> list[int]:
+        """Sorted native build capabilities; configurable when rebuilding RustRed."""
+        ...
+    @property
+    def cut(self) -> list[bool]:
+        """Reverse-unitarity flags, in the family's original denominator order."""
+        ...
+    @property
+    def parameter_bindings(self) -> list[tuple[Expression, Expression]]:
+        """Internal polynomial parameters paired with original HEPKit atoms.
+
+        A presentation legend, not a replacement of serialized artifact names.
+        """
+        ...
+    def start_generation(self, *, event_capacity: int = 256, **options: object) -> rustred.CandidateGenerationSession:
+        """Start native generation from this exact routed family, without re-parsing.
+
+        Poll the bounded stream for progress; cancellation drains at native safe
+        boundaries. Output is a generated candidate, not a closure certificate.
+        ``nonpositive_indices`` identifies auxiliary scalar-product slots.
+        Cut families currently use the existing cut-aware finite/parametric APIs.
+        """
+        ...
+    def normalize_candidate_terminals(
+        self, artifact: rustred.CandidateArtifact, *, max_terminals: int = 1000000,
+        max_supports: int = 100000, max_matrix_cells: int = 1000000,
+        max_output_terms: int = 4000000,
+    ) -> rustred.TerminalNormalization:
+        """Explicit exact normalization of saved finite residuals in this family.
+
+        Uses native unit aliases and weighted polynomial-numerator relations;
+        it does not regenerate candidates, solve ordinary IBPs, certify closure,
+        or prove master independence. Native family identity must match.
+        """
+        ...
     def ibp_identities(self) -> list[list[tuple[list[Expression], Expression]]]:
         r"""
         Generate the L*(L+E) ordinary IBP equations with symbolic indices.
@@ -10644,6 +10681,8 @@ class IBPFamily:
         max_depth: int = 2,
         include_lorentz: bool = False,
         max_targets: int = 1024,
+        preferred_masters: list[list[int]] | None = None,
+        until_stable: bool = False,
     ) -> IBPSolution:
         r"""
         Reduce requested integer-power integrals by exact finite-target elimination.
@@ -10653,6 +10692,11 @@ class IBPFamily:
         not a certified set of independent master integrals. Increase ``max_depth``
         when more relations are needed. Exceeding ``max_targets`` raises ``ValueError``
         rather than silently truncating the search.
+
+        ``preferred_masters`` asks the native exact solver to change residual
+        basis where its equations permit it. ``until_stable`` checks two
+        additional depths for an unchanged residual set, within ``max_depth``;
+        it is a bounded heuristic, not a proof of minimality or closure.
 
         Examples
         --------
@@ -10874,6 +10918,22 @@ class IBPSolution:
     >>> assert [1] in solution.residuals
     """
     @property
+    def depth(self) -> int | None: ...
+    @property
+    def stable_depth(self) -> int | None: ...
+    @property
+    def preferred_masters(self) -> list[tuple[list[int], str]]: ...
+    @property
+    def replaced(self) -> list[list[int]]: ...
+    def certify(self, *, count_masters: bool = True, replay: bool = True, seed: int = 0) -> IBPCertificate:
+        """Replay a finite Laporta reduction and optionally compare sampled counts.
+
+        Replay is exact but does not establish pole completeness. Master counts
+        are probabilistic, may have no verdict, and do not prove independence.
+        Parametric recurrence solutions are not accepted by this method.
+        """
+        ...
+    @property
     def rules(self) -> list[IBPRule]:
         r"""
         Solved identities in application order.
@@ -10994,6 +11054,30 @@ class IBPSolution:
         >>> summary = repr(solution)
         """
 
+class IBPCertificate:
+    """Separate exact replay and probabilistic sector-count reports, not closure."""
+    @property
+    def reduction(self) -> str: ...
+    @property
+    def masters(self) -> str: ...
+    @property
+    def master_counts(self) -> dict[tuple[bool, ...], int | None] | None: ...
+    @property
+    def residual_counts(self) -> dict[tuple[bool, ...], int] | None: ...
+    @property
+    def excess_sectors(self) -> list[list[bool]]: ...
+    @property
+    def no_verdict(self) -> dict[tuple[bool, ...], str] | None: ...
+    @property
+    def stable_depth(self) -> int | None: ...
+    @property
+    def replayed_rules(self) -> int | None: ...
+    @property
+    def identities(self) -> int | None: ...
+    @property
+    def seed(self) -> int | None: ...
+
 from . import ibp as ibp
+from . import rustred as rustred
 from . import oneloop as oneloop
 from . import vakint as vakint

@@ -2,7 +2,19 @@
 # Vakint
 
 This python library aims at the analytical and numerical evaluation of single-scale vacuum integrals in Quantum Field Theory.
-It uses combines FORM scripts from existing works with Symbolica's numerical capabilities to directly deliver arbitrary precision evaluations of such integrals.
+It combines native Symbolica algebra with selectable integral-evaluation backends.
+The opt-in RustRed scalar backend and default FeynKit tensor backend provide a
+FORM-independent runtime path. Historical AlphaLoop, MATAD and FMFT reduction
+backends remain available and retain their external-executable requirements.
+
+`integral_from_diagram` accepts an existing HEPKit vacuum graph, its routed
+family and a native scalar numerator. The result is a rich `VakintExpression`;
+numerical Laurent results support precision-preserving `to_expression()` and
+Symbolica's `formatted()` display. `to_list()` remains a convenience f64 view.
+
+Four-loop RustRed evaluation uses shipped guarded candidates and validated
+terminal catalogs. A successful requested integral is not full-family closure,
+and freshly generated notebook artifacts are not automatically installed here.
 
 For questions or bug reports, visit https://github.com/alphal00p/vakint/.
 
@@ -117,3 +129,5 @@ from symbolica.community.hepkit_vakint_native import *
 initialize_module()
 
 del initialize_module
+
+from .graph_adapter import integral_from_diagram

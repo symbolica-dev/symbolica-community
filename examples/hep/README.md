@@ -74,12 +74,121 @@ provides separate worked IBP notebooks:
   combinations, and exact checks of the defining IBP identities.
 - [Two-loop phi4 self-energy](ibp_phi4.py) and [vertex](phi4_two_loop_vertex.py):
   generated diagrams, reductions and counterterms.
+- [Four-loop vacuum IBP laboratory](rustred_four_loop_campaign.py): standard
+  DOT graphs for H, X, BMW and FG become routed HEPKit families, then run a
+  native single-worker RustRed candidate search with streamed progress and
+  lazy rule, guard and terminal inspection. It generates the candidates live;
+  it does not load a prepared rule catalog or assert full-family closure.
 
 All these examples use the shared `hepkit.IntegralFamily` frontend with
 `hepkit.Kinematics` and a symbolic dimension. The one-loop example chooses
 `hepkit.oneloop.reduce` for reduction to OneLoopMaster symbols; `hepkit.IBPFamily`
 provides native RustRed reductions of the same families. Links inside each
 notebook stay on the same server.
+
+## Live RustRed generation and artifact exploration
+
+The four-loop laboratory needs a native community build containing the
+`rustred-feynkit/campaign-api` feature, enabled in this checkout. It uses the
+host's existing Symbolica kernel; do not install a separate RustRed extension
+to provide the notebook's native objects. From an activated virtual environment
+with the project's native build dependencies and a suitable Symbolica license:
+
+```sh
+pip install 'maturin>=1.13.2,<2' 'marimo>=0.24.2,<0.25'
+maturin develop --release --locked
+marimo edit examples/hep/rustred_four_loop_campaign.py
+```
+
+Select **Generate H → X → BMW → FG** explicitly. The notebook's collapsed setup and reusable
+`rustred_campaign_support.py` handle presentation and polling; the RustRed
+engine owns generation, events, cancellation and artifact access. Each family
+runs its physical positive-sector downset with auxiliary ISP coordinates
+nonpositive, exact sparse arithmetic and numerical search depth two. The
+visible configuration cell controls the worker count and search settings.
+Native session elapsed time includes preparation, solving and bundle assembly;
+the native timing report separates these phases. Artifact writing and explicit
+view-call timings are recorded separately.
+
+Sessions do not call back into Python from native worker threads. Polling
+returns bounded batches and a current aggregate snapshot; a slow consumer can
+lose intermediate events, with their count reported explicitly. **Cancel** is
+cooperative, not a promise to interrupt the current algebra operation. Keep
+refresh enabled to move to the next family. These sessions and lazy views must
+not be inherited across `fork`; start a new process using `spawn` instead.
+
+Generated candidate artifacts can be reopened with
+`hepkit.rustred.CandidateArtifact.open_file(path, bundle_max_entries=10_000_000)`.
+The example uses the same explicit collection-entry allowance for saving and
+reopening; this changes transport capacity, not the search or integral scope.
+Sector/rule/terminal pages
+and metadata do not decode all coefficient polynomials. Table search filters
+only the current fetched page (up to 25 rows), not the full artifact; use the
+page offsets to browse other pages. Rule structure is capped at 64 KiB by
+default, with explicit larger allowances. RHS and guard previews contain ten
+rows, not the entire selected rule; their raw JSON is bounded to the same page.
+Changing a coefficient ID does not decode it: click **Render** explicitly for
+an 8 KiB native printer preview, with larger budgets available on request.
+Rendering is disabled during generation; reopen the artifact after it drains.
+The shared Symbolica state is imported once and decoded coefficients are cached.
+Encoded artifact bytes and structural records still occupy memory; lazy browsing
+avoids eager coefficient decoding and large initial HTML, not all file loading.
+Displays are bounded previews, not an alternate serialization
+format; the binary artifact remains authoritative. Open only trusted generated
+artifacts. A finite list of residual terminals or a completed generation session
+is not a certificate of closure, termination or master minimality.
+
+After generation drains, **Normalize completed terminal sets** explicitly calls
+the existing native family-local normalization. It reports raw records, distinct
+keys, unit aliases and weighted outputs separately, with paged relations and
+lazy coefficient views. Unsupported shapes remain outputs. The discussion
+compares this convention with FMFT's 19 symbolic representatives, without
+equating those representatives to raw residuals or numerical Laurent constants.
+Neither a favorable count nor this normalization proves master independence.
+
+The optional **Evaluate H numerator once** action is a separate post-generation
+calculation. It uses the same H graph with a new symbolic-mass family, native
+FeynKit tensor reduction and Vakint's shipped RustRed assets, not the candidate
+files just generated. It compares five computed Laurent coefficients with the
+existing 32-digit H rank-four reference at the stated scales. FORM is not run;
+the numerical master inputs are supplied by Vakint, not newly computed here.
+This single integral test does not establish arbitrary-index family closure.
+The initial state never evaluates it; an explicit click is required after
+generation drains, and the result is cached against reactive UI reruns.
+
+### Measured notebook validation
+
+On 5 October 2026, one explicit **Generate** click completed a fresh H → X →
+BMW → FG run with one native worker and the settings above. No checkpoints or
+precomputed candidates were reused, and no sector failed.
+
+| Family | Sectors | Native generation (s) | Rules | Raw residuals | Normalized outputs |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| H | 314 | 91.753 | 21,318 | 386 | 22 |
+| X | 328 | 281.629 | 19,907 | 445 | 19 |
+| BMW | 134 | 110.898 | 9,018 | 179 | 17 |
+| FG | 124 | 57.284 | 9,266 | 145 | 16 |
+
+The native sessions totaled 541.563 seconds (9.03 minutes); the notebook
+controller took 544.258 seconds including artifact collection, writing and
+polling. Compilation is separate and excluded. These are shared-host
+observations, not runtime guarantees or reduction/closure benchmarks.
+
+Live browsing, page-local search and paging passed. Each artifact also reopened
+in a fresh process in 0.108–0.511 seconds: structural browsing decoded zero
+recurrence coefficients, and one explicit render decoded exactly one. These
+are fresh-process observations, not cold operating-system-cache timings.
+Normalization took 0.098–0.315 seconds per family. The resulting integer key
+sets exactly matched the corresponding shipped Vakint normalized output sets;
+this does not establish byte-identical programs, coefficient-by-coefficient
+equivalence or automatic installation of the new candidates.
+
+The separate H numerator evaluation matched all five 32-digit reference
+coefficients at relative tolerance `1e-30`, with an invalid FORM executable
+path. Native symbolic evaluation took 8.941 seconds and numerical substitution
+0.002 seconds. It used Vakint's shipped assets, not the freshly generated
+programs. **Generation and terminal normalization are not closure proofs or
+proofs of an independent master basis.**
 
 ## Notebook tensor displays
 
