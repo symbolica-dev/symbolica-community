@@ -57,26 +57,36 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--resume", action="store_true")
-    parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--workers", type=int, default=1,
+                        help="Total sample-worker budget, partitioned across concurrent boundary configurations.")
+    parser.add_argument("--boundary-workers", type=int, default=1,
+                        help="Maximum simultaneous boundary configurations (bounded by --workers).")
     parser.add_argument("--seed-digits", type=int, default=30)
     parser.add_argument("--interrupt-after-samples", type=int, default=0,
                         help="During higher-precision forced refinement, cancel after this many new complete samples, then reload and resume.")
     parser.add_argument("--refine-digits", type=int, default=10,
                         help="Extra seed digits for forced independent recomputation (must be positive).")
     args = parser.parse_args()
-    if args.refine_digits <= 0 or args.interrupt_after_samples < 0:
-        parser.error("Refinement must be positive; interruption sample count must be nonnegative.")
+    if args.refine_digits <= 0 or args.interrupt_after_samples < 0 or min(args.workers, args.boundary_workers) < 1:
+        parser.error("Refinement and worker budgets must be positive; interruption sample count must be nonnegative.")
     if args.directory.exists() and any(args.directory.iterdir()) and not args.resume:
         parser.error("Cold acceptance requires an empty directory; use --resume to reuse it.")
     args.directory.mkdir(parents=True, exist_ok=True)
     data = Path(__file__).parent / "data" / "gg_hg"
     session = CalculationSession(
         data / "native-model.json", args.directory,
-        seed_digits=args.seed_digits, workers=args.workers,
+        seed_digits=args.seed_digits, workers=args.workers, boundary_workers=args.boundary_workers,
     )
     report = {
         "status": "running", "mode": "resumed" if args.resume else "cold", "stages": [],
         "scope": "Physical seeds, transport, amplitude and restart; independent Euclidean anchor reports are a separate prerequisite.",
+        "resources": {
+            "sample_worker_budget": args.workers, "boundary_workers": args.boundary_workers,
+            "effective_boundary_workers": min(args.boundary_workers, args.workers, len(session.configurations)),
+            "sample_workers_per_configuration": args.workers // min(
+                args.boundary_workers, args.workers, len(session.configurations),
+            ),
+        },
         "inputs": {
             "model_sha256": hashlib.sha256((data / "native-model.json").read_bytes()).hexdigest(),
             "point": [str(value) for value in session.point],
@@ -218,7 +228,7 @@ def main():
             session.close()
             session = CalculationSession(
                 data / "native-model.json", args.directory,
-                seed_digits=seed_digits, workers=args.workers,
+                seed_digits=seed_digits, workers=args.workers, boundary_workers=args.boundary_workers,
             )
             write_report()
             # The new precision has distinct sample keys. Resume the completed

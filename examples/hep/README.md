@@ -148,6 +148,25 @@ python examples/hep/gg_hg_acceptance.py --directory /path/to/empty-run
 python examples/hep/gg_hg_acceptance.py --directory /path/to/run --resume
 ```
 
+Configuration concurrency is optional and defaults to one. To run four
+independent boundary configurations with a total budget of 64 finite-epsilon
+sample workers, use:
+
+```sh
+python examples/hep/gg_hg_acceptance.py --directory /path/to/empty-run \
+  --boundary-workers 4 --workers 64 --interrupt-after-samples 1
+```
+
+The controller caps configuration concurrency at the total worker budget and
+divides that budget evenly (rounding down), giving 16 sample workers per
+configuration in this example. Each configuration uses a private native cache
+initialized from the saved seed bank; a single coordinator merges and
+atomically saves successful results as they finish. The returned results keep
+configuration order. A failure cancels siblings through their shared native
+cancellation token, and completed configurations remain available for restart.
+The report includes configuration timings and the actual worker allocation.
+One native model is shared by the session throughout.
+
 Add `--interrupt-after-samples 1` to exercise typed cancellation during the
 forced higher-precision boundary run, after a complete sample checkpoint and
 before its first verified configuration. The initial cold run is completed
