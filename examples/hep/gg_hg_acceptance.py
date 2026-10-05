@@ -10,8 +10,58 @@ import json
 from pathlib import Path
 from time import perf_counter_ns, sleep
 import hashlib
+import importlib
+import sys
 
 from gg_hg_support import CalculationSession, boundary_evidence
+
+
+def file_attestation(path):
+    path = Path(path).resolve()
+    digest = hashlib.sha256()
+    size = 0
+    with path.open("rb") as source:
+        for block in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(block)
+            size += len(block)
+    return {"path": str(path), "size_bytes": size, "sha256": digest.hexdigest()}
+
+
+def runtime_attestation():
+    """Identify the loaded native owner and the Python code steering this run."""
+    from symbolica import E, S
+    from symbolica.community.hep.integration import KinematicTransport
+
+    core = importlib.import_module("symbolica.core")
+    x, epsilon, master = S(
+        "integration_acceptance_attestation_v1::x",
+        "integration_acceptance_attestation_v1::epsilon",
+        "integration_acceptance_attestation_v1::master",
+    )
+    # This fixed, unevaluated connection asks the native owner for its existing
+    # source-sensitive identity. Python does not duplicate the fingerprint rules.
+    witness = KinematicTransport(
+        epsilon, {x: [[E("0")]]}, [master], E("1"),
+        branch_domain="native source attestation v1",
+    )
+    return {
+        "schema": 1,
+        "native_identity_witness": {
+            "contract": "zero connection, integration_acceptance_attestation_v1 symbols, normalization 1",
+            "identity": witness.identity,
+        },
+        "loaded_extension": file_attestation(core.__file__),
+        "execution_sources": {
+            "acceptance": file_attestation(__file__),
+            "controller": file_attestation(CalculationSession.__init__.__code__.co_filename),
+        },
+        "python": {"version": sys.version, "executable": sys.executable},
+    }
+
+
+def verify_runtime_attestation(recorded):
+    if runtime_attestation() != recorded:
+        raise RuntimeError("The native extension or acceptance sources changed during this run.")
 
 
 def write_acceptance_report(directory, report):
@@ -126,6 +176,7 @@ def main():
     )
     report = {
         "status": "running", "mode": "resumed" if args.resume else "cold", "stages": [],
+        "runtime_attestation": runtime_attestation(),
         "scope": "Physical seeds, transport, amplitude and restart; independent Euclidean anchor reports are a separate prerequisite.",
         "resources": {
             "sample_worker_budget": args.workers, "boundary_workers": args.boundary_workers,
@@ -341,6 +392,8 @@ def main():
             "configurations_using_accumulated_points": reused,
             "source_provenance_preserved": True,
         }
+        verify_runtime_attestation(report["runtime_attestation"])
+        report["runtime_attestation_verified_at_completion"] = True
         report["status"] = "passed"
     except BaseException as exc:
         session.cancel()
