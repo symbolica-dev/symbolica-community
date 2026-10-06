@@ -1230,10 +1230,11 @@ checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
 [[package]]
 name = "fastsecdec"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=27a9e71a82dda82a56243d4ca0f50cb21d4a4538#27a9e71a82dda82a56243d4ca0f50cb21d4a4538"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=ae9803ca4e7916f9847ad458cba5ddf7b40ba1af#ae9803ca4e7916f9847ad458cba5ddf7b40ba1af"
 dependencies = [
  "bincode",
  "blake3",
+ "fastsecdec-qmc",
  "fastsecdec-sectors",
  "feynkit-graph",
  "feynkit-kinematics",
@@ -1252,7 +1253,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=27a9e71a82dda82a56243d4ca0f50cb21d4a4538#27a9e71a82dda82a56243d4ca0f50cb21d4a4538"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=ae9803ca4e7916f9847ad458cba5ddf7b40ba1af#ae9803ca4e7916f9847ad458cba5ddf7b40ba1af"
 dependencies = [
  "fastsecdec",
  "fastsecdec-sectors",
@@ -1265,9 +1266,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "fastsecdec-qmc"
+version = "0.1.0"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=ae9803ca4e7916f9847ad458cba5ddf7b40ba1af#ae9803ca4e7916f9847ad458cba5ddf7b40ba1af"
+dependencies = [
+ "numerica",
+ "rand 0.9.5",
+ "serde",
+]
+
+[[package]]
 name = "fastsecdec-sectors"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=27a9e71a82dda82a56243d4ca0f50cb21d4a4538#27a9e71a82dda82a56243d4ca0f50cb21d4a4538"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=ae9803ca4e7916f9847ad458cba5ddf7b40ba1af#ae9803ca4e7916f9847ad458cba5ddf7b40ba1af"
 dependencies = [
  "numerica",
  "thiserror 2.0.21",
@@ -2557,6 +2568,8 @@ dependencies = [
 [[package]]
 name = "numerica"
 version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "836accdb415b7667573bd12676e0b2eb4440e3f60b110038d96a9086f5651c15"
 dependencies = [
  "ahash 0.8.12",
  "astro-float",
