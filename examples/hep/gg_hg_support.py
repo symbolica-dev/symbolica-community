@@ -366,7 +366,10 @@ class CalculationSession:
         self._invalidate_results()
         if recompute:
             self.cache = BoundaryCache.load(self.directory / "seeds")
-            self.cache.save(self.directory / "transport")
+        # Persist once even on an exact repeat: a previous failed save can leave
+        # valid computed points only in memory. New results still checkpoint
+        # individually, so interruption never discards successful transport.
+        self.cache.save(self.directory / "transport")
         if nearby:
             self.point = [self.point[0] + E("1/100000"), *self.point[1:]]
         for topology, configuration in self.configurations:
@@ -376,7 +379,8 @@ class CalculationSession:
                 configuration.root_sheets, options=self._options(), control=self._control,
             )
             self.results[configuration.label] = result
-            self.cache.save(self.directory / "transport")
+            if not result.cache_hit or result.inserted_points:
+                self.cache.save(self.directory / "transport")
         return self.results
 
     def assemble(self, *, recompute=False, _refinements=0):

@@ -119,7 +119,7 @@ def test_interrupted_nearby_transport_cannot_mix_physical_points(session):
     session.results = {configuration.label: old for _, configuration in session.configurations}
     session.observables = SimpleNamespace(verified_relative_digits={"old": 50})
     session.form_factors = {"W": old, "Z": old}
-    new = SimpleNamespace(coefficients=[["new point"]])
+    new = SimpleNamespace(coefficients=[["new point"]], cache_hit=False, inserted_points=0)
     calls = 0
 
     def evaluate(*args, **kwargs):
@@ -319,6 +319,61 @@ def test_interrupted_forced_transport_persists_only_saved_seeds(session):
         session.wait()
     restored = numerical.BoundaryCache.load(session.directory / "transport")
     assert SUPPORT.boundary_evidence(restored) == seed_evidence
+
+
+def test_exact_transport_hits_persist_unsaved_points_once(session, monkeypatch):
+    populate_banks(session)
+    flow, x, add = constant_boundary_adder()
+    add(session.cache, "2", "valid in-memory point after a failed prior save")
+    before = SUPPORT.boundary_evidence(session.cache)
+    real_save, saves = numerical.BoundaryCache.save, []
+
+    def save(cache, directory):
+        saves.append(directory)
+        return real_save(cache, directory)
+
+    monkeypatch.setattr(numerical.BoundaryCache, "save", save)
+    for name, system in list(session.systems.items()):
+        session.systems[name] = SimpleNamespace(
+            coordinates=system.coordinates,
+            evaluate=lambda cache, *args, **kwargs: flow.evaluate(cache, {x: E("2")}, 0, 0),
+        )
+    results = session.transport()
+    assert len(results) == 16
+    assert all(result.cache_hit and result.steps == 0 for result in results.values())
+    assert saves == [session.directory / "transport"]
+    restored = numerical.BoundaryCache.load(session.directory / "transport")
+    assert SUPPORT.boundary_evidence(restored) == before
+
+
+def test_transport_save_failure_retries_without_losing_new_points(session, monkeypatch):
+    populate_banks(session)
+    flow, x, _ = constant_boundary_adder()
+    real_save, saves = numerical.BoundaryCache.save, []
+
+    def save(cache, directory):
+        saves.append(directory)
+        if len(saves) == 2:
+            raise OSError("controlled checkpoint failure after successful transport")
+        return real_save(cache, directory)
+
+    monkeypatch.setattr(numerical.BoundaryCache, "save", save)
+    for name, system in list(session.systems.items()):
+        session.systems[name] = SimpleNamespace(
+            coordinates=system.coordinates,
+            evaluate=lambda cache, *args, **kwargs: flow.evaluate(
+                cache, {x: E("2")}, 0, 0, admit_straight_path=True,
+            ),
+        )
+    with pytest.raises(OSError, match="checkpoint failure"):
+        session.transport()
+    before = SUPPORT.boundary_evidence(session.cache)
+    assert len(numerical.BoundaryCache.load(session.directory / "transport")) < len(session.cache)
+    results = session.transport()
+    assert all(result.cache_hit and result.steps == 0 for result in results.values())
+    assert len(saves) == 3  # initial save, failed new-point save, durable retry
+    restored = numerical.BoundaryCache.load(session.directory / "transport")
+    assert SUPPORT.boundary_evidence(restored) == before
 
 
 def test_loading_boundaries_preserves_accumulated_points_and_provenance(session):

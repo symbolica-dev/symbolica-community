@@ -166,6 +166,12 @@ successful evaluation at the current kinematics. Native
 cancellation checks occur between algebra/reducer operations, so stopping a
 large operation may take time. Use one live session per cache directory.
 
+Each transport stage first persists its current bank, including valid in-memory
+points retained after a previous failed save. Newly computed points are then
+checkpointed after each configuration. Exact cache hits do not rewrite the
+unchanged bank individually, so an exact repeated 16-configuration query needs
+one checkpoint rather than sixteen.
+
 The lightweight controller and notebook checks start no two-loop evaluation:
 
 ```sh
