@@ -14,9 +14,17 @@ class ExactComparisonTests(unittest.TestCase):
         self.assertEqual(number(encoded(2**100 + 1, 2**100)), number([f'{2**100 + 1}/{2**100}', 101]))
 
     def test_reject_non_dyadic_or_insufficient_precision(self):
-        for record in (encoded(1, 3), encoded(2**100 + 1, 2**100, 100)):
+        for record in (encoded(1, 3), encoded(2**100 + 1, 2**100, 96)):
             with self.subTest(record=record), self.assertRaises(AssertionError):
                 number(record)
+
+    def test_astro_requested_precision_kept_separate_from_word_storage(self):
+        value = encoded(2**223 + 1, 2**223, 216)
+        self.assertEqual(number(value), number([f'{2**223 + 1}/{2**223}', 224]))
+        with self.assertRaises(AssertionError):
+            number(encoded(2**224 + 1, 2**224, 216))
+        with self.assertRaises(AssertionError):
+            number([f'{2**223 + 1}/{2**223}', 216])
 
     def test_combined_errors_accept_actual_small_complex_difference(self):
         result = compare([encoded(2**100 + 1, 2**100), encoded(1, 2**100)], encoded(1, 2**100),

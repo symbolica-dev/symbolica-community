@@ -18,15 +18,21 @@ def number(value):
         assert isinstance(numerator, str) and isinstance(denominator, str)
         result = Fraction(int(numerator), int(denominator))
         assert result.denominator == int(denominator)
+        # Computed wasm32 Astro values retain requested precision metadata;
+        # astro-float-num rounds its mantissa precision upward to 32-bit words.
+        # Compare the complete dyadic value, never round it back to `bits`.
+        # This is separate from the unchanged stricter supplied-input decoder.
+        storage_bits = ((bits + 31) // 32) * 32
     else:
         assert len(value) == 2
         result, bits = Fraction(value[0]), value[1]
+        storage_bits = bits  # The native reference was computed with MPFR.
     assert type(bits) is int and bits >= 2
     assert result.denominator & (result.denominator - 1) == 0
     magnitude = abs(result.numerator)
     if magnitude:
         trailing_zeros = (magnitude & -magnitude).bit_length() - 1
-        assert magnitude.bit_length() - trailing_zeros <= bits
+        assert magnitude.bit_length() - trailing_zeros <= storage_bits
     return result
 
 
@@ -133,6 +139,7 @@ def verify(run_directory):
             "coefficient_counts": counts, "complex_coefficients": sum(counts.values()),
             "all_differences_within_combined_errors_and_requested20": True,
             "arithmetic": "Exact Python integers and Fraction; no floating-point comparison rounding",
+            "representation": "Computed wasm32 Astro mantissas may use ceil(requested_precision/32)*32 bits; requested precision metadata and complete dyadic values are preserved. MPFR references retain their exact bit limit. Supplied415-bit import remains unchanged.",
             **comparisons}
 
 
