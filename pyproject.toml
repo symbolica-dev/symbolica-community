@@ -50,7 +50,13 @@ cache-keys = [{ file = "pyproject.toml" }, { file = "src/*.rs" }]
 
 
 [dependency-groups]
-dev = ["ipykernel>=6.16.2", "pytest>=7.0.0", "pytest-cov>=4.0.0", "ty>=0.0.75; python_version >= '3.8'"]
+dev = [
+    "ipykernel>=6.16.2",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ty>=0.0.75; python_version >= '3.8'",
+    "tomli>=2.0.1; python_version < '3.11'",
+]
 
 [tool.marimo.language_servers.ty]
 enabled = true
