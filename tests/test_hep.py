@@ -3,17 +3,16 @@
 import ast
 import importlib
 import os
-from pathlib import Path
 import subprocess
 import sys
 import threading
+from pathlib import Path
 
 import pytest
-
-from symbolica import E, S, Expression
+from symbolica import E, Expression, S
+from symbolica.community import graph
 from symbolica.community import hepkit as hep
 from symbolica.community.tensor import Representation, TensorExpression, TensorName, dot
-
 
 MODEL_PATH = Path(__file__).parents[1] / "examples/hep/scalar_phi3.json"
 
@@ -55,6 +54,10 @@ def test_flat_namespace_and_stubs():
     classes = {
         name: value for name, value in vars(hep).items() if isinstance(value, type)
     }
+    shared = {"DiagramRender", "LayoutSettings", "StrokeStyle"}
+    for name in shared:
+        assert classes.pop(name) is getattr(graph, name)
+        assert getattr(graph, name).__module__ == "symbolica.community.graph"
     assert all(
         value.__module__ == "symbolica.community.hepkit" for value in classes.values()
     )
@@ -66,9 +69,7 @@ def test_flat_namespace_and_stubs():
     assert "symbolica.community.feynkit" not in stub
 
 
-@pytest.mark.parametrize(
-    "module_name", ["symbolica.hep", "symbolica.hepkit"]
-)
+@pytest.mark.parametrize("module_name", ["symbolica.hep", "symbolica.hepkit"])
 def test_superseded_hep_import_is_removed(module_name):
     with pytest.raises(ModuleNotFoundError):
         importlib.import_module(module_name)
@@ -78,7 +79,9 @@ def test_numerical_integration_namespace_preserves_existing_integrator():
     numerical = importlib.import_module("symbolica.community.hep.integration")
     definite = importlib.import_module("symbolica.community.hepkit.integration")
     assert numerical is not definite
-    assert numerical.IntegralEvaluator.__module__ == "symbolica.community.hep.integration"
+    assert (
+        numerical.IntegralEvaluator.__module__ == "symbolica.community.hep.integration"
+    )
     assert definite.integrate.__module__ == "symbolica.community.hepkit.integration"
     assert importlib.import_module("symbolica.community.hepkit") is hep
 
@@ -125,7 +128,7 @@ def test_generate_diagram_and_cff(model):
 def test_generation_keywords_and_empty_results(model):
     incoming, outgoing = ["scalar_0"], ["scalar_0", "scalar_0"]
     process = model.process(incoming, outgoing)
-    kwargs = dict(max_vertices=3, coupling_orders={"QCD": 1})
+    kwargs = {"max_vertices": 3, "coupling_orders": {"QCD": 1}}
     generated = process.generate_diagrams(**kwargs)
     ranged = model.process(incoming, outgoing).generate_diagrams(
         max_vertices=3,
@@ -210,6 +213,7 @@ print("recovered", flush=True)
     result = subprocess.run(
         [sys.executable, "-c", script, str(MODEL_PATH), str(threads)],
         capture_output=True,
+        check=False,
         text=True,
         timeout=20,
     )

@@ -39,6 +39,15 @@ fn main() -> Result<()> {
             source.trim_end().to_owned() + "\n",
         )
     };
+    if only.is_none() || matches!(only, Some("hepkit" | "tensor")) {
+        let graph = stub
+            .modules
+            .remove("symbolica.community.graph")
+            .ok_or_else(|| {
+                std::io::Error::other("Graph rendering did not register stub metadata")
+            })?;
+        write_package("symbolica.community.graph", &graph.to_string())?;
+    }
     if only.is_none() || only == Some("hepkit") {
         let numerical = stub
             .modules
@@ -149,6 +158,7 @@ other : object
             community.submodules.remove("spenso");
             community.submodules.remove("vakint");
             community.submodules.insert("tensor".to_owned());
+            community.submodules.insert("graph".to_owned());
             community.submodules.insert("hep".to_owned());
         }
         // Keep the shipped canonical Symbolica stub and its community citation API.

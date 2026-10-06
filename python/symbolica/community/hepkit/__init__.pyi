@@ -15,16 +15,17 @@ import symbolica.core
 import types
 import typing
 from symbolica import ComplexFloat, Float
-from symbolica.community.tensor import DiagramRender, DisplaySettings, LayoutSettings, Slot, StrokeStyle, TensorExpression, TensorName
+from symbolica.community.graph import DiagramRender, LayoutSettings, StrokeStyle
+from symbolica.community.tensor import DisplaySettings, Slot, TensorExpression, TensorName
 from symbolica.core import Expression
 from . import integration
 from . import oneloop
 from . import sector_decomposition
 from . import vakint
 
-DiagramRender: typing.TypeAlias = symbolica.community.tensor.DiagramRender
-LayoutSettings: typing.TypeAlias = symbolica.community.tensor.LayoutSettings
-StrokeStyle: typing.TypeAlias = symbolica.community.tensor.StrokeStyle
+DiagramRender: typing.TypeAlias = symbolica.community.graph.DiagramRender
+LayoutSettings: typing.TypeAlias = symbolica.community.graph.LayoutSettings
+StrokeStyle: typing.TypeAlias = symbolica.community.graph.StrokeStyle
 @typing.final
 class Amplitude:
     r"""
@@ -2958,6 +2959,30 @@ class FeynmanDiagram:
         dot : str
             Compact physics DOT or annotated HEP DOT. Compact cross-sections pair
             initial-state legs with is_cut and specify comma-separated final_state particles.
+        """
+    @staticmethod
+    def from_dot_set(model: Model, dot: builtins.str) -> builtins.list[FeynmanDiagram]:
+        r"""
+        Parse a document containing multiple Feynman diagrams in DOT format.
+        Graphs are returned in document order and validated against the model.
+
+        Examples
+        --------
+        Using the setup in the ``FeynmanDiagram`` class example:
+
+        >>> dot = "\n".join(item.to_dot() for item in result.diagrams)
+        >>> restored = hep.FeynmanDiagram.from_dot_set(model, dot)
+        >>> len(restored) == len(result.diagrams)
+        True
+
+        Parameters
+        ----------
+        model : Model
+            Model used to resolve particles and validate diagram metadata.
+        dot : str
+            DOT document containing graph definitions. Annotated exports retain
+            each diagram's momentum basis and physical cuts. Invalid graphs fail
+            the entire import without returning a partial list.
         """
     def overall_factor_expression(self, *, evaluate: builtins.bool = False) -> Expression:
         r"""
@@ -8399,6 +8424,17 @@ class Process:
         >>> electron = process.model.particle("e-")
         """
     @property
+    def particle_veto(self) -> builtins.list[ParticleSelector]:
+        r"""
+        The excluded particle selectors, shared by every generation operation.
+
+        Examples
+        --------
+        Using the setup in the ``Process`` class example:
+
+        >>> excluded_particles = process.particle_veto
+        """
+    @property
     def particle_selection(self) -> typing.Optional[builtins.list[ParticleSelector]]:
         r"""
         Allowed species, including their antiparticles. None allows all;
@@ -8410,17 +8446,6 @@ class Process:
 
         >>> qed = model.process(["e-", "e+"], ["a", "a"], particle_selection=["e-", "a"])
         >>> allowed_particles = qed.particle_selection
-        """
-    @property
-    def particle_veto(self) -> builtins.list[ParticleSelector]:
-        r"""
-        The excluded particle selectors, shared by every generation operation.
-
-        Examples
-        --------
-        Using the setup in the ``Process`` class example:
-
-        >>> excluded_particles = process.particle_veto
         """
     @property
     def vertex_allow(self) -> typing.Optional[builtins.list[VertexRule]]:
@@ -8598,7 +8623,7 @@ class Process:
         allow_zero_flow_edges : bool, optional
             Permit internal edges with identically zero momentum flow.
         graph_prefix : str or None, optional
-            Prefix assigned to generated diagram names.
+            Prefix assigned to generated diagram names; None uses "D" (diagram).
         maximum_bridges : int, None, or Ellipsis, optional
             Omission or Ellipsis requires one-particle irreducibility only for diagrams
             with loops; tree exchanges are allowed, including in mixed loop ranges.
@@ -8711,7 +8736,7 @@ class Process:
         allow_zero_flow_edges : bool, optional
             Permit internal edges with identically zero momentum flow.
         graph_prefix : str or None, optional
-            Prefix assigned to generated diagram names.
+            Prefix assigned to generated diagram names; None uses "D" (diagram).
         maximum_bridges : int, None, or Ellipsis, optional
             Omission or Ellipsis requires one-particle irreducibility only for diagrams
             with loops; tree exchanges are allowed, including in mixed loop ranges.
@@ -8825,7 +8850,7 @@ class Process:
         allow_zero_flow_edges : bool, optional
             Permit internal edges with identically zero momentum flow.
         graph_prefix : str or None, optional
-            Prefix assigned to generated diagram names.
+            Prefix assigned to generated diagram names; None uses "D" (diagram).
         maximum_bridges : int, None, or Ellipsis, optional
             Omission or Ellipsis requires one-particle irreducibility only for diagrams
             with loops; tree exchanges are allowed, including in mixed loop ranges.

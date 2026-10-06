@@ -80,6 +80,11 @@ import numpy
 `);
 await pyodide.runPythonAsync(`
 import symbolica.community.tensor as tensor_module
+from symbolica.community import graph as graph_module, hepkit as hepkit_module
+for name in ("DiagramRender", "LayoutSettings", "StrokeStyle"):
+    shared_type = getattr(graph_module, name)
+    assert shared_type.__module__ == "symbolica.community.graph"
+    assert getattr(tensor_module, name) is getattr(hepkit_module, name) is shared_type
 from symbolica.community.tensor import Representation, Tensor, TensorExpression, TensorLibrary, TensorName, TensorNetwork, dot
 metric = TensorExpression(E("g(bis(4,1),bis(4,1))", default_namespace="spenso"))
 assert metric.simplify_algebra(contract="dots").to_expression() == E("4")
