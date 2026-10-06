@@ -140,8 +140,9 @@ def test_electric_charge_uses_vertex_expressions_and_normalization():
 def test_notebook_sources_do_not_fetch_internal_namespace_symbols():
     examples = Path(__file__).parents[1] / "examples"
     for path in examples.rglob("*"):
-        # Some examples link to an optional external development checkout.
-        if not path.is_file():
+        # Check repository-owned sources only. Optional development symlinks
+        # may resolve to different external checkouts on different machines.
+        if path.is_symlink() or not path.is_file():
             continue
         if path.suffix == ".ipynb":
             sources = [
