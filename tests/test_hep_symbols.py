@@ -45,10 +45,11 @@ def test_public_heads_match_typed_tensors_and_generated_momenta():
         .process(["phi", "phi"], ["phi", "phi"])
         .generate_amplitude(max_vertices=1)
     )
+    external_momentum = hep.Kinematics.external_momentum()
     for leg in amplitude.legs:
-        assert leg.momentum == hep.Kinematics.external_momentum(leg.index)
+        assert leg.momentum == external_momentum(leg.index)
     # A user-defined symbol with the same short name cannot capture the accessor.
-    assert S("user_notebook::P") != hep.Kinematics.external_momentum
+    assert S("user_notebook::P") != external_momentum
 
 
 def test_particle_mass_and_signed_electric_charge():
