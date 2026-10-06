@@ -27,10 +27,17 @@ jobs:
 
             - name: Build wheel
               uses: PyO3/maturin-action@v1
+              env:
+                  # Match tool.maturin.features when fingerprinting the host graph.
+                  RUSTFLOW_WORKSPACE_FEATURES: pyo3/extension-module
+                  RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES: "0"
               with:
                   command: build
                   args: --out dist
                   sccache: "true"
+
+            - name: Check integration wheel and shared kernel
+              run: python .github/scripts/check_integration_package.py dist/*.whl
 
             - name: Check core citation stub in source and wheel
               run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/*.whl
@@ -40,10 +47,54 @@ jobs:
                   for wheel in dist/*.whl; do
                       pip install "$wheel[notebook-display]"
                   done
-                  pip install pytest ty numpy
+                  pip install pytest ty numpy "tomli>=2.0.1; python_version < '3.11'"
 
             - name: Check public community import types
-              run: ty check --python-version 3.10 tests/typing/community_layout.py tests/typing/expression_products.py
+              run: ty check --python-version 3.10 tests/typing/community_layout.py tests/typing/expression_products.py tests/typing/integration.py tests/typing/loop_integration.py tests/typing/scoped_reductions.py tests/typing/tensor_evaluation.py
+
+            # Standalone native graph classes must match the embedded HEPKit
+            # owner. The unrelated PyPI linnet package is never a substitute.
+            # This test-only owner wheel needs 3.10; core still supports 3.9.
+            - name: Resolve and check the native graph owner
+              id: graph-owner
+              run: python .github/scripts/check_native_graph_package.py pin >> "$GITHUB_OUTPUT"
+
+            - name: Fetch the matching native graph bindings
+              uses: actions/checkout@v4
+              with:
+                  repository: ${{ steps.graph-owner.outputs.repository }}
+                  ref: ${{ steps.graph-owner.outputs.revision }}
+                  path: native-owners/hepkit
+                  persist-credentials: false
+
+            - name: Check the native graph checkout
+              run: python .github/scripts/check_native_graph_package.py owner
+
+            - name: Build the matching native graph wheel
+              uses: PyO3/maturin-action@v1
+              env:
+                  CARGO_BUILD_JOBS: "2"
+                  CARGO_TARGET_DIR: target/linnet-native
+              with:
+                  command: build
+                  args: >-
+                      --release --locked
+                      --manifest-path native-owners/hepkit/crates/linnet-py/Cargo.toml
+                      --features extension-module,abi3-py310
+                      --interpreter python${{ matrix.python-version }}
+                      --out linnet-dist
+                  sccache: "true"
+
+            - name: Verify and install the matching native graph wheel
+              run: |
+                  python .github/scripts/check_native_graph_package.py wheel
+                  python -m pip install --no-index --no-deps --require-hashes -r target/linnet-wheel.txt
+                  python .github/scripts/check_native_graph_package.py installed
+
+            - name: Check native graph identity and rendering
+              env:
+                  SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
+              run: python .github/scripts/check_native_graph_identity.py native-owners/hepkit
 
             - name: Run tests
               env:
@@ -65,3 +116,12 @@ jobs:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   files: ./coverage.xml
                   fail_ci_if_error: false
+
+            # Install Marimo after the broad suite so only this focused smoke
+            # check enables notebook execution; no two-loop boundaries run here.
+            - name: Render the Higgs-jet notebook and check its controller
+              env:
+                  SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
+              run: |
+                  pip install 'marimo>=0.24.2,<0.25'
+                  python -m pytest -q tests/test_hep_gg_hg.py tests/test_hep_notebooks.py -k gg_hg

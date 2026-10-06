@@ -51,6 +51,16 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md("""
+    ## Setup and notebook helpers
+
+    The folded setup block imports HEPKit and the campaign helpers. Expand its
+    code to inspect the imports; the calculation starts with the graph below.
+    """)
+    return
+
 
 @app.cell(hide_code=True)
 def _():

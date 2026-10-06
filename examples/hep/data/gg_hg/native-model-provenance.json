@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "kind": "scientific effective-model input, no numerical integral boundaries",
+  "source": {
+    "repository": "https://bitbucket.org/aschweitzer/mg5_higgs_ew_plugin",
+    "commit": "89f64b93d0bdbd8ee90eb85737021189229b034a",
+    "directory": "UFO_model_gggH",
+    "original_lorentz_sha256": "c8469e01e5f041188c0af926d01aed263649760be66826cec78a1cdf6d7b9db6"
+  },
+  "sha256": "1891f93a8b8926e1e66d54a95c03bba2d36e7ee1a812b91010fa0e88b4e92e12",
+  "preparation": "Native UfoLoader export after Python 3 compatibility, native ghost/four-scalar metadata fixes, and three momentum reciprocal bracket scopes; original tensor algebra preserved.",
+  "regeneration": "tools/hepkit-amplitude/README.md",
+  "validation": "reports/validation/2026-10-05-native-amplitude-tool.json",
+  "model_audit": {
+    "particles": 35,
+    "vertex_rules": 141,
+    "lorentz_structures": 45,
+    "form_factor_parameters": 28,
+    "form_factor_parameter_nature": "external",
+    "form_factor_parameter_type": "complex in original UFO; RE/IM slots are supplied as real components by assembly",
+    "form_factor_values": "Numerical defaults are never used by amplitude evaluation. The eight EW coefficients and all exact physical parameters are mandatory inputs; four HEFT coefficients are analytic functions of s,t,MH_squared."
+  }
+}

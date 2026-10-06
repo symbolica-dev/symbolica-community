@@ -1,6 +1,11 @@
 """Pytest configuration and fixtures."""
 import os
 
+# Initialize the kernel before test collection imports Symbolica, and let
+# subprocess tests inherit the same license as the parent interpreter.
+if os.environ.get("SYMBOLICA_LICENSE_KEY"):
+    os.environ.setdefault("SYMBOLICA_LICENSE", os.environ["SYMBOLICA_LICENSE_KEY"])
+
 
 def pytest_configure(config):
     """Make the license available before collection and in child processes."""

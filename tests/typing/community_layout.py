@@ -51,3 +51,18 @@ def factor_projectors(symbolic: tensor.TensorExpression, concrete: tensor.Tensor
     cyclic: tensor.FactorProjector[tensor.TensorNetwork] = (
         tensor.FactorProjector.cyclic(symbolic, concrete, symbolic)
     )
+
+
+def routed_campaign(
+    family: hep.IBPFamily, artifact: hep.rustred.CandidateArtifact,
+) -> tuple[list[tuple[Expression, Expression]], hep.rustred.CandidateGenerationSession,
+           hep.rustred.TerminalNormalization]:
+    bindings: list[tuple[Expression, Expression]] = family.parameter_bindings
+    generation: hep.rustred.CandidateGenerationSession = family.start_generation(
+        event_capacity=64, nonpositive_indices=[0],
+    )
+    terminals: hep.rustred.TerminalNormalization = family.normalize_candidate_terminals(
+        artifact, max_terminals=10, max_supports=10, max_matrix_cells=100,
+        max_output_terms=100,
+    )
+    return bindings, generation, terminals

@@ -308,7 +308,8 @@ class TestTensorEvaluation:
         constants = {self.mq: E("173")}
 
         # Much like the expressions, tensors have the same evaluation api
-        e = self.t.evaluator(constants=constants, params=params, funs={})
+        fixed = self.t.map_components(lambda value: value.replace(self.mq, constants[self.mq]))
+        e = fixed.evaluator(params=params, functions=[])
         assert e is not None
 
         # Test evaluation without compilation
@@ -318,7 +319,7 @@ class TestTensorEvaluation:
         assert eval_res is not None
         assert eval_res.expression() is not None
 
-    def test_tensor_compilation(self):
+    def test_tensor_compilation(self, tmp_path):
         """Test tensor compilation"""
         params = [Expression.I]
         params += TensorNetwork(self.w(1, self.i)).result_tensor()
@@ -326,13 +327,15 @@ class TestTensorEvaluation:
         params += TensorNetwork(self.p(2, self.nu)).result_tensor()
         constants = {self.mq: E("173")}
 
-        e = self.t.evaluator(constants=constants, params=params, funs={})
+        fixed = self.t.map_components(lambda value: value.replace(self.mq, constants[self.mq]))
+        e = fixed.evaluator(params=params, functions=[])
 
         # The evaluator can be compiled to a shared library
         c = e.compile(
             function_name="f",
-            filename="test_expression.cpp",
-            library_name="test_expression.so",
+            filename=str(tmp_path / "test_expression.cpp"),
+            library_name=str(tmp_path / "test_expression.so"),
+            number_type="complex",
             inline_asm="none",
         )
 
