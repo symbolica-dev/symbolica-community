@@ -145,10 +145,10 @@ def _(
             diagram.numerator_expression().to_expression()
         )
         for half in diagram.half_edges:
-            if half.edge.data.is_external:
+            if half.edge.is_external:
                 numerator = numerator.replace(
-                    hedge(half.data, 1),
-                    [a, b, c][half.edge.data.external_index],
+                    hedge(half.id, 1),
+                    [a, b, c][half.edge.external_index],
                 )
         numerator = numerator.replace(
             sp.PortPattern.exact(sp.Representation.coad(8), idx),

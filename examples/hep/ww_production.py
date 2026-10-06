@@ -39,10 +39,9 @@ def _():
     from symbolica.community import tensor as sp
     import marimo as mo
     import numpy as np
-    from linnet import RenderConfig
     from symbolica import E, S, Symbol
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hepkit import Kinematics, Model
+    from symbolica.community.hepkit import Kinematics, Model, RenderSettings
     from symbolica.community.tensor import TensorExpression
 
     _set_namespace("ww")
@@ -50,7 +49,7 @@ def _():
         E,
         Kinematics,
         Model,
-        RenderConfig,
+        RenderSettings,
         S,
         Symbol,
         TensorExpression,
@@ -429,14 +428,13 @@ def _(pair_results, zero):
 
 
 @app.cell
-def _(RenderConfig, generated, mo, squared):
-    # An explicit generic layout keeps diagram rendering independent of
-    # automatic amplitude-layout defaults in the installed Linnet package.
-    _config = RenderConfig(template_options={"mode": "generic"})
-    diagram_svgs = [diagram.render(config=_config) for diagram in generated.diagrams]
+def _(RenderSettings, generated, mo, squared):
+    # Native HEPKit settings and snapshots retain each diagram's physics styles.
+    _config = RenderSettings()
+    diagram_drawings = [diagram.render(config=_config) for diagram in generated.diagrams]
     mo.vstack(
         [
-            mo.hstack([mo.Html(svg) for svg in diagram_svgs]),
+            mo.hstack(diagram_drawings),
             mo.md(
                 "All sixteen products contracted; reversed interference pairs agree exactly. The longitudinal Z numerator was certified to vanish against the two physical W sums before removal."
             ),

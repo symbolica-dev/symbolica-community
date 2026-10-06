@@ -70,7 +70,9 @@ def test_widget_replaces_pages_rejects_stale_replies_and_disposes():
             )
             == "visible"
         )
-        assert page.get_by_label("Horizontal scroll").is_checked()
+        assert not page.get_by_label("Horizontal scroll").is_checked()
+        page.get_by_label("Horizontal scroll").check()
+        assert page.locator(".math").evaluate("e=>e.classList.contains('horizontal')")
         assert "Omitted portions" not in page.locator(".status").inner_text()
         page.get_by_label("Horizontal scroll").uncheck()
         assert not page.locator(".math").evaluate(

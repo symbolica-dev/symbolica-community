@@ -81,6 +81,7 @@ await micropip.install(f"symbolica[numpy] @ {wheel_uri}")
 # newly requested extras. Install the declared optional dependency explicitly.
 await micropip.install("numpy")
 assert importlib.util.find_spec("numpy") is not None
+import numpy
 `);
 await pyodide.runPythonAsync(`
 import symbolica.community.tensor as tensor_module
@@ -202,7 +203,7 @@ const inventoryConstructors = [
   /^_ZN11hyperbolica7symbols1_6__CTOR17h[0-9a-f]{16}E$/,
   // multiple-pymethods registers Python method blocks through inventory.
   // Only accept constructor globals from the known binding namespaces.
-  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|7spynso3|9linnet_py|20oneloopreduce_python|16symbolica_amflow6python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
+  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|17fastsecdec_python|7spynso3|9linnet_py|20oneloopreduce_python|16symbolica_amflow6python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
 ];
 assert(exports.some(({ name }) => name === "PyInit_core"), "Missing Python module entry point");
 assert.deepEqual(

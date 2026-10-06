@@ -9,17 +9,22 @@ import linnet
 import os
 import pathlib
 import symbolica
+import symbolica.community.hepkit.sector_decomposition
 import symbolica.community.tensor
 import symbolica.core
 import types
 import typing
 from symbolica import ComplexFloat, Float
-from symbolica.community.tensor import Slot, TensorExpression, TensorName
+from symbolica.community.tensor import DiagramRender, DisplaySettings, LayoutSettings, Slot, StrokeStyle, TensorExpression, TensorName
 from symbolica.core import Expression
 from . import integration
 from . import oneloop
+from . import sector_decomposition
 from . import vakint
 
+DiagramRender: typing.TypeAlias = symbolica.community.tensor.DiagramRender
+LayoutSettings: typing.TypeAlias = symbolica.community.tensor.LayoutSettings
+StrokeStyle: typing.TypeAlias = symbolica.community.tensor.StrokeStyle
 @typing.final
 class Amplitude:
     r"""
@@ -175,6 +180,26 @@ class Amplitude:
 
         >>> print(amplitude)
         """
+    def render(self, *, config: typing.Optional[RenderSettings] = None, max_diagrams: typing.Optional[builtins.int] = 6, term_settings: typing.Optional[DisplaySettings] = None) -> AmplitudeRender:
+        r"""
+        Render a configurable snapshot of the amplitude's diagrams and weighted terms.
+
+        Examples
+        --------
+        Using the setup in the ``Amplitude`` class example:
+
+        >>> drawing = amplitude.render(config=hep.RenderSettings(node_radius=5), max_diagrams=2)
+        >>> html = drawing.to_html()
+
+        Parameters
+        ----------
+        config : RenderSettings, optional
+            Layout, labels, and stroke settings shared by all diagrams.
+        max_diagrams : int or None, optional
+            Maximum displayed contributions (default 6); None includes all, 0 none.
+        term_settings : DisplaySettings, optional
+            Tensor notation settings for each weighted contribution.
+        """
     def _repr_html_(self) -> builtins.str:
         r"""
         Render compact diagram rows with weighted operators and expandable graphs.
@@ -296,6 +321,72 @@ class AmplitudeLeg:
         Using the setup in the ``AmplitudeLeg`` class example:
 
         >>> print(amplitude.legs[0])
+        """
+
+@typing.final
+class AmplitudeRender:
+    r"""
+    A rendered amplitude collection retaining its configured diagram snapshots.
+
+    Examples
+    --------
+    >>> from symbolica.community import hepkit as hep
+    >>> process = hep.Model.phi4().process(["phi", "phi"], ["phi", "phi"])
+    >>> amplitude = hep.Amplitude(process.generate_diagrams().diagrams)
+    >>> drawing = amplitude.render(max_diagrams=None)
+    """
+    @property
+    def diagrams(self) -> builtins.list[DiagramRender]:
+        r"""
+        Rendered diagram snapshots in contribution order, bounded by max_diagrams.
+
+        Examples
+        --------
+        Using the setup in the ``AmplitudeRender`` class example:
+
+        >>> svg = drawing.diagrams[0].to_svg()
+        """
+    def to_html(self) -> builtins.str:
+        r"""
+        Export the configured collection as interactive notebook HTML.
+
+        Examples
+        --------
+        Using the setup in the ``AmplitudeRender`` class example:
+
+        >>> html = drawing.to_html()
+        """
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Display the configured collection in IPython and Jupyter.
+
+        Examples
+        --------
+        Using the setup in the ``AmplitudeRender`` class example:
+
+        >>> from IPython.display import display
+        >>> display(drawing)
+        """
+    def _mime_(self) -> tuple[builtins.str, builtins.str]:
+        r"""
+        Display the configured collection in Marimo.
+
+        Examples
+        --------
+        Using the setup in the ``AmplitudeRender`` class example:
+
+        >>> import marimo as mo
+        >>> mo.as_html(drawing)
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Summarize the number of rendered contributions in text-only frontends.
+
+        Examples
+        --------
+        Using the setup in the ``AmplitudeRender`` class example:
+
+        >>> text = repr(drawing)
         """
 
 @typing.final
@@ -1343,6 +1434,57 @@ class Coupling:
         """
 
 @typing.final
+class CutPartition:
+    r"""
+    A separating topology partition, independent of physical final-state cuts.
+
+    Both boundary selections retain half-edges on their respective sides.
+
+    Examples
+    --------
+    Using the setup in the ``FeynmanDiagram`` class example:
+
+    >>> partitions = diagram.all_cuts([0], [1])
+    >>> boundary_edges = partitions[0].boundary_left.edges
+    """
+    @property
+    def source_side(self) -> Subgraph:
+        r"""
+        Region containing the requested source vertices.
+
+        Examples
+        --------
+        >>> source = diagram.all_cuts([0], [1])[0].source_side
+        """
+    @property
+    def target_side(self) -> Subgraph:
+        r"""
+        Region containing the requested target vertices.
+
+        Examples
+        --------
+        >>> target = diagram.all_cuts([0], [1])[0].target_side
+        """
+    @property
+    def boundary_left(self) -> Subgraph:
+        r"""
+        Crossing half-edges incident to the source side.
+
+        Examples
+        --------
+        >>> source_ports = diagram.all_cuts([0], [1])[0].boundary_left.half_edges
+        """
+    @property
+    def boundary_right(self) -> Subgraph:
+        r"""
+        Crossing half-edges incident to the target side.
+
+        Examples
+        --------
+        >>> target_ports = diagram.all_cuts([0], [1])[0].boundary_right.half_edges
+        """
+
+@typing.final
 class CutPropagator:
     r"""
     An oriented generalized cut distribution for a possibly raised propagator.
@@ -1983,6 +2125,54 @@ class DiagramGroup:
         """
 
 @typing.final
+class DiagramHalfEdge:
+    r"""
+    A particle-line endpoint using the diagram's native half-edge numbering.
+
+    Examples
+    --------
+    Using the setup in the ``FeynmanDiagram`` class example:
+
+    >>> endpoints = [(half.id, half.vertex, half.edge.particle_name) for half in diagram.half_edges]
+    """
+    @property
+    def id(self) -> builtins.int:
+        r"""
+        Native half-edge ID, also used in symbolic hedge annotations.
+
+        Examples
+        --------
+        >>> ids = [half.id for half in diagram.half_edges]
+        """
+    @property
+    def vertex(self) -> builtins.int:
+        r"""
+        Incident interaction vertex ID.
+
+        Examples
+        --------
+        >>> incident = [half.vertex for half in diagram.half_edges]
+        """
+    @property
+    def edge(self) -> DiagramEdge:
+        r"""
+        Physics edge containing this half-edge.
+
+        Examples
+        --------
+        >>> particles = [half.edge.particle_name for half in diagram.half_edges]
+        """
+    @property
+    def flow(self) -> builtins.str:
+        r"""
+        Underlying endpoint flow: ``source`` or ``sink``.
+
+        Examples
+        --------
+        >>> incoming = [half.id for half in diagram.half_edges if half.flow == "sink"]
+        """
+
+@typing.final
 class DiagramThresholdCandidate:
     r"""
     A topology threshold partition, independent of the requested physical final state.
@@ -2504,15 +2694,15 @@ class FeynmanDiagram:
         >>> particles_by_edge = {edge.id: edge.particle_name for edge in diagram.edges}
         """
     @property
-    def half_edges(self) -> list[linnet.HalfEdge]:
+    def half_edges(self) -> builtins.list[DiagramHalfEdge]:
         r"""
-        Return native Linnet half-edge views; ``data`` records their native diagram IDs.
+        Return FeynKit half-edges with native diagram IDs and physics edge objects.
 
         Examples
         --------
         Using the setup in the ``FeynmanDiagram`` class example:
 
-        >>> half_edge_payloads = [half_edge.data for half_edge in diagram.half_edges]
+        >>> half_edge_ids = [half_edge.id for half_edge in diagram.half_edges]
         """
     @property
     def internal_edges(self) -> builtins.list[DiagramEdge]:
@@ -2554,7 +2744,7 @@ class FeynmanDiagram:
         """
     def subgraph(self, selection: Subgraph | linnet.Subgraph | None = None, *, nodes: typing.Optional[typing.Sequence[builtins.int]] = None, edges: typing.Optional[typing.Sequence[builtins.int]] = None, half_edges: typing.Optional[typing.Sequence[builtins.int]] = None) -> Subgraph:
         r"""
-        Select graph elements using canonical Linnet IDs, or import a graph-bound selection.
+        Select graph elements using native diagram IDs, or import a graph-bound selection.
         Nested selections intersect this region and retain its immutable original diagram.
 
         Examples
@@ -2569,30 +2759,30 @@ class FeynmanDiagram:
         selection : Subgraph or linnet.Subgraph or None, optional
             Existing selection from the same original diagram; exclusive with element IDs.
         nodes : list[int] or None, optional
-            Canonical Linnet nodes IDs to include.
+            Diagram vertex IDs to include, with all incident half-edges.
         edges : list[int] or None, optional
-            Canonical Linnet edges IDs to include.
+            Diagram edge IDs to include.
         half_edges : list[int] or None, optional
-            Canonical Linnet half-edges IDs to include.
+            Native diagram half-edge IDs to include.
         """
-    def filter(self, *, node: typing.Callable[[linnet.Node], bool] | None = None, edge: typing.Callable[[linnet.Edge], bool] | None = None, half_edge: typing.Callable[[linnet.HalfEdge], bool] | None = None) -> Subgraph:
+    def filter(self, *, node: typing.Callable[[DiagramVertex], bool] | None = None, edge: typing.Callable[[DiagramEdge], bool] | None = None, half_edge: typing.Callable[[DiagramHalfEdge], bool] | None = None) -> Subgraph:
         r"""
-        Select by predicates on Linnet views; their ``data`` is a physics object.
+        Select by predicates on FeynKit vertices, edges, and half-edges.
 
         Examples
         --------
         Using the setup in the ``FeynmanDiagram`` class example:
 
-        >>> region = diagram.filter(edge=lambda edge: edge.data.particle_name == "g")
+        >>> region = diagram.filter(edge=lambda edge: edge.particle_name == "g")
 
         Parameters
         ----------
         node : callable or None, optional
-            Predicate on canonical Linnet node views.
+            Predicate on DiagramVertex objects.
         edge : callable or None, optional
-            Predicate on canonical Linnet edge views.
+            Predicate on DiagramEdge objects.
         half_edge : callable or None, optional
-            Predicate on canonical Linnet half-edge views.
+            Predicate on DiagramHalfEdge objects.
         """
     def boundary(self) -> Subgraph:
         r"""
@@ -2637,15 +2827,15 @@ class FeynmanDiagram:
 
         >>> bridges = diagram.bridges()
         """
-    def cycle_basis(self) -> tuple[list[linnet.Cycle], Subgraph]:
+    def cycle_basis(self) -> tuple[builtins.list[Subgraph], Subgraph]:
         r"""
-        Return a cycle basis and its covered half-edges.
+        Return structural cycles and the spanning forest used to construct them.
 
         Examples
         --------
         Using the setup in the ``FeynmanDiagram`` class example:
 
-        >>> cycles, covered = diagram.cycle_basis()
+        >>> cycles, forest = diagram.cycle_basis()
         """
     def all_spanning_forests(self) -> builtins.list[Subgraph]:
         r"""
@@ -2674,7 +2864,7 @@ class FeynmanDiagram:
         max_size : int or None, optional
             Maximum number of crossing edges.
         """
-    def all_cuts(self, source: typing.Sequence[builtins.int], target: typing.Sequence[builtins.int]) -> list[linnet.CutPartition]:
+    def all_cuts(self, source: typing.Sequence[builtins.int], target: typing.Sequence[builtins.int]) -> builtins.list[CutPartition]:
         r"""
         Enumerate separating partitions between disjoint interaction vertex groups.
 
@@ -2687,11 +2877,11 @@ class FeynmanDiagram:
         Parameters
         ----------
         source : list[int]
-            Canonical Linnet vertices required on the first side.
+            Diagram vertex IDs required on the first side.
         target : list[int]
-            Canonical Linnet vertices required on the opposite side.
+            Diagram vertex IDs required on the opposite side.
         """
-    def depth_first_traverse(self, root: builtins.int, *, include: typing.Optional[builtins.int] = None) -> linnet.TraversalTree:
+    def depth_first_traverse(self, root: builtins.int, *, include: typing.Optional[builtins.int] = None) -> TraversalTree:
         r"""
         Traverse a selected interaction region in depth-first order.
 
@@ -2704,11 +2894,11 @@ class FeynmanDiagram:
         Parameters
         ----------
         root : int
-            Canonical Linnet vertex ID at which traversal starts.
+            Diagram vertex ID at which traversal starts.
         include : int or None, optional
-            Canonical Linnet half-edge ID to prioritize at the root.
+            Native diagram half-edge ID to prioritize at the root.
         """
-    def breadth_first_traverse(self, root: builtins.int, *, include: typing.Optional[builtins.int] = None) -> linnet.TraversalTree:
+    def breadth_first_traverse(self, root: builtins.int, *, include: typing.Optional[builtins.int] = None) -> TraversalTree:
         r"""
         Traverse a selected interaction region in breadth-first order.
 
@@ -2721,9 +2911,9 @@ class FeynmanDiagram:
         Parameters
         ----------
         root : int
-            Canonical Linnet vertex ID at which traversal starts.
+            Diagram vertex ID at which traversal starts.
         include : int or None, optional
-            Canonical Linnet half-edge ID to prioritize at the root.
+            Native diagram half-edge ID to prioritize at the root.
         """
     @staticmethod
     def from_json(model: Model, json: builtins.str) -> FeynmanDiagram:
@@ -3145,7 +3335,7 @@ class FeynmanDiagram:
         --------
         Using the setup in the ``FeynmanDiagram`` class example:
 
-        >>> contracted = diagram.filter(edge=lambda edge: edge.data.is_dummy)
+        >>> contracted = diagram.filter(edge=lambda edge: edge.is_dummy)
         >>> basis = diagram.contracted_momentum_basis(contracted)
 
         Parameters
@@ -3241,7 +3431,7 @@ class FeynmanDiagram:
         >>> restored = hep.FeynmanDiagram.from_dot(model, dot)
         >>> restored.validate()
         """
-    def to_linnest(self, *, config: builtins.dict[builtins.str, typing.Any] | None = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
+    def to_linnest(self, *, config: typing.Optional[RenderSettings] = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
         r"""
         Export a self-contained Typst document embedding the rendered SVG.
 
@@ -3258,7 +3448,7 @@ class FeynmanDiagram:
 
         Parameters
         ----------
-        config : dict or None, optional
+        config : RenderSettings or None, optional
             Layout, drawing, style and physics settings, as in ``render``.
         momenta : bool, optional
             Draw momentum arrows and labels in the stored basis.
@@ -3267,32 +3457,32 @@ class FeynmanDiagram:
         highlight : Subgraph or linnet.Subgraph or None, optional
             Region to highlight in the complete diagram.
         """
-    def render(self, *, config: builtins.dict[builtins.str, typing.Any] | None = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
+    def render(self, *, config: typing.Optional[RenderSettings] = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> DiagramRender:
         r"""
-        Render an interactive, transparent SVG using the shared physics renderer.
+        Create a displayable snapshot using the shared physics renderer.
 
         All graph geometry is drawn in Rust; the embedded Typst compiler typesets
-        labels and titles. ``layouts={"impred_labels": True}`` refines the layout
+        labels and titles. ``LayoutSettings(impred_labels=True)`` refines the layout
         around the drawn labels. No Python renderer or Typst graph package is needed.
 
         Examples
         --------
         Using the setup in the ``FeynmanDiagram`` class example:
 
-        >>> svg = diagram.render(momenta=True, config={
-        ...     "layouts": {"impred_steps": 100},
-        ...     "template_options": {"show-particle": False},
-        ... })
-        >>> svg = diagram.render(lmb=next(iter(diagram.loop_momentum_bases())))
+        >>> settings = hep.RenderSettings(
+        ...     layout=hep.LayoutSettings(impred_steps=100), show_particle=False)
+        >>> drawing = diagram.render(momenta=True, config=settings)
+        >>> drawing
+        >>> svg = drawing.to_svg()
+        >>> drawing = diagram.render(lmb=next(iter(diagram.loop_momentum_bases())))
 
         Parameters
         ----------
-        config : dict or None, optional
-            Native ``layouts``, ``drawing`` and ``style`` dictionaries. Boolean physics
-            controls in ``template_options`` include ``show-particle``, ``show-momentum``,
-            ``show-edge-index``, ``show-node-index``, ``debug``, and ``momentum-arrows``.
-            Cross sections open their initial-state connections by default; set
-            ``split-initial-state`` to ``False`` to draw the sewn graph.
+        config : RenderSettings or None, optional
+            Immutable layout, styling, and physics overrides. Use ``help(RenderSettings)``
+            and ``help(LayoutSettings)`` to discover the supported options.
+            Cross sections open initial-state connections by default; set
+            ``split_initial_state=False`` to draw the sewn graph.
         momenta : bool, optional
             Show momentum arrows and labels routed in the diagram's stored basis.
             Explicit physics settings in ``config`` override these display defaults.
@@ -3303,7 +3493,7 @@ class FeynmanDiagram:
             Highlight a region while preserving the full diagram as muted context.
             A Subgraph highlights its own region by default.
         """
-    def to_html(self, *, config: builtins.dict[builtins.str, typing.Any] | None = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
+    def to_html(self, *, config: typing.Optional[RenderSettings] = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
         r"""
         Render an HTML figure with the same options and hover information as ``render``.
 
@@ -3316,7 +3506,7 @@ class FeynmanDiagram:
 
         Parameters
         ----------
-        config : dict or None, optional
+        config : RenderSettings or None, optional
             Layout, drawing, style and physics settings, as in ``render``.
         momenta : bool, optional
             Draw momentum arrows and labels in the stored basis.
@@ -3396,6 +3586,45 @@ class FeynmanDiagram:
         Using the setup in the ``FeynmanDiagram`` class example:
 
         >>> print(diagram)
+        """
+    def sector_decompose(self, *, regulator: symbolica.Expression, kinematics: typing.Optional[Kinematics] = None, dimension: typing.Optional[symbolica.Expression] = None, powers: typing.Optional[typing.Dict[int, int]] = None, numerator: None = None, scalar_values: typing.Optional[typing.Dict[symbolica.Expression, symbolica.Expression]] = None, auxiliary_momenta: typing.Optional[typing.Sequence[symbolica.Expression]] = None, measure_multiplier: typing.Optional[symbolica.Expression] = None, max_order: int = 0, coefficient_expansion: str = 'physical', observer: typing.Optional[typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
+        r"""
+        Generate Laurent integrands using the complete native diagram.
+
+        Examples
+        --------
+        With a complete diagram and admitted numerical kinematics:
+
+        >>> generated = diagram.sector_decompose(regulator=eps, kinematics=kinematics)
+        >>> kernels = generated.compile()
+
+        Parameters
+        ----------
+        regulator : Expression
+            Dimensional regulator symbol.
+        kinematics : Kinematics
+            Numerical external point retaining its symbolic tensor dimension.
+        dimension : Expression or None
+            Integration dimension; defaults to 4 - 2*regulator.
+        powers : mapping[int, int] or None
+            Positive propagator powers by stable diagram edge ID.
+        numerator : None
+            Use the diagram's numerator; explicit overrides are rejected.
+        scalar_values : mapping[Expression, Expression] or None
+            Explicit masses, couplings and invariant substitutions.
+        auxiliary_momenta : sequence[Expression] or None
+            Additional external vector heads, such as polarizations.
+        measure_multiplier : Expression or None
+            Explicit multiplicative measure convention, applied once.
+        max_order : int
+            Largest signed epsilon power retained.
+        coefficient_expansion : str
+            Native physical or package coefficient convention.
+        observer : callable or None
+            Native generation events; False cancels at an event boundary.
+        progress : "auto", callable or None
+            Automatic marimo display unless observer is supplied; None disables it.
+            A callable receives every native event after observer and may cancel.
         """
 
 @typing.final
@@ -5026,6 +5255,45 @@ class IntegralFamily:
         labels : list[Expression]
             One distinct symbol or labeled call per denominator, in family order.
         """
+    def sector_decompose(self, *, regulator: symbolica.Expression, kinematics: typing.Optional[Kinematics] = None, dimension: typing.Optional[symbolica.Expression] = None, powers: typing.Optional[typing.Sequence[int]] = None, numerator: typing.Optional[symbolica.Expression] = None, scalar_values: typing.Optional[typing.Dict[symbolica.Expression, symbolica.Expression]] = None, auxiliary_momenta: typing.Optional[typing.Sequence[symbolica.Expression]] = None, measure_multiplier: typing.Optional[symbolica.Expression] = None, max_order: int = 0, coefficient_expansion: str = 'physical', observer: typing.Optional[typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
+        r"""
+        Generate Laurent integrands for an explicit family member.
+
+        Examples
+        --------
+        For a numerical family, with powers in native denominator order:
+
+        >>> generated = family.sector_decompose(regulator=eps, powers=[1, 1], numerator=E("1"))
+        >>> kernels = generated.compile()
+
+        Parameters
+        ----------
+        regulator : Expression
+            Dimensional regulator symbol.
+        kinematics : Kinematics or None
+            Explicit point; None retains the family's scoped kinematics.
+        dimension : Expression or None
+            Integration dimension; defaults to 4 - 2*regulator.
+        powers : sequence[int]
+            Required signed powers; zero omits a slot and negative moves it to the numerator.
+        numerator : Expression
+            Required scalar numerator including explicit physical weights once.
+        scalar_values : mapping[Expression, Expression] or None
+            Explicit scalar substitutions applied consistently to the family.
+        auxiliary_momenta : sequence[Expression] or None
+            Additional external vector heads, such as polarizations.
+        measure_multiplier : Expression or None
+            Explicit multiplicative measure convention, applied once.
+        max_order : int
+            Largest signed epsilon power retained.
+        coefficient_expansion : str
+            Native physical or package coefficient convention.
+        observer : callable or None
+            Native generation events; False cancels at an event boundary.
+        progress : "auto", callable or None
+            Automatic marimo display unless observer is supplied; None disables it.
+            A callable receives every native event after observer and may cancel.
+        """
 
 class IntegralFamilyError(FeynkitError):
     r"""
@@ -6421,7 +6689,7 @@ class Model:
         json : str
             Serialized model object.
         """
-    def process(self, incoming: typing.Sequence[Particle | ParticleSelector | builtins.str | builtins.int], outgoing: typing.Sequence[Particle | ParticleSelector | builtins.str | builtins.int], *, particle_veto: typing.Optional[typing.Sequence[Particle | ParticleSelector | builtins.str | builtins.int]] = None, vertex_allow: typing.Optional[typing.Sequence[VertexRule | builtins.str]] = None, vertex_veto: typing.Optional[typing.Sequence[VertexRule | builtins.str]] = None) -> Process:
+    def process(self, incoming: typing.Sequence[Particle | ParticleSelector | builtins.str | builtins.int], outgoing: typing.Sequence[Particle | ParticleSelector | builtins.str | builtins.int], *, particle_veto: typing.Optional[typing.Sequence[Particle | ParticleSelector | builtins.str | builtins.int]] = None, particle_selection: typing.Optional[typing.Sequence[Particle | ParticleSelector | builtins.str | builtins.int]] = None, vertex_allow: typing.Optional[typing.Sequence[VertexRule | builtins.str]] = None, vertex_veto: typing.Optional[typing.Sequence[VertexRule | builtins.str]] = None) -> Process:
         r"""
         Define a process with model-validated external states and sector restrictions.
         The returned process is immutable; loops and other calculation choices are
@@ -6442,6 +6710,9 @@ class Model:
             Ordered outgoing external states.
         particle_veto : sequence[Particle | ParticleSelector | str | int] or None, optional
             Excluded species, including their antiparticles.
+        particle_selection : sequence[Particle | ParticleSelector | str | int] or None, optional
+            Allowed species, including their antiparticles. None allows all; an
+            empty list allows none. Mutually exclusive with particle_veto.
         vertex_allow : sequence[VertexRule | str] or None, optional
             Allowed interactions. None allows all; an empty list allows none.
         vertex_veto : sequence[VertexRule | str] or None, optional
@@ -6508,6 +6779,44 @@ class Model:
         ----------
         name : str
             Coupling name.
+        """
+    def scalar_bindings(self, card: typing.Optional[ParameterCard] = None, *, overrides: typing.Optional[typing.Dict[symbolica.Expression, symbolica.Expression]] = None) -> typing.Dict[symbolica.Expression, symbolica.Expression]:
+        r"""
+        Return exact model scalar bindings with all named dependencies resolved.
+
+        Internal parameter and coupling definitions remain analytic; cached
+        dependent values are not used. Numerical model/card inputs are converted
+        to exact binary64 rationals. This operation does not mutate the model or
+        numerically recompute it. Unknown symbols and UFO functions outside the
+        returned map are retained, not evaluated.
+
+        Examples
+        --------
+        >>> from symbolica import E
+        >>> model = hep.Model.standard_model()
+        >>> values = model.scalar_bindings(overrides={
+        ...     model.parameter("MT").symbol: E("345/2"),
+        ...     model.parameter("ymt").symbol: E("345/2"),
+        ...     model.parameter("WT").symbol: E("0"),
+        ...     model.parameter("WH").symbol: E("0"),
+        ... })
+        >>> assert values[model.parameter("MT").symbol] == E("345/2")
+
+        Parameters
+        ----------
+        card : ParameterCard or None, optional
+            Restriction applied to a copy, including explicit internal overrides.
+            Pass it explicitly even if already applied to the model, because
+            the model does not retain the history of internal overrides.
+        overrides : dict[Expression, Expression] or None, optional
+            Exact scalar definitions, keyed by plain symbols. They take
+            precedence over model/card values before dependencies are resolved.
+            Model parameters can be set here without creating a parameter card.
+
+        Returns
+        -------
+        dict[Expression, Expression]
+            Native exact expressions keyed by model and additional override symbols.
         """
     def vertex_rule(self, name: builtins.str) -> VertexRule:
         r"""
@@ -8090,6 +8399,19 @@ class Process:
         >>> electron = process.model.particle("e-")
         """
     @property
+    def particle_selection(self) -> typing.Optional[builtins.list[ParticleSelector]]:
+        r"""
+        Allowed species, including their antiparticles. None allows all;
+        an empty list allows none. Shared by every generation operation.
+
+        Examples
+        --------
+        Using the setup in the ``Process`` class example:
+
+        >>> qed = model.process(["e-", "e+"], ["a", "a"], particle_selection=["e-", "a"])
+        >>> allowed_particles = qed.particle_selection
+        """
+    @property
     def particle_veto(self) -> builtins.list[ParticleSelector]:
         r"""
         The excluded particle selectors, shared by every generation operation.
@@ -8155,20 +8477,22 @@ class Process:
         >>> repr(process)
         'Process("sm": [e-, e+] -> [mu-, mu+])'
         """
-    def render(self, *, config: builtins.dict[builtins.str, typing.Any] | linnet.RenderConfig | None = None) -> builtins.str:
+    def render(self, *, config: typing.Optional[RenderSettings] = None) -> DiagramRender:
         r"""
-        Render a blob with the process's physical incoming and outgoing particles.
+        Create a displayable blob with the process's physical incoming and outgoing particles.
         Alternative final states are displayed as separate schematics.
 
         Examples
         --------
         Using the setup in the ``Process`` class example:
 
-        >>> svg = process.render()
+        >>> drawing = process.render()
+        >>> drawing
+        >>> svg = drawing.to_svg()
 
         Parameters
         ----------
-        config : dict or linnet.RenderConfig or None, optional
+        config : RenderSettings or None, optional
             Particle-label, layout and drawing overrides shared with Feynman diagrams.
         """
     def _repr_svg_(self) -> builtins.str:
@@ -8211,7 +8535,7 @@ class Process:
         alternatives : sequence[sequence[Particle | ParticleSelector | str | int]]
             Allowed outgoing particle lists.
         """
-    def with_filters(self, *, particle_veto: typing.Sequence[Particle | ParticleSelector | str | int] | types.EllipsisType | None = ..., vertex_allow: typing.Sequence[VertexRule | str] | types.EllipsisType | None = ..., vertex_veto: typing.Sequence[VertexRule | str] | types.EllipsisType | None = ...) -> Process:
+    def with_filters(self, *, particle_veto: typing.Sequence[Particle | ParticleSelector | str | int] | types.EllipsisType | None = ..., particle_selection: typing.Sequence[Particle | ParticleSelector | str | int] | types.EllipsisType | None = ..., vertex_allow: typing.Sequence[VertexRule | str] | types.EllipsisType | None = ..., vertex_veto: typing.Sequence[VertexRule | str] | types.EllipsisType | None = ...) -> Process:
         r"""
         Return a process with updated particle and vertex restrictions.
         Omitted fields are preserved; None clears a field. An empty vertex_allow
@@ -8228,6 +8552,9 @@ class Process:
         ----------
         particle_veto : sequence[Particle | ParticleSelector | str | int] or None, optional
             Replace the excluded species, including their antiparticles.
+        particle_selection : sequence[Particle | ParticleSelector | str | int] or None, optional
+            Replace the allowed species, including their antiparticles. An empty
+            list allows none. Clear particle_veto with None when switching modes.
         vertex_allow : sequence[VertexRule | str] or None, optional
             Replace the allowed interaction rules.
         vertex_veto : sequence[VertexRule | str] or None, optional
@@ -8726,6 +9053,196 @@ class PropagatorMapping:
         """
 
 @typing.final
+class RenderSettings:
+    r"""
+    Immutable presentation settings for diagrams, subgraphs, and process schematics.
+    None leaves an option to the renderer; it does not force a default override.
+    Constructors and read-only properties expose options to help() and completion.
+
+    Examples
+    --------
+    >>> from symbolica.community.hepkit import RenderSettings
+    >>> settings = RenderSettings(node_radius=5, show_particle=False)
+    """
+    @property
+    def title(self) -> typing.Optional[builtins.str]:
+        r"""
+        Plain-text title above the drawing.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().title
+        """
+    @property
+    def layout(self) -> typing.Optional[LayoutSettings]:
+        r"""
+        Native graph layout options; omitted values retain renderer defaults.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().layout
+        """
+    @property
+    def node_radius(self) -> typing.Optional[builtins.float]:
+        r"""
+        Finite nonnegative vertex radius in drawing units.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().node_radius
+        """
+    @property
+    def node_fill(self) -> typing.Optional[builtins.str]:
+        r"""
+        Vertex fill as a CSS color.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().node_fill
+        """
+    @property
+    def node_stroke(self) -> typing.Optional[StrokeStyle]:
+        r"""
+        Vertex outline paint, width, and dash pattern.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().node_stroke
+        """
+    @property
+    def edge_stroke(self) -> typing.Optional[StrokeStyle]:
+        r"""
+        Edge paint, width, and dash pattern.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().edge_stroke
+        """
+    @property
+    def show_particle(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Show particle labels; enabled by default.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().show_particle
+        """
+    @property
+    def show_momentum(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Show momentum labels; None follows momenta or the supplied momentum basis.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().show_momentum
+        """
+    @property
+    def show_edge_index(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Show native edge IDs; disabled by default.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().show_edge_index
+        """
+    @property
+    def show_node_index(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Show native vertex IDs; disabled by default.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().show_node_index
+        """
+    @property
+    def momentum_arrows(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Draw momentum arrows; None follows momenta or the supplied momentum basis.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().momentum_arrows
+        """
+    @property
+    def split_initial_state(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Open sewn initial-state connections in cross sections; enabled by default.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().split_initial_state
+        """
+    @property
+    def debug(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Show both vertex and edge IDs; disabled by default.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> value = RenderSettings().debug
+        """
+    def __new__(cls, *, title: typing.Optional[builtins.str] = None, layout: typing.Optional[LayoutSettings] = None, node_radius: typing.Optional[builtins.float] = None, node_fill: typing.Optional[builtins.str] = None, node_stroke: typing.Optional[StrokeStyle] = None, edge_stroke: typing.Optional[StrokeStyle] = None, show_particle: typing.Optional[builtins.bool] = None, show_momentum: typing.Optional[builtins.bool] = None, show_edge_index: typing.Optional[builtins.bool] = None, show_node_index: typing.Optional[builtins.bool] = None, momentum_arrows: typing.Optional[builtins.bool] = None, split_initial_state: typing.Optional[builtins.bool] = None, debug: typing.Optional[builtins.bool] = None) -> RenderSettings:
+        r"""
+        Construct immutable overrides; None preserves the renderer's defaults.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> settings = RenderSettings(node_radius=5, show_particle=False)
+
+        Parameters
+        ----------
+        title : str or None, optional
+            Plain-text title above the drawing.
+        layout : LayoutSettings or None, optional
+            Native graph layout options; omitted values retain renderer defaults.
+        node_radius : float or None, optional
+            Finite nonnegative vertex radius in drawing units.
+        node_fill : str or None, optional
+            Vertex fill as a CSS color.
+        node_stroke : StrokeStyle or None, optional
+            Vertex outline paint, width, and dash pattern.
+        edge_stroke : StrokeStyle or None, optional
+            Edge paint, width, and dash pattern.
+        show_particle : bool or None, optional
+            Show particle labels; enabled by default.
+        show_momentum : bool or None, optional
+            Show momentum labels; None follows momenta or the supplied momentum basis.
+        show_edge_index : bool or None, optional
+            Show native edge IDs; disabled by default.
+        show_node_index : bool or None, optional
+            Show native vertex IDs; disabled by default.
+        momentum_arrows : bool or None, optional
+            Draw momentum arrows; None follows momenta or the supplied momentum basis.
+        split_initial_state : bool or None, optional
+            Open sewn initial-state connections in cross sections; enabled by default.
+        debug : bool or None, optional
+            Show both vertex and edge IDs; disabled by default.
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Inspect the selected overrides without rendering a diagram.
+
+        Examples
+        --------
+        >>> from symbolica.community.hepkit import RenderSettings
+        >>> text = repr(RenderSettings(node_radius=5, show_particle=False))
+        """
+
+@typing.final
 class Rotation:
     r"""
     A spatial rotation acting on three- and four-momenta.
@@ -9100,7 +9617,7 @@ class Subgraph(FeynmanDiagram):
     >>> process = model.process(["phi", "phi"], ["phi", "phi"])
     >>> result = process.generate_diagrams(loops=1)
     >>> diagram = result.diagrams[0]
-    >>> region = diagram.filter(edge=lambda edge: not edge.data.is_external)
+    >>> region = diagram.filter(edge=lambda edge: not edge.is_external)
     >>> left = diagram.subgraph(nodes=[0])
     >>> right = diagram.subgraph(nodes=[1])
     >>> common = left & right
@@ -9148,14 +9665,14 @@ class Subgraph(FeynmanDiagram):
         """
     def half_edge_indices(self) -> builtins.list[builtins.int]:
         r"""
-        Return canonical Linnet half-edge IDs of this region.
+        Return native diagram half-edge IDs of this region.
 
         Examples
         --------
         Using the setup in the ``Subgraph`` class example:
 
         >>> selected_half_edges = region.half_edge_indices()
-        >>> canonical = region.to_linnet().subgraph(half_edges=selected_half_edges)
+        >>> selected = region.original.subgraph(half_edges=selected_half_edges)
         """
     def isolated_node_indices(self) -> builtins.list[builtins.int]:
         r"""
@@ -9994,6 +10511,106 @@ class ThreeMomentum:
             The IPython pretty-printer object.
         cycle : bool
             Whether this object is part of a recursive formatting cycle.
+        """
+
+@typing.final
+class TraversalTree:
+    r"""
+    A native DFS or BFS result retaining the immutable physics diagram.
+
+    Examples
+    --------
+    Using the setup in the ``FeynmanDiagram`` class example:
+
+    >>> tree = diagram.depth_first_traverse(0)
+    >>> discovery_order = [vertex.id for vertex in tree.nodes]
+    """
+    @property
+    def subgraph(self) -> Subgraph:
+        r"""
+        Traversal edges as a reusable physics region, retaining isolated roots.
+
+        Examples
+        --------
+        >>> edges = diagram.depth_first_traverse(0).subgraph.edges
+        """
+    @property
+    def nodes(self) -> builtins.list[DiagramVertex]:
+        r"""
+        Physics vertices in traversal discovery order.
+
+        Examples
+        --------
+        >>> order = [vertex.id for vertex in diagram.depth_first_traverse(0).nodes]
+        """
+    def covers(self, subgraph: Subgraph) -> Subgraph:
+        r"""
+        Restrict a physics region to vertices visited by this traversal.
+
+        Examples
+        --------
+        >>> region = diagram.subgraph(edges=[0])
+        >>> covered = diagram.depth_first_traverse(0).covers(region)
+
+        Parameters
+        ----------
+        subgraph : Subgraph
+            Region from the same original diagram.
+        """
+    def parent(self, node: builtins.int) -> typing.Optional[DiagramVertex]:
+        r"""
+        Immediate parent vertex, or None for the traversal root.
+
+        Examples
+        --------
+        >>> tree = diagram.depth_first_traverse(0)
+        >>> parent = tree.parent(tree.nodes[-1].id)
+
+        Parameters
+        ----------
+        node : int
+            Diagram vertex ID in this traversal.
+        """
+    def children(self, node: builtins.int) -> builtins.list[DiagramVertex]:
+        r"""
+        Immediate children in discovery order.
+
+        Examples
+        --------
+        >>> children = diagram.depth_first_traverse(0).children(0)
+
+        Parameters
+        ----------
+        node : int
+            Diagram vertex ID in this traversal.
+        """
+    def ancestors(self, node: builtins.int) -> builtins.list[DiagramVertex]:
+        r"""
+        Strict ancestors from the immediate parent to the root.
+
+        Examples
+        --------
+        >>> tree = diagram.depth_first_traverse(0)
+        >>> ancestors = tree.ancestors(tree.nodes[-1].id)
+
+        Parameters
+        ----------
+        node : int
+            Diagram vertex ID in this traversal.
+        """
+    def fundamental_cycle(self, half_edge: builtins.int) -> typing.Optional[Subgraph]:
+        r"""
+        Fundamental cycle closed by a half-edge, or None for a tree edge.
+
+        Examples
+        --------
+        >>> tree = diagram.depth_first_traverse(0)
+        >>> cycles = [tree.fundamental_cycle(half.id) for half in diagram.half_edges if not half.edge.is_dangling]
+
+        Parameters
+        ----------
+        half_edge : int
+            Native diagram half-edge ID whose endpoints are in this traversal.
         """
 
 @typing.final
@@ -11429,4 +12046,5 @@ from . import integration as integration
 from . import ibp as ibp
 from . import rustred as rustred
 from . import oneloop as oneloop
+from . import sector_decomposition as sector_decomposition
 from . import vakint as vakint

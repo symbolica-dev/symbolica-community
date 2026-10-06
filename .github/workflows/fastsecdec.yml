@@ -1,0 +1,54 @@
+name: HEPKit sector decomposition
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: dtolnay/rust-toolchain@1.98.1
+      - name: Install build and test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential m4 pkg-config
+          python -m pip install maturin==1.15.0 pytest marimo==0.24.2
+      - name: Check published dependency identities and locate maintained tests
+        run: |
+          cargo metadata --locked --format-version 1 > "$RUNNER_TEMP/fastsecdec-metadata.json"
+          python - "$RUNNER_TEMP/fastsecdec-metadata.json" <<'PYTHON'
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+
+          metadata_path = Path(sys.argv[1])
+          metadata = json.loads(metadata_path.read_text())
+          packages = [package for package in metadata["packages"] if package["name"] == "fastsecdec-python"]
+          assert len(packages) == 1, "Expected one FastSecDec binding owner"
+          bindings = Path(packages[0]["manifest_path"]).parent
+          subprocess.run([sys.executable, str(bindings / "scripts/check_dependencies.py"), str(metadata_path), "native"], check=True)
+          with open(os.environ["GITHUB_ENV"], "a") as environment:
+              environment.write(f"FASTSECDEC_BINDINGS={bindings}\n")
+          PYTHON
+      - name: Build and install community wheel
+        run: |
+          RUSTFLOW_WORKSPACE_FEATURES=pyo3/extension-module RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES=0 \
+            maturin build --locked --out dist-fastsecdec
+          python -m pip install dist-fastsecdec/*.whl
+      - name: Run maintained FastSecDec controls and the host smoke test
+        env:
+          SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
+        run: |
+          python -c 'from symbolica.community.hepkit.sector_decomposition import sector_decompose, Integral'
+          bash "$FASTSECDEC_BINDINGS/scripts/test-native.sh" "$GITHUB_WORKSPACE"

@@ -237,7 +237,8 @@ import micropip
 await micropip.install("symbolica")
 ```
 
-or can be manually built using `maturin`:
+or can be manually built using `maturin`. Community builds include
+`hepkit.sector_decomposition`:
 
 ```bash
 RUSTFLOW_WORKSPACE_FEATURES=python_stubgen RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES=1 \
@@ -250,6 +251,10 @@ The native build forwards the `pyo3/extension-module` feature selected by
 `pyproject.toml` so numerical-cache fingerprints describe the actual host
 dependency graph. Stub generation uses its separate feature selection.
 
+
+For a browser build, use `--no-default-features --features wasm` (the
+`scripts/build_wasm_performance.sh` default). The explicit `wasm-core` feature
+keeps only the Symbolica kernel and integration, without community modules.
 
 ## For developers
 

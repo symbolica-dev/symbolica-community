@@ -15,9 +15,17 @@ from symbolica.community.hepkit import FeynmanDiagram, Model, TensorReducer
 | `feynkit-cff` | `CffGenerator`, `CffResult`, `CffSurface`, `CffOrientation` |
 | `feynkit-tensor` | `TensorReducer`; reduction methods also live on `FeynmanDiagram` |
 | `feynkit-py` | All of the above, plus models, UFO loading, kinematics, and jet clustering |
+| `hepkit.sector_decomposition` | Native `Integral`, `GeneratedIntegral`, `Kernels`, and caller-stepped `QmcSession` |
 
-Class identities and the exception hierarchy are preserved; their Python
-`__module__` and the bundled stubs name `symbolica.community.hepkit`.
+Existing HEPKit class identities and the exception hierarchy are preserved;
+their Python `__module__` and bundled stubs name `symbolica.community.hepkit`.
+FastSecDec wrappers use `symbolica.community.hepkit.sector_decomposition`.
+
+The FastSecDec bindings, notebook, input builders and scientific
+tests are maintained in [FastSecDec](https://github.com/alphal00p/fastSecDec/tree/main/examples/hepkit).
+Community provides HEPKit registration and reexports in standard community builds. See the
+[notebook guide](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/README.md)
+and [build instructions](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/BUILD.md).
 
 Numerical external states use the shared GammaLoop/MadGraph conventions:
 

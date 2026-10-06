@@ -52,10 +52,9 @@ def _():
     from symbolica.community import tensor as sp
     import marimo as mo
     import numpy as np
-    from linnet import RenderConfig
     from symbolica import E, Replacement, S, Symbol
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hepkit import Kinematics, Model
+    from symbolica.community.hepkit import Kinematics, Model, RenderSettings
     from symbolica.community.tensor import TensorExpression
 
     _set_namespace("qscatter")
@@ -63,7 +62,7 @@ def _():
         E,
         Kinematics,
         Model,
-        RenderConfig,
+        RenderSettings,
         Replacement,
         S,
         Symbol,
@@ -594,14 +593,10 @@ def _(mo):
 
 
 @app.cell
-def _(RenderConfig, channel, mo, results):
+def _(RenderSettings, channel, mo, results):
     mo.hstack(
         [
-            mo.Html(
-                diagram.render(
-                    config=RenderConfig(template_options={"mode": "generic"})
-                )
-            )
+            diagram.render(config=RenderSettings())
             for diagram in results[channel.value]["diagrams"]
         ]
     )

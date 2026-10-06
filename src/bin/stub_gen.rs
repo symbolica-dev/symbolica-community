@@ -8,12 +8,15 @@ fn main() -> Result<()> {
     let only = match std::env::args().skip(1).collect::<Vec<_>>().as_slice() {
         [] => None,
         [arg] if arg == "--hepkit-only" => Some("hepkit"),
+        [arg] if arg == "--fastsecdec-only" || arg == "--sector-decomposition-only" => {
+            Some("fastsecdec")
+        }
         [arg] if arg == "--tensor-only" || arg == "--spenso-only" => Some("tensor"),
         [arg] if arg == "--oneloop-only" => Some("oneloop"),
         [arg] if arg == "--vakint-only" => Some("vakint"),
         _ => {
             return Err(std::io::Error::other(
-                "Usage: stub_gen [--hepkit-only | --tensor-only | --spenso-only | --oneloop-only | --vakint-only]",
+                "Usage: stub_gen [--hepkit-only | --sector-decomposition-only | --fastsecdec-only | --tensor-only | --spenso-only | --oneloop-only | --vakint-only]",
             )
             .into());
         }
@@ -75,6 +78,21 @@ fn main() -> Result<()> {
             module.to_string()
         };
         write_package(module_name, &source)?;
+        return Ok(());
+    }
+    {
+        let module = stub
+            .modules
+            .remove("symbolica.community.hepkit.sector_decomposition")
+            .ok_or_else(|| {
+                std::io::Error::other(
+                    "Sector decomposition did not register its Python stub inventory",
+                )
+            })?;
+        let source = fastsecdec_python::stub_source(&module);
+        write_package("symbolica.community.hepkit.sector_decomposition", &source)?;
+    }
+    if only == Some("fastsecdec") {
         return Ok(());
     }
     let mut reducer = stub
@@ -157,7 +175,7 @@ other : object
     let source = hepkit
         + "\n"
         + include_str!("../../stubs/ibp.pyi")
-        + "\nfrom . import integration as integration\nfrom . import ibp as ibp\nfrom . import rustred as rustred\nfrom . import oneloop as oneloop\nfrom . import vakint as vakint\n";
+        + "\nfrom . import integration as integration\nfrom . import ibp as ibp\nfrom . import rustred as rustred\nfrom . import oneloop as oneloop\nfrom . import sector_decomposition as sector_decomposition\nfrom . import vakint as vakint\n";
     write_package("symbolica.community.hepkit", &source)?;
     Ok(())
 }

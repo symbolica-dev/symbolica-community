@@ -157,10 +157,10 @@ def _(
             _diagram.numerator_expression(in_lmb=True).to_expression()
         ).replace(model.particle("b").mass, zero)
         for _half in _diagram.half_edges:
-            _edge = _half.edge.data
+            _edge = _half.edge
             if _edge.is_external:
                 _numerator = _numerator.replace(
-                    Symbols.half_edge(_half.data, 1),
+                    Symbols.half_edge(_half.id, 1),
                     ports[_edge.external_index],
                 )
         _numerator = (
