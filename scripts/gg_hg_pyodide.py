@@ -167,12 +167,14 @@ class Benchmark:
         check_coefficient_evidence(result.coefficients, result.comparison_errors, system.dimension, 20)
         if result.cache_hit:
             actual = boundary(result)
+            # A trajectory-endpoint checkpoint and the final refined boundary
+            # can coexist with identical numbers but different lineage/caps.
+            # Validate the complete owner hit contract against an actual entry.
             selected = [entry for entry in bank(self.session.cache)
-                        if numerical_evidence(entry) == numerical_evidence(actual)]
-            assert len(selected) == 1, (label, "exact cached numerical evidence")
-            source = selected[0]
-            assert result.input_verified_digits == source["verified_digits"]
-            assert result.provenance == "compatible exact-coordinate cache hit; source: " + source["provenance"]
+                        if numerical_evidence(entry) == numerical_evidence(actual)
+                        and result.input_verified_digits == entry["verified_digits"]
+                        and result.provenance == "compatible exact-coordinate cache hit; source: " + entry["provenance"]]
+            assert selected, (label, "exact cached numerical evidence and selected-source lineage")
         record = next(case["boundary"] for case in self.native_reference()["cases"] if case["label"] == label)
         assert {name.rsplit("::", 1)[-1]: E(value) for name, value in record["coordinates"]} == {
             symbol_name(key): value for key, value in result.coordinates.items()
