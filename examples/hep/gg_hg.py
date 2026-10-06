@@ -291,12 +291,12 @@ def _(ComplexFloat, E, Float, Model, data_directory, form_factors, json, masses,
             _reference_error = Float(_expected["absolute_error"], decimal_digits=100)
             _factor_rows.append({
                 "form factor": f"{_mass}{_index}",
-                "native result": str(_value),
-                "propagated absolute uncertainty": str(_error),
+                "native result": f"{_value:.20e}",
+                "propagated absolute uncertainty": f"{_error:.20e}",
                 "achieved relative digits": _digits,
-                "reference at recorded point": str(_reference_value) if _same_point else "different kinematics",
-                "reference absolute uncertainty": str(_reference_error) if _same_point else "—",
-                "absolute difference": str(abs(_value - _reference_value)) if _same_point else "—",
+                "reference at recorded point": f"{_reference_value:.20e}" if _same_point else "different kinematics",
+                "reference absolute uncertainty": f"{_reference_error:.20e}" if _same_point else "—",
+                "absolute difference": f"{abs(_value - _reference_value):.20e}" if _same_point else "—",
             })
     _rows = []
     for _name, _value in _result.values.items():
@@ -307,12 +307,12 @@ def _(ComplexFloat, E, Float, Model, data_directory, form_factors, json, masses,
         )
         _rows.append({
             "observable": _name,
-            "native result": str(_value),
-            "propagated absolute uncertainty": str(_result.absolute_errors[_name]),
+            "native result": f"{_value:.20e}",
+            "propagated absolute uncertainty": f"{_result.absolute_errors[_name]:.20e}",
             "achieved relative digits": _result.verified_relative_digits[_name],
-            "reference at recorded point": str(_ref) if _same_observables else "different inputs",
-            "reference absolute uncertainty": str(_ref_error) if _same_observables else "—",
-            "absolute difference": str(abs(_value - _ref)) if _same_observables else "—",
+            "reference at recorded point": f"{_ref:.20e}" if _same_observables else "different inputs",
+            "reference absolute uncertainty": f"{_ref_error:.20e}" if _same_observables else "—",
+            "absolute difference": f"{abs(_value - _ref):.20e}" if _same_observables else "—",
         })
     mo.vstack([
         mo.md("## W/Z form factors"),

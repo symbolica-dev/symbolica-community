@@ -1209,20 +1209,32 @@ def test_notebook_displays_eight_native_form_factors_at_the_current_point(monkey
     assert [row["form factor"] for row in captured] == [f"{mass}{i}" for mass in ("W", "Z") for i in range(1, 5)]
     for row in captured:
         mass, index = row["form factor"][0], int(row["form factor"][1]) - 1
-        assert row["native result"] == str(form_factors[mass].values[index])
-        assert row["propagated absolute uncertainty"] == str(form_factors[mass].absolute_errors[index])
+        assert row["native result"] == f"{form_factors[mass].values[index]:.20e}"
+        assert row["propagated absolute uncertainty"] == f"{form_factors[mass].absolute_errors[index]:.20e}"
         assert row["achieved relative digits"] == 30
         if nearby or changed_mass:
             assert row["reference at recorded point"] == "different kinematics"
             assert row["reference absolute uncertainty"] == row["absolute difference"] == "—"
         else:
             assert row["reference at recorded point"] == row["native result"]
-            assert row["reference absolute uncertainty"] != "—"
+            expected = next(block for block in reference["form_factors"] if block["mass"] == mass)["values"][index]
+            assert row["reference absolute uncertainty"] == f'{Float(expected["absolute_error"], decimal_digits=100):.20e}'
             assert Float(row["absolute difference"], decimal_digits=100) == 0
     assert len(captured_observables) == 3
     for row in captured_observables:
+        name = row["observable"]
+        assert row["native result"] == f"{native_values[name]:.20e}"
+        assert row["propagated absolute uncertainty"] == f"{display_session.observables.absolute_errors[name]:.20e}"
+        assert row["achieved relative digits"] == 30
         if nearby or changed_mass or changed_coupling:
             assert row["reference at recorded point"] == "different inputs"
             assert row["absolute difference"] == "—"
         else:
             assert row["reference at recorded point"] == row["native result"]
+            accuracy = reference["reference_accuracy"][name]
+            reference_error = Float(accuracy["input_absolute_error"], decimal_digits=80) + Float(
+                accuracy["rounding_absolute_error"], decimal_digits=80,
+            )
+            assert row["reference absolute uncertainty"] == f"{reference_error:.20e}"
+            reference_value = Float(reference["expected_observables"][name], decimal_digits=80)
+            assert row["absolute difference"] == f"{abs(native_values[name] - reference_value):.20e}"
