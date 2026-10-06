@@ -113,6 +113,26 @@ def verify(run_directory):
         assert count == (240 if "Planar_EW1" in label else 305)
         counts[label] = count
     assert sum(counts.values()) == (4360 if full else 545)
+    resumed_comparison = None
+    if full and "resumed_from" in run:
+        prior = run["resumed_from"]
+        previous_directory = Path(prior["directory"]) / prior["generation"]
+        previous_manifest = json.loads((previous_directory / "checkpoint.json").read_text())
+        assert previous_manifest["identity"] == run["identity"]
+        previous_path = previous_directory / "acceptance.json"
+        assert file_hash(previous_path) == previous_manifest["members"]["acceptance.json"]["sha256"]
+        previous = json.loads(previous_path.read_text())
+        previous_results = {case["label"]: case["boundary"] for case in previous["cases"]}
+        previous_results.update(previous.get("pilot_results", {}))
+        resumed_count = 0
+        for label, original in previous_results.items():
+            for key, value in original.items():
+                if key not in ("provenance", "input_verified_digits"):
+                    assert results[label][key] == value, (label, key, "fresh-process exact reuse")
+            resumed_count += sum(map(len, original["coefficients"]))
+        resumed_comparison = {"previous_report_sha256": file_hash(previous_path),
+                              "complex_coefficients_exact": resumed_count,
+                              "values_errors_precisions_and_achieved_evidence_exact": True}
     comparisons = {"form_factors": {}, "observables": {}}
     if full:
         assert report["all_observables_meet_requested20"] and report["binary_restart_and_warm_results_exact"]
@@ -137,6 +157,7 @@ def verify(run_directory):
             "checker_sha256": file_hash(Path(__file__)),
             "run_sha256": file_hash(run_directory / "run.json"), "identity": run["identity"],
             "coefficient_counts": counts, "complex_coefficients": sum(counts.values()),
+            "fresh_process_resume": resumed_comparison,
             "all_differences_within_combined_errors_and_requested20": True,
             "arithmetic": "Exact Python integers and Fraction; no floating-point comparison rounding",
             "representation": "Computed wasm32 Astro mantissas may use ceil(requested_precision/32)*32 bits; requested precision metadata and complete dyadic values are preserved. MPFR references retain their exact bit limit. Supplied415-bit import remains unchanged.",
