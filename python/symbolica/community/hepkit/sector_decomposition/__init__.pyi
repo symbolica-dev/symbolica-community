@@ -288,9 +288,13 @@ class GeneratedIntegral:
     @property
     def exact_coefficients(self) -> builtins.list[Expression]: ...
     def snapshot(self) -> GenerationSnapshot: ...
-    def compile(self, *, observer: typing.Optional[typing.Any] = None) -> Kernels:
+    def compile(self, *, observer: typing.Optional[typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.Kernels:
         r"""
-        Build the configured native O2 or portable interpreted evaluator.
+        Compile native evaluators without creating or advancing a session.
+
+        Auto progress uses HEPKit's marimo presenter unless observer is supplied;
+        None disables it. Callables receive all snapshots, observer first.
+        None/True continues, False cancels; original exceptions propagate.
         """
 
 @typing.final
@@ -478,9 +482,13 @@ class Integral:
     def dimension(self) -> Expression: ...
     @property
     def powers(self) -> builtins.list[tuple[builtins.int, builtins.int]]: ...
-    def generate(self, max_order: builtins.int = 0, *, coefficient_expansion: builtins.str = 'physical', observer: typing.Optional[typing.Any] = None) -> GeneratedIntegral:
+    def generate(self, max_order: int = 0, *, coefficient_expansion: str = 'physical', observer: typing.Optional[typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
         r"""
-        Synchronous native generation. False from the observer cancels at a native event boundary.
+        Generate native sectors without compilation or numerical integration.
+
+        Auto progress uses HEPKit's marimo presenter unless observer is supplied;
+        None disables it. Callables receive all snapshots, observer first.
+        None/True continues, False cancels; original exceptions propagate.
         """
     def __new__(cls, diagram: FeynmanDiagram, kinematics: Kinematics, *, regulator: Expression, dimension: typing.Optional[Expression] = None, powers: typing.Optional[typing.Mapping[builtins.int, builtins.int]] = None, scalar_values: typing.Optional[dict] = None, auxiliary_momenta: typing.Optional[typing.Sequence[Expression]] = None, measure_multiplier: typing.Optional[Expression] = None) -> Integral:
         r"""
@@ -736,7 +744,7 @@ class VectorEstimate:
         Delegate convergence to the native full-production and vector tolerance check.
         """
 
-def sector_decompose(input: typing.Union[symbolica.community.hepkit.FeynmanDiagram, symbolica.community.hepkit.IntegralFamily], *, regulator: symbolica.Expression, kinematics: typing.Optional[symbolica.community.hepkit.Kinematics] = None, dimension: typing.Optional[symbolica.Expression] = None, powers: typing.Optional[typing.Union[collections.abc.Mapping[int, int], collections.abc.Sequence[int]]] = None, numerator: typing.Optional[symbolica.Expression] = None, scalar_values: typing.Optional[dict[symbolica.Expression, symbolica.Expression]] = None, auxiliary_momenta: typing.Optional[collections.abc.Sequence[symbolica.Expression]] = None, measure_multiplier: typing.Optional[symbolica.Expression] = None, max_order: int = 0, coefficient_expansion: str = 'physical', observer: typing.Optional[collections.abc.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None) -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
+def sector_decompose(input: typing.Union[symbolica.community.hepkit.FeynmanDiagram, symbolica.community.hepkit.IntegralFamily], *, regulator: symbolica.Expression, kinematics: typing.Optional[symbolica.community.hepkit.Kinematics] = None, dimension: typing.Optional[symbolica.Expression] = None, powers: typing.Optional[typing.Union[collections.abc.Mapping[int, int], collections.abc.Sequence[int]]] = None, numerator: typing.Optional[symbolica.Expression] = None, scalar_values: typing.Optional[dict[symbolica.Expression, symbolica.Expression]] = None, auxiliary_momenta: typing.Optional[collections.abc.Sequence[symbolica.Expression]] = None, measure_multiplier: typing.Optional[symbolica.Expression] = None, max_order: int = 0, coefficient_expansion: str = 'physical', observer: typing.Optional[collections.abc.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
     r"""
     Generate from an existing native diagram or an explicitly weighted family.
 
@@ -746,6 +754,9 @@ def sector_decompose(input: typing.Union[symbolica.community.hepkit.FeynmanDiagr
     auxiliary slots never default to power one. Kinematics overrides must retain
     original external products after scalar binding, but may add auxiliary data.
     Dimension defaults to 4-2*regulator. Compilation and sessions are explicit.
+    progress="auto" shows HEPKit progress in marimo when observer is absent.
+    None disables display; a callable receives every snapshot after observer.
+    None/True continues, False cancels; original callback exceptions propagate.
     """
 
 def with_diagram_expressions(diagram: FeynmanDiagram, *, numerator: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, overall_factor: typing.Optional[Expression] = None) -> FeynmanDiagram:
