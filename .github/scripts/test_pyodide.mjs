@@ -184,7 +184,7 @@ const inventoryConstructors = [
   /^_RNvNv(?:Cs[0-9A-Za-z]+_13feynkit_graph|NtCs[0-9A-Za-z]+_11feynkit_cff7symbols)1__6___CTOR$/,
   // multiple-pymethods registers Python method blocks through inventory.
   // Only accept constructor globals from the known binding namespaces.
-  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|7spynso3|9linnet_py|20oneloopreduce_python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
+  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|17fastsecdec_python|7spynso3|9linnet_py|20oneloopreduce_python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
 ];
 assert(exports.some(({ name }) => name === "PyInit_core"), "Missing Python module entry point");
 assert.deepEqual(
