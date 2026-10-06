@@ -82,6 +82,7 @@ class CalculationSession:
         self.cache = self._load_cache("transport", BoundaryCache)
         self.results = {}
         self.amplitude = None
+        self._form_factor_projector = None
         self.observables = None
         self.form_factors = {}
         self.timings = []
@@ -402,7 +403,11 @@ class CalculationSession:
         if self.amplitude is None:
             self.amplitude = HiggsJetAmplitude(self.model, control=self._control)
         s, t, higgs_mass_squared = self.point
-        projector = HiggsJetFormFactorProjector()
+        # The projector owns exact, kinematics-independent expressions. Keep
+        # those expressions, but reevaluate all weights and source checks below.
+        if self._form_factor_projector is None:
+            self._form_factor_projector = HiggsJetFormFactorProjector()
+        projector = self._form_factor_projector
         form_factors = {}
         for mass in ("W", "Z"):
             blocks = {}

@@ -410,7 +410,8 @@ def test_forced_amplitude_failure_cannot_restore_old_derived_values(session, mon
 
     exact_kernel = SimpleNamespace(evaluate=cancelled)
     session.amplitude = exact_kernel
-    monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector", lambda: SimpleNamespace(evaluate=project))
+    projector = SimpleNamespace(evaluate=project)
+    monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector", lambda: projector)
     session.submit("amplitude", recompute=True)
     with pytest.raises(RuntimeError if failure_stage == "admission" else numerical.CalculationCancelled):
         session.wait()
@@ -422,8 +423,7 @@ def test_forced_amplitude_failure_cannot_restore_old_derived_values(session, mon
         def restarted_projection(*args):
             raise RuntimeError("load-or-assemble must retry projection")
 
-        monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector",
-                            lambda: SimpleNamespace(evaluate=restarted_projection))
+        monkeypatch.setattr(projector, "evaluate", restarted_projection)
         session.submit("amplitude")
         with pytest.raises(RuntimeError, match="must retry projection"):
             session.wait()
@@ -435,12 +435,12 @@ def test_forced_amplitude_uses_current_exact_kinematics_and_all_transport_blocks
     session.observables, session.form_factors = old, {"old": object()}
     session.results = {configuration.label: object() for _, configuration in session.configurations}
     session.point = [E("71"), E("-29/3"), E("1")]
-    projection_calls, evaluation_calls = [], []
+    projection_calls, evaluation_calls, constructions = [], [], []
     projected = []
 
     def project(*args):
         projection_calls.append(args)
-        mass = ("W", "Z")[len(projection_calls) - 1]
+        mass = ("W", "Z")[(len(projection_calls) - 1) % 2]
         assert list(args[:3]) == session.point and args[3] == session.masses[mass]
         for topology, actual in zip(("planar", "nonplanar"), args[4:]):
             ordered = sorted((c for name, c in session.configurations
@@ -453,20 +453,35 @@ def test_forced_amplitude_uses_current_exact_kinematics_and_all_transport_blocks
     def evaluate(*args, **kwargs):
         evaluation_calls.append((args, kwargs))
         assert list(args[:3]) == session.point
-        assert list(args[3:]) == [projected[0].values, projected[1].values,
-                                 projected[0].absolute_errors, projected[1].absolute_errors]
+        assert list(args[3:]) == [projected[-2].values, projected[-1].values,
+                                 projected[-2].absolute_errors, projected[-1].absolute_errors]
         assert "current W" in kwargs["provenance"] and "current Z" in kwargs["provenance"]
         return new
 
     exact_kernel = SimpleNamespace(evaluate=evaluate)
     session.amplitude = exact_kernel
-    monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector", lambda: SimpleNamespace(evaluate=project))
+
+    def construct():
+        constructions.append(True)
+        return SimpleNamespace(evaluate=project)
+
+    monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector", construct)
     assert session.assemble() is old
     session.submit("amplitude", recompute=True)
     assert session.wait() is new
     assert session.amplitude is exact_kernel
     assert len(projection_calls) == 2 and len(evaluation_calls) == 1
     assert session.form_factors == dict(zip(("W", "Z"), projected))
+    assert len(constructions) == 1
+    # A retained exact projector must still use new momenta, masses and masters.
+    session.point = [E("72"), E("-31/3"), E("1")]
+    session.masses = {"W": E("2/5"), "Z": E("3/5")}
+    session.results = {configuration.label: object() for _, configuration in session.configurations}
+    session.submit("amplitude", recompute=True)
+    assert session.wait() is new
+    assert len(projection_calls) == 4 and len(evaluation_calls) == 2
+    assert session.form_factors == dict(zip(("W", "Z"), projected[-2:]))
+    assert len(constructions) == 1
 
 
 @pytest.fixture
