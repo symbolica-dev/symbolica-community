@@ -21,62 +21,11 @@ Existing HEPKit class identities and the exception hierarchy are preserved;
 their Python `__module__` and bundled stubs name `symbolica.community.hepkit`.
 FastSecDec wrappers use `symbolica.community.hepkit.fastsecdec`.
 
-The [interactive FastSecDec notebook](../fastsecdec_showcase.py) presents the
-workflow below. Its [walkthrough and export guide](FASTSECDEC_SHOWCASE.md) explains
-the native run and explicit browser assets. The [build guide](FASTSECDEC_BUILD.md)
-prepares the pinned native owners and runs the bridge validation controls.
-
-The [FastSecDec input builders](fastsecdec_inputs.py) prepare a massive triangle,
-massless box, rank-two box numerator, and coupled two-loop sunset numerator from
-native diagrams and kinematics. Their explicit scalar bindings preserve the
-model's binary64 values as exact rationals; their default Laurent expansion
-includes epsilon one. From this example directory:
-
-```python
-from fastsecdec_inputs import massive_triangle
-from symbolica.community import hepkit as hep
-
-value = massive_triangle(mass=1, s=-1)
-integral = hep.fastsecdec.Integral(**value.integral_arguments())
-generation_events = []
-generated = integral.generate(value.max_order, observer=generation_events.append)
-kernels = generated.compile(observer=generation_events.append)
-session = kernels.session(hep.fastsecdec.QmcSettings(points=4096, shifts=8))
-while not session.complete:
-    progress = session.step(max_packages=1)
-    # The caller may display progress and yield to its event loop here.
-result = session.snapshot()
-estimate = result.estimate
-converged = estimate is not None and estimate.meets(relative=0.001)
-resumed = kernels.restore(session.checkpoint())
-reloaded = hep.fastsecdec.Kernels.from_bytes(kernels.to_bytes())
-```
-
-`Integral` accepts the existing native `FeynmanDiagram` and `Kinematics` owners;
-it rejects a partial subgraph. The kinematic tensor dimension stays separate from
-the parametric dimension, normally `4 - 2*regulator`. The measure is
-`prod(d^D k / (i*pi^(D/2)))`, multiplied by an explicit `measure_multiplier`.
-The graph's numerator, projector, couplings, and overall factor enter once.
-
-Generation and compilation are synchronous. Their immutable typed snapshots
-carry actual native transitions; an observer returning `False` raises
-`CancelledError`, and observer exceptions retain their Python type. QMC `step`
-runs a bounded number of native packages. Its observer receives snapshots after
-accepted packages; returning `False` stops that call with `stop_reason="cancelled"`.
-Interrupted packages are reissued without accepting their partial replay state.
-This callback interface alone does not establish browser repaint or cancellation
-latency. Native kernels report `native_o2`; portable kernels report
-`portable_interpreted`.
-Kernel and session owners stay on the Python thread that constructed them; a
-caller using a background thread must keep that complete workflow on its thread.
-
-Snapshots retain signed epsilon orders, real/imaginary components, full row-major
-covariance, complete-shift coverage, and native evaluation diagnostics. An absent
-estimate or `waiting_for_coverage` uncertainty must remain absent in displays.
-Finishing a QMC allocation is separate from meeting an accuracy target; native
-`VectorEstimate.meets` requires both complete production and all component
-tolerances. `FastSecDecError.stage` identifies input, parametrization, generation,
-compilation, configuration, integration, artifact, or checkpoint failures.
+The experimental FastSecDec bindings, notebook, input builders and scientific
+tests are maintained in [FastSecDec](https://github.com/alphal00p/fastSecDec/tree/main/examples/hepkit).
+Community provides the opt-in HEPKit registration and reexports. See the
+[notebook guide](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/README.md)
+and [build instructions](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/BUILD.md).
 
 Numerical external states use the shared GammaLoop/MadGraph conventions:
 

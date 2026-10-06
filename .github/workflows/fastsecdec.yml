@@ -29,22 +29,15 @@ jobs:
           cargo metadata --locked --features experimental-fastsecdec \
             --config "$RUNNER_TEMP/fastsecdec-dependencies/overlay-community-git.toml" \
             --format-version 1 > "$RUNNER_TEMP/fastsecdec-metadata.json"
-          python .github/scripts/check_fastsecdec_dependencies.py "$RUNNER_TEMP/fastsecdec-metadata.json" native
+          python "$RUNNER_TEMP/fastsecdec-dependencies/fastsecdec/bindings/python/scripts/check_dependencies.py" "$RUNNER_TEMP/fastsecdec-metadata.json" native
       - name: Build and install experimental wheel
         run: |
           CARGO_HOME="$RUNNER_TEMP/fastsecdec-dependencies/cargo-home" \
             maturin build --locked --features experimental-fastsecdec --out dist-fastsecdec
           python -m pip install dist-fastsecdec/*.whl
-      - name: Run all 39 focused controls without skips
+      - name: Run maintained FastSecDec controls and the host smoke test
         env:
           SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
         run: |
           python -c 'from symbolica.community.hepkit.fastsecdec import Integral'
-          pytest -q tests/test_hep_fastsecdec.py tests/test_hep_fastsecdec_inputs.py \
-            tests/test_hep_wavefunctions.py --junitxml=fastsecdec-tests.xml
-          python - <<'PY'
-          import xml.etree.ElementTree as ET
-          suites = ET.parse("fastsecdec-tests.xml").getroot().findall("testsuite")
-          assert sum(int(suite.attrib["tests"]) for suite in suites) == 39
-          assert all(int(suite.attrib[key]) == 0 for suite in suites for key in ("failures", "errors", "skipped"))
-          PY
+          bash "$RUNNER_TEMP/fastsecdec-dependencies/fastsecdec/bindings/python/scripts/test-native.sh" "$GITHUB_WORKSPACE"

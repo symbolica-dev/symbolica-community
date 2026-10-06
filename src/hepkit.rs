@@ -59,7 +59,7 @@ impl SymbolicaCommunityModule for HepKitModule {
         feynkit_py::initialize_feynkit(module)?;
         crate::oneloop::register(module)?;
         #[cfg(feature = "experimental-fastsecdec")]
-        crate::fastsecdec::register(module)?;
+        fastsecdec_python::register(module)?;
         #[cfg(not(target_arch = "wasm32"))]
         rustred_feynkit::register_hep_module(module)?;
         Ok(())

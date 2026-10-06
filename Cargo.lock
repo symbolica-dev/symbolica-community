@@ -1230,7 +1230,7 @@ checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
 [[package]]
 name = "fastsecdec"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=be9c3d296fddeaed53214572c713bdcdc3f6a60d#be9c3d296fddeaed53214572c713bdcdc3f6a60d"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=539019a72622d0997e7ee2da8c21101234df228a#539019a72622d0997e7ee2da8c21101234df228a"
 dependencies = [
  "bincode",
  "blake3",
@@ -1250,9 +1250,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "fastsecdec-python"
+version = "0.1.0"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=539019a72622d0997e7ee2da8c21101234df228a#539019a72622d0997e7ee2da8c21101234df228a"
+dependencies = [
+ "fastsecdec",
+ "fastsecdec-sectors",
+ "feynkit-py",
+ "pyo3",
+ "pyo3-stub-gen",
+ "serde",
+ "serde_json",
+ "symbolica",
+]
+
+[[package]]
 name = "fastsecdec-sectors"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=be9c3d296fddeaed53214572c713bdcdc3f6a60d#be9c3d296fddeaed53214572c713bdcdc3f6a60d"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=539019a72622d0997e7ee2da8c21101234df228a#539019a72622d0997e7ee2da8c21101234df228a"
 dependencies = [
  "numerica",
  "thiserror 2.0.21",
@@ -4155,7 +4170,7 @@ dependencies = [
 name = "symbolica_community"
 version = "3.0.1"
 dependencies = [
- "fastsecdec",
+ "fastsecdec-python",
  "feynkit-py",
  "one-loop-reduce-python",
  "oneloop",
@@ -4163,8 +4178,6 @@ dependencies = [
  "pyo3",
  "pyo3-stub-gen",
  "rustred-feynkit",
- "serde",
- "serde_json",
  "spynso3",
  "symbolica",
  "symbolica-integrate",

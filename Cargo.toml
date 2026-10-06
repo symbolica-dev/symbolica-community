@@ -57,12 +57,12 @@ community = [
     "dep:rustred-feynkit", "dep:oneloop-python", "dep:oneloop", "dep:vakint",
 ]
 # Requires the explicit pinned dependency setup; excluded from standard wheels.
-experimental-fastsecdec = ["community", "dep:fastsecdec", "dep:serde", "dep:serde_json"]
+experimental-fastsecdec = ["community", "dep:fastsecdec-python"]
 # Keep the system allocator: mimalloc can crash after Python's importing thread exits.
-native = ["symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3?/native", "feynkit-py?/native", "fastsecdec?/native"]
+native = ["symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3?/native", "feynkit-py?/native", "fastsecdec-python?/native"]
 # Use --no-default-features --features wasm-core for the kernel + integration only.
 wasm-core = ["symbolica/wasm"]
-wasm = ["wasm-core", "community", "spynso3/wasm", "feynkit-py/wasm", "one-loop-reduce-python/wasm", "fastsecdec?/portable"]
+wasm = ["wasm-core", "community", "spynso3/wasm", "feynkit-py/wasm", "one-loop-reduce-python/wasm", "fastsecdec-python?/portable"]
 python_stubgen = [
     "native",
     "community",
@@ -72,12 +72,11 @@ python_stubgen = [
     "feynkit-py/python_stubgen",
     "vakint/python_stubgen",
     "one-loop-reduce-python/python_stubgen",
+    "fastsecdec-python?/python_stubgen",
 ]
 
 [dependencies]
-fastsecdec = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "be9c3d296fddeaed53214572c713bdcdc3f6a60d", default-features = false }
-serde = { optional = true, version = "1.0", features = ["derive"] }
-serde_json = { optional = true, version = "1.0", features = ["float_roundtrip"] }
+fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "539019a72622d0997e7ee2da8c21101234df228a", default-features = false }
 one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
 spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
 # Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.

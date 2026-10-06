@@ -27,7 +27,7 @@ import sys
 
 with open(sys.argv[1]) as stream:
     dependencies = json.load(stream)["dependencies"]
-sources = [entry["source"] for entry in dependencies if entry["name"] == "fastsecdec"]
+sources = [entry["source"] for entry in dependencies if entry["name"] == "fastsecdec-python"]
 match = re.fullmatch(r"git\+https://github.com/alphal00p/fastSecDec\?rev=([0-9a-f]{40})", sources[0] or "") if len(sources) == 1 else None
 if match is None:
     sys.exit("Cargo.toml must pin FastSecDec to one exact published Git revision")
@@ -40,18 +40,4 @@ git -C "$checkout" remote add origin https://github.com/alphal00p/fastSecDec
 git -C "$checkout" fetch --quiet --depth=1 origin "$revision"
 git -C "$checkout" checkout --quiet --detach FETCH_HEAD
 [[ $(git -C "$checkout" rev-parse HEAD) == "$revision" ]]
-bash "$checkout/scripts/bootstrap-dependencies.sh" "$checkout" "$dependency_output/owners"
-# This clone supplies patch files and bootstrap instructions only. Cargo must
-# consume FastSecDec from the published Git revision declared in Cargo.toml.
-awk '
-  /^\[/ { skip = ($0 == "[patch.\"https://github.com/alphal00p/fastSecDec\"]") }
-  !skip { print }
-' "$dependency_output/owners/overlay.toml" > "$dependency_output/overlay-community-git.toml"
-# Maturin 1.15 does not forward --config to its metadata subprocess. Both
-# metadata and compilation honor this command-scoped Cargo home instead.
-dependency_cargo_home="$dependency_output/cargo-home"
-mkdir "$dependency_cargo_home"
-cp "$dependency_output/overlay-community-git.toml" "$dependency_cargo_home/config.toml"
-printf 'Prepared: %s\n' "$dependency_output/overlay-community-git.toml"
-printf 'For maturin/Pyodide, set CARGO_HOME=%s for that command.\n' "$dependency_cargo_home"
-printf 'Cargo caches and locks are isolated; existing config, credentials and caches are untouched.\n'
+bash "$checkout/bindings/python/scripts/prepare-community.sh" "$community_root" "$dependency_output"

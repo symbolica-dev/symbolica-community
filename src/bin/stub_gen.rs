@@ -62,9 +62,9 @@ fn main() -> Result<()> {
         write_package(module_name, &source)?;
         return Ok(());
     }
+    #[cfg(feature = "experimental-fastsecdec")]
     if let Some(module) = stub.modules.remove("symbolica.community.hepkit.fastsecdec") {
-        let source = module.to_string()
-            + "\nclass FastSecDecError(RuntimeError):\n    stage: str\n\nclass CancelledError(FastSecDecError): ...\n";
+        let source = fastsecdec_python::stub_source(&module);
         write_package("symbolica.community.hepkit.fastsecdec", &source)?;
     }
     if only == Some("fastsecdec") {

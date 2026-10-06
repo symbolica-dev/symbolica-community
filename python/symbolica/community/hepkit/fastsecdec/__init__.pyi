@@ -7,6 +7,31 @@ from symbolica.community.hepkit import FeynmanDiagram, Kinematics
 from symbolica.core import Expression
 
 @typing.final
+class Chart:
+    r"""
+    Original chart ordinals and their retained native representative/kernel association.
+    """
+    @property
+    def source_index(self) -> builtins.int: ...
+    @property
+    def representative(self) -> builtins.int: ...
+    @property
+    def representative_permutation(self) -> builtins.list[builtins.int]:
+        r"""
+        Permutes this chart's target coordinates into its representative's coordinates.
+        """
+    @property
+    def kernel_sector(self) -> typing.Optional[builtins.int]:
+        r"""
+        None means no numerical kernel at the requested orders: exact, cancelled,
+        or truncated. No separate per-chart exact coefficients are retained.
+        """
+    @property
+    def coordinates(self) -> CoordinateMap: ...
+    @property
+    def geometry(self) -> SectorMap: ...
+
+@typing.final
 class CoefficientExpansionSnapshot:
     r"""
     Native per-representative coefficient work for the current or last attempt.
@@ -63,6 +88,71 @@ class CoefficientRequestCounts:
     def fallback_requests(self) -> builtins.int: ...
 
 @typing.final
+class CompactCoefficient:
+    r"""
+    A retained Symbolica alias root and definitions, without restoring a full expression.
+    """
+    @property
+    def order(self) -> builtins.int:
+        r"""
+        Signed epsilon order of this possibly complex generated coefficient.
+        Compiled kernels may split it into separate real/imaginary components.
+        """
+    @property
+    def root(self) -> Expression: ...
+    @property
+    def alias_count(self) -> builtins.int:
+        r"""
+        Stored definitions for this coefficient; definitions may be shared with others.
+        """
+    @property
+    def aliases(self) -> builtins.list[tuple[Expression, Expression]]:
+        r"""
+        Alias/definition pairs in native Atom order. Definitions may reference aliases.
+        Read only for selected detail; this does not inline or expand any expression.
+        """
+
+@typing.final
+class CoordinateMap:
+    r"""
+    Native density pullback before endpoint subtraction, including its positive measure.
+    """
+    @property
+    def source_parameters(self) -> builtins.list[Expression]: ...
+    @property
+    def target_parameters(self) -> builtins.list[Expression]: ...
+    @property
+    def images(self) -> builtins.list[Expression]: ...
+    @property
+    def measure_jacobian(self) -> Expression:
+        r"""
+        Positive real density factor, not an oriented/complex determinant.
+        A projective map is gauge-fixed, not a normalized simplex parameterization.
+        """
+    @property
+    def source_domain(self) -> builtins.str: ...
+    @property
+    def projective_fixed_parameter(self) -> typing.Optional[builtins.int]: ...
+
+@typing.final
+class DomainAssessment:
+    r"""
+    The original native domain admission and its retained factor certificates.
+    """
+    @property
+    def domain(self) -> builtins.str: ...
+    @property
+    def branch_policy(self) -> builtins.str: ...
+    @property
+    def caller_asserted(self) -> builtins.bool: ...
+    @property
+    def relies_on_assertion(self) -> builtins.bool: ...
+    @property
+    def parameters(self) -> builtins.list[Expression]: ...
+    @property
+    def factors(self) -> builtins.list[FactorAssessment]: ...
+
+@typing.final
 class EvaluationDiagnostics:
     r"""
     Native caller-aggregated evaluation counters, including failed attempts.
@@ -84,7 +174,30 @@ class EvaluationDiagnostics:
     def __str__(self) -> builtins.str: ...
 
 @typing.final
+class FactorAssessment:
+    @property
+    def term_index(self) -> builtins.int: ...
+    @property
+    def factor_index(self) -> builtins.int: ...
+    @property
+    def polynomial(self) -> Expression: ...
+    @property
+    def exponent(self) -> Expression: ...
+    @property
+    def certificate(self) -> builtins.str: ...
+
+@typing.final
 class GeneratedIntegral:
+    @property
+    def sectors(self) -> builtins.list[GeneratedSector]:
+        r"""
+        Immutable native sector views; coefficients remain compact until requested.
+        """
+    @property
+    def metadata(self) -> GenerationMetadata:
+        r"""
+        Retained native domain and chart metadata, without evaluating the integral.
+        """
     @property
     def orders(self) -> builtins.list[builtins.int]: ...
     @property
@@ -96,6 +209,55 @@ class GeneratedIntegral:
         r"""
         Build the configured native O2 or portable interpreted evaluator.
         """
+
+@typing.final
+class GeneratedSector:
+    r"""
+    A numerical sector at its native kernel-association index, with shared ownership.
+    """
+    @property
+    def index(self) -> builtins.int:
+        r"""
+        Native numerical-sector index used by Chart.kernel_sector.
+        """
+    @property
+    def dimension(self) -> builtins.int: ...
+    @property
+    def parameters(self) -> builtins.list[Expression]: ...
+    @property
+    def coefficient_count(self) -> builtins.int: ...
+    @property
+    def alias_counts(self) -> builtins.list[builtins.int]:
+        r"""
+        Stored alias definitions per coefficient, not a unique count across coefficients.
+        """
+    @property
+    def cancellation_degree(self) -> builtins.int: ...
+    @property
+    def conditioning_basis(self) -> builtins.str:
+        r"""
+        Provenance of conditioning profiles, not a floating-point error certificate.
+        """
+    @property
+    def cancellation_terms(self) -> builtins.list[builtins.list[builtins.int]]: ...
+    @property
+    def map(self) -> SectorMap: ...
+    @property
+    def aliased_coefficients(self) -> builtins.list[CompactCoefficient]:
+        r"""
+        Native complex coefficient roots/definitions aligned with GeneratedIntegral.orders.
+        This creates cheap views; no coefficients are materialized or expanded.
+        """
+
+@typing.final
+class GenerationMetadata:
+    r"""
+    Retained domain and chart associations; no decomposition is repeated by inspection.
+    """
+    @property
+    def domain(self) -> DomainAssessment: ...
+    @property
+    def charts(self) -> builtins.list[Chart]: ...
 
 @typing.final
 class GenerationSnapshot:
@@ -172,7 +334,7 @@ class Integral:
     def dimension(self) -> Expression: ...
     @property
     def powers(self) -> builtins.list[tuple[builtins.int, builtins.int]]: ...
-    def generate(self, max_order: builtins.int = 0, *, observer: typing.Optional[typing.Any] = None) -> GeneratedIntegral:
+    def generate(self, max_order: builtins.int = 0, *, coefficient_expansion: builtins.str = 'physical', observer: typing.Optional[typing.Any] = None) -> GeneratedIntegral:
         r"""
         Synchronous native generation. False from the observer cancels at a native event boundary.
         """
@@ -302,6 +464,29 @@ class QmcSettings:
         """
 
 @typing.final
+class SectorMap:
+    r"""
+    The retained exact integer geometry, with native Numerica-to-Python integer transport.
+    """
+    @property
+    def source_dimension(self) -> builtins.int: ...
+    @property
+    def dimension(self) -> builtins.int: ...
+    @property
+    def fixed_parameter(self) -> typing.Optional[builtins.int]: ...
+    @property
+    def exponent_matrix(self) -> builtins.list[builtins.list[int]]: ...
+    @property
+    def determinant(self) -> int: ...
+    @property
+    def jacobian_powers(self) -> builtins.list[int]: ...
+    @property
+    def factor_valuations(self) -> builtins.list[builtins.list[int]]:
+        r"""
+        Indices follow deduplicated support order, not uniquely named U/F factors.
+        """
+
+@typing.final
 class SectorSnapshot:
     r"""
     Native per-sector work and complete-replica coverage.
@@ -358,6 +543,12 @@ class VectorEstimate:
         r"""
         Delegate convergence to the native full-production and vector tolerance check.
         """
+
+def with_diagram_expressions(diagram: FeynmanDiagram, *, numerator: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, overall_factor: typing.Optional[Expression] = None) -> FeynmanDiagram:
+    r"""
+    Copy a complete native diagram, replacing only the supplied expressions.
+    Native numerator validation and all graph/model ownership are preserved.
+    """
 
 
 class FastSecDecError(RuntimeError):
