@@ -1,0 +1,128 @@
+{
+  "schema": "standard-model-higgs-wasm-validation-v1",
+  "status": "passed",
+  "host_commit": "2f5d6033696c06e76c1b89faa69b5196ac64f925",
+  "owners": {
+    "symbolica": "58652fabc2f736302a570deaaf8d517679f7fe6e",
+    "numerica": "58652fabc2f736302a570deaaf8d517679f7fe6e",
+    "graphica": "58652fabc2f736302a570deaaf8d517679f7fe6e",
+    "symbolica-amflow": "9599e35867119178ba3c02d7c55b998efab641f4",
+    "feynkit-py": "41253945836953a99861612da786563ae3f0b3ca",
+    "feynkit-model": "41253945836953a99861612da786563ae3f0b3ca",
+    "fastsecdec-python": "9e4b5897fc9f2fe9d137dd18ed8dc0986ba6d5c5"
+  },
+  "unique_shared_owner_packages": 25,
+  "wheel": {
+    "filename": "symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+    "sha256": "0984801ff8ceb8158f69e5f5fb6fa92eede54c894f368b61fc2bfead2fae7756",
+    "bytes": 45941405
+  },
+  "wasm_extension": {
+    "sha256": "d13214609f95e38b9107d3ba21ba89e4e9ecbe602ac358f08b9a619954a8e0a2",
+    "bytes": 177949124
+  },
+  "build": {
+    "exit_code": 0,
+    "profile": "release-performance",
+    "cargo_seconds": 1447,
+    "cpu_affinity": [
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67
+    ],
+    "cargo_jobs": 4
+  },
+  "runtime": {
+    "pyodide": "314.0.7",
+    "node": "24.19.0",
+    "cpu_affinity": [
+      60
+    ]
+  },
+  "gates": {
+    "community_smoke": {
+      "exit_code": 0,
+      "seconds": 22.672032356262207,
+      "checks": [
+        "supplied transport",
+        "exact binary restart",
+        "nearby reuse",
+        "cancellation",
+        "native Standard Model extension",
+        "shared owner types",
+        "typed collision rejection",
+        "cumulative usage citations",
+        "offline QCD/Typst rendering",
+        "Hyperbolica",
+        "integration and Symanzik in both parallel modes"
+      ]
+    },
+    "amplitude_component": {
+      "exit_code": 0,
+      "seconds": 39.464200019836426,
+      "component_seconds": 31.80816279,
+      "exact_kernel_equal": [
+        true,
+        true,
+        true
+      ],
+      "values_errors_arithmetic_changes_and_precision_exactly_match_legacy": true,
+      "working_bits": 322,
+      "verified_relative_digits": {
+        "effective_squared": 47,
+        "electroweak_squared": 19,
+        "interference": 20
+      },
+      "legacy_model_sha256": "1891f93a8b8926e1e66d54a95c03bba2d36e7ee1a812b91010fa0e88b4e92e12",
+      "archived_form_factors_and_reference_sha256": "868b9fde9448e54b315e96c4ce5a83bcb2501f219cf45a4cf2c147e521fef071",
+      "scope": "Archived eight W/Z form-factor inputs; exact model-kernel and three-observable comparison. No fresh full transport or new boundary-accuracy certificate."
+    },
+    "fastsecdec": {
+      "exit_code": 0,
+      "seconds": 14.039940595626831,
+      "maintained_runner_seconds": 5.400627583,
+      "collected": 89,
+      "passed": 89,
+      "failed": 0,
+      "skipped": 0,
+      "files": [
+        "test_citations.py",
+        "test_fastsecdec.py",
+        "test_hep_wavefunctions.py",
+        "test_inputs.py",
+        "test_inspection.py",
+        "test_mc.py",
+        "test_model_scalar_bindings.py",
+        "test_progress.py",
+        "test_sector_decomposition.py"
+      ]
+    }
+  },
+  "capabilities": {
+    "schema": "supplied-loop-transport-runtime-v1",
+    "wheel": "symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+    "wheel_sha256": "0984801ff8ceb8158f69e5f5fb6fa92eede54c894f368b61fc2bfead2fae7756",
+    "supplied_loop_transport": true,
+    "higgs_standard_model": true
+  },
+  "source_rechecks": {
+    "files": 263,
+    "unchanged": true
+  },
+  "protected_prior_artifact_rechecks": {
+    "files": 23,
+    "unchanged": true
+  },
+  "scope": "Complete shared-owner WASM wheel and actual Node Pyodide runtime gates. Full fresh Higgs-jet notebook transport, Chromium UI, and native-host validation are separate; their timings and outcomes are not claimed here.",
+  "evidence": {
+    "file": "evidence.tar.gz",
+    "sha256": "6cacf2176a4a975574bd013630579defb5a78d497be78e009ca90497d8709f27",
+    "bytes": 128240,
+    "hashed_members": 40
+  }
+}
