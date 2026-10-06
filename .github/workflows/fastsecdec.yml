@@ -39,5 +39,5 @@ jobs:
         env:
           SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
         run: |
-          python -c 'from symbolica.community.hepkit.fastsecdec import Integral'
+          python -c 'from symbolica.community.hepkit.sector_decomposition import sector_decompose, Integral; from symbolica.community.hepkit.fastsecdec import Integral as LegacyIntegral; assert Integral is LegacyIntegral'
           bash "$RUNNER_TEMP/fastsecdec-dependencies/fastsecdec/bindings/python/scripts/test-native.sh" "$GITHUB_WORKSPACE"

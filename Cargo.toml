@@ -76,7 +76,7 @@ python_stubgen = [
 ]
 
 [dependencies]
-fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "ef2861bfe9b42a2b7befdd7da787dc81e46941cd", default-features = false }
+fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "7196fdaef3ffe84a914b56ac0cd91f4cdf3d05ee", default-features = false }
 one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
 spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
 # Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.

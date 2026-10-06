@@ -17,5 +17,6 @@ from . import oneloop as oneloop
 from symbolica.community import hepkit_native as _native
 
 if hasattr(_native, "_fastsecdec_native"):
+    from . import sector_decomposition as sector_decomposition
     from . import fastsecdec as fastsecdec
 del _native
