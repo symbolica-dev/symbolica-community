@@ -85,7 +85,7 @@ spynso3 = { optional = true, git = "https://github.com/ValentinHirschi/gammaloop
 feynkit-py = { optional = true, git = "https://github.com/ValentinHirschi/gammaloop", rev = "41253945836953a99861612da786563ae3f0b3ca", default-features = false, features = ["ufo"] }
 symbolica = { version = "3.0.1", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
-symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "d81dae94a40e41e5d2dcd978f623e6e83abb3e4f", default-features = false, features = ["python_api"] }
+symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "9599e35867119178ba3c02d7c55b998efab641f4", default-features = false, features = ["python_api"] }
 # Tensor bindings split methods across impl blocks on both native and WASM.
 pyo3 = { version = "0.28", features = ["multiple-pymethods"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [

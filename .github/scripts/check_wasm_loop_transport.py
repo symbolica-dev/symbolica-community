@@ -2,8 +2,14 @@
 
 import tempfile
 
-from symbolica import ComplexFloat, E, Float, S
+from symbolica import ComplexFloat, E, Expression, Float, S, get_citations
 from symbolica.community.hep import integration
+from symbolica.community.hepkit import Model, Process
+
+_numerical_reference_ids = {
+    "arXiv:2607.08477", "arXiv:2006.05510", "arXiv:2201.11669", "arXiv:2112.07578",
+}
+assert not _numerical_reference_ids.intersection(c.id for c in get_citations())
 
 
 def _number(value):
@@ -20,6 +26,37 @@ def _evidence(result):
         result.working_bits,
         result.provenance,
     )
+
+
+def check_higgs_standard_model():
+    model = Model.standard_model()
+    original = model.to_json()
+    extended = integration.HiggsJetAmplitude.with_form_factor_vertices(model)
+    assert type(extended) is Model
+    assert model.to_json() == original
+    assert extended.particle_by_pdg(21).name == "g"
+    assert extended.particle_by_pdg(25).name == "H"
+    assert isinstance(extended.parameter("GGGHEWWW_ForFac1_RE").symbol, Expression)
+    assert isinstance(extended.coupling("GGGH_HEFT_C1").expression, Expression)
+    vertices = ["GGGHEWWW", "GGGHEWZZ", "GGGHHEFT"]
+    for name in vertices:
+        assert extended.vertex_rule(name).particles == ["g", "g", "g", "H"]
+    assert isinstance(extended.process(["g", "g"], ["g", "H"], vertex_allow=vertices), Process)
+    before_collision = extended.to_json()
+    try:
+        integration.HiggsJetAmplitude.with_form_factor_vertices(extended)
+    except integration.InvalidInputError as error:
+        assert "already exists" in str(error)
+    else:
+        raise AssertionError("Conflicting Higgs-jet declarations were overwritten")
+    assert extended.to_json() == before_collision and model.to_json() == original
+    assert Model.from_json(before_collision).to_json() == before_collision
+    citations = {c.id: c for c in get_citations()}
+    assert _numerical_reference_ids <= citations.keys()
+    for identifier in _numerical_reference_ids:
+        assert citations[identifier].reasons
+        assert identifier.split(":")[1] in citations[identifier].to_bibtex()
+    assert citations.keys() == {c.id for c in get_citations()}
 
 
 def check_supplied_loop_transport():
@@ -105,3 +142,4 @@ def check_supplied_loop_transport():
 
 
 check_supplied_loop_transport()
+check_higgs_standard_model()

@@ -331,6 +331,14 @@ class HiggsJetAmplitude:
         """
     @property
     def coordinate_symbols(self) -> builtins.list[Expression]: ...
+    @staticmethod
+    def with_form_factor_vertices(model: Model) -> Model:
+        r"""
+        Add the symbolic W, Z and HEFT gggH vertices to an existing Standard Model.
+        Returns a native HEPKit model retaining its existing particles, parameters
+        and interactions. Numerical form factors still come from loop evaluation;
+        conflicting declaration names are rejected rather than overwritten.
+        """
     def __new__(cls, model: Model, *, control: typing.Optional[ComputationControl] = None) -> HiggsJetAmplitude: ...
     def evaluate(self, s: Expression, t: Expression, higgs_mass_squared: Expression, w_factors: typing.Sequence[ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal]], z_factors: typing.Sequence[ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal]], w_errors: typing.Sequence[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], z_errors: typing.Sequence[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], *, parameters: typing.Mapping[Expression, Expression], provenance: builtins.str, digits: builtins.int = 20, guard_digits: builtins.int = 40, control: typing.Optional[ComputationControl] = None) -> AmplitudeResult:
         r"""

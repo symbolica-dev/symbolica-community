@@ -10,6 +10,7 @@ impl SymbolicaCommunityModule for HepKitModule {
         let mut citations = feynkit_py::FeynkitModule::get_citations();
         citations.extend(crate::oneloop::get_citations());
         citations.extend(fastsecdec_python::get_citations());
+        citations.extend(crate::loop_integration::get_citations());
         #[cfg(not(target_arch = "wasm32"))]
         if rustred_feynkit::was_used() {
             citations.push(Citation {
