@@ -19,11 +19,11 @@
 This repository contains the [Symbolica](https://github.com/benruijl/symbolica) library, bundled with additional community contributions.
 
 Version 3.0 ships core Symbolica and symbolic integration via
-`symbolica-integrate` 2.0, plus Idenso, Spenso, FeynKit HEP tools, Vakint, and the
-example extension. The GammaLoop extensions track its `feynkit` branch, with
-the tested revision pinned in `Cargo.lock`. PyEmscripten wheels include Idenso,
-Spenso, HEP, and the example extension. Vakint and Spenso's compiled evaluators
-require a native installation.
+`symbolica-integrate` 2.0, plus Idenso, Spenso, FeynKit HEP tools and Vakint.
+The HEP extensions share the public owner revision pinned below and in
+`Cargo.lock`. PyEmscripten wheels include Idenso, Spenso and HEP tools.
+Numerical loop integration, Vakint and Spenso's compiled evaluators require a
+native installation.
 
 The integrator enables `compressed-step-metadata`, preserving integration steps
 while storing their rule sources and descriptions in a Brotli-compressed catalog.
@@ -60,48 +60,45 @@ shared extension. They preserve arbitrary precision, supply typed errors and
 cancellation, and retain reusable intermediate points in binary boundary caches.
 The [gg → Hg Marimo notebook](examples/hep/gg_hg.py) stages native boundary
 generation, physical transport, and coherent EW/HEFT amplitude assembly. Opening
-it starts no two-loop evaluation. Its complete empty-cache boundary acceptance
-is still pending; archived numerical seeds are never an evaluation fallback.
+it starts no two-loop evaluation. The earlier publication wheel passed
+[complete empty-cache boundary and amplitude acceptance](https://github.com/alphal00p/RustFlow/blob/92cfc9d2babfd95af8205b1193b4ec303bf8b610/reports/validation/2026-10-06-gg-hg-publication-complete/summary.json);
+that report identifies its tested runtime. Archived numerical seeds are never an
+evaluation fallback.
 Run it with `marimo edit examples/hep/gg_hg.py`. Long numerical acceptance lives
 in `examples/hep/gg_hg_acceptance.py`, separately from lightweight smoke tests.
 
-Builds currently require the native owner patches and Cargo overrides documented
-in [the pinned integration dependency guide](https://github.com/alphal00p/RustFlow/blob/4c48358185ec68de86f6acc6b195a201adbe2bae/docs/dependency-embedding.md).
-For a setup using published Git sources and reproducible HEPKit patches, follow
-the [clean community build recipe](https://github.com/alphal00p/RustFlow/blob/3b78629a4fc93a4b7c9070536639dc841ef38716/docs/clean-community-build.md).
+The checked-in manifest and lock fetch the native dependencies from public Git
+sources. Build this checkout with the locked native installation command below;
+no sibling checkout, local path override or manual owner patch is required.
+The host owns the complete shared dependency graph, as described in the
+[integration dependency guide](https://github.com/alphal00p/RustFlow/blob/92cfc9d2babfd95af8205b1193b4ec303bf8b610/docs/dependency-embedding.md).
 Generate these hints with `stub_gen --hepkit-only`; the public package and stubs
 are under `python/symbolica/community/hep/integration/`. This module is excluded
 from browser builds, and existing `hepkit` and Hyperbolica imports are preserved.
 
-The Git dependency is pinned to RustFlow commit `4c48358185ec68de86f6acc6b195a201adbe2bae`.
-The checked-in lockfile records the validated development configuration: a local
-RustFlow checkout and the patched HEPKit owner packages. To reproduce it, check
-out that RustFlow commit, apply the owner patches from the pinned guide, and
-configure its complete HEPKit patch table in Cargo configuration, together with:
-
-```toml
-[patch."https://github.com/alphal00p/RustFlow"]
-symbolica-amflow = { path = "/path/to/RustFlow" }
-```
-
-Keep these machine-local paths outside tracked files, for example in an isolated
-`CARGO_HOME/config.toml`. A path patch takes precedence over the Git revision;
-the numerical cache fingerprint records the actual source contents, including
-local changes. To consume RustFlow directly from its pinned Git source, remove
-only its path patch and regenerate the lockfile once with `cargo metadata`;
-subsequent builds can use `--locked`. The HEPKit owner patches remain required.
-The validated HEPKit owner checkout corresponds to `fc9ee6aa5`, based on
-`9d086ce`; RustRed is pinned at `7c1ed037`.
+The Git dependency selects RustFlow
+[`92cfc9d2babfd95af8205b1193b4ec303bf8b610`](https://github.com/alphal00p/RustFlow/commit/92cfc9d2babfd95af8205b1193b4ec303bf8b610).
+HEPKit, Linnet, Spenso, Idenso and native rendering share public owner
+[`b96600b0085d9ddfa9e6acbc11fa72ec6163253c`](https://github.com/ValentinHirschi/gammaloop/commit/b96600b0085d9ddfa9e6acbc11fa72ec6163253c),
+based on upstream HEPKit `6c707c6b77a437256eb1180da13d4d327b371d13`.
+Vakint retains its separate implementation at
+[`6203c6cbba6ae5e90329ba5081fad55319e678db`](https://github.com/ValentinHirschi/gammaloop/commit/6203c6cbba6ae5e90329ba5081fad55319e678db).
+RustRed remains on official main `7c1ed03722b8c05daf60c89ba4ecc79457ed2ada`,
+with `campaign-api` enabled and experimental reconstruction disabled.
 
 Symbolica, Numerica and Graphica resolve together from official community
-commit `c3408e4ba1d3bdd4ea55678fad50e27009be13d4`, selected by `Cargo.lock`.
-It contains the [exact-division correction](https://github.com/symbolica-dev/symbolica/commit/c3408e4ba1d3bdd4ea55678fad50e27009be13d4)
-identified by the [standalone reproducer](https://github.com/alphal00p/RustFlow/blob/1224ca6f125a82df12953ee44fce785de2201fd4/docs/symbolica-exact-division-mre.md).
-The local Symbolica patch is retained as diagnostic history; builds use the
-official upstream source. Local Cargo configuration retains the required
-HEPKit overrides and lets the manifest select these three algebra packages.
-This dependency update creates a new numerical cache identity; results from
-the previous graph remain separate evidence.
+commit
+[`6defcca968ca8411977fb1f641a9dee49ee7b7a7`](https://github.com/symbolica-dev/symbolica/commit/6defcca968ca8411977fb1f641a9dee49ee7b7a7),
+selected by `Cargo.lock`. This revision retains the root-convergence and
+exact-division corrections and adds the generic C++ complex-constant export fix.
+The native graph wheel used in CI is built from the same HEPKit owner selected
+by this manifest and lock; it is a separate test dependency requiring Python
+3.10 or newer. The community package retains its Python 3.9 minimum.
+
+Changing these dependencies changes the numerical cache source identity. Earlier
+snapshots and benchmark or notebook acceptance reports retain their original
+runtime provenance; their acceptance does not certify this updated wheel.
+Fresh numerical work must use the updated runtime's own cache identity.
 
 One-loop reduction from [one-loop-reduce](https://github.com/ecavan/one-loop-reduce)
 is available in `hep.oneloop`. Native builds also expose OneLoopMaster's scalar

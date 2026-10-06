@@ -36,6 +36,32 @@ class AmplitudeResult:
     def elapsed_nanoseconds(self) -> builtins.int: ...
 
 @typing.final
+class AsymptoticCoefficient:
+    r"""
+    Select a power/log coefficient in a declared endpoint chart.
+    For epsilon hierarchies, component is epsilon_offset * basis_size + component.
+    """
+    @property
+    def component(self) -> builtins.int: ...
+    @property
+    def power(self) -> Expression: ...
+    @property
+    def log_power(self) -> builtins.int: ...
+    def __new__(cls, component: builtins.int, power: Expression, log_power: builtins.int = 0) -> AsymptoticCoefficient: ...
+
+@typing.final
+class AsymptoticRelation:
+    r"""
+    Assert sum(weight * selected coefficient) = value using exact expressions.
+    This is supplied physical information, never inferred from numerical errors.
+    """
+    @property
+    def terms(self) -> builtins.list[tuple[AsymptoticCoefficient, Expression]]: ...
+    @property
+    def value(self) -> Expression: ...
+    def __new__(cls, terms: typing.Sequence[tuple[AsymptoticCoefficient, Expression]], value: Expression) -> AsymptoticRelation: ...
+
+@typing.final
 class BoundaryCache:
     r"""
     Shared, progressively filled cache of verified physical boundary values.
@@ -52,10 +78,17 @@ class BoundaryCache:
         Merge compatible entries while retaining intermediate points and stronger evidence.
         Repeated merges and merging a cache with itself are safe and idempotent.
         """
-    def __len__(self) -> builtins.int: ...
+    def __len__(self) -> builtins.int:
+        r"""
+        Number of regular initial conditions; endpoint_entries() is separate.
+        """
     def entries(self) -> builtins.list[TransportResult]:
         r"""
         Inspect retained points without exposing mutable cache entries.
+        """
+    def endpoint_entries(self) -> builtins.list[EndpointResult]:
+        r"""
+        Terminal endpoint records are separate from regular initial conditions.
         """
 
 class BoundaryCacheError(EvaluationError):
@@ -102,6 +135,22 @@ class ComputationControl:
         """
 
 @typing.final
+class ContinuationPrescription:
+    r"""
+    Exact polynomial i0 declarations for physical threshold continuation.
+    Declarations retain their order. The native connection validates their
+    variables and original domains when this object is bound to a transport.
+    A declaration fixes local sides; it does not establish global monodromy.
+    """
+    @property
+    def prescriptions(self) -> builtins.list[tuple[Expression, builtins.str]]: ...
+    @property
+    def domain(self) -> builtins.str: ...
+    @property
+    def unprescribed_side(self) -> builtins.str: ...
+    def __new__(cls, prescriptions: typing.Sequence[tuple[Expression, builtins.str]], *, domain: builtins.str, unprescribed_side: builtins.str = '+i0') -> ContinuationPrescription: ...
+
+@typing.final
 class DifferentialSystem:
     r"""
     Regular-point rational differential equation dY/dx = A(x)Y.
@@ -117,6 +166,85 @@ class DifferentialSystem:
         r"""
         Fixed-precision continuation. Returned diagnostics do not certify a global error bound.
         """
+
+@typing.final
+class EndpointConstraints:
+    r"""
+    Explicit exact endpoint relations, their provenance and bounded work settings.
+    Weights and values are Gaussian-rational; selected powers are real rational.
+    Numerical matching and uncertainty remain separate from these assumptions.
+    """
+    @property
+    def relations(self) -> builtins.list[AsymptoticRelation]: ...
+    @property
+    def provenance(self) -> builtins.str: ...
+    @property
+    def max_dimension(self) -> builtins.int: ...
+    @property
+    def max_order(self) -> builtins.int: ...
+    @property
+    def max_coefficient_bits(self) -> builtins.int: ...
+    @property
+    def max_scalar_cells(self) -> builtins.int: ...
+    def __new__(cls, relations: typing.Sequence[AsymptoticRelation], provenance: builtins.str, *, max_dimension: builtins.int = 64, max_order: builtins.int = 256, max_coefficient_bits: builtins.int = 65536, max_scalar_cells: builtins.int = 4000000) -> EndpointConstraints: ...
+
+@typing.final
+class EndpointResult:
+    r"""
+    Finite epsilon coefficient limits and estimated accuracy, with their regular anchor.
+    These terminal values cannot be used as initial data for a singular ODE.
+    """
+    @property
+    def constraints(self) -> typing.Optional[EndpointConstraints]: ...
+    @property
+    def route(self) -> EndpointRoute: ...
+    @property
+    def matching_boundary(self) -> TransportResult: ...
+    @property
+    def coefficients(self) -> builtins.list[builtins.list[ComplexFloat]]:
+        r"""
+        Rows are epsilon powers, columns are the original physical basis.
+        """
+    @property
+    def comparison_errors(self) -> builtins.list[builtins.list[Float]]: ...
+    @property
+    def leading_power(self) -> builtins.int: ...
+    @property
+    def last_power(self) -> builtins.int: ...
+    @property
+    def verified_digits(self) -> builtins.int: ...
+    @property
+    def input_verified_digits(self) -> builtins.int: ...
+    @property
+    def working_bits(self) -> builtins.int: ...
+    @property
+    def provenance(self) -> builtins.str: ...
+    @property
+    def cache_hit(self) -> builtins.bool: ...
+    @property
+    def elapsed_nanoseconds(self) -> builtins.int: ...
+
+@typing.final
+class EndpointRoute:
+    r"""
+    Exact endpoint chart, with endpoint at parameter zero and a regular matching point.
+    Root signs and log winding describe the caller's explicitly admitted approach.
+    """
+    @property
+    def parameter(self) -> Expression: ...
+    @property
+    def coordinates(self) -> builtins.dict[Expression, Expression]: ...
+    @property
+    def matching_parameter(self) -> Expression: ...
+    @property
+    def matching_coordinates(self) -> builtins.dict[Expression, Expression]: ...
+    @property
+    def root_sheets(self) -> builtins.dict[Expression, builtins.int]: ...
+    @property
+    def winding(self) -> builtins.int: ...
+    @property
+    def homotopy(self) -> builtins.str: ...
+    def __new__(cls, parameter: Expression, coordinates: typing.Mapping[Expression, Expression], matching_parameter: Expression, *, homotopy: builtins.str, root_sheets: typing.Optional[typing.Mapping[Expression, builtins.int]] = None, winding: builtins.int = 0) -> EndpointRoute: ...
 
 class EvaluationError(builtins.Exception):
     r"""
@@ -136,10 +264,30 @@ class EvaluationOptions:
     @property
     def series_order(self) -> builtins.int: ...
     @property
+    def pade_degree(self) -> typing.Optional[builtins.int]:
+        r"""
+        Optional rational approximation degree; absent means Taylor transport.
+        """
+    @property
+    def residual_arithmetic(self) -> builtins.str:
+        r"""
+        Source-defect arithmetic: ball (default) or adaptive_integer (opt-in).
+        """
+    @property
     def workers(self) -> builtins.int: ...
     @property
     def dimension(self) -> builtins.int: ...
-    def __new__(cls, *, digits: builtins.int = 20, guard_digits: builtins.int = 40, series_order: builtins.int = 80, max_steps: builtins.int = 1000, workers: builtins.int = 1, dimension: builtins.int = 4, recursion: builtins.str = 'auxiliary_mass', prescription: builtins.str = '+i0', mass_mode: builtins.str = 'automatic', refine_basis: builtins.bool = False, skip_reduction: builtins.bool = False, sampled_reduction: builtins.bool = True, max_precision_attempts: builtins.int = 3, max_boundary_attempts: builtins.int = 8, cache_directory: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, local_coordinate: builtins.str = 'identity', sample_cache_directory: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, reuse_samples: builtins.bool = True) -> EvaluationOptions: ...
+    @property
+    def mass_mode(self) -> builtins.str:
+        r"""
+        Auxiliary mass placement name; explicit selections retain their slot list.
+        """
+    @property
+    def deformed_propagator_slots(self) -> typing.Optional[builtins.list[builtins.int]]:
+        r"""
+        Zero-based physical denominator slots, never HEPKit edge IDs or ISP slots.
+        """
+    def __new__(cls, *, digits: builtins.int = 20, guard_digits: builtins.int = 40, series_order: builtins.int = 80, max_steps: builtins.int = 1000, workers: builtins.int = 1, dimension: builtins.int = 4, recursion: builtins.str = 'auxiliary_mass', prescription: builtins.str = '+i0', mass_mode: typing.Optional[builtins.str] = None, deformed_propagator_slots: typing.Optional[typing.Sequence[builtins.int]] = None, refine_basis: builtins.bool = False, skip_reduction: builtins.bool = False, sampled_reduction: builtins.bool = True, max_precision_attempts: builtins.int = 3, max_boundary_attempts: builtins.int = 8, cache_directory: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, local_coordinate: builtins.str = 'identity', sample_cache_directory: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, reuse_samples: builtins.bool = True, pade_degree: typing.Optional[builtins.int] = None, residual_arithmetic: builtins.str = 'ball') -> EvaluationOptions: ...
     def __repr__(self) -> builtins.str: ...
 
 @typing.final
@@ -283,6 +431,20 @@ class IntegralEvaluator:
         r"""
         Contract the native diagram numerator, decompose it, then integrate the exact weighted sum.
         """
+    def evaluate_cut_diagram(self, diagram: FeynmanDiagram, kinematics: Kinematics, point: typing.Mapping[Expression, Expression], epsilon: Expression, *, cut_index: builtins.int, future_channel: typing.Sequence[Expression], loop_prescriptions: typing.Sequence[builtins.str], edge_powers: typing.Optional[typing.Mapping[builtins.int, builtins.int]] = None, last: builtins.int = 0, control: typing.Optional[ComputationControl] = None) -> LaurentExpansion:
+        r"""
+        Integrate one native positive-energy cut, including the contracted numerator.
+        Channel coefficients refer to the native independent external basis. Loop
+        prescriptions are +i0, -i0 or insensitive in native loop-basis order.
+        Raised cut powers use derivative-delta normalization; no flux or symmetry
+        factor is added beyond the diagram's own exact overall factor.
+        """
+    def evaluate_cut_diagram_samples(self, diagram: FeynmanDiagram, kinematics: Kinematics, point: typing.Mapping[Expression, Expression], epsilon: Expression, samples: typing.Sequence[Expression], *, cut_index: builtins.int, future_channel: typing.Sequence[Expression], loop_prescriptions: typing.Sequence[builtins.str], edge_powers: typing.Optional[typing.Mapping[builtins.int, builtins.int]] = None, control: typing.Optional[ComputationControl] = None) -> builtins.list[ComplexFloat]:
+        r"""
+        Shared finite-epsilon cut evaluation. Exact numerator weights and cut IBP
+        coefficients are applied at each nonzero sample before any truncation.
+        Values have working precision; this method does not assert fitted accuracy.
+        """
     def prepare(self, family: IntegralFamily, powers: typing.Sequence[typing.Sequence[builtins.int]], variables: typing.Sequence[Expression], epsilon: Expression, *, branch_domain: builtins.str, physical_propagators: typing.Optional[builtins.int] = None, fixed_parameters: typing.Optional[typing.Mapping[Expression, Expression]] = None, epsilon_shearing: builtins.bool = False, control: typing.Optional[ComputationControl] = None) -> PreparedIntegralFamily:
         r"""
         Prepare a common derivative-closed basis in all remaining physical variables.
@@ -306,10 +468,30 @@ class KinematicTransport:
     @property
     def dimension(self) -> builtins.int: ...
     @property
+    def roots(self) -> builtins.dict[Expression, Expression]:
+        r"""
+        Native root declarations; discrete sheet signs live on each boundary/query.
+        """
+    @property
     def nonzero_conditions(self) -> builtins.list[Expression]: ...
-    def __new__(cls, epsilon: Expression, derivatives: typing.Mapping[Expression, typing.Sequence[typing.Sequence[Expression]]], basis: typing.Sequence[Expression], normalization: Expression, *, branch_domain: builtins.str, options: typing.Optional[EvaluationOptions] = None, nonzero_conditions: typing.Optional[typing.Sequence[Expression]] = None) -> KinematicTransport: ...
+    def evaluate_endpoint(self, cache: BoundaryCache, route: EndpointRoute, leading: builtins.int, last: builtins.int, *, admit_matching_path: builtins.bool = False, admit_endpoint: builtins.bool = False, scales: typing.Optional[typing.Mapping[Expression, Expression]] = None, max_lift_dimension: builtins.int = 256, series_order: builtins.int = 64, constraints: typing.Optional[EndpointConstraints] = None, control: typing.Optional[ComputationControl] = None) -> EndpointResult:
+        r"""
+        Evaluate finite epsilon coefficient limits in an exact endpoint chart.
+        Admit the regular matching path and final endpoint approach separately.
+        With a continuation declaration, matching uses the native prescribed
+        contour and admit_matching_path admits its declared global homotopy.
+        Recorded input errors and independent precision/order profiles determine
+        reusable evidence; this is not symbolic dimensional-sector projection.
+        """
+    def __new__(cls, epsilon: Expression, derivatives: typing.Mapping[Expression, typing.Sequence[typing.Sequence[Expression]]], basis: typing.Sequence[Expression], normalization: Expression, *, branch_domain: builtins.str, roots: typing.Optional[typing.Mapping[Expression, Expression]] = None, options: typing.Optional[EvaluationOptions] = None, nonzero_conditions: typing.Optional[typing.Sequence[Expression]] = None, continuation: typing.Optional[ContinuationPrescription] = None) -> KinematicTransport:
+        r"""
+        Construct a general physical connection, optionally with named square roots.
+        Registered roots require explicit source and destination sheet signs.
+        Matrix entries may contain epsilon-independent and higher epsilon terms;
+        their admission and expansion use the native connection implementation.
+        """
     @staticmethod
-    def canonical(epsilon: Expression, variables: typing.Sequence[Expression], letters: typing.Sequence[Expression], matrices: typing.Sequence[typing.Sequence[typing.Sequence[Expression]]], basis: typing.Sequence[Expression], normalization: Expression, *, branch_domain: builtins.str, roots: typing.Optional[typing.Mapping[Expression, Expression]] = None, options: typing.Optional[EvaluationOptions] = None, nonzero_conditions: typing.Optional[typing.Sequence[Expression]] = None) -> KinematicTransport:
+    def canonical(epsilon: Expression, variables: typing.Sequence[Expression], letters: typing.Sequence[Expression], matrices: typing.Sequence[typing.Sequence[typing.Sequence[Expression]]], basis: typing.Sequence[Expression], normalization: Expression, *, branch_domain: builtins.str, roots: typing.Optional[typing.Mapping[Expression, Expression]] = None, options: typing.Optional[EvaluationOptions] = None, nonzero_conditions: typing.Optional[typing.Sequence[Expression]] = None, continuation: typing.Optional[ContinuationPrescription] = None) -> KinematicTransport:
         r"""
         Construct dY = epsilon sum(M_a dlog(letter_a))Y without dense physical assembly.
         Named square roots retain separate generators and explicit endpoint sheet signs.
@@ -319,10 +501,11 @@ class KinematicTransport:
         Insert caller-established boundary evidence. Declared accuracy is not certified here.
         Coefficients and absolute error estimates are epsilon-major arrays.
         """
-    def evaluate(self, cache: BoundaryCache, destination: typing.Mapping[Expression, Expression], leading: builtins.int, last: builtins.int, *, root_sheets: typing.Optional[typing.Mapping[Expression, builtins.int]] = None, admit_straight_path: builtins.bool = False, scales: typing.Optional[typing.Mapping[Expression, Expression]] = None, control: typing.Optional[ComputationControl] = None) -> TransportResult:
+    def evaluate(self, cache: BoundaryCache, destination: typing.Mapping[Expression, Expression], leading: builtins.int, last: builtins.int, *, root_sheets: typing.Optional[typing.Mapping[Expression, builtins.int]] = None, admit_straight_path: builtins.bool = False, admit_prescribed_path: builtins.bool = False, scales: typing.Optional[typing.Mapping[Expression, Expression]] = None, control: typing.Optional[ComputationControl] = None) -> TransportResult:
         r"""
         A true cache hit needs no admission. Other points require an explicitly
-        admitted regular affine path within the constructor's branch domain.
+        admitted regular affine path or, with continuation declarations, an
+        explicitly admitted prescribed homotopy. These admissions are separate.
         """
 
 @typing.final
@@ -474,6 +657,14 @@ class TransportResult:
     def rejected_steps(self) -> builtins.int: ...
     @property
     def predicate_evaluations(self) -> builtins.int: ...
+    @property
+    def rational_trials(self) -> builtins.int: ...
+    @property
+    def rational_steps(self) -> builtins.int: ...
+    @property
+    def rational_fallbacks(self) -> builtins.int: ...
+    @property
+    def last_rational_fallback(self) -> typing.Optional[builtins.str]: ...
     @property
     def conditioning_digits(self) -> typing.Optional[builtins.int]: ...
     @property

@@ -1248,7 +1248,7 @@ dependencies = [
 [[package]]
 name = "feynkit-amplitude"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "feynkit-graph",
  "feynkit-model",
@@ -1262,7 +1262,7 @@ dependencies = [
 [[package]]
 name = "feynkit-cff"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "bincode",
  "feynkit-graph",
@@ -1278,7 +1278,7 @@ dependencies = [
 [[package]]
 name = "feynkit-generator"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -1298,7 +1298,7 @@ dependencies = [
 [[package]]
 name = "feynkit-graph"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "feynkit-kinematics",
  "feynkit-model",
@@ -1317,7 +1317,7 @@ dependencies = [
 [[package]]
 name = "feynkit-kinematics"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "linnet",
  "numerica",
@@ -1330,7 +1330,7 @@ dependencies = [
 [[package]]
 name = "feynkit-model"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -1347,7 +1347,7 @@ dependencies = [
 [[package]]
 name = "feynkit-py"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "feynkit-amplitude",
  "feynkit-cff",
@@ -1372,7 +1372,7 @@ dependencies = [
 [[package]]
 name = "feynkit-tensor"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "feynkit-graph",
  "idenso",
@@ -1385,7 +1385,7 @@ dependencies = [
 [[package]]
 name = "feynkit-ufo"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "feynkit-model",
  "pyo3",
@@ -1494,7 +1494,7 @@ dependencies = [
 [[package]]
 name = "gammaloop-workspace-hack"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "ahash 0.8.12",
  "arrayvec",
@@ -1624,7 +1624,7 @@ dependencies = [
 [[package]]
 name = "graphica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#c3408e4ba1d3bdd4ea55678fad50e27009be13d4"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#6defcca968ca8411977fb1f641a9dee49ee7b7a7"
 dependencies = [
  "ahash 0.8.12",
  "dyn-clone",
@@ -1914,7 +1914,7 @@ checksum = "ae293c039020f9ec10710af98d29ce6aa2051486638b49c9a6409f3b4a9e98ad"
 [[package]]
 name = "idenso"
 version = "0.3.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "ahash 0.8.12",
  "base64",
@@ -2146,7 +2146,7 @@ dependencies = [
 [[package]]
 name = "kurvst"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "ciborium",
  "kurbo",
@@ -2201,7 +2201,7 @@ dependencies = [
 [[package]]
 name = "linnest"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "cgmath",
  "ciborium",
@@ -2225,7 +2225,7 @@ dependencies = [
 [[package]]
 name = "linnet"
 version = "0.17.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "ahash 0.8.12",
  "bincode",
@@ -2541,7 +2541,7 @@ dependencies = [
 [[package]]
 name = "numerica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#c3408e4ba1d3bdd4ea55678fad50e27009be13d4"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#6defcca968ca8411977fb1f641a9dee49ee7b7a7"
 dependencies = [
  "ahash 0.8.12",
  "astro-float",
@@ -3910,7 +3910,7 @@ checksum = "02ef091d4e8b981dbaa4cc17789d00b53d5d2c001ae689f14e6093f30c529036"
 [[package]]
 name = "spenso"
 version = "0.6.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "ahash 0.8.12",
  "append-only-vec",
@@ -3958,7 +3958,7 @@ dependencies = [
 [[package]]
 name = "spenso-hep-lib"
 version = "0.1.7"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "ahash 0.8.12",
  "idenso",
@@ -3971,7 +3971,7 @@ dependencies = [
 [[package]]
 name = "spenso-macros"
 version = "0.3.2"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3981,7 +3981,7 @@ dependencies = [
 [[package]]
 name = "spynso3"
 version = "0.1.2"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "ahash 0.8.12",
  "ciborium",
@@ -4091,7 +4091,7 @@ dependencies = [
 [[package]]
 name = "symbolica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#c3408e4ba1d3bdd4ea55678fad50e27009be13d4"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#6defcca968ca8411977fb1f641a9dee49ee7b7a7"
 dependencies = [
  "ahash 0.8.12",
  "append-only-vec",
@@ -4131,7 +4131,7 @@ dependencies = [
 [[package]]
 name = "symbolica-amflow"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/RustFlow?rev=db9cbbafa470b1402d335ad635e608a6b7a03c07#db9cbbafa470b1402d335ad635e608a6b7a03c07"
+source = "git+https://github.com/alphal00p/RustFlow?rev=92cfc9d2babfd95af8205b1193b4ec303bf8b610#92cfc9d2babfd95af8205b1193b4ec303bf8b610"
 dependencies = [
  "ahash 0.8.12",
  "bincode",
@@ -4182,7 +4182,7 @@ dependencies = [
 [[package]]
 name = "symbolica-utils"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -4406,7 +4406,7 @@ dependencies = [
 [[package]]
 name = "three-dimensional-reps"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -4866,7 +4866,7 @@ dependencies = [
 [[package]]
 name = "typst-library"
 version = "0.15.1"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "arrayvec",
  "az",
@@ -4958,7 +4958,7 @@ dependencies = [
 [[package]]
 name = "typst-renderer"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "comemo",
  "tempfile",
@@ -4973,7 +4973,7 @@ dependencies = [
 [[package]]
 name = "typst-svg"
 version = "0.15.1"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
 dependencies = [
  "base64",
  "comemo",
@@ -5857,4 +5857,4 @@ checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
 [[patch.unused]]
 name = "linnet-py"
 version = "0.1.0"
-source = "git+https://github.com/ValentinHirschi/gammaloop?rev=a3d1c8a867ac0e89d8f58f9722cf9a7e83338901#a3d1c8a867ac0e89d8f58f9722cf9a7e83338901"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=b96600b0085d9ddfa9e6acbc11fa72ec6163253c#b96600b0085d9ddfa9e6acbc11fa72ec6163253c"
