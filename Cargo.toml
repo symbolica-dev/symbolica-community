@@ -58,10 +58,10 @@ community = [
     "dep:hyperbolica", "dep:symbolica-amflow",
 ]
 # Keep the system allocator: mimalloc can crash after Python's importing thread exits.
-native = ["hyperbolica?/native", "symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3?/native", "feynkit-py?/native"]
+native = ["hyperbolica?/native", "symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3?/native", "feynkit-py?/native", "symbolica-amflow?/python"]
 # Use --no-default-features --features wasm-core for the kernel + integration only.
 wasm-core = ["symbolica/wasm"]
-wasm = ["wasm-core", "community", "hyperbolica/wasm", "spynso3/wasm", "feynkit-py/wasm", "one-loop-reduce-python/wasm"]
+wasm = ["wasm-core", "community", "hyperbolica/wasm", "spynso3/wasm", "feynkit-py/wasm", "one-loop-reduce-python/wasm", "symbolica-amflow/python_wasm"]
 python_stubgen = [
     "hyperbolica/python_stubgen",
     "native",
@@ -83,6 +83,7 @@ spynso3 = { optional = true, git = "https://github.com/ValentinHirschi/gammaloop
 feynkit-py = { optional = true, git = "https://github.com/ValentinHirschi/gammaloop", rev = "b96600b0085d9ddfa9e6acbc11fa72ec6163253c", default-features = false, features = ["ufo"] }
 symbolica = { version = "3.0.1", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
+symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "d81dae94a40e41e5d2dcd978f623e6e83abb3e4f", default-features = false, features = ["python_api"] }
 # Tensor bindings split methods across impl blocks on both native and WASM.
 pyo3 = { version = "0.28", features = ["multiple-pymethods"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
@@ -90,7 +91,6 @@ pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, f
 ] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "7096ba8e1f4d7edda4402f9ff01c961f6f3e6a4e", default-features = false, features = ["python"] }
 # Compile the IBP bridge into the host extension to share native Symbolica atoms.
 rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", branch = "main", features = ["campaign-api"] }
 # Share the host kernel; OneLOop currently requires native numeric/JIT support.

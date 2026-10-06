@@ -186,8 +186,12 @@ the additional margin. These are native solver component measurements from one
 run of each profile, excluding browser startup, UI and checkpoint I/O.
 
 To prepare a browser demonstration, use a community Pyodide wheel containing
-the physical transport API. That build is still undergoing runtime validation;
-the exporter requires a successful `test_pyodide.mjs` transport smoke report
+the physical transport API. Supplied-boundary transport, exact binary restart,
+nearby reuse and cancellation passed the
+[actual Pyodide smoke gate](../../reports/2026-10-06-browser-loop-transport/report.json)
+on one core without license credentials. Full gg→Hg scientific and browser UI
+acceptance remains separate. The exporter requires a successful
+`test_pyodide.mjs` transport smoke report
 matching the exact wheel checksum. A Python namespace alone is insufficient.
 Marimo's exporter requires `uv` in the build environment.
 

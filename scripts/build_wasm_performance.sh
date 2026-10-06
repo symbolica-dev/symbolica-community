@@ -42,6 +42,15 @@ export REAL_WASM_OPT="$binaryen_sdk/bin/wasm-opt"
 export WASM_OPT_CAPTURE_DIR="$outdir/compiler-output"
 export WASM_OPT_CAPTURE_INPUT_NAME=symbolica_community.wasm
 export WASM_OPT_FORCE_LEVEL="$wasm_opt_level"
+# Fingerprint the same host feature graph that maturin builds below. Native
+# reducers remain outside this target; portable transport uses supplied values.
+export RUSTFLOW_WORKSPACE_MANIFEST="$PWD/Cargo.toml"
+export RUSTFLOW_WORKSPACE_FEATURES="$wasm_features,pyo3/extension-module"
+export RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES=1
+# Pyodide sets CC/AR for target code. Cargo build dependencies (including the
+# fingerprint hash) execute on the host and must retain native compilers.
+export HOST_CC="${HOST_CC:-$(command -v cc)}"
+export HOST_AR="${HOST_AR:-$(command -v ar)}"
 # Use the same Emscripten linker settings at every Binaryen level; changing the
 # linker's -O flag can also change its defaults outside wasm-opt.
 # Bind internal references locally so ThinLTO does not expose Rust symbols

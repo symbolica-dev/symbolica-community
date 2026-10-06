@@ -59,7 +59,6 @@ impl SymbolicaCommunityModule for HepKitModule {
     fn register_module(module: &Bound<'_, PyModule>) -> PyResult<()> {
         feynkit_py::initialize_feynkit(module)?;
         crate::integration::register(module)?;
-        #[cfg(not(target_arch = "wasm32"))]
         crate::loop_integration::register(module)?;
         crate::oneloop::register(module)?;
         #[cfg(not(target_arch = "wasm32"))]

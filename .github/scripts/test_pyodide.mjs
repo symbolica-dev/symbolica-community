@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { readFile, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -15,10 +16,10 @@ assert.equal(wheels.length, 1, "Expected exactly one PyEmscripten wheel");
 const { loadPyodide } = await import(pathToFileURL(join(runtimeDir, "pyodide.mjs")));
 const pyodide = await loadPyodide({
   indexURL: runtimeDir,
-  env: {
+  env: Object.fromEntries(Object.entries({
     SYMBOLICA_LICENSE_KEY: process.env.SYMBOLICA_LICENSE_KEY || "",
     SYMBOLICA_LICENSE: process.env.SYMBOLICA_LICENSE_KEY || process.env.SYMBOLICA_LICENSE || "",
-  },
+  }).filter(([, value]) => value)),
 });
 await pyodide.loadPackage("micropip");
 const wheel = wheels[0];
@@ -76,6 +77,10 @@ await pyodide.runPythonAsync(`
 assert importlib.util.find_spec("numpy") is None
 # Array conversion and evaluator tests opt into the NumPy extra separately.
 await micropip.install(f"symbolica[numpy] @ {wheel_uri}")
+# micropip can treat an already installed wheel as satisfied without adding
+# newly requested extras. Install the declared optional dependency explicitly.
+await micropip.install("numpy")
+assert importlib.util.find_spec("numpy") is not None
 `);
 await pyodide.runPythonAsync(`
 import symbolica.community.tensor as tensor_module
@@ -156,16 +161,12 @@ except ImportError as error:
     assert "native Symbolica installation" in str(error)
 else:
     raise AssertionError("vakint should require a native installation")
-# Loop-integral evaluation belongs to the native host; the existing browser
-# HEPKit and Hyperbolica APIs remain available and are exercised below.
-assert "symbolica.community.hep_integration_native" not in sys.modules
-try:
-    import symbolica.community.hep.integration
-except ModuleNotFoundError as error:
-    assert error.name == "symbolica.community.hep_integration_native", error
-else:
-    raise AssertionError("Loop-integral evaluation should require a native installation")
+assert "symbolica.community.hep_integration_native" in sys.modules
 `);
+await pyodide.runPythonAsync(
+  await readFile(new URL("./check_wasm_loop_transport.py", import.meta.url), "utf8"),
+);
+console.log("Supplied loop transport, exact binary restart, nearby reuse and cancellation passed.");
 const integrationContract = await readFile(new URL("../../tests/integration_contract.py", import.meta.url), "utf8");
 await pyodide.runPythonAsync(integrationContract + "\ncheck_integration_contract()\ncheck_symanzik_example()\nassert not hasattr(api, 'ibp')\n");
 console.log("Shared integration fixtures and HEPkit Symanzik example passed (parallel=False/True).");
@@ -201,7 +202,7 @@ const inventoryConstructors = [
   /^_ZN11hyperbolica7symbols1_6__CTOR17h[0-9a-f]{16}E$/,
   // multiple-pymethods registers Python method blocks through inventory.
   // Only accept constructor globals from the known binding namespaces.
-  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|7spynso3|9linnet_py|20oneloopreduce_python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
+  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|7spynso3|9linnet_py|20oneloopreduce_python|16symbolica_amflow6python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
 ];
 assert(exports.some(({ name }) => name === "PyInit_core"), "Missing Python module entry point");
 assert.deepEqual(
@@ -214,3 +215,20 @@ assert.deepEqual(
 console.log(`WebAssembly exports: ${exports.length}; functions: ${exports.filter(({ kind }) => kind === "function").map(({ name }) => name).join(", ")}`);
 console.log(`Wheel: ${wheelBytes.length} bytes; WebAssembly module: ${wasmBytes.length} bytes.`);
 console.log("PyEmscripten wheel installed with micropip; smoke test passed.");
+if (expectCommunity) {
+  const installedWheelUri = pyodide.globals.get("wheel_uri");
+  if (installedWheelUri.startsWith("emfs:")) {
+    // Read the archive actually installed, including the zstd download mode.
+    // A report for another local archive would not certify its capabilities.
+    const installedWheelBytes = pyodide.FS.readFile(installedWheelUri.slice("emfs:".length));
+    const validation = {
+      schema: "supplied-loop-transport-runtime-v1",
+      wheel,
+      wheel_sha256: createHash("sha256").update(installedWheelBytes).digest("hex"),
+      supplied_loop_transport: true,
+    };
+    await writeFile(join(wheelDir, "loop-transport-validation.json"), JSON.stringify(validation, null, 2) + "\n");
+  } else {
+    console.log("Direct HTTP diagnostic mode does not retain the installed wheel archive; no capability report written.");
+  }
+}

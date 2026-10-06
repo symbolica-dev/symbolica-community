@@ -9,6 +9,7 @@ import typing
 from symbolica.community.hepkit import FeynmanDiagram, IntegralFamily, Kinematics, Model
 from symbolica.core import ComplexFloat, Expression, Float
 
+automatic_boundary_generation_available: builtins.bool
 class AccuracyError(NumericalError):
     r"""
     Numerical integration failure; see the exception message for context.
@@ -122,7 +123,8 @@ class CalculationCancelled(EvaluationError):
 class ComputationControl:
     r"""
     Thread-safe cancellation and progress polling for a running calculation.
-    Run an evaluator in a worker thread and poll this object from the UI thread.
+    Cooperative cancellation and queued progress for the active computation.
+    Native hosts may poll from another thread; browser hosts schedule serial stages.
     At most the 4096 most recent progress events are retained.
     """
     @property
@@ -374,6 +376,11 @@ class HiggsJetIntegralSystem:
     Certified planar or nonplanar Higgs-plus-jet integral system. Generates its
     own boundary values using the supplied IntegralEvaluator's reduction backend.
     """
+    @property
+    def automatic_boundary_generation_available(self) -> builtins.bool:
+        r"""
+        Whether this build contains native reduction and boundary generation.
+        """
     @property
     def dimension(self) -> builtins.int: ...
     @property
