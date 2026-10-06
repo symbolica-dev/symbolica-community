@@ -215,7 +215,7 @@ def test_boundary_step_budget_preserves_precision_and_physical_transport(session
     assert requested[1]["max_steps"] == 2000
     assert physical.digits == session.digits
     assert boundary.digits == 40
-    for options, guard, order in ((physical, 30, 32), (boundary, 60, 96)):
+    for options, guard, order in ((physical, 20, 16), (boundary, 60, 96)):
         assert options.guard_digits == guard
         assert options.series_order == order
         # Exercise the native options handoff without evaluating an integral.

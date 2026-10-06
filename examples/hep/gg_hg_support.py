@@ -189,14 +189,14 @@ class CalculationSession:
         Nonplanar seed propagation can exhaust 1,000 accepted/rejected trials
         while still advancing with valid local error checks. Allow 2,000 for
         seeds; physical transport keeps 1,000. Physical transport starts with
-        guard 30/order 32, then retains the solver's adaptive accuracy checks.
+        guard 20/order 16, then retains the solver's adaptive accuracy checks.
         """
         from symbolica.community.hep.integration import EvaluationOptions
 
         return EvaluationOptions(
             digits=self.seed_digits if seeds else self.digits,
-            guard_digits=60 if seeds else 30,
-            series_order=96 if seeds else 32,
+            guard_digits=60 if seeds else 20,
+            series_order=96 if seeds else 16,
             max_steps=2000 if seeds else 1000,
             workers=self.workers if workers is None else workers,
             cache_directory=self.directory / "exact-reductions",

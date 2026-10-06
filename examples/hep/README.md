@@ -173,16 +173,17 @@ transport-enabled WASM build; native timings are not browser measurements.
 Browser cache files live in the current page's virtual filesystem. Binary
 reload works within that session; page reload does not persist the files.
 
-The [single-core transport comparison](https://github.com/alphal00p/RustFlow/blob/28ea720/reports/performance/2026-10-06-physical-transport-compact-profile/README.md)
+The [single-core transport comparison](https://github.com/alphal00p/RustFlow/blob/main/reports/performance/2026-10-06-physical-transport-order16/README.md)
 measured all sixteen configurations with the same supplied seeds and growing
-cache. At requested 20-digit accuracy, initial guard 30/order 32 took 91.5 s,
-versus 270.2 s with guard 60/order 96. Both passed comparisons of all 4,360
-coefficients, eight form factors and three observables within propagated errors.
-The notebook uses the smaller initial physical profile, retaining adaptive
-checks; automatic boundary generation keeps its previous settings. First-use
-amplitude kernel construction cost another 34.3 s, and projection plus numerical
-observable evaluation cost 2.5 s. These are native component measurements from
-one run of each profile, excluding browser startup, UI and checkpoint I/O.
+cache. At requested 20-digit accuracy, initial guard 20/order 16 took 68.1 s,
+versus 91.5 s with guard 30/order 32 and 270.2 s with guard 60/order 96.
+Independent exact-arithmetic checks cover all 4,360 final coefficients,
+8,720 inserted coefficients, eight form factors and three observables.
+The notebook uses guard 20/order 16, retaining adaptive checks; automatic
+boundary generation keeps its previous settings. A guard-10 trial took 64.4 s
+but reduced the master accuracy estimate from 28 to 20 digits; guard 20 retains
+the additional margin. These are native solver component measurements from one
+run of each profile, excluding browser startup, UI and checkpoint I/O.
 
 To prepare a browser demonstration, use a community Pyodide wheel containing
 the physical transport API. That build is still undergoing runtime validation;
