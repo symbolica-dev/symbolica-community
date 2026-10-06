@@ -1,6 +1,6 @@
 """Keep grouped tensor expressions on the notebook's rich display path."""
 
-import runpy
+import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -78,4 +78,12 @@ def test_scalar_tensor_rich_display_survives_symbolica_updates(source):
 
 
 def test_rendering_without_python_rendering_packages():
-    runpy.run_path(str(Path(__file__).with_name("check_offline_rendering.py")))
+    # The standalone check asserts a clean import registry. Other tests exercise
+    # native Linnet interoperability and legitimately import its Python package.
+    # Keep the no-rendering-dependency assertions in a fresh interpreter.
+    subprocess.run(
+        [sys.executable, str(Path(__file__).with_name("check_offline_rendering.py"))],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
