@@ -496,9 +496,20 @@ def test_forced_interruption_retains_only_new_generation_restart_state(session, 
         if seed_digits == 30:
             # Neither filename nor deterministic payload distinguishes fresh
             # work; the durable generation must drive the interruption gate.
-            (directory / "sample-cold-30.bin").write_bytes(b"previous cold work")
+            name, payload = "sample-cold-30.bin", b"previous cold work"
         else:
-            (directory / "sample-forced-40.bin").write_bytes(b"new complete refined sample")
+            name, payload = "sample-forced-40.bin", b"new complete refined sample"
+        # Match the native checkpoint contract: only a complete file becomes
+        # visible to the monitor. Direct write_bytes can expose an empty file
+        # between opening and writing, making its observed hash nondeterministic.
+        temporary = directory / f".{name}.tmp"
+        with temporary.open("wb") as output:
+            output.write(payload[:1])
+            output.flush()
+            sleep(0.01)  # The polling monitor must ignore this partial temporary.
+            assert samples() == {}
+            output.write(payload[1:])
+        temporary.replace(directory / name)
         deadline = monotonic() + 5
         while not kwargs["control"].cancelled:
             if monotonic() >= deadline:
