@@ -1230,7 +1230,7 @@ checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
 [[package]]
 name = "fastsecdec"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=a3d09e177196013326fd1532eb938f559be87401#a3d09e177196013326fd1532eb938f559be87401"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=ef2861bfe9b42a2b7befdd7da787dc81e46941cd#ef2861bfe9b42a2b7befdd7da787dc81e46941cd"
 dependencies = [
  "bincode",
  "blake3",
@@ -1252,7 +1252,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=a3d09e177196013326fd1532eb938f559be87401#a3d09e177196013326fd1532eb938f559be87401"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=ef2861bfe9b42a2b7befdd7da787dc81e46941cd#ef2861bfe9b42a2b7befdd7da787dc81e46941cd"
 dependencies = [
  "fastsecdec",
  "fastsecdec-sectors",
@@ -1267,7 +1267,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-sectors"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=a3d09e177196013326fd1532eb938f559be87401#a3d09e177196013326fd1532eb938f559be87401"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=ef2861bfe9b42a2b7befdd7da787dc81e46941cd#ef2861bfe9b42a2b7befdd7da787dc81e46941cd"
 dependencies = [
  "numerica",
  "thiserror 2.0.21",
