@@ -13,14 +13,6 @@ case "$wasm_features" in
   wasm|wasm-core) ;;
   *) echo "Invalid WASM_FEATURES: $wasm_features (expected wasm or wasm-core)" >&2; exit 2 ;;
 esac
-case "${WASM_FASTSECDEC:-0}" in
-  0) ;;
-  1)
-    [[ "$wasm_features" == wasm ]] || { echo "WASM_FASTSECDEC requires WASM_FEATURES=wasm" >&2; exit 2; }
-    wasm_features="$wasm_features,experimental-fastsecdec"
-    ;;
-  *) echo "Invalid WASM_FASTSECDEC (expected 0 or 1)" >&2; exit 2 ;;
-esac
 case "$wasm_opt_level" in
   -O0|-O1|-O2|-O3|-Os|-Oz) ;;
   *) echo "Invalid WASM_OPT_LEVEL: $wasm_opt_level" >&2; exit 2 ;;

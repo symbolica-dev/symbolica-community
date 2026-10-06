@@ -21,12 +21,6 @@ fn main() -> Result<()> {
             .into());
         }
     };
-    if only == Some("fastsecdec") && !cfg!(feature = "experimental-fastsecdec") {
-        return Err(std::io::Error::other(
-            "--fastsecdec-only requires --features experimental-fastsecdec",
-        )
-        .into());
-    }
     let mut stub = stub_info()?;
     if let Some(module) = stub.modules.get_mut("symbolica.community.tensor") {
         spynso3::SpensoModule::prepare_stub_module(module);
@@ -64,7 +58,6 @@ fn main() -> Result<()> {
         write_package(module_name, &source)?;
         return Ok(());
     }
-    #[cfg(feature = "experimental-fastsecdec")]
     {
         let module = stub
             .modules

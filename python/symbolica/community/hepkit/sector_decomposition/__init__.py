@@ -8,8 +8,8 @@ from symbolica.community import hepkit_native as _native
 
 if not hasattr(_native, "_fastsecdec_native"):
     raise ImportError(
-        "Sector decomposition requires a community wheel built with "
-        "experimental-fastsecdec; see examples/hep/FASTSECDEC_BUILD.md"
+        "Sector decomposition requires a current community wheel; "
+        "see examples/hep/FASTSECDEC_BUILD.md"
     )
 del _native
 

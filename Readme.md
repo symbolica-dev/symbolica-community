@@ -171,13 +171,18 @@ import micropip
 await micropip.install("symbolica")
 ```
 
-or can be manually built using `maturin`:
+or can be manually built using `maturin`. Community builds include
+`hepkit.sector_decomposition`:
 
 ```bash
-cargo run --features "python_stubgen" --no-default-features # generate type hints
-maturin build --release
+cargo run --locked --features python_stubgen --no-default-features --bin stub_gen
+maturin build --locked --release
 ```
 
+
+For a browser build, use `--no-default-features --features wasm` (the
+`scripts/build_wasm_performance.sh` default). The explicit `wasm-core` feature
+keeps only the Symbolica kernel and integration, without community modules.
 
 ## For developers
 

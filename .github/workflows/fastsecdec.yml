@@ -1,4 +1,4 @@
-name: Experimental FastSecDec bridge
+name: HEPKit sector decomposition
 
 on:
   pull_request:
@@ -22,22 +22,32 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential m4 pkg-config
           python -m pip install maturin==1.15.0 pytest marimo==0.24.2
-      - name: Prepare pinned owner patches
-        run: bash scripts/prepare_fastsecdec_dependencies.sh "$RUNNER_TEMP/fastsecdec-dependencies"
-      - name: Check published dependency identities
+      - name: Check published dependency identities and locate maintained tests
         run: |
-          cargo metadata --locked --features experimental-fastsecdec \
-            --config "$RUNNER_TEMP/fastsecdec-dependencies/overlay-community-git.toml" \
-            --format-version 1 > "$RUNNER_TEMP/fastsecdec-metadata.json"
-          python "$RUNNER_TEMP/fastsecdec-dependencies/fastsecdec/bindings/python/scripts/check_dependencies.py" "$RUNNER_TEMP/fastsecdec-metadata.json" native
-      - name: Build and install experimental wheel
+          cargo metadata --locked --format-version 1 > "$RUNNER_TEMP/fastsecdec-metadata.json"
+          python - "$RUNNER_TEMP/fastsecdec-metadata.json" <<'PYTHON'
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+
+          metadata_path = Path(sys.argv[1])
+          metadata = json.loads(metadata_path.read_text())
+          packages = [package for package in metadata["packages"] if package["name"] == "fastsecdec-python"]
+          assert len(packages) == 1, "Expected one FastSecDec binding owner"
+          bindings = Path(packages[0]["manifest_path"]).parent
+          subprocess.run([sys.executable, str(bindings / "scripts/check_dependencies.py"), str(metadata_path), "native"], check=True)
+          with open(os.environ["GITHUB_ENV"], "a") as environment:
+              environment.write(f"FASTSECDEC_BINDINGS={bindings}\n")
+          PYTHON
+      - name: Build and install community wheel
         run: |
-          CARGO_HOME="$RUNNER_TEMP/fastsecdec-dependencies/cargo-home" \
-            maturin build --locked --features experimental-fastsecdec --out dist-fastsecdec
+          maturin build --locked --out dist-fastsecdec
           python -m pip install dist-fastsecdec/*.whl
       - name: Run maintained FastSecDec controls and the host smoke test
         env:
           SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
         run: |
           python -c 'from symbolica.community.hepkit.sector_decomposition import sector_decompose, Integral; from symbolica.community.hepkit.fastsecdec import Integral as LegacyIntegral; assert Integral is LegacyIntegral'
-          bash "$RUNNER_TEMP/fastsecdec-dependencies/fastsecdec/bindings/python/scripts/test-native.sh" "$GITHUB_WORKSPACE"
+          bash "$FASTSECDEC_BINDINGS/scripts/test-native.sh" "$GITHUB_WORKSPACE"

@@ -9,7 +9,6 @@ impl SymbolicaCommunityModule for HepKitModule {
     fn get_citations() -> Vec<Citation> {
         let mut citations = feynkit_py::FeynkitModule::get_citations();
         citations.extend(crate::oneloop::get_citations());
-        #[cfg(feature = "experimental-fastsecdec")]
         citations.extend(fastsecdec_python::get_citations());
         #[cfg(not(target_arch = "wasm32"))]
         if rustred_feynkit::was_used() {
@@ -60,7 +59,6 @@ impl SymbolicaCommunityModule for HepKitModule {
     fn register_module(module: &Bound<'_, PyModule>) -> PyResult<()> {
         feynkit_py::initialize_feynkit(module)?;
         crate::oneloop::register(module)?;
-        #[cfg(feature = "experimental-fastsecdec")]
         fastsecdec_python::register(module)?;
         #[cfg(not(target_arch = "wasm32"))]
         rustred_feynkit::register_hep_module(module)?;
