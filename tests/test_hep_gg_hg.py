@@ -7,6 +7,7 @@ import runpy
 import subprocess
 import sys
 from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeoutError
 from pathlib import Path
 from threading import Event, Lock
 from time import monotonic, sleep
@@ -718,14 +719,48 @@ def test_headless_warm_completion_does_not_wait_for_poll_interval(session, accep
     assert updates[-1]["done"]
 
 
-@pytest.mark.parametrize("failure_type", [TimeoutError, NativePanicSurrogate])
-def test_headless_progress_wait_preserves_original_failures(session, acceptance, failure_type):
+def test_headless_progress_wait_continues_after_a_pending_future_timeout(session, acceptance):
+    value = object()
+    session._future = Future()
+    updates = []
+
+    def publish(state):
+        updates.append(state)
+        if len(updates) == 2:
+            # Only finish after Future.result has timed out and polling resumes.
+            assert not state["done"]
+            session._future.set_result(value)
+
+    assert acceptance.wait_for_stage(session, publish, poll_interval=0.001) is value
+    assert [state["done"] for state in updates] == [False, False, True]
+
+
+# Python 3.11+ aliases FutureTimeoutError to the built-in exception.
+@pytest.mark.parametrize("failure_type", list(dict.fromkeys([
+    TimeoutError, FutureTimeoutError, NativePanicSurrogate,
+])))
+@pytest.mark.parametrize("already_done", [False, True])
+def test_headless_progress_wait_preserves_original_failures(
+    session, acceptance, failure_type, already_done, monkeypatch,
+):
     original = failure_type("original computation failure")
     session._future = Future()
-    session._future.set_exception(original)
+    if already_done:
+        session._future.set_exception(original)
+    else:
+        wait = session.wait
+
+        def finish_on_wait(timeout=None):
+            if not session._future.done():
+                session._future.set_exception(original)
+            return wait(timeout=timeout)
+
+        monkeypatch.setattr(session, "wait", finish_on_wait)
+    updates = []
     with pytest.raises(failure_type) as raised:
-        acceptance.wait_for_stage(session, lambda state: None, poll_interval=0.01)
+        acceptance.wait_for_stage(session, updates.append, poll_interval=0.01)
     assert raised.value is original
+    assert [state["done"] for state in updates] == [already_done, True]
 
 
 def test_acceptance_attests_loaded_extension_and_native_source_identity(acceptance):

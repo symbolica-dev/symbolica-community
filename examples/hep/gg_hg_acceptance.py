@@ -6,6 +6,7 @@ Ordinary notebook smoke tests do not invoke this program.
 """
 
 import argparse
+from concurrent.futures import TimeoutError as FutureTimeoutError
 import json
 from pathlib import Path
 from time import perf_counter_ns, sleep
@@ -253,13 +254,14 @@ def wait_for_stage(session, on_progress, *, poll_interval=5):
     while True:
         on_progress(session.snapshot())
         try:
-            value = session.wait(timeout=poll_interval)
-        except TimeoutError:
-            if not session.snapshot()["done"]:
-                continue
-            # A calculation can itself raise TimeoutError. Re-read a completed
-            # future to preserve its original exception instead of polling forever.
-            value = session.wait()
+            try:
+                value = session.wait(timeout=poll_interval)
+            except FutureTimeoutError:
+                if not session.snapshot()["done"]:
+                    continue
+                # A calculation can itself raise the future's timeout type.
+                # Re-read completed work to preserve its result or exception.
+                value = session.wait()
         except BaseException:
             on_progress(session.snapshot())
             raise
