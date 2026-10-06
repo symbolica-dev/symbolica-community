@@ -75,7 +75,7 @@ def verify(run_directory):
         assert path.stat().st_size == record["bytes"] and file_hash(path) == record["sha256"]
     assert json.loads((checkpoint / "acceptance.json").read_text()) == report
     assert report["status"] == "passed"
-    assert report["settings"] == {"digits": 20, "guard_digits": 30, "series_order": 32, "workers": 1}
+    assert report["settings"] == {"digits": 20, "guard_digits": 20, "series_order": 16, "workers": 1}
     assert report["supplied_import"]["complex_coefficients"] == 4360
     assert report["supplied_import"]["all_values_errors_and_precisions_exact"] is True
     assert report["supplied_import"]["binary_restart_exact"] is True

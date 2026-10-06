@@ -10,7 +10,7 @@ import { execFileSync } from "node:child_process";
 
 const arguments_ = process.argv.slice(2);
 if (arguments_.includes("--help")) {
-  console.log("taskset -c 43 env -u SYMBOLICA_LICENSE -u SYMBOLICA_LICENSE_KEY node scripts/gg_hg_pyodide.mjs --wheel WHEEL --runtime PYODIDE_DIST --source NOTEBOOK_CHECKOUT --native-reference FULL16_JSON --out NEW_DIRECTORY [--source-commit 1e1c2366] [--stage pilot|full] [--resume PREVIOUS_CHECKPOINT]");
+  console.log("taskset -c 43 env -u SYMBOLICA_LICENSE -u SYMBOLICA_LICENSE_KEY node scripts/gg_hg_pyodide.mjs --wheel WHEEL --runtime PYODIDE_DIST --source NOTEBOOK_CHECKOUT --native-reference FULL16_JSON --out NEW_DIRECTORY [--source-commit 9507de0e] [--stage pilot|full] [--resume PREVIOUS_CHECKPOINT]");
   process.exit(0);
 }
 const options = {};
@@ -26,7 +26,7 @@ for (const name of ["wheel", "runtime", "source", "native-reference", "out"]) {
   options[name] = resolve(options[name]);
 }
 options.stage ??= "pilot";
-options["source-commit"] ??= "1e1c2366";
+options["source-commit"] ??= "9507de0e";
 assert(/^[0-9a-f]{7,40}$/.test(options["source-commit"]), "Use an immutable source commit");
 const sourceCommit = execFileSync("git", ["-C", options.source, "rev-parse", `${options["source-commit"]}^{commit}`], { encoding: "utf8" }).trim();
 assert(["pilot", "full"].includes(options.stage), "Stage must be pilot or full");
@@ -179,6 +179,7 @@ await micropip.install(acceptance_wheel_uri)
   pyodide.globals.set("publish_checkpoint", checkpoint);
   pyodide.globals.set("acceptance_stage", options.stage);
   pyodide.globals.set("acceptance_resume", Boolean(options.resume));
+  manifest.status = "running";
   saveManifest();
   await pyodide.runPythonAsync("exec(compile(open('/acceptance/gg_hg_pyodide.py').read(), '/acceptance/gg_hg_pyodide.py', 'exec'))\nawait main()");
   checkpoint();

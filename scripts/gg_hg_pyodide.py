@@ -112,7 +112,7 @@ class Benchmark:
         self.report = {
             "schema": "gg-hg-pyodide-scientific-acceptance-v1", "status": "running",
             "stage": acceptance_stage, "resumed": bool(acceptance_resume),
-            "settings": {"digits": 20, "guard_digits": 30, "series_order": 32, "workers": 1},
+            "settings": {"digits": 20, "guard_digits": 20, "series_order": 16, "workers": 1},
             "phases": [], "cases": [], "comparisons": {},
             "scope": "Actual Pyodide; unchanged supplied seed evidence, notebook controller and native owner algorithms. References enter comparisons only.",
         }
@@ -268,7 +268,7 @@ class Benchmark:
         assert self.session._pool is None
         assert not self.session.automatic_boundary_generation_available
         options = self.session._options()
-        assert (options.digits, options.guard_digits, options.series_order, options.workers) == (20, 30, 32, 1)
+        assert (options.digits, options.guard_digits, options.series_order, options.workers) == (20, 20, 16, 1)
         self.configurations = self.session.configurations[:]
         assert len(self.configurations) == 16
         self.report["session_construction_and_existing_cache_load_ns"] = perf_counter_ns() - started
