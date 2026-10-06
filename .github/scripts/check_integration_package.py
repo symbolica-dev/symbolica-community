@@ -19,7 +19,7 @@ OPTIONAL_HEPKIT = (
     "three-dimensional-reps", "kurvst",
 )
 RUSTRED = ("rustred", "rustred-order", "rustred-app", "rustred-feynkit", "rustred-python")
-NATIVE_ONLY = (*RUSTRED, "symbolica-amflow", "vakint", "oneloop", "oneloop-python")
+NATIVE_ONLY = (*RUSTRED, "vakint", "oneloop", "oneloop-python")
 
 
 def output(command):
@@ -29,13 +29,15 @@ def output(command):
 def active_graph(target, feature_args):
     """Traverse metadata, retaining packages activated by Cargo's target resolver.
 
-    Metadata over-approximates weak optional and target-specific features. Cargo
-    tree supplies actual active names, excluding development dependencies. Exact
-    sources still come from metadata, never abbreviated tree output or Cargo.lock.
+    Metadata over-approximates weak optional and target-specific features. Keep
+    its unfiltered catalogue: filtering for WASM also drops host-only children of
+    build dependencies (for example BLAKE3's x86 cpufeatures). Cargo tree supplies
+    actual active names for both host and target, excluding dev dependencies.
+    Exact sources still come from metadata, never abbreviated tree output or
+    Cargo.lock.
     """
     metadata = json.loads(output([
-        "cargo", "metadata", "--locked", "--format-version", "1",
-        "--filter-platform", target, *feature_args,
+        "cargo", "metadata", "--locked", "--format-version", "1", *feature_args,
     ]))
     tree = output([
         "cargo", "tree", "--locked", "--target", target, *feature_args,
@@ -57,7 +59,11 @@ def active_graph(target, feature_args):
             if any(kind["kind"] != "dev" for kind in dep["dep_kinds"])
         )
     active = [packages[p] for p in reachable]
-    assert names == {p["name"] for p in active}, "Cargo tree/metadata traversal disagrees"
+    active_names = {p["name"] for p in active}
+    assert names == active_names, (
+        "Cargo tree/metadata traversal disagrees",
+        {"tree_only": sorted(names - active_names), "metadata_only": sorted(active_names - names)},
+    )
     return active, nodes, packages[root]
 
 
@@ -95,7 +101,7 @@ def check_graph(label, packages, nodes, root, *, community, native):
     assert "faster_alloc" not in nodes[symbolica["id"]]["features"], "host allocator policy changed"
     names = {p["name"] for p in packages}
     if not community:
-        forbidden = (*HEPKIT, *OPTIONAL_HEPKIT, "hyperbolica", *NATIVE_ONLY)
+        forbidden = (*HEPKIT, *OPTIONAL_HEPKIT, "hyperbolica", "symbolica-amflow", *NATIVE_ONLY)
         assert not names.intersection(forbidden), (
             label, "community crates in core-only build", names.intersection(forbidden),
         )
@@ -112,8 +118,9 @@ def check_graph(label, packages, nodes, root, *, community, native):
                 label, "HEPKit source differs from the host declaration", feynkit_source,
             )
         singleton(packages, "hyperbolica")
+        # Supplied-boundary transport is shared by native and browser hosts.
+        singleton(packages, "symbolica-amflow")
         if native:
-            singleton(packages, "symbolica-amflow")
             reducers = {owner(singleton(packages, name)) for name in RUSTRED}
             assert len(reducers) == 1, (label, "mixed RustRed core/app/bridge", reducers)
             reducer_source = next(iter(reducers))
@@ -179,6 +186,7 @@ def main():
         ("stubgen", host, ["--no-default-features", "--features", "python_stubgen"], True, True),
         ("core-only", host, ["--no-default-features", "--features", "native"], False, True),
         ("wasm", "wasm32-unknown-unknown", ["--no-default-features", "--features", "wasm"], True, False),
+        ("pyodide", "wasm32-unknown-emscripten", ["--no-default-features", "--features", "wasm"], True, False),
         ("wasm-core", "wasm32-unknown-unknown", ["--no-default-features", "--features", "wasm-core"], False, False),
     )
     for label, target, features, community, native in variants:
