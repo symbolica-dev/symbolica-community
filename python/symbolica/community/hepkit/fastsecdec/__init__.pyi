@@ -30,6 +30,12 @@ class Chart:
     def coordinates(self) -> CoordinateMap: ...
     @property
     def geometry(self) -> SectorMap: ...
+    @property
+    def pre_subtraction(self) -> typing.Optional[PreSubtractionMetadata]:
+        r"""
+        Source-chart endpoint powers before symmetry, multiplicity and subtraction.
+        None denotes an older artifact without this retained record.
+        """
 
 @typing.final
 class CoefficientExpansionSnapshot:
@@ -135,6 +141,16 @@ class CoordinateMap:
     def projective_fixed_parameter(self) -> typing.Optional[builtins.int]: ...
 
 @typing.final
+class DiscreteSectorAllocation:
+    r"""
+    Selection probability in the native discrete grid and global points per batch.
+    """
+    @property
+    def probability(self) -> builtins.float: ...
+    @property
+    def points_per_batch(self) -> builtins.int: ...
+
+@typing.final
 class DomainAssessment:
     r"""
     The original native domain admission and its retained factor certificates.
@@ -151,6 +167,25 @@ class DomainAssessment:
     def parameters(self) -> builtins.list[Expression]: ...
     @property
     def factors(self) -> builtins.list[FactorAssessment]: ...
+
+@typing.final
+class EndpointPower:
+    r"""
+    Exact b + c epsilon power and required Taylor coefficients; not a pole count.
+    """
+    @property
+    def parameter(self) -> Expression: ...
+    @property
+    def exponent(self) -> Expression: ...
+    @property
+    def constant(self) -> Expression: ...
+    @property
+    def slope(self) -> Expression: ...
+    @property
+    def subtraction_count(self) -> builtins.int:
+        r"""
+        Required endpoint Taylor coefficients; vanishing boundary terms may cancel.
+        """
 
 @typing.final
 class EvaluationDiagnostics:
@@ -172,6 +207,51 @@ class EvaluationDiagnostics:
     @property
     def additional_replays(self) -> builtins.int: ...
     def __str__(self) -> builtins.str: ...
+
+@typing.final
+class EvaluatorOperations:
+    r"""
+    Native shared evaluator counts; these are not optimized machine-operation counts.
+    """
+    @property
+    def additions(self) -> builtins.int: ...
+    @property
+    def multiplications(self) -> builtins.int: ...
+    @property
+    def inversions(self) -> builtins.int: ...
+    @property
+    def function_calls(self) -> builtins.int: ...
+
+@typing.final
+class EvaluatorStatistics:
+    r"""
+    Complete shared sector evaluator size on the current backend.
+    """
+    @property
+    def version(self) -> builtins.int: ...
+    @property
+    def backend(self) -> builtins.str: ...
+    @property
+    def arithmetic(self) -> builtins.str: ...
+    @property
+    def inputs(self) -> builtins.int: ...
+    @property
+    def outputs(self) -> builtins.int:
+        r"""
+        Shared evaluator outputs, before complex outputs split into real/imaginary components.
+        """
+    @property
+    def exact_program_bytes(self) -> builtins.int: ...
+    @property
+    def operations(self) -> EvaluatorOperations:
+        r"""
+        Symbolica exact-program operations before SymJIT lowering/optimization.
+        """
+    @property
+    def symjit_ir_bytes(self) -> typing.Optional[builtins.int]:
+        r"""
+        Actual compressed SymJIT application bytes, not machine-code size; None for interpreter.
+        """
 
 @typing.final
 class FactorAssessment:
@@ -324,6 +404,67 @@ class GenerationTimings:
     def total_seconds(self) -> builtins.float: ...
 
 @typing.final
+class HavanaDiscreteSession:
+    r"""
+    Caller-owned native sector importance sampling. Pilot pauses retain this object;
+    persistent checkpoints require frozen production. No worker pool is created.
+    """
+    @property
+    def complete(self) -> builtins.bool:
+        r"""
+        Whether this pilot epoch or production allocation has completed.
+        """
+    @property
+    def stage(self) -> builtins.str: ...
+    @property
+    def checkpoint_available(self) -> builtins.bool: ...
+    @property
+    def settings(self) -> HavanaDiscreteSettings: ...
+    @property
+    def sector_probabilities(self) -> builtins.list[tuple[builtins.int, builtins.float]]:
+        r"""
+        (Native sector id, current selection probability) in native problem order.
+        """
+    def checkpoint(self) -> bytes:
+        r"""
+        Persist accepted frozen-production batches and native replay state.
+        Pilot training is deliberately not serialized; retain the session to resume it.
+        """
+    def snapshot(self) -> IntegrationSnapshot: ...
+    def adapt_pilot(self, *, discrete_learning_rate: builtins.float = 1.0, continuous_learning_rate: builtins.float = 1.0) -> IntegrationSnapshot:
+        r"""
+        Adapt only a completed pilot and start another independent native pilot epoch.
+        """
+    def freeze_production(self, *, points_per_batch: builtins.int, batches: builtins.int, discrete_learning_rate: builtins.float = 1.0, continuous_learning_rate: builtins.float = 1.0) -> IntegrationSnapshot:
+        r"""
+        Adapt a completed pilot, freeze both grids, and discard all pilot estimates.
+        """
+    def step(self, max_batches: builtins.int = 1, *, observer: typing.Optional[typing.Any] = None) -> IntegrationSnapshot:
+        r"""
+        Execute at most max_batches. False from observer pauses after an accepted
+        global batch. Interrupted batches are retried, without partial statistics.
+        """
+
+@typing.final
+class HavanaDiscreteSettings:
+    r"""
+    Native global-batch allocation and discrete/continuous Havana grid settings.
+    """
+    @property
+    def points_per_batch(self) -> builtins.int: ...
+    @property
+    def batches(self) -> builtins.int: ...
+    @property
+    def seed(self) -> builtins.int: ...
+    @property
+    def bins(self) -> builtins.int: ...
+    @property
+    def minimum_probability_density(self) -> builtins.float: ...
+    @property
+    def maximum_sector_probability_ratio(self) -> builtins.float: ...
+    def __new__(cls, *, points_per_batch: builtins.int = 4096, batches: builtins.int = 64, seed: builtins.int = 0, bins: builtins.int = 32, minimum_probability_density: builtins.float = 0.01, maximum_sector_probability_ratio: builtins.float = 100.0) -> HavanaDiscreteSettings: ...
+
+@typing.final
 class Integral:
     r"""
     Native diagram, assumptions and explicit normalized loop measure.
@@ -408,6 +549,11 @@ class Kernels:
     @property
     def sector_count(self) -> builtins.int: ...
     @property
+    def sector_statistics(self) -> builtins.list[EvaluatorStatistics]:
+        r"""
+        Actual complete-vector evaluator records, aligned with native kernel sectors.
+        """
+    @property
     def exact_coefficients(self) -> builtins.list[builtins.float]: ...
     @property
     def backend(self) -> builtins.str: ...
@@ -425,6 +571,44 @@ class Kernels:
     def restore(self, checkpoint: bytes) -> QmcSession:
         r"""
         Restore complete accepted packages and replay state against these exact kernels.
+        """
+    def mc_session(self, settings: typing.Optional[HavanaDiscreteSettings] = None, *, pilot: builtins.bool = False, sector_probabilities: typing.Optional[typing.Sequence[builtins.float]] = None) -> HavanaDiscreteSession:
+        r"""
+        Native sector-importance Havana, with a caller-controlled pilot or frozen production.
+        """
+    def restore_mc(self, checkpoint: bytes) -> HavanaDiscreteSession:
+        r"""
+        Restore only a native frozen-production discrete Havana checkpoint.
+        """
+
+@typing.final
+class PreSubtractionMetadata:
+    r"""
+    Mapped density before symmetry, multiplicity, endpoint subtraction or expansion.
+    """
+    @property
+    def version(self) -> builtins.int: ...
+    @property
+    def regulator(self) -> Expression: ...
+    @property
+    def terms(self) -> builtins.list[PreSubtractionTerm]: ...
+
+@typing.final
+class PreSubtractionTerm:
+    r"""
+    One mapped term; its potentially large regular body is never materialized.
+    """
+    @property
+    def prefactor(self) -> Expression: ...
+    @property
+    def regular_expression_bytes(self) -> builtins.int:
+        r"""
+        Native Atom storage at mapping, not an expanded term or evaluator count.
+        """
+    @property
+    def powers(self) -> builtins.list[EndpointPower]:
+        r"""
+        Ordered like this source chart's coordinate target_parameters.
         """
 
 @typing.final
@@ -498,7 +682,12 @@ class SectorSnapshot:
     @property
     def completed_points(self) -> builtins.int: ...
     @property
-    def planned_points(self) -> builtins.int: ...
+    def planned_points(self) -> typing.Optional[builtins.int]: ...
+    @property
+    def discrete_allocation(self) -> typing.Optional[DiscreteSectorAllocation]:
+        r"""
+        Current native selection probability and global batch size; no fixed sector quota.
+        """
     @property
     def complete_replicas(self) -> builtins.int: ...
     @property
