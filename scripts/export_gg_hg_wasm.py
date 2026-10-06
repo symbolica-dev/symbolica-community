@@ -13,9 +13,7 @@ from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
 INPUTS = (
-    "gg_hg_support.py",
     "gg_hg_boundaries.py",
-    "data/gg_hg/native-model.json",
     "data/gg_hg/amplitude-validation.json",
     "data/gg_hg/boundaries-manifest.json",
     "data/gg_hg/boundaries.json.gz",
@@ -36,8 +34,9 @@ def validated_wheel(wheel):
     if (report.get("schema") != "supplied-loop-transport-runtime-v1"
             or report.get("wheel") != wheel.name
             or report.get("wheel_sha256") != digest
-            or report.get("supplied_loop_transport") is not True):
-        raise ValueError("The successful Pyodide transport validation must match this exact wheel")
+            or report.get("supplied_loop_transport") is not True
+            or report.get("higgs_standard_model") is not True):
+        raise ValueError("Successful Pyodide transport and Standard Model validation must match this exact wheel")
     return digest, report
 
 

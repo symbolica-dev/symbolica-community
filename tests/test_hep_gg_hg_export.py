@@ -24,6 +24,7 @@ def wheel_and_report(tmp_path):
         "wheel": wheel.name,
         "wheel_sha256": hashlib.sha256(wheel.read_bytes()).hexdigest(),
         "supplied_loop_transport": True,
+        "higgs_standard_model": True,
     }
     return wheel, report
 
@@ -39,6 +40,7 @@ def test_namespace_without_runtime_validation_does_not_start_export(tmp_path, mo
 @pytest.mark.parametrize("field,value", [
     ("schema", "old"), ("wheel", "different.whl"),
     ("wheel_sha256", "incorrect"), ("supplied_loop_transport", False),
+    ("higgs_standard_model", False), ("higgs_standard_model", None),
 ])
 def test_runtime_validation_must_cover_this_wheel(tmp_path, monkeypatch, field, value):
     wheel, report = wheel_and_report(tmp_path)

@@ -153,7 +153,11 @@ python -m pytest tests/test_loop_integration_reductions.py -q
 ### Higgs-plus-jet calculation and acceptance
 
 The [gg→Hg notebook](gg_hg.py) shows physical transport and coherent amplitude
-assembly as visible API calls, with one loaded HEPKit model. HEPKit supplies diagrams, state sums and model-parameter
+assembly as visible API calls, starting from `Model.standard_model()`. The call
+`HiggsJetAmplitude.with_form_factor_vertices(model)` adds the symbolic W/Z and
+HEFT vertices while retaining the Standard Model's particles and interactions.
+Their numerical form factors come from the transport below. HEPKit supplies
+diagrams, state sums and model-parameter
 expansion; Spenso and Idenso supply tensor and color contractions. The physical
 form-factor projections depend on the actual kinematics, including nearby
 evaluations. Numerical references never supply boundary or amplitude inputs.

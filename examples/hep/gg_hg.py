@@ -11,7 +11,7 @@ def _(mo):
 
     Compute the light-quark two-loop electroweak contribution to $gg \to Hg$:
     coherent W/Z form factors, the EW square, the infinite-top QCD square, and
-    their interference. HEPKit supplies the model, diagrams and tensor contractions.
+    their interference. HEPKit supplies the model and tensor contractions.
 
     We load **40-digit starting values**, generated independently with native
     auxiliary-mass flow, then **compute the physical transport live**. No
@@ -113,8 +113,10 @@ async def _():
 
 
 @app.cell
-def _(Model, data_directory):
-    model = Model.from_json((data_directory / "native-model.json").read_text())
+def _(HiggsJetAmplitude, Model):
+    model = Model.standard_model()
+    # Add symbolic W/Z and HEFT vertices; compute their form factors below.
+    model = HiggsJetAmplitude.with_form_factor_vertices(model)
     return (model,)
 
 
@@ -266,7 +268,7 @@ def _(AccuracyError, E, amplitude, form_factors, masses, mh2, model, s, t):
 
 
 @app.cell(hide_code=True)
-def _(ComplexFloat, E, Float, Model, data_directory, form_factors, json, masses, mh2, mo, model, observables, parameters, s, t):
+def _(ComplexFloat, E, Float, HiggsJetAmplitude, Model, data_directory, form_factors, json, masses, mh2, mo, model, observables, parameters, s, t):
     _result = observables
     # Comparison data is loaded only here, after the native result exists.
     _reference = json.loads((data_directory / "amplitude-validation.json").read_text())
@@ -278,7 +280,7 @@ def _(ComplexFloat, E, Float, Model, data_directory, form_factors, json, masses,
         model.parameter("aS").symbol: E("118/1000"),
         model.parameter("MZ").symbol: _mz2.sqrt(),
         model.parameter("Gf").symbol: E("𝜋") * E("1/128") * _mz2 / (E("2").sqrt() * _mw2 * (_mz2 - _mw2)),
-    } and model.to_json() == Model.from_json((data_directory / "native-model.json").read_text()).to_json()
+    } and model.to_json() == HiggsJetAmplitude.with_form_factor_vertices(Model.standard_model()).to_json()
     _factor_reference = {block["mass"]: block["values"] for block in _reference["form_factors"]}
     _factor_rows = []
     for _mass in ("W", "Z"):
@@ -374,6 +376,15 @@ def _(mo):
     cancellation, forced recomputation and precision refinement. That substantial
     calculation is deliberately separate from this live transport demonstration.
     """)
+    return
+
+
+@app.cell
+def _(observables, repeated):
+    from symbolica import get_citations
+
+    _ = observables, repeated  # Collect after numerical work has registered its citations.
+    get_citations()
     return
 
 

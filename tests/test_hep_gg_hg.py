@@ -1145,7 +1145,9 @@ def test_notebook_displays_eight_native_form_factors_at_the_current_point(monkey
     marimo = pytest.importorskip("marimo", minversion="0.24.0")
     from symbolica.community.hepkit import Model
 
-    model = Model.from_json((EXAMPLES / "data/gg_hg/native-model.json").read_text())
+    from symbolica.community.hep.integration import HiggsJetAmplitude
+
+    model = HiggsJetAmplitude.with_form_factor_vertices(Model.standard_model())
     mw2, mz2 = E("5399/13074"), E("7775/14631")
     parameters = {
         model.parameter("aEWM1").symbol: E("128"),
