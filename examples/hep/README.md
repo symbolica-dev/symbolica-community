@@ -15,15 +15,15 @@ from symbolica.community.hepkit import FeynmanDiagram, Model, TensorReducer
 | `feynkit-cff` | `CffGenerator`, `CffResult`, `CffSurface`, `CffOrientation` |
 | `feynkit-tensor` | `TensorReducer`; reduction methods also live on `FeynmanDiagram` |
 | `feynkit-py` | All of the above, plus models, UFO loading, kinematics, and jet clustering |
-| `hepkit.fastsecdec` | Native `Integral`, `GeneratedIntegral`, `Kernels`, and caller-stepped `QmcSession` |
+| `hepkit.sector_decomposition` | Native `Integral`, `GeneratedIntegral`, `Kernels`, and caller-stepped `QmcSession` |
 
 Existing HEPKit class identities and the exception hierarchy are preserved;
 their Python `__module__` and bundled stubs name `symbolica.community.hepkit`.
-FastSecDec wrappers use `symbolica.community.hepkit.fastsecdec`.
+FastSecDec wrappers use `symbolica.community.hepkit.sector_decomposition`.
 
-The experimental FastSecDec bindings, notebook, input builders and scientific
+The FastSecDec bindings, notebook, input builders and scientific
 tests are maintained in [FastSecDec](https://github.com/alphal00p/fastSecDec/tree/main/examples/hepkit).
-Community provides the opt-in HEPKit registration and reexports. See the
+Community provides HEPKit registration and reexports in standard community builds. See the
 [notebook guide](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/README.md)
 and [build instructions](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/BUILD.md).
 
@@ -114,6 +114,172 @@ All these examples use the shared `hepkit.IntegralFamily` frontend with
 provides native RustRed reductions of the same families. Links inside each
 notebook stay on the same server.
 
+## Numerical transport and supplied reductions
+
+Native numerical loop evaluation lives under
+`symbolica.community.hep.integration`. The [Higgs-jet notebook](gg_hg.py) uses
+these classes with the same HEPKit model, families and exact kinematics as the
+other examples. Its complete empty-cache two-loop boundary acceptance is still
+pending; opening the notebook starts no boundary calculation.
+
+`IntegralEvaluator(reductions=tables)` accepts a `ReductionTables` collection.
+Use `with_family` to add exact rules and declared residual masters for a native
+`hepkit.IntegralFamily`; it returns a new collection and rejects duplicate scopes
+or uncovered rule leaves. Rules use the family's original epsilon symbol with
+the dimension convention already substituted. Propagator order, routing,
+parameter namespaces, dimension and numerator-slot roles belong to the scope.
+Equivalent rational coefficient forms share a scope, while original denominator
+restrictions remain distinct. Preserve uncancelled expressions when admitting
+rules, or pass their exclusions explicitly as `nonzero_conditions`.
+
+Auxiliary deformations, specialized kinematics and recursive boundary families
+need their own admitted tables. Supplied identities remain the caller's
+mathematical contract; admission checks scope and consistency of the reduction
+graph. `PreparedIntegralFamily` exposes the retained basis, target reductions
+and nonzero conditions for inspection. `BoundaryCache` separates entries for
+different ordered bases, normalizations and conditions, including after binary
+reload. A condition omitted from a simplified differential matrix still
+restricts endpoint and path admissibility.
+
+Focused native-object examples and regressions are executable without the
+two-loop notebook:
+
+```sh
+python -m pytest tests/test_loop_integration_reductions.py -q
+```
+
+### Higgs-plus-jet calculation and acceptance
+
+The [gg→Hg notebook](gg_hg.py) separates native boundary generation, physical
+transport and coherent amplitude assembly. All three stages use one loaded
+HEPKit model. HEPKit supplies diagrams, state sums and model-parameter
+expansion; Spenso and Idenso supply tensor and color contractions. The physical
+form-factor projections depend on the actual kinematics, including nearby
+evaluations. Numerical references never supply boundary or amplitude inputs.
+
+The load-or-compute controls preserve accumulated intermediate points. Forced
+boundary recomputation archives both verified-boundary banks and all completed
+numerical samples under `numerical-history/` before starting, while retaining
+exact reduction data. A durable generation record lets a restarted session
+reuse only new work, even at unchanged precision with identical sample keys.
+If preparation is interrupted between directory moves, ordinary stages fail
+closed; create or reuse a session and select **Recompute boundaries** again to
+recover. Prior numerical files remain in the history directories. Forced
+transport resets its bank to the saved seed-only bank. Cancellation can leave
+completed samples or complete configurations for restart; it never admits a
+partial set of transported configurations to amplitude assembly. Forced
+amplitude assembly clears derived values before projection, reuses its exact
+contraction kernel, and publishes new form factors and observables only after
+successful evaluation at the current kinematics. Native
+cancellation checks occur between algebra/reducer operations, so stopping a
+large operation may take time. Use one live session per cache directory.
+
+Each transport stage first persists its current bank, including valid in-memory
+points retained after a previous failed save. Newly computed points are then
+checkpointed after each configuration. Exact cache hits do not rewrite the
+unchanged bank individually, so an exact repeated 16-configuration query needs
+one checkpoint rather than sixteen.
+
+The lightweight controller and notebook checks start no two-loop evaluation:
+
+```sh
+python -m pytest tests/test_hep_gg_hg.py tests/test_hep_notebooks.py -k gg_hg -q
+```
+
+The long runners require the same release-built native extension. First run the
+independent Euclidean-anchor check with an empty output directory:
+
+```sh
+python examples/hep/gg_hg_anchor_acceptance.py --directory /path/to/euclidean-anchors --workers 16
+```
+
+This computes the planar point `(-1/10,-1/25,-1/50)` and nonplanar point
+`(-1/10,-1/5,-1)` with principal roots. These exact inputs are independent of
+the comparison files. Both native calculations must finish before either
+archived numerical reference is opened. All 240 planar and 305 nonplanar
+coefficients through epsilon power four are checked against their recorded
+40-digit allowances and native uncertainty estimates, with at least 20 digits
+of independently checked native accuracy. No Mathematica or plugin runtime is
+required. The output is `/path/to/euclidean-anchors/anchor-acceptance.json`;
+individual run reports remain under `runs/`.
+
+Use `--resume` to continue completed configurations and samples. `--force`
+archives both old numerical banks and sample directories before either family
+starts, retaining exact reductions. An interrupted forced run can then resume
+only its new numerical work. `--cancel-file PATH` requests cooperative native
+cancellation when that file exists. Verified banks and completed samples are
+stored separately. If interruption occurs while the old directories are being
+archived, restart with `--force`; a persisted marker refuses ordinary resume
+until both families have been safely prepared.
+
+Pass the anchor report to the full physical run to require matching native
+source identity, installed extension and steering sources before computation.
+Use an empty directory for a cold physical run:
+
+```sh
+python examples/hep/gg_hg_acceptance.py --directory /path/to/empty-run \
+  --anchor-report /path/to/euclidean-anchors/anchor-acceptance.json
+python examples/hep/gg_hg_acceptance.py --directory /path/to/run --resume \
+  --anchor-report /path/to/euclidean-anchors/anchor-acceptance.json
+```
+
+Configuration concurrency is optional and defaults to one. To run four
+independent boundary configurations with a total budget of 64 finite-epsilon
+sample workers, use:
+
+```sh
+python examples/hep/gg_hg_acceptance.py --directory /path/to/empty-run \
+  --boundary-workers 4 --workers 64 --interrupt-after-samples 1 \
+  --anchor-report /path/to/euclidean-anchors/anchor-acceptance.json
+```
+
+The controller caps configuration concurrency at the total worker budget and
+divides that budget evenly (rounding down), giving 16 sample workers per
+configuration in this example. Each configuration uses a private native cache
+initialized from the saved seed bank; a single coordinator merges and
+atomically saves successful results as they finish. The returned results keep
+configuration order. A failure cancels siblings through their shared native
+cancellation token, and completed configurations remain available for restart.
+The report includes configuration timings and the actual worker allocation.
+One native model is shared by the session throughout.
+
+Add `--interrupt-after-samples 1` to exercise typed cancellation during the
+forced higher-precision boundary run, after a complete sample checkpoint and
+before its first verified configuration. The initial cold run is completed
+without this interruption. After cancellation, the runner reloads and resumes
+the new generation's completed samples; its previously cleared boundary banks
+remain empty. Archived pre-force samples and active new samples are counted
+separately, with retained-payload checks for both. Progress and timing records
+include the numerical generation. Both interrupted work and cancellation latency are
+reported. With the defaults, the cold run starts with 30-digit seeds and forced
+refinement requests ten extra digits (40 unless observable error propagation
+already required stronger seeds). These are different precision workloads, so
+their timings are not a same-precision speedup measurement.
+
+Once all sixteen native physical seeds are generated, the runner checks 4,360
+transport coefficients and the coherent EW/HEFT/interference observables. It
+then checks binary reload with exact repeated hits and retained provenance,
+forced recomputation at increased seed precision, and nearby evaluation from
+accumulated physical points. Its JSON report distinguishes cold, resumed, warm,
+interrupted forced-refinement, resumed refinement and nearby timings, retaining
+the requested seed precision on every stage. Reference access begins only after the
+first native amplitude exists, and reference precision caps remain in the
+comparison report. The first report is written before expensive work starts.
+While a stage is running, `acceptance.json` is replaced atomically every five
+seconds with the stage status, elapsed time, recent native events, completed
+configuration timings and completed-sample file count. It is also updated at
+stage completion; warm cache hits return immediately without waiting for the
+polling interval. Observing progress neither changes numerical results nor
+admits new boundary evidence. A failure or external interrupt is recorded
+before waiting for native workers to stop.
+
+Independent native planar and nonplanar Euclidean-anchor validation is the
+separate prerequisite described above. Supply its report with `--anchor-report`
+to associate the full physical run with that matching-source evidence. Success
+of the lightweight tests alone must not be reported as completion of the
+native-boundary acceptance. The full cold numerical calculation and its
+performance measurements remain pending until the long runs finish.
+
 ## Live RustRed generation and artifact exploration
 
 The four-loop laboratory needs a native community build containing the
@@ -124,7 +290,8 @@ with the project's native build dependencies and a suitable Symbolica license:
 
 ```sh
 pip install 'maturin>=1.13.2,<2' 'marimo>=0.24.2,<0.25'
-maturin develop --release --locked
+RUSTFLOW_WORKSPACE_FEATURES=pyo3/extension-module RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES=0 \
+  maturin develop --release --locked --extras notebook-display
 marimo edit examples/hep/four_loop_reduction.py
 ```
 

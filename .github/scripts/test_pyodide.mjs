@@ -15,7 +15,10 @@ assert.equal(wheels.length, 1, "Expected exactly one PyEmscripten wheel");
 const { loadPyodide } = await import(pathToFileURL(join(runtimeDir, "pyodide.mjs")));
 const pyodide = await loadPyodide({
   indexURL: runtimeDir,
-  env: { SYMBOLICA_LICENSE_KEY: process.env.SYMBOLICA_LICENSE_KEY || "" },
+  env: {
+    SYMBOLICA_LICENSE_KEY: process.env.SYMBOLICA_LICENSE_KEY || "",
+    SYMBOLICA_LICENSE: process.env.SYMBOLICA_LICENSE_KEY || process.env.SYMBOLICA_LICENSE || "",
+  },
 });
 await pyodide.loadPackage("micropip");
 const wheel = wheels[0];
@@ -154,7 +157,20 @@ except ImportError as error:
     assert "native Symbolica installation" in str(error)
 else:
     raise AssertionError("vakint should require a native installation")
+# Loop-integral evaluation belongs to the native host; the existing browser
+# HEPKit and Hyperbolica APIs remain available and are exercised below.
+assert "symbolica.community.hep_integration_native" not in sys.modules
+try:
+    import symbolica.community.hep.integration
+except ModuleNotFoundError as error:
+    assert error.name == "symbolica.community.hep_integration_native", error
+else:
+    raise AssertionError("Loop-integral evaluation should require a native installation")
 `);
+const integrationContract = await readFile(new URL("../../tests/integration_contract.py", import.meta.url), "utf8");
+await pyodide.runPythonAsync(integrationContract + "\ncheck_integration_contract()\ncheck_symanzik_example()\nassert not hasattr(api, 'ibp')\n");
+console.log("Shared integration fixtures and HEPkit Symanzik example passed (parallel=False/True).");
+
 } else {
 await pyodide.runPythonAsync(`
 import importlib.util
@@ -182,6 +198,8 @@ const inventoryConstructors = [
   /^_ZN(?:9symbolica(?:14transcendental|5state)|19symbolica_integrate|6idenso|6spenso9shadowing|17feynkit_generator)1_6__CTOR17h[0-9a-f]{16}E$/,
   /^_RNvNv(?:Cs[0-9A-Za-z]+_(?:6idenso|19symbolica_integrate|17feynkit_generator)|NtCs[0-9A-Za-z]+_(?:6spenso9shadowing|9symbolica(?:14transcendental|5state)))1__6___CTOR$/,
   /^_RNvNv(?:Cs[0-9A-Za-z]+_13feynkit_graph|NtCs[0-9A-Za-z]+_11feynkit_cff7symbols)1__6___CTOR$/,
+  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_11hyperbolica(?:7symbols|6python)[0-9A-Za-z_]*1__6___CTOR$/,
+  /^_ZN11hyperbolica7symbols1_6__CTOR17h[0-9a-f]{16}E$/,
   // multiple-pymethods registers Python method blocks through inventory.
   // Only accept constructor globals from the known binding namespaces.
   /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|17fastsecdec_python|7spynso3|9linnet_py|20oneloopreduce_python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,

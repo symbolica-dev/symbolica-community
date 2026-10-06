@@ -134,10 +134,10 @@ def _(
                 diagram.numerator_expression(in_lmb=True).to_expression()
             )
             for half in diagram.half_edges:
-                edge = half.edge.data
+                edge = half.edge
                 if edge.is_external:
                     numerator = sp.TensorExpression(numerator).rename_indices(
-                        {Symbols.half_edge(half.data, 1): ports[edge.external_index]}
+                        {Symbols.half_edge(half.id, 1): ports[edge.external_index]}
                     )
             denominator = kin.apply(
                 diagram.denominator_expression(dimension=4, in_lmb=True)

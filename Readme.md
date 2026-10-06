@@ -19,11 +19,11 @@
 This repository contains the [Symbolica](https://github.com/benruijl/symbolica) library, bundled with additional community contributions.
 
 Version 3.0 ships core Symbolica and symbolic integration via
-`symbolica-integrate` 2.0, plus Idenso, Spenso, FeynKit HEP tools, Vakint, and the
-example extension. The GammaLoop extensions track its `feynkit` branch, with
-the tested revision pinned in `Cargo.lock`. PyEmscripten wheels include Idenso,
-Spenso, HEP, and the example extension. Vakint and Spenso's compiled evaluators
-require a native installation.
+`symbolica-integrate` 2.0, plus Idenso, Spenso, FeynKit HEP tools and Vakint.
+The HEP extensions share the public owner revision pinned below and in
+`Cargo.lock`. PyEmscripten wheels include Idenso, Spenso and HEP tools.
+Numerical loop integration, Vakint and Spenso's compiled evaluators require a
+native installation.
 
 The integrator enables `compressed-step-metadata`, preserving integration steps
 while storing their rule sources and descriptions in a Brotli-compressed catalog.
@@ -45,6 +45,60 @@ from symbolica.community.hepkit import FeynmanDiagram, Model, Generator, TensorR
 ```
 
 See the [HEP example](examples/hep/README.md) for a complete one-loop calculation.
+
+Native numerical loop integration is available in a separate namespace, using
+the same HEPKit families, diagrams, kinematics, and Symbolica expressions:
+
+```python
+from symbolica.community.hep.integration import (
+    IntegralEvaluator, KinematicTransport, BoundaryCache, EvaluationOptions,
+)
+```
+
+The bindings live in the `symbolica-amflow` dependency and register in this
+shared extension. They preserve arbitrary precision, supply typed errors and
+cancellation, and retain reusable intermediate points in binary boundary caches.
+The [gg → Hg Marimo notebook](examples/hep/gg_hg.py) stages native boundary
+generation, physical transport, and coherent EW/HEFT amplitude assembly. Opening
+it starts no two-loop evaluation. The earlier publication wheel passed
+[complete empty-cache boundary and amplitude acceptance](https://github.com/alphal00p/RustFlow/blob/92cfc9d2babfd95af8205b1193b4ec303bf8b610/reports/validation/2026-10-06-gg-hg-publication-complete/summary.json);
+that report identifies its tested runtime. Archived numerical seeds are never an
+evaluation fallback.
+Run it with `marimo edit examples/hep/gg_hg.py`. Long numerical acceptance lives
+in `examples/hep/gg_hg_acceptance.py`, separately from lightweight smoke tests.
+
+The checked-in manifest and lock fetch the native dependencies from public Git
+sources. Build this checkout with the locked native installation command below;
+no sibling checkout, local path override or manual owner patch is required.
+The host owns the complete shared dependency graph, as described in the
+[integration dependency guide](https://github.com/alphal00p/RustFlow/blob/92cfc9d2babfd95af8205b1193b4ec303bf8b610/docs/dependency-embedding.md).
+Generate these hints with `stub_gen --hepkit-only`; the public package and stubs
+are under `python/symbolica/community/hep/integration/`. This module is excluded
+from browser builds, and existing `hepkit` and Hyperbolica imports are preserved.
+
+The Git dependency selects RustFlow
+[`92cfc9d2babfd95af8205b1193b4ec303bf8b610`](https://github.com/alphal00p/RustFlow/commit/92cfc9d2babfd95af8205b1193b4ec303bf8b610).
+HEPKit, Linnet, Spenso, Idenso and native rendering share public owner
+[`b96600b0085d9ddfa9e6acbc11fa72ec6163253c`](https://github.com/ValentinHirschi/gammaloop/commit/b96600b0085d9ddfa9e6acbc11fa72ec6163253c),
+based on upstream HEPKit `6c707c6b77a437256eb1180da13d4d327b371d13`.
+Vakint retains its separate implementation at
+[`6203c6cbba6ae5e90329ba5081fad55319e678db`](https://github.com/ValentinHirschi/gammaloop/commit/6203c6cbba6ae5e90329ba5081fad55319e678db).
+RustRed remains on official main `7c1ed03722b8c05daf60c89ba4ecc79457ed2ada`,
+with `campaign-api` enabled and experimental reconstruction disabled.
+
+Symbolica, Numerica and Graphica resolve together from official community
+commit
+[`6defcca968ca8411977fb1f641a9dee49ee7b7a7`](https://github.com/symbolica-dev/symbolica/commit/6defcca968ca8411977fb1f641a9dee49ee7b7a7),
+selected by `Cargo.lock`. This revision retains the root-convergence and
+exact-division corrections and adds the generic C++ complex-constant export fix.
+The native graph wheel used in CI is built from the same HEPKit owner selected
+by this manifest and lock; it is a separate test dependency requiring Python
+3.10 or newer. The community package retains its Python 3.9 minimum.
+
+Changing these dependencies changes the numerical cache source identity. Earlier
+snapshots and benchmark or notebook acceptance reports retain their original
+runtime provenance; their acceptance does not certify this updated wheel.
+Fresh numerical work must use the updated runtime's own cache identity.
 
 One-loop reduction from [one-loop-reduce](https://github.com/ecavan/one-loop-reduce)
 is available in `hep.oneloop`. Native builds also expose OneLoopMaster's scalar
@@ -175,9 +229,15 @@ or can be manually built using `maturin`. Community builds include
 `hepkit.sector_decomposition`:
 
 ```bash
-cargo run --locked --features python_stubgen --no-default-features --bin stub_gen
-maturin build --locked --release
+RUSTFLOW_WORKSPACE_FEATURES=python_stubgen RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES=1 \
+  cargo run --locked --features python_stubgen --no-default-features --bin stub_gen
+RUSTFLOW_WORKSPACE_FEATURES=pyo3/extension-module RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES=0 \
+  maturin build --release --locked
 ```
+
+The native build forwards the `pyo3/extension-module` feature selected by
+`pyproject.toml` so numerical-cache fingerprints describe the actual host
+dependency graph. Stub generation uses its separate feature selection.
 
 
 For a browser build, use `--no-default-features --features wasm` (the
@@ -218,3 +278,30 @@ Then try recompiling with the following rust flag:
 ```bash
 RUSTFLAGS="-L/opt/local/lib/libgcc -l dylib=gcc_s"
 ```
+
+
+### Exact definite integration
+
+```python
+from symbolica import S
+from symbolica.community.hepkit import integration
+x = S("x")
+assert integration.integrate(1/(x+1)**2, [x]) == 1
+```
+
+This shared-kernel API is backed by Hyperbolica. `integrate` uses `[0,+Infinity)`
+in the supplied variable order; `integrate_over` accepts directed intervals.
+`prepare` reuses lowered inputs, and the detailed variants return expression
+and algebraic-letter metadata. `Expression.integrate(x)` remains the separate
+antiderivative API. Use `from symbolica.community.hepkit import ibp` for the
+existing native IBP tools. Reduction and master evaluation remain separate.
+
+The same expression API is available in Pyodide, where execution is serial
+regardless of `IntegrationOptions.parallel`. IBP retains native-only availability.
+See `examples/hep_integration.py` for explicit integration of HEPkit Symanzik
+polynomials with stated normalization and projective gauge.
+
+Integration types are generated from Hyperbolica's binding metadata by
+`stub_gen --hepkit-only`; no separate Symbolica expression class is declared.
+The standalone Hyperbolica wheel has been retired. Import expression
+constructors from `symbolica` and catch `integration.IntegrationError`.

@@ -99,10 +99,10 @@ def _(
             # Align external spin and color ports using the graph's native half-edge IDs.
             # Ghosts have no polarization wavefunctions; these IDs cover them as well.
             for _half in _diagram.half_edges:
-                _edge = _half.edge.data
+                _edge = _half.edge
                 if _edge.is_external:
                     _numerator = sp.TensorExpression(_numerator).rename_indices(
-                        {Symbols.half_edge(_half.data, 1): _ports[_edge.external_index]}
+                        {Symbols.half_edge(_half.id, 1): _ports[_edge.external_index]}
                     )
             _denominator = kinematics.apply(
                 _diagram.denominator_expression(dimension=4, in_lmb=True)

@@ -107,7 +107,7 @@ def _(S, hep, ladder_filter):
 @app.cell(hide_code=True)
 def _(diagram, graph_weight, mo):
     try:
-        _drawing = mo.Html(diagram.render())
+        _drawing = diagram.render()
     except ImportError:
         _lines = ["graph LR"]
         for _edge in diagram.edges:

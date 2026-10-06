@@ -15,4 +15,4 @@ del initialize_module
 from . import oneloop as oneloop
 
 from . import sector_decomposition as sector_decomposition
-from . import fastsecdec as fastsecdec
+from . import integration as integration

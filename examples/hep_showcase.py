@@ -484,13 +484,13 @@ def _(diagram, highlight_selection):
     _kind, _particle = highlight_selection.value
     if _kind == "internal":
         highlighted_subgraph = diagram.filter(
-            edge=lambda edge: not edge.data.is_external
+            edge=lambda edge: not edge.is_external
         )
     elif _kind == "external":
-        highlighted_subgraph = diagram.filter(edge=lambda edge: edge.data.is_external)
+        highlighted_subgraph = diagram.filter(edge=lambda edge: edge.is_external)
     elif _kind == "particle":
         highlighted_subgraph = diagram.filter(
-            edge=lambda edge: edge.data.particle_name == _particle
+            edge=lambda edge: edge.particle_name == _particle
         )
     else:
         highlighted_subgraph = None

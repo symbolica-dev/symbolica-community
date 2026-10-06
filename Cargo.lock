@@ -1230,7 +1230,7 @@ checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
 [[package]]
 name = "fastsecdec"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=5ef3b29d1a4296bf7230a836f0a70d70304b6a11#5ef3b29d1a4296bf7230a836f0a70d70304b6a11"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=9e4b5897fc9f2fe9d137dd18ed8dc0986ba6d5c5#9e4b5897fc9f2fe9d137dd18ed8dc0986ba6d5c5"
 dependencies = [
  "bincode",
  "blake3",
@@ -1253,7 +1253,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=5ef3b29d1a4296bf7230a836f0a70d70304b6a11#5ef3b29d1a4296bf7230a836f0a70d70304b6a11"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=9e4b5897fc9f2fe9d137dd18ed8dc0986ba6d5c5#9e4b5897fc9f2fe9d137dd18ed8dc0986ba6d5c5"
 dependencies = [
  "fastsecdec",
  "fastsecdec-sectors",
@@ -1268,7 +1268,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-qmc"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=5ef3b29d1a4296bf7230a836f0a70d70304b6a11#5ef3b29d1a4296bf7230a836f0a70d70304b6a11"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=9e4b5897fc9f2fe9d137dd18ed8dc0986ba6d5c5#9e4b5897fc9f2fe9d137dd18ed8dc0986ba6d5c5"
 dependencies = [
  "numerica",
  "rand 0.9.5",
@@ -1278,7 +1278,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-sectors"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=5ef3b29d1a4296bf7230a836f0a70d70304b6a11#5ef3b29d1a4296bf7230a836f0a70d70304b6a11"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=9e4b5897fc9f2fe9d137dd18ed8dc0986ba6d5c5#9e4b5897fc9f2fe9d137dd18ed8dc0986ba6d5c5"
 dependencies = [
  "numerica",
  "thiserror 2.0.21",
@@ -1305,7 +1305,7 @@ dependencies = [
 [[package]]
 name = "feynkit-amplitude"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "feynkit-graph",
  "feynkit-model",
@@ -1319,7 +1319,7 @@ dependencies = [
 [[package]]
 name = "feynkit-cff"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "bincode",
  "feynkit-graph",
@@ -1335,7 +1335,7 @@ dependencies = [
 [[package]]
 name = "feynkit-generator"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -1355,7 +1355,7 @@ dependencies = [
 [[package]]
 name = "feynkit-graph"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "feynkit-kinematics",
  "feynkit-model",
@@ -1374,7 +1374,7 @@ dependencies = [
 [[package]]
 name = "feynkit-kinematics"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "linnet",
  "numerica",
@@ -1387,11 +1387,12 @@ dependencies = [
 [[package]]
 name = "feynkit-model"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
  "blake3",
+ "linnet",
  "miniz_oxide 0.8.9",
  "serde",
  "serde_json",
@@ -1403,7 +1404,7 @@ dependencies = [
 [[package]]
 name = "feynkit-py"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "feynkit-amplitude",
  "feynkit-cff",
@@ -1428,7 +1429,7 @@ dependencies = [
 [[package]]
 name = "feynkit-tensor"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "feynkit-graph",
  "idenso",
@@ -1441,7 +1442,7 @@ dependencies = [
 [[package]]
 name = "feynkit-ufo"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "feynkit-model",
  "pyo3",
@@ -1550,7 +1551,7 @@ dependencies = [
 [[package]]
 name = "gammaloop-workspace-hack"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "ahash 0.8.12",
  "arrayvec",
@@ -1680,8 +1681,7 @@ dependencies = [
 [[package]]
 name = "graphica"
 version = "3.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "118912fe5e24df9c7f36c1211bdeb1a803013b312cc149bd1794b9a0e4ef9c78"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#58652fabc2f736302a570deaaf8d517679f7fe6e"
 dependencies = [
  "ahash 0.8.12",
  "dyn-clone",
@@ -1775,6 +1775,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "27f864f10dfb56725ce5ce5472bc52252c8f93a4ab86327122cebf62c5f59a17"
 dependencies = [
  "typenum",
+]
+
+[[package]]
+name = "hyperbolica"
+version = "0.1.0"
+source = "git+https://github.com/benruijl/hyperbolica?rev=6acf21500c4807ac1fbd67e1429efcad90791de1#6acf21500c4807ac1fbd67e1429efcad90791de1"
+dependencies = [
+ "pyo3",
+ "pyo3-stub-gen",
+ "rayon",
+ "serde",
+ "serde_json",
+ "symbolica",
+ "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1957,7 +1971,7 @@ checksum = "ae293c039020f9ec10710af98d29ce6aa2051486638b49c9a6409f3b4a9e98ad"
 [[package]]
 name = "idenso"
 version = "0.3.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "ahash 0.8.12",
  "base64",
@@ -2189,7 +2203,7 @@ dependencies = [
 [[package]]
 name = "kurvst"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "ciborium",
  "kurbo",
@@ -2244,7 +2258,7 @@ dependencies = [
 [[package]]
 name = "linnest"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "cgmath",
  "ciborium",
@@ -2268,7 +2282,7 @@ dependencies = [
 [[package]]
 name = "linnet"
 version = "0.17.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "ahash 0.8.12",
  "bincode",
@@ -2584,8 +2598,7 @@ dependencies = [
 [[package]]
 name = "numerica"
 version = "3.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "836accdb415b7667573bd12676e0b2eb4440e3f60b110038d96a9086f5651c15"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#58652fabc2f736302a570deaaf8d517679f7fe6e"
 dependencies = [
  "ahash 0.8.12",
  "astro-float",
@@ -3584,7 +3597,7 @@ dependencies = [
 [[package]]
 name = "rustred"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?rev=986c427f36b280a2c741d52d0401152a1f90e4d6#986c427f36b280a2c741d52d0401152a1f90e4d6"
+source = "git+https://github.com/alphal00p/rustred?branch=main#7c1ed03722b8c05daf60c89ba4ecc79457ed2ada"
 dependencies = [
  "bincode",
  "blake3",
@@ -3597,7 +3610,7 @@ dependencies = [
 [[package]]
 name = "rustred-app"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?rev=986c427f36b280a2c741d52d0401152a1f90e4d6#986c427f36b280a2c741d52d0401152a1f90e4d6"
+source = "git+https://github.com/alphal00p/rustred?branch=main#7c1ed03722b8c05daf60c89ba4ecc79457ed2ada"
 dependencies = [
  "bincode",
  "blake3",
@@ -3612,7 +3625,7 @@ dependencies = [
 [[package]]
 name = "rustred-feynkit"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?rev=986c427f36b280a2c741d52d0401152a1f90e4d6#986c427f36b280a2c741d52d0401152a1f90e4d6"
+source = "git+https://github.com/alphal00p/rustred?branch=main#7c1ed03722b8c05daf60c89ba4ecc79457ed2ada"
 dependencies = [
  "pyo3",
  "rustred",
@@ -3623,12 +3636,12 @@ dependencies = [
 [[package]]
 name = "rustred-order"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?rev=986c427f36b280a2c741d52d0401152a1f90e4d6#986c427f36b280a2c741d52d0401152a1f90e4d6"
+source = "git+https://github.com/alphal00p/rustred?branch=main#7c1ed03722b8c05daf60c89ba4ecc79457ed2ada"
 
 [[package]]
 name = "rustred-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?rev=986c427f36b280a2c741d52d0401152a1f90e4d6#986c427f36b280a2c741d52d0401152a1f90e4d6"
+source = "git+https://github.com/alphal00p/rustred?branch=main#7c1ed03722b8c05daf60c89ba4ecc79457ed2ada"
 dependencies = [
  "pyo3",
  "rustred-app",
@@ -3762,6 +3775,7 @@ version = "1.0.151"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14"
 dependencies = [
+ "indexmap",
  "itoa",
  "memchr",
  "serde",
@@ -3953,7 +3967,7 @@ checksum = "02ef091d4e8b981dbaa4cc17789d00b53d5d2c001ae689f14e6093f30c529036"
 [[package]]
 name = "spenso"
 version = "0.6.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "ahash 0.8.12",
  "append-only-vec",
@@ -4001,7 +4015,7 @@ dependencies = [
 [[package]]
 name = "spenso-hep-lib"
 version = "0.1.7"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "ahash 0.8.12",
  "idenso",
@@ -4014,7 +4028,7 @@ dependencies = [
 [[package]]
 name = "spenso-macros"
 version = "0.3.2"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4024,7 +4038,7 @@ dependencies = [
 [[package]]
 name = "spynso3"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "ahash 0.8.12",
  "ciborium",
@@ -4134,7 +4148,7 @@ dependencies = [
 [[package]]
 name = "symbolica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?rev=58652fabc2f736302a570deaaf8d517679f7fe6e#58652fabc2f736302a570deaaf8d517679f7fe6e"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#58652fabc2f736302a570deaaf8d517679f7fe6e"
 dependencies = [
  "ahash 0.8.12",
  "append-only-vec",
@@ -4172,6 +4186,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "symbolica-amflow"
+version = "0.1.0"
+source = "git+https://github.com/alphal00p/RustFlow?rev=92cfc9d2babfd95af8205b1193b4ec303bf8b610#92cfc9d2babfd95af8205b1193b4ec303bf8b610"
+dependencies = [
+ "ahash 0.8.12",
+ "bincode",
+ "blake3",
+ "feynkit-amplitude",
+ "feynkit-generator",
+ "feynkit-graph",
+ "feynkit-kinematics",
+ "feynkit-model",
+ "feynkit-py",
+ "feynkit-tensor",
+ "idenso",
+ "linnet",
+ "pyo3",
+ "pyo3-stub-gen",
+ "rayon",
+ "rug",
+ "rustred",
+ "serde",
+ "serde_json",
+ "spenso",
+ "symbolica",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "symbolica-integrate"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4196,7 +4239,7 @@ dependencies = [
 [[package]]
 name = "symbolica-utils"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -4211,6 +4254,7 @@ version = "3.0.1"
 dependencies = [
  "fastsecdec-python",
  "feynkit-py",
+ "hyperbolica",
  "one-loop-reduce-python",
  "oneloop",
  "oneloop-python",
@@ -4219,6 +4263,7 @@ dependencies = [
  "rustred-feynkit",
  "spynso3",
  "symbolica",
+ "symbolica-amflow",
  "symbolica-integrate",
  "vakint",
 ]
@@ -4419,7 +4464,7 @@ dependencies = [
 [[package]]
 name = "three-dimensional-reps"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -4879,7 +4924,7 @@ dependencies = [
 [[package]]
 name = "typst-library"
 version = "0.15.1"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "arrayvec",
  "az",
@@ -4971,7 +5016,7 @@ dependencies = [
 [[package]]
 name = "typst-renderer"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "comemo",
  "tempfile",
@@ -4986,7 +5031,7 @@ dependencies = [
 [[package]]
 name = "typst-svg"
 version = "0.15.1"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#259df8790f27b8d3ef32778cd7195942691b4ef0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"
 dependencies = [
  "base64",
  "comemo",
@@ -5301,7 +5346,7 @@ dependencies = [
 [[package]]
 name = "vakint"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?rev=8d6c8f7b14f2438126819328e20a10e6caf9e0b7#8d6c8f7b14f2438126819328e20a10e6caf9e0b7"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=6203c6cbba6ae5e90329ba5081fad55319e678db#6203c6cbba6ae5e90329ba5081fad55319e678db"
 dependencies = [
  "ahash 0.8.12",
  "arrayvec",
@@ -5866,3 +5911,8 @@ name = "zmij"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
+
+[[patch.unused]]
+name = "linnet-py"
+version = "0.1.0"
+source = "git+https://github.com/ValentinHirschi/gammaloop?rev=176cd04ffb163dc8f334ff5463870aea479d435c#176cd04ffb163dc8f334ff5463870aea479d435c"

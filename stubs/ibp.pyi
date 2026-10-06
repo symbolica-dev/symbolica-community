@@ -19,7 +19,8 @@ class IBPFamily:
     returned rules and residual integrals before using a reduction. Searches are
     bounded: they do not certify a complete master-integral basis.
 
-    Searches accept 1–12 denominators and integer powers from -64 through 63.
+    Searches use the compiled runtime arity registry (by default 1–16 denominators)
+    and integer powers from -64 through 63.
     Applying a discovered rule accepts signed 64-bit powers. Booleans are not powers.
 
     Examples
@@ -41,8 +42,10 @@ class IBPFamily:
         Complete, independent denominator basis with symbolic dimension.
     name : str, optional
         Family label used in diagnostic output; default "F".
+    cut : list[bool] or None, optional
+        Reverse-unitarity flags in denominator order; None leaves all lines uncut.
     """
-    def __init__(self, family: IntegralFamily, *, name: str = "F") -> None:
+    def __init__(self, family: IntegralFamily, *, name: str = "F", cut: list[bool] | None = None) -> None:
         r"""
         Prepare a complete denominator basis for exact IBP searches.
 
@@ -66,6 +69,29 @@ class IBPFamily:
             Complete, independent family; its denominator order is retained.
         name : str, optional
             Diagnostic family label; default "F".
+        cut : list[bool] or None, optional
+            One reverse-unitarity flag per denominator. Nonpositive powers of a
+            cut denominator vanish; None leaves all denominators uncut.
+        """
+    @staticmethod
+    def compiled_runtime_arities() -> list[int]:
+        """Solver entry points compiled into this host, not a mathematical bound.
+
+        Examples
+        --------
+        >>> from symbolica.community import hepkit as hep
+        >>> arities = hep.IBPFamily.compiled_runtime_arities()
+        >>> assert arities == sorted(set(arities))
+        """
+    @property
+    def cut(self) -> list[bool]:
+        """Reverse-unitarity flags in denominator order; nonpositive cut powers vanish.
+
+        Examples
+        --------
+        Using the setup in the ``IBPFamily`` class example:
+
+        >>> assert ibp.cut == [False]
         """
     @property
     def index_symbols(self) -> list[Expression]:
@@ -94,6 +120,81 @@ class IBPFamily:
 
         >>> assert ibp.denominator_count == len(family.denominators)
         """
+    @property
+    def parameter_bindings(self) -> list[tuple[Expression, Expression]]:
+        """Internal polynomial parameters paired with original HEPKit atoms.
+
+        A presentation legend, not a replacement of serialized artifact names.
+
+        Examples
+        --------
+        Using the setup in the ``IBPFamily`` class example:
+
+        >>> bindings = ibp.parameter_bindings
+        >>> assert {original for internal, original in bindings} == {d, m2}
+        """
+        ...
+    def start_generation(self, *, event_capacity: int = 256, **options: object) -> rustred.CandidateGenerationSession:
+        """Start native generation from this exact routed family, without re-parsing.
+
+        Poll the bounded stream for progress; cancellation drains at native safe
+        boundaries. Output is a generated candidate, not a closure certificate.
+        ``nonpositive_indices`` identifies auxiliary scalar-product slots.
+        Cut families currently use the existing cut-aware finite/parametric APIs.
+
+        Examples
+        --------
+        Using the setup in the ``IBPFamily`` class example:
+
+        >>> session = ibp.start_generation(n_cores=1, numerical_depth=1)
+        >>> assert session.wait(timeout=120)
+        >>> artifact = session.result().artifact()
+        >>> assert artifact.metadata()["arity"] == ibp.denominator_count
+
+        Parameters
+        ----------
+        event_capacity : int, optional
+            Maximum number of retained progress events; default 256.
+        options : object
+            Native candidate-generation keyword options, including ``n_cores``,
+            ``numerical_depth``, and ``nonpositive_indices`` for auxiliary slots.
+        """
+        ...
+    def normalize_candidate_terminals(
+        self, artifact: rustred.CandidateArtifact, *, max_terminals: int = 1000000,
+        max_supports: int = 100000, max_matrix_cells: int = 1000000,
+        max_output_terms: int = 4000000,
+    ) -> rustred.TerminalNormalization:
+        """Explicit exact normalization of saved finite residuals in this family.
+
+        Uses native unit aliases and weighted polynomial-numerator relations;
+        it does not regenerate candidates, solve ordinary IBPs, certify closure,
+        or prove master independence. Native family identity must match.
+
+        Examples
+        --------
+        Using the setup in the ``IBPFamily`` class example:
+
+        >>> session = ibp.start_generation(n_cores=1, numerical_depth=1)
+        >>> assert session.wait(timeout=120)
+        >>> artifact = session.result().artifact()
+        >>> normalized = ibp.normalize_candidate_terminals(artifact)
+        >>> assert normalized.metadata()["exact_within_family"]
+
+        Parameters
+        ----------
+        artifact : rustred.CandidateArtifact
+            Generated candidate artifact belonging to this exact native family.
+        max_terminals : int, optional
+            Maximum number of input or output terminal keys; default 1000000.
+        max_supports : int, optional
+            Maximum number of normalization supports; default 100000.
+        max_matrix_cells : int, optional
+            Maximum number of cells in normalization matrices; default 1000000.
+        max_output_terms : int, optional
+            Maximum number of terms in the normalized output; default 4000000.
+        """
+        ...
     def ibp_identities(self) -> list[list[tuple[list[Expression], Expression]]]:
         r"""
         Generate the L*(L+E) ordinary IBP equations with symbolic indices.
@@ -159,6 +260,8 @@ class IBPFamily:
         max_depth: int = 2,
         include_lorentz: bool = False,
         max_targets: int = 1024,
+        preferred_masters: list[list[int]] | None = None,
+        until_stable: bool = False,
     ) -> IBPSolution:
         r"""
         Reduce requested integer-power integrals by exact finite-target elimination.
@@ -188,6 +291,12 @@ class IBPFamily:
         max_targets : int, optional
             Limit on distinct integrals searched, including discovered targets;
             default 1024.
+        preferred_masters : list[list[int]] or None, optional
+            Requested residual basis, used where the discovered equations permit
+            replacement. None retains the solver's residual basis.
+        until_stable : bool, optional
+            Check two further depths for an unchanged residual set, within
+            ``max_depth``. This heuristic does not certify a complete basis.
         """
     def __repr__(self) -> str:
         r"""
@@ -436,6 +545,69 @@ class IBPSolution:
         >>> assert solution.stats["rows"] > 0
         >>> seed_count = solution.stats["seeds"]
         """
+    @property
+    def depth(self) -> int | None:
+        """Seed depth of a Laporta search; None for parametric rules.
+
+        Examples
+        --------
+        Using the setup in the ``IBPSolution`` class example:
+
+        >>> assert solution.depth == 1
+        """
+    @property
+    def stable_depth(self) -> int | None:
+        """First depth reproduced by the next two depths; a stability heuristic.
+
+        Examples
+        --------
+        Using the setup in the ``IBPSolution`` class example:
+
+        >>> assert solution.stable_depth is None  # no stability search requested
+        """
+    @property
+    def preferred_masters(self) -> list[tuple[list[int], str]]:
+        """Requested powers and their replaced/residual status, in request order.
+
+        Examples
+        --------
+        Using the setup in the ``IBPSolution`` class example:
+
+        >>> assert solution.preferred_masters == []  # no preferred basis requested
+        """
+    @property
+    def replaced(self) -> list[list[int]]:
+        """Search residuals replaced by the preferred masters.
+
+        Examples
+        --------
+        Using the setup in the ``IBPSolution`` class example:
+
+        >>> assert solution.replaced == []  # the solver's residual basis is retained
+        """
+    def certify(self, *, count_masters: bool = True, replay: bool = True, seed: int = 0) -> IBPCertificate:
+        """Replay exact Laporta identities and optionally check generic sector master counts.
+
+        Parametric solutions cannot be certified. A count-consistent result is
+        not a proof that all residual integrals are independent.
+
+        Examples
+        --------
+        Using the setup in the ``IBPSolution`` class example:
+
+        >>> certificate = solution.certify(count_masters=False)
+        >>> assert certificate.reduction == "verified"
+        >>> assert certificate.masters == "unchecked"
+
+        Parameters
+        ----------
+        count_masters : bool, optional
+            Request probabilistic generic sector master counts; default True.
+        replay : bool, optional
+            Reconstruct the reduction from original exact identities; default True.
+        seed : int, optional
+            Nonnegative seed for probabilistic master counting; default 0.
+        """
     @overload
     def reduce(
         self, powers: list[int], *, integral: None = None
@@ -507,4 +679,142 @@ class IBPSolution:
         Using the setup in the ``IBPSolution`` class example:
 
         >>> summary = repr(solution)
+        """
+
+
+class IBPCertificate:
+    """Evidence returned by IBPSolution.certify; no public constructor.
+
+    Exact identity replay and probabilistic master counts are separate evidence.
+    Neither a stable residual set nor a count-consistent result proves closure
+    or independence of the residual integrals.
+
+    Examples
+    --------
+    >>> from symbolica import S
+    >>> from symbolica.community import hepkit as hep
+    >>> d, k, m2 = S("d", "k", "m2")
+    >>> kin = hep.Kinematics(d, momenta=[k])
+    >>> family = hep.IntegralFamily([k], [], [kin.scalar_product(k, k) - m2], kinematics=kin)
+    >>> ibp = hep.IBPFamily(family, name="T")
+    >>> solution = ibp.reduce_laporta([[3]], max_depth=1)
+    >>> certificate = solution.certify(seed=0)
+    >>> assert certificate.reduction == "verified"
+    """
+    @property
+    def reduction(self) -> str:
+        """Exact identity replay status: verified or unchecked.
+
+        Examples
+        --------
+        Using the setup in the ``IBPCertificate`` class example:
+
+        >>> assert certificate.reduction == "verified"
+        """
+    @property
+    def masters(self) -> str:
+        """unchecked, incomplete, no-verdict, or count-consistent.
+
+        Examples
+        --------
+        Using the setup in the ``IBPCertificate`` class example:
+
+        >>> assert certificate.masters == "count-consistent"
+        """
+    @property
+    def master_counts(self) -> dict[tuple[bool, ...], int | None] | None:
+        """Generic count per residual sector; None where no verdict is available.
+
+        The whole mapping is None when master counting was not requested.
+
+        Examples
+        --------
+        Using the setup in the ``IBPCertificate`` class example:
+
+        >>> assert certificate.master_counts == {(True,): 1}
+        """
+    @property
+    def residual_counts(self) -> dict[tuple[bool, ...], int] | None:
+        """Number of search residuals in each checked sector.
+
+        Examples
+        --------
+        Using the setup in the ``IBPCertificate`` class example:
+
+        >>> assert certificate.residual_counts == {(True,): 1}
+        """
+    @property
+    def excess_sectors(self) -> list[list[bool]]:
+        """Sectors with more residuals than the counted master number.
+
+        Examples
+        --------
+        Using the setup in the ``IBPCertificate`` class example:
+
+        >>> assert certificate.excess_sectors == []
+        """
+    @property
+    def no_verdict(self) -> dict[tuple[bool, ...], str] | None:
+        """Explanation for sectors without a count verdict.
+
+        Examples
+        --------
+        Using the setup in the ``IBPCertificate`` class example:
+
+        >>> assert certificate.no_verdict == {}
+        """
+    @property
+    def stable_depth(self) -> int | None:
+        """First depth whose residual set survived two further search depths.
+
+        None means no stable depth was recorded; this is not a closure test.
+
+        Examples
+        --------
+        Using the setup in the ``IBPCertificate`` class example:
+
+        >>> assert certificate.stable_depth is None
+        """
+    @property
+    def replayed_rules(self) -> int | None:
+        """Number of rules reconstructed from the original exact identities.
+
+        None means replay was not requested.
+
+        Examples
+        --------
+        Using the setup in the ``IBPCertificate`` class example:
+
+        >>> assert certificate.replayed_rules > 0
+        """
+    @property
+    def identities(self) -> int | None:
+        """Number of instantiated original identities used during replay.
+
+        None means replay was not requested.
+
+        Examples
+        --------
+        Using the setup in the ``IBPCertificate`` class example:
+
+        >>> assert certificate.identities > 0
+        """
+    @property
+    def seed(self) -> int | None:
+        """Probabilistic counting seed; None when counting was not requested.
+
+        Examples
+        --------
+        Using the setup in the ``IBPCertificate`` class example:
+
+        >>> assert certificate.seed == 0
+        """
+    def __repr__(self) -> str:
+        """Summarize replay, counting, and stability evidence for inspection.
+
+        Examples
+        --------
+        Using the setup in the ``IBPCertificate`` class example:
+
+        >>> summary = repr(certificate)
         """

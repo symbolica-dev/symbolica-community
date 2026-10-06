@@ -39,6 +39,28 @@ fn main() -> Result<()> {
             source.trim_end().to_owned() + "\n",
         )
     };
+    if only.is_none() || only == Some("hepkit") {
+        let numerical = stub
+            .modules
+            .remove("symbolica.community.hep.integration")
+            .ok_or_else(|| {
+                std::io::Error::other("Numerical loop integration did not register stub metadata")
+            })?;
+        write_package(
+            "symbolica.community.hep.integration",
+            &numerical.to_string(),
+        )?;
+        let integration = stub
+            .modules
+            .remove("symbolica.community.hepkit.integration")
+            .ok_or_else(|| {
+                std::io::Error::other("Integration bindings did not register stub metadata")
+            })?;
+        write_package(
+            "symbolica.community.hepkit.integration",
+            &format!("{}\n{}\n", integration, hyperbolica::python::STUB_EXTRAS),
+        )?;
+    }
     if matches!(only, Some("tensor" | "vakint")) {
         let module_name = if only == Some("tensor") {
             "symbolica.community.tensor"
@@ -69,10 +91,6 @@ fn main() -> Result<()> {
             })?;
         let source = fastsecdec_python::stub_source(&module);
         write_package("symbolica.community.hepkit.sector_decomposition", &source)?;
-        write_package(
-            "symbolica.community.hepkit.fastsecdec",
-            "from ..sector_decomposition import *\n",
-        )?;
     }
     if only == Some("fastsecdec") {
         return Ok(());
@@ -131,7 +149,7 @@ other : object
             community.submodules.remove("spenso");
             community.submodules.remove("vakint");
             community.submodules.insert("tensor".to_owned());
-            community.submodules.remove("hep");
+            community.submodules.insert("hep".to_owned());
         }
         // Keep the shipped canonical Symbolica stub and its community citation API.
         // Binding metadata does not include all of the canonical overloads.
@@ -157,7 +175,7 @@ other : object
     let source = hepkit
         + "\n"
         + include_str!("../../stubs/ibp.pyi")
-        + "\nfrom . import ibp as ibp\nfrom . import oneloop as oneloop\nfrom . import sector_decomposition as sector_decomposition\nfrom . import fastsecdec as fastsecdec\nfrom . import vakint as vakint\n";
+        + "\nfrom . import integration as integration\nfrom . import ibp as ibp\nfrom . import rustred as rustred\nfrom . import oneloop as oneloop\nfrom . import sector_decomposition as sector_decomposition\nfrom . import vakint as vakint\n";
     write_package("symbolica.community.hepkit", &source)?;
     Ok(())
 }
