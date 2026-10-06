@@ -62,13 +62,13 @@ Native builds also expose `IntegralEvaluator`, `PreparedIntegralFamily` and
 `ReductionTables` for automatic evaluation and boundary generation. Check
 `integration.automatic_boundary_generation_available` before offering those
 operations in code that also runs in the browser.
-The [gg → Hg Marimo notebook](examples/hep/gg_hg.py) stages native boundary
-generation, physical transport, and coherent EW/HEFT amplitude assembly. Opening
-it starts no two-loop evaluation. The earlier publication wheel passed
+The [gg → Hg Marimo notebook](examples/hep/gg_hg.py) shows the native transport,
+cache, form-factor projection and coherent EW/HEFT amplitude API calls directly.
+It loads supplied starting boundaries, then computes transport and the amplitude
+live on one core. The earlier publication wheel passed
 [complete empty-cache boundary and amplitude acceptance](https://github.com/alphal00p/RustFlow/blob/92cfc9d2babfd95af8205b1193b4ec303bf8b610/reports/validation/2026-10-06-gg-hg-publication-complete/summary.json);
-that report identifies its tested runtime. The notebook also offers an explicit
-supplied-boundary demonstration, with exact portable starting values and live
-destination transport. Comparison-only references never serve as an implicit
+that report identifies its tested runtime. Full boundary regeneration remains
+in the separate acceptance runner. Comparison-only references never serve as an implicit
 evaluation fallback.
 Run it with `marimo edit examples/hep/gg_hg.py`. Long numerical acceptance lives
 in `examples/hep/gg_hg_acceptance.py`, separately from lightweight smoke tests.
@@ -84,7 +84,9 @@ the supplied-boundary solver, transport, cache and amplitude APIs. Existing
 `hepkit` and Hyperbolica imports are preserved. The
 [actual Pyodide smoke report](reports/2026-10-06-browser-loop-transport/report.json)
 records exact restart, nearby reuse and cancellation on one core without license
-credentials; full scientific notebook acceptance is a separate gate.
+credentials. The [complete Pyodide calculation](reports/2026-10-06-pyodide-gg-hg/README.md)
+and [visible notebook gate](reports/2026-10-06-visible-higgs-api/README.md) cover
+the scientific outputs and actual Chromium rendering separately.
 
 The Git dependency selects RustFlow
 [`d81dae94a40e41e5d2dcd978f623e6e83abb3e4f`](https://github.com/alphal00p/RustFlow/commit/d81dae94a40e41e5d2dcd978f623e6e83abb3e4f).

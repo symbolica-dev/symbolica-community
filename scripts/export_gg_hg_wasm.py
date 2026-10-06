@@ -53,7 +53,7 @@ def export(wheel, output):
     wheel_digest, validation = validated_wheel(wheel)
     subprocess.run([
         sys.executable, "-m", "marimo", "export", "html-wasm",
-        str(ROOT / "examples/hep/gg_hg.py"), "-o", str(output),
+        str(ROOT / "examples/hep/gg_hg.py"), "--show-code", "-o", str(output),
     ], check=True)
     files = {}
     for relative in INPUTS:
@@ -66,6 +66,7 @@ def export(wheel, output):
     (output / "loop-transport-validation.json").write_text(json.dumps(validation, indent=2) + "\n")
     manifest = {
         "schema": "higgs-jet-browser-assets-v1",
+        "notebook_sha256": hashlib.sha256((ROOT / "examples/hep/gg_hg.py").read_bytes()).hexdigest(),
         "wheel": wheel.name,
         "wheel_sha256": wheel_digest,
         "files": files,

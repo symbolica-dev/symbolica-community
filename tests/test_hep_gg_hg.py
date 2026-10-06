@@ -1126,9 +1126,35 @@ def test_form_factor_comparison_uses_all_recorded_reference_allowances(acceptanc
         acceptance.compare_form_factors(native, reference)
 
 
-@pytest.mark.parametrize("nearby", [False, True])
-def test_notebook_displays_eight_native_form_factors_at_the_current_point(monkeypatch, nearby):
+def test_visible_notebook_keeps_kernel_preparation_stable_and_defers_table_requests():
+    pytest.importorskip("marimo", minversion="0.24.0")
+    app = runpy.run_path(str(EXAMPLES / "gg_hg.py"), run_name="notebook_dependencies")["app"]
+    cells = [cell._cell for cell in app._cell_manager.cells()]
+    for name in ("model", "amplitude", "cache"):
+        cell = next(cell for cell in cells if name in cell.defs)
+        assert not {"s", "t", "mh2", "masses"}.intersection(cell.refs)
+    tables = [cell for cell in cells if "mo.ui.table(" in cell.code]
+    assert len(tables) == 2
+    assert all("observables" in cell.refs for cell in tables)
+
+
+@pytest.mark.parametrize("nearby,changed_mass,changed_coupling", [
+    (False, False, False), (True, False, False), (False, True, False), (False, False, True),
+])
+def test_notebook_displays_eight_native_form_factors_at_the_current_point(monkeypatch, nearby, changed_mass, changed_coupling):
     marimo = pytest.importorskip("marimo", minversion="0.24.0")
+    from symbolica.community.hepkit import Model
+
+    model = Model.from_json((EXAMPLES / "data/gg_hg/native-model.json").read_text())
+    mw2, mz2 = E("5399/13074"), E("7775/14631")
+    parameters = {
+        model.parameter("aEWM1").symbol: E("128"),
+        model.parameter("aS").symbol: E("118/1000"),
+        model.parameter("MZ").symbol: mz2.sqrt(),
+        model.parameter("Gf").symbol: E("𝜋") * E("1/128") * mz2 / (E("2").sqrt() * mw2 * (mz2 - mw2)),
+    }
+    if changed_coupling:
+        parameters[model.parameter("aS").symbol] = E("12/100")
     reference = json.loads((EXAMPLES / "data/gg_hg/amplitude-validation.json").read_text())
     point = [E(value) for value in reference["physical_s_t_MH_squared"]]
     if nearby:
@@ -1157,26 +1183,46 @@ def test_notebook_displays_eight_native_form_factors_at_the_current_point(monkey
         snapshot=lambda: {"done": True, "status": "ready", "timings": [], "events": []},
     )
     captured = []
+    captured_observables = []
     table = marimo.ui.table
 
     def record_table(data, *args, **kwargs):
         if kwargs.get("label") == "Native W/Z form factors and propagated uncertainties":
             captured.extend(data)
+        if kwargs.get("label") == "Coherent observables and propagated uncertainties":
+            captured_observables.extend(data)
         return table(data, *args, **kwargs)
 
     monkeypatch.setattr(marimo.ui, "table", record_table)
     app = runpy.run_path(str(EXAMPLES / "gg_hg.py"), run_name="notebook_display_test")["app"]
-    app.run(defs={"session": display_session})
+    # Exercise rendering without turning this smoke test into a cold loop calculation.
+    app.run(defs={
+        "model": model, "s": point[0], "t": point[1], "mh2": point[2],
+        "masses": {"W": mw2 + E("1/1000"), "Z": mz2} if changed_mass else display_session.masses,
+        "cache": None, "cache_directory": None, "configurations": [], "systems": {},
+        "results": {}, "destinations": {}, "transport_seconds": 0.0,
+        "projector": None, "amplitude": display_session.amplitude,
+        "form_factors": form_factors, "observables": display_session.observables,
+        "parameters": parameters, "reloaded_cache": None,
+        "repeated": SimpleNamespace(cache_hit=True, steps=0),
+    })
     assert [row["form factor"] for row in captured] == [f"{mass}{i}" for mass in ("W", "Z") for i in range(1, 5)]
     for row in captured:
         mass, index = row["form factor"][0], int(row["form factor"][1]) - 1
         assert row["native result"] == str(form_factors[mass].values[index])
         assert row["propagated absolute uncertainty"] == str(form_factors[mass].absolute_errors[index])
         assert row["achieved relative digits"] == 30
-        if nearby:
+        if nearby or changed_mass:
             assert row["reference at recorded point"] == "different kinematics"
             assert row["reference absolute uncertainty"] == row["absolute difference"] == "—"
         else:
             assert row["reference at recorded point"] == row["native result"]
             assert row["reference absolute uncertainty"] != "—"
             assert Float(row["absolute difference"], decimal_digits=100) == 0
+    assert len(captured_observables) == 3
+    for row in captured_observables:
+        if nearby or changed_mass or changed_coupling:
+            assert row["reference at recorded point"] == "different inputs"
+            assert row["absolute difference"] == "—"
+        else:
+            assert row["reference at recorded point"] == row["native result"]

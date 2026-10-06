@@ -144,32 +144,29 @@ python -m pytest tests/test_loop_integration_reductions.py -q
 
 ### Higgs-plus-jet calculation and acceptance
 
-The [gg→Hg notebook](gg_hg.py) separates native boundary generation, physical
-transport and coherent amplitude assembly. All three stages use one loaded
-HEPKit model. HEPKit supplies diagrams, state sums and model-parameter
+The [gg→Hg notebook](gg_hg.py) shows physical transport and coherent amplitude
+assembly as visible API calls, with one loaded HEPKit model. HEPKit supplies diagrams, state sums and model-parameter
 expansion; Spenso and Idenso supply tensor and color contractions. The physical
 form-factor projections depend on the actual kinematics, including nearby
 evaluations. Numerical references never supply boundary or amplitude inputs.
 
-For a live demonstration, select **Load supplied boundaries**. The notebook
-ships all sixteen independently refined, native-generated starting values in
+The notebook runs from top to bottom without a button dashboard. It loads all
+sixteen independently refined, native-generated starting values from
 `data/gg_hg/boundaries.json.gz` (1,054,943 bytes). Each coefficient keeps its exact
 binary rational, working precision, comparison error, and 40-digit input cap.
 The manifest records its checksum and origin. Import verifies the equations,
 ordered bases, normalization, coordinates and root sheets, then admits the
 values through the current build's supplied-boundary API. This portable data
 does not bypass binary cache compatibility checks. Destination integrals and
-amplitudes are still computed live. **Recompute boundaries (native)** remains
-available for the full calculation.
+amplitudes are still computed live. Native regeneration remains available through
+`HiggsJetIntegralSystem.generate_boundary` and the long acceptance runner below.
 
-The controller uses one worker by default. On Emscripten it creates no worker
-thread and yields to the event loop after each checkpointed configuration;
-`await session.wait_async()` is its headless asynchronous entry point.
-Cancellation is observed between configurations, while each native solver or
-amplitude call is synchronous. A build without automatic boundary generation
-disables that control and reports insufficient supplied accuracy without
-attempting a native recomputation. Full browser solver timing requires the
-transport-enabled WASM build; native timings are not browser measurements.
+The visible loop calls `system.evaluate(cache, destination, root_sheets, options=...)`
+on one core and yields after each checkpointed configuration. The model and
+amplitude preparation are independent of the editable kinematic cell, so changing
+`s` reuses both the exact kernels and nearby cached numerical points. Native solver
+calls are synchronous; an interrupt takes effect between calls. Insufficient
+achieved observable accuracy raises a typed error and requires refined boundaries.
 Browser cache files live in the current page's virtual filesystem. Binary
 reload works within that session; page reload does not persist the files.
 
@@ -189,8 +186,9 @@ To prepare a browser demonstration, use a community Pyodide wheel containing
 the physical transport API. Supplied-boundary transport, exact binary restart,
 nearby reuse and cancellation passed the
 [actual Pyodide smoke gate](../../reports/2026-10-06-browser-loop-transport/report.json)
-on one core without license credentials. Full gg→Hg scientific and browser UI
-acceptance remains separate. The exporter requires a successful
+on one core without license credentials. The [full gg→Hg scientific gate](../../reports/2026-10-06-pyodide-gg-hg/README.md)
+and [visible notebook/browser gate](../../reports/2026-10-06-visible-higgs-api/README.md)
+also pass with separate timing and runtime attribution. The exporter requires a successful
 `test_pyodide.mjs` transport smoke report
 matching the exact wheel checksum. A Python namespace alone is insufficient.
 Marimo's exporter requires `uv` in the build environment.
@@ -200,19 +198,20 @@ python scripts/export_gg_hg_wasm.py /path/to/symbolica-*-pyemscripten_2026_0_was
 python scripts/serve_wasm_bundle.py /path/to/new-export
 ```
 
-The export includes the wheel, controller, exact model, supplied starting
+The export shows code by default and includes the wheel, exact model, supplied starting
 values and comparison-only observable data. The notebook fetches its inputs
 and wheel relative to its own URL, verifies their checksums, and installs the
 verified wheel bytes from Pyodide's filesystem.
 Ordinary HTML export does not package these external assets automatically.
 
-The load-or-compute controls preserve accumulated intermediate points. Forced
+The separate headless controller supports load, recompute and cancellation for
+long acceptance and boundary generation. Forced
 boundary recomputation archives both verified-boundary banks and all completed
 numerical samples under `numerical-history/` before starting, while retaining
 exact reduction data. A durable generation record lets a restarted session
 reuse only new work, even at unchanged precision with identical sample keys.
 If preparation is interrupted between directory moves, ordinary stages fail
-closed; create or reuse a session and select **Recompute boundaries** again to
+closed; create or reuse a session and request forced boundary regeneration again to
 recover. Prior numerical files remain in the history directories. Forced
 transport resets its bank to the saved seed-only bank. Cancellation can leave
 completed samples or complete configurations for restart; it never admits a

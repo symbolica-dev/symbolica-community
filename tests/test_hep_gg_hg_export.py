@@ -56,6 +56,7 @@ def test_export_binds_inputs_and_wheel_to_manifest(tmp_path, monkeypatch):
 
     def export_template(command, *, check):
         assert check and command[-1] == str(output)
+        assert "--show-code" in command
         output.mkdir()
 
     monkeypatch.setattr(EXPORT.subprocess, "run", export_template)
