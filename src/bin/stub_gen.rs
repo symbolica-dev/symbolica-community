@@ -40,13 +40,12 @@ fn main() -> Result<()> {
         )
     };
     if only.is_none() || matches!(only, Some("hepkit" | "tensor")) {
-        let graph = stub
-            .modules
+        stub.modules
             .remove("symbolica.community.graph")
             .ok_or_else(|| {
                 std::io::Error::other("Graph rendering did not register stub metadata")
             })?;
-        write_package("symbolica.community.graph", &graph.to_string())?;
+        write_package("symbolica.community.graph", &linnet_py::canonical_stub()?)?;
     }
     if only.is_none() || only == Some("hepkit") {
         let numerical = stub

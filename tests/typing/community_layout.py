@@ -15,10 +15,12 @@ from symbolica.community.vakint import Vakint as LegacyVakint
 
 expression: tensor.TensorExpression = tensor.TensorExpression(E("1"))
 scalar: Expression = expression.to_expression()
-layout: graph.LayoutSettings = hep.LayoutSettings(impred_steps=1)
-stroke: graph.StrokeStyle = tensor.StrokeStyle(thickness=1)
+layout: graph.LayoutSettings = graph.LayoutSettings(impred_steps=1)
+stroke: graph.Stroke = graph.Stroke(thickness=1)
 tensor_drawing: graph.DiagramRender = tensor.TensorNetwork(E("1")).render(
-    config=tensor.RenderSettings(layout=layout, edge_stroke=stroke)
+    config=graph.RenderSettings(
+        layouts=layout, drawing=graph.DrawOptions(edge_stroke=stroke)
+    )
 )
 legacy_tensor_type: type[tensor.TensorExpression] = LegacyTensorExpression
 legacy_vakint_type: type[Vakint] = LegacyVakint

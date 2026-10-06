@@ -5,7 +5,7 @@ import gc
 from pathlib import Path
 import weakref
 
-import linnet
+from symbolica.community import graph as linnet
 from symbolica.community import hepkit
 
 
@@ -13,15 +13,19 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("owner", type=Path)
     args = parser.parse_args()
-    model = hepkit.Model(args.owner / "crates/feynkit-py/tests/fixtures/scalars_2p_3p.json")
+    model = hepkit.Model(
+        args.owner / "crates/feynkit-py/tests/fixtures/scalars_2p_3p.json"
+    )
     diagram = (
-        model.process(["scalar_0"], ["scalar_0", "scalar_0"], vertex_allow=["V_3_SCALAR_000"])
+        model.process(
+            ["scalar_0"], ["scalar_0", "scalar_0"], vertex_allow=["V_3_SCALAR_000"]
+        )
         .generate_diagrams(loops=1, max_vertices=3, allow_self_loops=True)
         .diagrams[0]
     )
-    graph = diagram.to_linnet()
+    graph = diagram.to_graph()
     assert type(graph) is linnet.Graph
-    assert graph is diagram.to_linnet()
+    assert graph is diagram.to_graph()
     assert graph.n_nodes == len(diagram.vertices)
     assert graph.n_edges == len(diagram.edges)
     selection = graph.full_subgraph()
@@ -33,14 +37,17 @@ def main():
     restored = hepkit.FeynmanDiagram.from_json(model, diagram.to_json())
     assert restored.to_json() == diagram.to_json()
     try:
-        diagram.subgraph(restored.to_linnet().full_subgraph())
+        diagram.subgraph(restored.to_graph().full_subgraph())
     except (TypeError, ValueError):
         pass
     else:
         raise AssertionError("foreign graph selections must be rejected")
-    assert "<svg" in linnet.PreparedRender.from_sources(
-        {"main.typ": b"Native graph renderer"}, config={}
-    ).to_svg()
+    assert (
+        "<svg"
+        in linnet.DiagramRender.from_sources(
+            {"main.typ": b"Native graph renderer"}, config=linnet.RenderSettings()
+        ).to_svg()
+    )
 
     class Payload:
         pass
@@ -52,7 +59,9 @@ def main():
     del payload, diagram, graph, selection, physical
     gc.collect()
     assert reference() is None
-    print("Native Graph/Subgraph identity, physics, rendering and cycle collection passed")
+    print(
+        "Native Graph/Subgraph identity, physics, rendering and cycle collection passed"
+    )
 
 
 if __name__ == "__main__":

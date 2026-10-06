@@ -97,7 +97,7 @@ fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(citations::get_citations, m)?)?;
     #[cfg(feature = "community")]
     {
-        register_module!(m, spynso3::display::graph::GraphModule);
+        register_module!(m, linnet_py::GraphModule);
         register_module!(m, spynso3::SpensoModule);
         register_module!(m, hepkit::HepKitModule);
         #[cfg(not(target_arch = "wasm32"))]

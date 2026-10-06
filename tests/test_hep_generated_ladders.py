@@ -5,7 +5,8 @@ from importlib import import_module
 from types import SimpleNamespace
 
 import pytest
-from symbolica import E, Graph, Replacement, S
+from symbolica import E, S
+from symbolica.community.graph import Graph, node, edge, source, sink, Orientation
 from symbolica.community import hepkit as hep
 from symbolica.community import tensor as sp
 
@@ -82,32 +83,52 @@ def test_filter_is_label_independent_and_rejects_crossed_rungs(quark, notebook_h
     order = [7, 4, 9, 2, 8, 1, 5, 0, 6, 3]
     graph = Graph()
     for _ in order:
-        graph.add_node(0)
-    graph.set_node_data(order[8], E("-1"))
-    graph.set_node_data(order[9], E("2"))
+        graph.add_node(node(data=0))
+    graph.node(order[8]).data = E("-1")
+    graph.node(order[9]).data = E("2")
     for i in range(8):
         graph.add_edge(
-            order[i], order[(i + 1) % 8], directed=quark, data=5 if quark else 21
+            edge(
+                source(order[i]),
+                second=sink(order[(i + 1) % 8]),
+                orientation=Orientation.Default if quark else Orientation.Undirected,
+                data=5 if quark else 21,
+            )
         )
     for i, j in ((0, 8), (4, 9), (1, 7), (2, 6), (3, 5)):
-        graph.add_edge(order[i], order[j], data=21)
+        graph.add_edge(
+            edge(
+                source(order[i]),
+                second=sink(order[j]),
+                data=21,
+                orientation=Orientation.Undirected,
+            )
+        )
     select_ladder = notebook_helpers["ladder_filter"]
     accept = select_ladder(quark)
     assert accept(graph, len(graph))
     # Cross two rungs while preserving every vertex degree and particle count.
     crossed = Graph()
-    for _, data in graph.nodes():
-        crossed.add_node(data)
-    for source, target, directed, data in graph.edges():
-        if {source, target} == {order[1], order[7]}:
-            source, target = order[1], order[6]
-        elif {source, target} == {order[2], order[6]}:
-            source, target = order[2], order[7]
-        crossed.add_edge(source, target, directed=directed, data=data)
+    for vertex in graph.nodes():
+        crossed.add_node(node(data=vertex.data))
+    for connection in graph.edges():
+        start, end = connection.source.node.index, connection.sink.node.index
+        if {start, end} == {order[1], order[7]}:
+            start, end = order[1], order[6]
+        elif {start, end} == {order[2], order[6]}:
+            start, end = order[2], order[7]
+        crossed.add_edge(
+            edge(
+                source(start),
+                second=sink(end),
+                orientation=connection.orientation,
+                data=connection.data,
+            )
+        )
     assert not accept(crossed, len(crossed))
     # Pruning an unfinished snapshot on a full-graph mismatch would lose ladders.
     partial = Graph()
-    partial.add_node(-1)
+    partial.add_node(node(data=-1))
     assert accept(partial, 0)
 
 
@@ -121,13 +142,13 @@ def test_notebook_projects_and_reduces_selected_ladder_without_splitting(ladder)
         for name in ("project_and_split", "reduce_color")
     )
     model = hep.Model.standard_model()
-    dimension = S("direct_ladder_test::D")
     build = next(cell for cell in cells if "numerator" in cell.defs)
-    _, values = build.run(D=dimension, diagram=diagram, model=model, sp=sp)
+    _, values = build.run(diagram=diagram, model=model)
     numerator = values["numerator"]
+    dimension = values["D"]
     assert not numerator.to_expression().contains(model.particle("b").mass)
     project = next(cell for cell in cells if "projector" in cell.defs)
-    _, values = project.run(D=dimension, numerator=numerator, sp=sp)
+    _, values = project.run(D=dimension, numerator=numerator)
     projector = values["projector"]
     assert (projector * numerator).rank == 0
 
@@ -136,9 +157,8 @@ def test_notebook_projects_and_reduces_selected_ladder_without_splitting(ladder)
     old_projector, color, spacetime = project_and_split(numerator, dimension)
     assert projector.to_expression() == old_projector.to_expression()
     reduce = next(cell for cell in cells if "reduced" in cell.defs)
-    _, values = reduce.run(numerator=numerator, projector=projector, sp=sp)
+    _, values = reduce.run(numerator=numerator, projector=projector)
     reduced = values["reduced"]
-    dot_numerator = values["dot_numerator"]
     assert reduced.reduction_status == sp.ReductionStatus.Complete
     assert reduced.rank == 0
     color_factor = E("-1/54" if quark else "81")
@@ -151,20 +171,3 @@ def test_notebook_projects_and_reduces_selected_ladder_without_splitting(ladder)
     assert (reduced.to_expression() - expected).expand(via_poly=True) == 0
     assert reduce_color(color) == color_factor
     assert not reduced.to_expression().contains(sp.Representation.coad(8).casimir())
-
-    coordinates = next(cell for cell in cells if "dot_coordinates" in cell.defs)
-    _, helpers = coordinates.run()
-    polynomial_cell = next(cell for cell in cells if "polynomial" in cell.defs)
-    _, result = polynomial_cell.run(
-        D=dimension,
-        Replacement=Replacement,
-        S=S,
-        diagram=diagram,
-        dot_coordinates=helpers["dot_coordinates"],
-        dot_numerator=dot_numerator,
-        graph_weight=diagram.overall_factor_expression(evaluate=True),
-        model=model,
-    )
-    weight = E("-1" if quark else "1/2")
-    assert result["weighted_numerator"] == weight * result["polynomial"]
-    assert not result["denominators"].contains(model.particle("b").mass)

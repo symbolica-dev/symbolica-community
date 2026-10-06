@@ -52,9 +52,7 @@ jobs:
             - name: Check public community import types
               run: ty check --python-version 3.10 tests/typing/community_layout.py tests/typing/expression_products.py tests/typing/integration.py tests/typing/loop_integration.py tests/typing/scoped_reductions.py tests/typing/tensor_evaluation.py
 
-            # Standalone native graph classes must match the embedded HEPKit
-            # owner. The unrelated PyPI linnet package is never a substitute.
-            # This test-only owner wheel needs 3.10; core still supports 3.9.
+            # Run the owner topology and rendering suites against the complete host wheel.
             - name: Resolve and check the native graph owner
               id: graph-owner
               run: python .github/scripts/check_native_graph_package.py pin >> "$GITHUB_OUTPUT"
@@ -70,26 +68,10 @@ jobs:
             - name: Check the native graph checkout
               run: python .github/scripts/check_native_graph_package.py owner
 
-            - name: Build the matching native graph wheel
-              uses: PyO3/maturin-action@v1
+            - name: Run the complete graph binding suite
               env:
-                  CARGO_BUILD_JOBS: "2"
-                  CARGO_TARGET_DIR: target/linnet-native
-              with:
-                  command: build
-                  args: >-
-                      --release --locked
-                      --manifest-path native-owners/hepkit/crates/linnet-py/Cargo.toml
-                      --features extension-module,abi3-py310
-                      --interpreter python${{ matrix.python-version }}
-                      --out linnet-dist
-                  sccache: "true"
-
-            - name: Verify and install the matching native graph wheel
-              run: |
-                  python .github/scripts/check_native_graph_package.py wheel
-                  python -m pip install --no-index --no-deps --require-hashes -r target/linnet-wheel.txt
-                  python .github/scripts/check_native_graph_package.py installed
+                  SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
+              run: python -m unittest discover -s native-owners/hepkit/crates/linnet-py/tests -p 'test_*.py'
 
             - name: Check native graph identity and rendering
               env:

@@ -29,13 +29,10 @@ import numpy
 import numpy.typing
 import symbolica.core
 import typing
-from symbolica.community.graph import DiagramRender, LayoutSettings, StrokeStyle
+from symbolica.community.graph import DiagramRender, RenderSettings
 from symbolica.core import ComplexFloat, Condition, Evaluator, Expression, Float, FormattedOutput, FunctionDefinition, HeldExpression, PatternRestriction, Replacement, Transformer
 
 AUTO: _AutoIndex
-DiagramRender: typing.TypeAlias = symbolica.community.graph.DiagramRender
-LayoutSettings: typing.TypeAlias = symbolica.community.graph.LayoutSettings
-StrokeStyle: typing.TypeAlias = symbolica.community.graph.StrokeStyle
 _: _AutoIndex
 _Components: typing.TypeAlias = "Expression | float | complex | list[_Components]"
 _IndexInput: typing.TypeAlias = "int | str | Expression | Slot | _AutoIndex"
@@ -1449,112 +1446,6 @@ class ReductionStatus:
     def __int__(self) -> builtins.int:
         r"""
         Return the underlying integer discriminant.
-        """
-
-@typing.final
-class RenderSettings:
-    r"""
-    Immutable presentation settings for tensor network graphs.
-    None leaves an option to the renderer; it does not force a default override.
-    Constructors and read-only properties expose options to help() and completion.
-
-    Examples
-    --------
-    >>> from symbolica.community.tensor import RenderSettings
-    >>> settings = RenderSettings(node_radius=5)
-    """
-    @property
-    def title(self) -> typing.Optional[builtins.str]:
-        r"""
-        Plain-text title above the drawing.
-
-        Examples
-        --------
-        >>> from symbolica.community.tensor import RenderSettings
-        >>> value = RenderSettings().title
-        """
-    @property
-    def layout(self) -> typing.Optional[LayoutSettings]:
-        r"""
-        Native graph layout options; omitted values retain renderer defaults.
-
-        Examples
-        --------
-        >>> from symbolica.community.tensor import RenderSettings
-        >>> value = RenderSettings().layout
-        """
-    @property
-    def node_radius(self) -> typing.Optional[builtins.float]:
-        r"""
-        Finite nonnegative vertex radius in drawing units.
-
-        Examples
-        --------
-        >>> from symbolica.community.tensor import RenderSettings
-        >>> value = RenderSettings().node_radius
-        """
-    @property
-    def node_fill(self) -> typing.Optional[builtins.str]:
-        r"""
-        Vertex fill as a CSS color.
-
-        Examples
-        --------
-        >>> from symbolica.community.tensor import RenderSettings
-        >>> value = RenderSettings().node_fill
-        """
-    @property
-    def node_stroke(self) -> typing.Optional[StrokeStyle]:
-        r"""
-        Vertex outline paint, width, and dash pattern.
-
-        Examples
-        --------
-        >>> from symbolica.community.tensor import RenderSettings
-        >>> value = RenderSettings().node_stroke
-        """
-    @property
-    def edge_stroke(self) -> typing.Optional[StrokeStyle]:
-        r"""
-        Edge paint, width, and dash pattern.
-
-        Examples
-        --------
-        >>> from symbolica.community.tensor import RenderSettings
-        >>> value = RenderSettings().edge_stroke
-        """
-    def __new__(cls, *, title: typing.Optional[builtins.str] = None, layout: typing.Optional[LayoutSettings] = None, node_radius: typing.Optional[builtins.float] = None, node_fill: typing.Optional[builtins.str] = None, node_stroke: typing.Optional[StrokeStyle] = None, edge_stroke: typing.Optional[StrokeStyle] = None) -> RenderSettings:
-        r"""
-        Construct immutable overrides; None preserves the renderer's defaults.
-
-        Examples
-        --------
-        >>> from symbolica.community.tensor import RenderSettings
-        >>> settings = RenderSettings(node_radius=5)
-
-        Parameters
-        ----------
-        title : str or None, optional
-            Plain-text title above the drawing.
-        layout : LayoutSettings or None, optional
-            Native graph layout options; omitted values retain renderer defaults.
-        node_radius : float or None, optional
-            Finite nonnegative vertex radius in drawing units.
-        node_fill : str or None, optional
-            Vertex fill as a CSS color.
-        node_stroke : StrokeStyle or None, optional
-            Vertex outline paint, width, and dash pattern.
-        edge_stroke : StrokeStyle or None, optional
-            Edge paint, width, and dash pattern.
-        """
-    def __repr__(self) -> builtins.str:
-        r"""
-        Inspect the selected overrides without rendering a diagram.
-
-        Examples
-        --------
-        >>> from symbolica.community.tensor import RenderSettings
-        >>> text = repr(RenderSettings(node_radius=5))
         """
 
 @typing.final
