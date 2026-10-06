@@ -1,6 +1,7 @@
 """Lightweight stage safety checks; these never compute two-loop boundaries."""
 
 import importlib.util
+import asyncio
 import hashlib
 import json
 import runpy
@@ -88,6 +89,116 @@ def test_native_inputs_do_not_read_numerical_references(tmp_path, monkeypatch):
         session.close()
 
 
+def test_cooperative_transport_checkpoints_yields_and_cancels(tmp_path, monkeypatch):
+    def no_threads(*args, **kwargs):
+        raise AssertionError("Cooperative execution must not create worker threads")
+
+    monkeypatch.setattr(SUPPORT, "ThreadPoolExecutor", no_threads)
+    session = SUPPORT.CalculationSession(
+        EXAMPLES / "data" / "gg_hg" / "native-model.json", tmp_path, cooperative=True,
+    )
+    flow, coordinate, add = constant_boundary_adder()
+    add(session.cache, "0", "exact constant seed")
+    session.configurations = [
+        ("constant", SimpleNamespace(label=f"point-{i}", root_sheets={}))
+        for i in range(3)
+    ]
+    session.systems = {"constant": SimpleNamespace(
+        evaluate=lambda cache, destination, sheets, **kw: flow.evaluate(
+            cache, destination, 0, 0, admit_straight_path=True, control=kw["control"],
+        ),
+    )}
+    session._destination = lambda system, configuration: {
+        coordinate: E(str(int(configuration.label[-1]) + 1)),
+    }
+
+    async def run():
+        session.submit("transport")
+        with pytest.raises(RuntimeError, match="wait_async"):
+            session.wait()
+        with pytest.raises(RuntimeError, match="already running"):
+            session.submit("transport")
+        # A browser event gets a turn between synchronous native calls.
+        while not session.results and not session._future.done():
+            await asyncio.sleep(0)
+        if session._future.done():
+            await session.wait_async()
+        assert list(session.results) == ["point-0"]
+        saved = numerical.BoundaryCache.load(tmp_path / "transport")
+        assert SUPPORT.boundary_evidence(saved) == SUPPORT.boundary_evidence(session.cache)
+        session.cancel()
+        with pytest.raises(numerical.CalculationCancelled):
+            await session.wait_async()
+        assert list(session.results) == ["point-0"]
+        assert "CalculationCancelled" in session.snapshot()["status"]
+        session.submit("transport")
+        result = await session.wait_async()
+        assert len(result) == 3 and result["point-0"].cache_hit
+        assert session.wait() == result
+        session.submit("restart")
+        assert all(r.cache_hit for r in (await session.wait_async()).values())
+
+    try:
+        asyncio.run(run())
+    finally:
+        session.close()
+
+
+def test_cooperative_wait_timeout_retains_work(tmp_path):
+    session = SUPPORT.CalculationSession(
+        EXAMPLES / "data" / "gg_hg" / "native-model.json", tmp_path, cooperative=True,
+    )
+
+    async def run():
+        ready = asyncio.Event()
+        session._future = asyncio.create_task(ready.wait())
+        with pytest.raises(TimeoutError):
+            await session.wait_async(timeout=0)
+        assert not session._future.cancelled()
+        ready.set()
+        assert await session.wait_async() is True
+
+    try:
+        asyncio.run(run())
+    finally:
+        session.close()
+
+
+def test_supplied_only_build_rejects_native_recomputation_before_reset(session, monkeypatch):
+    populate_banks(session)
+    before = SUPPORT.boundary_evidence(session.cache)
+    session.automatic_boundary_generation_available = False
+    with pytest.raises(RuntimeError, match="requires a native build"):
+        session.submit("boundaries", recompute=True)
+    with pytest.raises(RuntimeError, match="requires a native build"):
+        session.generate_boundaries(recompute=True)
+    assert SUPPORT.boundary_evidence(session.cache) == before
+    assert not (session.directory / "numerical-history").exists()
+
+
+def test_insufficient_supplied_accuracy_preserves_banks_without_native_refinement(session, monkeypatch):
+    populate_banks(session)
+    before = SUPPORT.boundary_evidence(session.cache)
+    session.automatic_boundary_generation_available = False
+    session.results = {configuration.label: object() for _, configuration in session.configurations}
+    session.amplitude = SimpleNamespace(evaluate=lambda *a, **kw: SimpleNamespace(
+        verified_relative_digits={"ew": 19, "heft": 40, "interference": 21},
+    ))
+    monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector", lambda: SimpleNamespace(
+        evaluate=lambda *a: SimpleNamespace(values=[], absolute_errors=[], provenance="supplied input"),
+    ))
+
+    def must_not_regenerate(**kwargs):
+        raise AssertionError("A supplied-only build cannot launch native boundary generation")
+
+    session.generate_boundaries = must_not_regenerate
+    with pytest.raises(numerical.AccuracyError, match="Import more accurate boundaries"):
+        session.assemble(recompute=True)
+    assert SUPPORT.boundary_evidence(session.cache) == before
+    assert not (session.directory / "numerical-history").exists()
+    assert session.observables is None and session.form_factors == {}
+
+
 def test_boundary_step_budget_preserves_precision_and_physical_transport(session, monkeypatch):
     native_options = numerical.EvaluationOptions
     requested = []
@@ -104,9 +215,9 @@ def test_boundary_step_budget_preserves_precision_and_physical_transport(session
     assert requested[1]["max_steps"] == 2000
     assert physical.digits == session.digits
     assert boundary.digits == 40
-    for options in (physical, boundary):
-        assert options.guard_digits == 60
-        assert options.series_order == 96
+    for options, guard, order in ((physical, 30, 32), (boundary, 60, 96)):
+        assert options.guard_digits == guard
+        assert options.series_order == order
         # Exercise the native options handoff without evaluating an integral.
         prepared = numerical.IntegralEvaluator(options=options).options
         assert prepared.digits == options.digits
@@ -1034,6 +1145,7 @@ def test_notebook_displays_eight_native_form_factors_at_the_current_point(monkey
     native_values = {name: Float(value, decimal_digits=100)
                      for name, value in reference["expected_observables"].items()}
     display_session = SimpleNamespace(
+        automatic_boundary_generation_available=True,
         point=point, masses={"W": E("5399/13074"), "Z": E("7775/14631")},
         results={}, amplitude=SimpleNamespace(diagrams=[]), form_factors=form_factors,
         observables=SimpleNamespace(

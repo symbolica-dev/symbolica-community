@@ -111,8 +111,10 @@ notebook stay on the same server.
 Native numerical loop evaluation lives under
 `symbolica.community.hep.integration`. The [Higgs-jet notebook](gg_hg.py) uses
 these classes with the same HEPKit model, families and exact kinematics as the
-other examples. Its complete empty-cache two-loop boundary acceptance is still
-pending; opening the notebook starts no boundary calculation.
+other examples. The native empty-cache boundary calculation and independently
+refined observables are recorded in the
+[validation report](https://github.com/alphal00p/RustFlow/blob/main/docs/python-notebook-status.md).
+Opening the notebook starts no boundary calculation.
 
 `IntegralEvaluator(reductions=tables)` accepts a `ReductionTables` collection.
 Use `with_family` to add exact rules and declared residual masters for a native
@@ -148,6 +150,56 @@ HEPKit model. HEPKit supplies diagrams, state sums and model-parameter
 expansion; Spenso and Idenso supply tensor and color contractions. The physical
 form-factor projections depend on the actual kinematics, including nearby
 evaluations. Numerical references never supply boundary or amplitude inputs.
+
+For a live demonstration, select **Load supplied boundaries**. The notebook
+ships all sixteen independently refined, native-generated starting values in
+`data/gg_hg/boundaries.json.gz` (1,054,943 bytes). Each coefficient keeps its exact
+binary rational, working precision, comparison error, and 40-digit input cap.
+The manifest records its checksum and origin. Import verifies the equations,
+ordered bases, normalization, coordinates and root sheets, then admits the
+values through the current build's supplied-boundary API. This portable data
+does not bypass binary cache compatibility checks. Destination integrals and
+amplitudes are still computed live. **Recompute boundaries (native)** remains
+available for the full calculation.
+
+The controller uses one worker by default. On Emscripten it creates no worker
+thread and yields to the event loop after each checkpointed configuration;
+`await session.wait_async()` is its headless asynchronous entry point.
+Cancellation is observed between configurations, while each native solver or
+amplitude call is synchronous. A build without automatic boundary generation
+disables that control and reports insufficient supplied accuracy without
+attempting a native recomputation. Full browser solver timing requires the
+transport-enabled WASM build; native timings are not browser measurements.
+Browser cache files live in the current page's virtual filesystem. Binary
+reload works within that session; page reload does not persist the files.
+
+The [single-core transport comparison](https://github.com/alphal00p/RustFlow/blob/28ea720/reports/performance/2026-10-06-physical-transport-compact-profile/README.md)
+measured all sixteen configurations with the same supplied seeds and growing
+cache. At requested 20-digit accuracy, initial guard 30/order 32 took 91.5 s,
+versus 270.2 s with guard 60/order 96. Both passed comparisons of all 4,360
+coefficients, eight form factors and three observables within propagated errors.
+The notebook uses the smaller initial physical profile, retaining adaptive
+checks; automatic boundary generation keeps its previous settings. First-use
+amplitude kernel construction cost another 34.3 s, and projection plus numerical
+observable evaluation cost 2.5 s. These are native component measurements from
+one run of each profile, excluding browser startup, UI and checkpoint I/O.
+
+To prepare a browser demonstration, use a community Pyodide wheel containing
+the physical transport API. That build is still undergoing runtime validation;
+the exporter requires a successful `test_pyodide.mjs` transport smoke report
+matching the exact wheel checksum. A Python namespace alone is insufficient.
+Marimo's exporter requires `uv` in the build environment.
+
+```sh
+python scripts/export_gg_hg_wasm.py /path/to/symbolica-*-pyemscripten_2026_0_wasm32.whl /path/to/new-export
+python scripts/serve_wasm_bundle.py /path/to/new-export
+```
+
+The export includes the wheel, controller, exact model, supplied starting
+values and comparison-only observable data. The notebook fetches its inputs
+and wheel relative to its own URL, verifies their checksums, and installs the
+verified wheel bytes from Pyodide's filesystem.
+Ordinary HTML export does not package these external assets automatically.
 
 The load-or-compute controls preserve accumulated intermediate points. Forced
 boundary recomputation archives both verified-boundary banks and all completed
@@ -269,8 +321,9 @@ Independent native planar and nonplanar Euclidean-anchor validation is the
 separate prerequisite described above. Supply its report with `--anchor-report`
 to associate the full physical run with that matching-source evidence. Success
 of the lightweight tests alone must not be reported as completion of the
-native-boundary acceptance. The full cold numerical calculation and its
-performance measurements remain pending until the long runs finish.
+native-boundary acceptance. Recorded cold native results, source versions and
+uncertainty limits are available in the validation report linked above; a new
+runtime or dependency graph needs its own acceptance evidence.
 
 ## Live RustRed generation and artifact exploration
 

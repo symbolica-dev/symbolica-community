@@ -15,13 +15,15 @@ def _(mo):
 
     The integral evaluator uses exact physical propagators and the published,
     symbolically certified basis maps and differential equations for 48 planar
-    and 61 nonplanar masters. It computes boundary values through native auxiliary-mass flow
-    and recursive boundary reductions. The same series solver then transports
+    and 61 nonplanar masters. The notebook includes boundary values previously
+    computed through native auxiliary-mass flow and recursive boundary reductions.
+    The live series solver then transports
     these values in physical kinematics. Accepted intermediate points stay in a
     reusable binary boundary cache.
 
-    **Run the stages in order.** Boundary generation is a substantial native
-    computation. Opening this notebook starts no integral evaluation. Cancellation
+    **Run the stages in order.** First load the supplied starting values, then
+    compute physical transport and the amplitude. Recomputing the boundaries is
+    an optional, substantial native calculation. Opening this notebook starts no integral evaluation. Cancellation
     retains completed epsilon samples and completed boundary configurations.
     Native typed errors remain visible if a reduction or accuracy check fails.
     No Mathematica installation or plugin runtime is used.
@@ -34,7 +36,9 @@ def _(mo):
     19 relative comparison digits. Independent 40-digit regeneration and restart
     acceptance are tracked in
     [the validation report](https://github.com/alphal00p/RustFlow/blob/main/docs/python-notebook-status.md).
-    Published numerical reference values are comparison data only.
+    The bundled seeds contain our independently refined 40-digit results and their
+    uncertainty evidence. Published numerical reference values remain comparison
+    data only; no destination values or amplitudes are supplied to the evaluator.
     """)
     return
 
@@ -52,20 +56,62 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _():
+async def _():
     import importlib.util
+    import hashlib as _hashlib
     import json
+    import sys as _sys
     from pathlib import Path
     import marimo as mo
+
+    if _sys.platform == "emscripten":
+        import micropip as _micropip
+        from pyodide.http import pyfetch as _pyfetch
+
+        _base = mo.notebook_location()
+        _response = await _pyfetch(str(_base / "gg-hg-assets.json"))
+        if _response.status != 200:
+            raise RuntimeError("Export this notebook with scripts/export_gg_hg_wasm.py to include its wheel and scientific inputs.")
+        _manifest = await _response.json()
+        if _manifest["schema"] != "higgs-jet-browser-assets-v1":
+            raise ValueError("Unsupported browser asset manifest")
+        _directory = Path.cwd() / "gg_hg_inputs"
+        for _name, _digest in _manifest["files"].items():
+            _relative = Path(_name)
+            if _relative.is_absolute() or ".." in _relative.parts:
+                raise ValueError("Invalid browser asset path")
+            _response = await _pyfetch(str(_base / _name))
+            if _response.status != 200:
+                raise RuntimeError(f"Cannot load browser input {_name}: HTTP {_response.status}")
+            _payload = await _response.bytes()
+            if _hashlib.sha256(_payload).hexdigest() != _digest:
+                raise ValueError(f"Browser input checksum mismatch: {_name}")
+            _path = _directory / _relative
+            _path.parent.mkdir(parents=True, exist_ok=True)
+            _path.write_bytes(_payload)
+        _wheel_name = _manifest["wheel"]
+        if Path(_wheel_name).name != _wheel_name or not _wheel_name.endswith(".whl"):
+            raise ValueError("Invalid browser wheel path")
+        _response = await _pyfetch(str(_base / _wheel_name))
+        if _response.status != 200:
+            raise RuntimeError(f"Cannot load browser wheel: HTTP {_response.status}")
+        _payload = await _response.bytes()
+        if _hashlib.sha256(_payload).hexdigest() != _manifest["wheel_sha256"]:
+            raise ValueError("Browser wheel checksum mismatch")
+        _wheel_path = _directory / _wheel_name
+        _wheel_path.write_bytes(_payload)
+        del _payload
+        await _micropip.install("emfs:" + str(_wheel_path))
+    else:
+        _directory = Path(__file__).resolve().parent
+
     from symbolica import ComplexFloat, E, Float
     from symbolica.community.hep.integration import (
         BoundaryCache,
         EvaluationOptions,
-        IntegralEvaluator,
         KinematicTransport,
     )
 
-    _directory = Path(__file__).resolve().parent
     _spec = importlib.util.spec_from_file_location("gg_hg_support", _directory / "gg_hg_support.py")
     _support = importlib.util.module_from_spec(_spec)
     _spec.loader.exec_module(_support)
@@ -73,7 +119,7 @@ def _():
     data_directory = _directory / "data" / "gg_hg"
     return (
         BoundaryCache, CalculationSession, ComplexFloat, E, EvaluationOptions, Float,
-        IntegralEvaluator, KinematicTransport, Path, data_directory, json, mo,
+        KinematicTransport, Path, data_directory, json, mo,
     )
 
 
@@ -86,6 +132,7 @@ def _(CalculationSession, Path, data_directory):
         digits=20,
         workers=1,
         boundary_workers=1,
+        boundary_bundle=data_directory,
     )
     return (session,)
 
@@ -113,7 +160,8 @@ def _(mo, session):
     this demonstration.
 
     Requested observable accuracy is **20 decimal digits**. Seeds start at
-    **30 digits**, and the displayed uncertainty is propagated from independent
+    **40 digits** in the supplied bundle; optional native recomputation starts at
+    **30 digits**. The displayed uncertainty is propagated from independent
     sample/precision checks. Working precision alone is not an accuracy claim.
     """)
     return
@@ -125,8 +173,8 @@ def _(mo, session):
         session.submit(stage, **kwargs)
         return f"Started {stage}"
 
-    boundary_load = mo.ui.button(label="1 · Load or compute boundaries", on_click=lambda _: launch("boundaries"))
-    boundary_force = mo.ui.button(label="Recompute boundaries", on_click=lambda _: launch("boundaries", recompute=True))
+    boundary_load = mo.ui.button(label="1 · Load supplied boundaries", on_click=lambda _: launch("supplied_boundaries"))
+    boundary_force = mo.ui.button(label="Recompute boundaries (native)", disabled=not session.automatic_boundary_generation_available, on_click=lambda _: launch("boundaries", recompute=True))
     transport_load = mo.ui.button(label="2 · Load or compute transport", on_click=lambda _: launch("transport"))
     transport_force = mo.ui.button(label="Recompute transport", on_click=lambda _: launch("transport", recompute=True))
     amplitude_load = mo.ui.button(label="3 · Load or assemble amplitude", on_click=lambda _: launch("amplitude"))
@@ -142,6 +190,7 @@ def _(mo, session):
         mo.hstack([restart, nearby]),
         mo.hstack([cancel, refresh]),
         mo.md("Forced boundary recomputation bypasses numerical samples and boundary values while reusing exact reductions. Forced transport starts from the saved seed-only bank. Reassembly reruns the native contractions' scalar evaluation and uncertainty propagation."),
+        mo.md("In the browser, transport uses one core and yields between configurations after saving progress. Cancellation takes effect between configurations; each individual solver or amplitude call is synchronous."),
     ])
     return (refresh,)
 
@@ -250,9 +299,11 @@ def _(mo):
     Basis transformations are checked with native exact Symbolica arithmetic.
     Reference numerical coefficients are comparison data only.
 
-    For a restart, reopen the notebook with the same cache directory and run
-    the load-or-compute controls. The explicit binary-reload control verifies
-    bit-for-bit endpoint equality and zero transport steps. Nearby transport
+    For a native restart, reopen the notebook with the same cache directory and
+    run the load-or-compute controls. In the browser, the cache lives in the
+    current page's virtual filesystem; closing or reloading the page starts
+    fresh. The explicit binary-reload control verifies bit-for-bit endpoint
+    equality and zero transport steps within the running session. Nearby transport
     retains and searches the growing collection of physical intermediate points.
     Long headless acceptance is separate from ordinary notebook smoke checks.
     """)

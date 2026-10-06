@@ -90,7 +90,7 @@ pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, f
 ] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "92cfc9d2babfd95af8205b1193b4ec303bf8b610", default-features = false, features = ["python"] }
+symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "7096ba8e1f4d7edda4402f9ff01c961f6f3e6a4e", default-features = false, features = ["python"] }
 # Compile the IBP bridge into the host extension to share native Symbolica atoms.
 rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", branch = "main", features = ["campaign-api"] }
 # Share the host kernel; OneLOop currently requires native numeric/JIT support.
