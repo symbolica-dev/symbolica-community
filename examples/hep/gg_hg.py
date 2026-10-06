@@ -266,12 +266,6 @@ def _(AccuracyError, E, amplitude, form_factors, masses, mh2, model, s, t):
 
 
 @app.cell(hide_code=True)
-def _(amplitude, mo, observables):
-    mo.vstack([mo.md("## Native HEPKit diagrams"), *amplitude.diagrams])
-    return
-
-
-@app.cell(hide_code=True)
 def _(ComplexFloat, E, Float, Model, data_directory, form_factors, json, masses, mh2, mo, model, observables, parameters, s, t):
     _result = observables
     # Comparison data is loaded only here, after the native result exists.
