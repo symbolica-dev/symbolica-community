@@ -57,7 +57,7 @@ def file_hash(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify(run_directory):
+def verify(run_directory, previous_checkpoint=None):
     run = json.loads((run_directory / "run.json").read_text())
     assert run["schema"] == "gg-hg-actual-pyodide-run-v1" and run["status"] == "passed"
     assert run["available_parallelism"] == 1 and run["license_environment_supplied"] is False
@@ -116,7 +116,7 @@ def verify(run_directory):
     resumed_comparison = None
     if full and "resumed_from" in run:
         prior = run["resumed_from"]
-        previous_directory = Path(prior["directory"]) / prior["generation"]
+        previous_directory = (previous_checkpoint or Path(prior["directory"])) / prior["generation"]
         previous_manifest = json.loads((previous_directory / "checkpoint.json").read_text())
         assert previous_manifest["identity"] == run["identity"]
         previous_path = previous_directory / "acceptance.json"
@@ -168,8 +168,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run_directory", type=Path)
     parser.add_argument("output", type=Path)
+    parser.add_argument("--previous-checkpoint", type=Path,
+                        help="Relocated previous checkpoint directory; identity and report hashes must still match")
     args = parser.parse_args()
-    report = verify(args.run_directory)
+    report = verify(args.run_directory, args.previous_checkpoint)
     with args.output.open("x") as destination:
         json.dump(report, destination, indent=2)
         destination.write("\n")
