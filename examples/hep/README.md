@@ -21,11 +21,21 @@ Existing HEPKit class identities and the exception hierarchy are preserved;
 their Python `__module__` and bundled stubs name `symbolica.community.hepkit`.
 FastSecDec wrappers use `symbolica.community.hepkit.sector_decomposition`.
 
-The FastSecDec bindings, notebook, input builders and scientific
-tests are maintained in [FastSecDec](https://github.com/alphal00p/fastSecDec/tree/main/examples/hepkit).
-Community provides HEPKit registration and reexports in standard community builds. See the
-[notebook guide](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/README.md)
-and [build instructions](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/BUILD.md).
+Two FastSecDec notebooks are available here:
+
+- [Interactive sector-decomposition showcase](fastsecdec_showcase.py): start with
+  a massive scalar triangle, then explore numerator examples, streamed generation
+  and integration, and individual sectors.
+- [One gg → HH double box](gghh.py): generate the Standard Model diagram, specify
+  masses and helicities inline, and call `diagram.sector_decompose(...)` before
+  QMC or Havana integration. Its expensive calculation cells start disabled.
+
+See the [local notebook guide](FASTSECDEC_SHOWCASE.md) for launch commands.
+The notebooks and showcase input/presentation helpers are copied from
+[FastSecDec](https://github.com/alphal00p/fastSecDec/tree/main/examples/hepkit).
+The implementation, substantive bindings and scientific tests remain there;
+community supplies HEPKit registration and reexports in standard community builds.
+See the [build instructions](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/BUILD.md).
 
 Numerical external states use the shared GammaLoop/MadGraph conventions:
 

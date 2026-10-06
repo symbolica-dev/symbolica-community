@@ -1,0 +1,80 @@
+{
+  "diagram_id": "eb51e855105cae69514fd9dcdd4bbffe",
+  "diagram_name": "FK018",
+  "options": {
+    "allow_self_loops": false,
+    "allow_zero_flow_edges": false,
+    "cut_amplitude_filters": [],
+    "filter_zero_color": false,
+    "forced_cuts": [],
+    "graph_filters": [
+      {
+        "loop_count_range": [
+          2,
+          2
+        ]
+      }
+    ],
+    "graph_prefix": "FK",
+    "loop_momentum_bases": {},
+    "max_vertices": 6,
+    "named_loop_momentum_bases": {},
+    "numerator_grouping": "none",
+    "numerator_prefactor": "1",
+    "projector": "1",
+    "selected_diagram_ids": null,
+    "selected_diagram_names": null,
+    "symmetrize_external_fermions": false,
+    "symmetrize_final": false,
+    "symmetrize_initial": false,
+    "symmetrize_left_right": false,
+    "threads": 1,
+    "vetoed_diagram_ids": [],
+    "vetoed_diagram_names": []
+  },
+  "process": {
+    "incoming": [
+      {
+        "kind": "pdg",
+        "value": 21
+      },
+      {
+        "kind": "pdg",
+        "value": 21
+      }
+    ],
+    "outgoing_alternatives": [
+      [
+        {
+          "kind": "pdg",
+          "value": 25
+        },
+        {
+          "kind": "pdg",
+          "value": 25
+        }
+      ]
+    ],
+    "particle_veto": [],
+    "vertex_allow": [
+      {
+        "kind": "name",
+        "value": "V_137"
+      },
+      {
+        "kind": "name",
+        "value": "V_141"
+      }
+    ],
+    "vertex_veto": []
+  },
+  "report": {
+    "completed": true,
+    "interaction_assignment_count": 192,
+    "retained_count": 192,
+    "topology_count": 192,
+    "zero_numerator_count": 0
+  },
+  "source_model_blake3": "1940fed7cfe99957f8acbe9223d9b163b962aa6a8a557f907ed783b01d4bb190",
+  "symmetry_factor_is_diagnostic_only": true
+}

@@ -1,0 +1,20 @@
+{
+  "origin": "https://github.com/alphal00p/fastSecDec",
+  "revision": "780c0853b868bf85ada8e71bd5894eda9783b373",
+  "directory": "examples/gghh_double_box",
+  "files": {
+    "model.json": "ba2a306a0e149da39ee3cdf92a10882e0e2a084154279cc3f8cd62a7e4130048",
+    "parameters.json": "4f4859a88b40144c42c7ebaf0da79b40bd43d317c9b17796007c1b74dca75da1",
+    "raw-diagram.json": "20c3713526956e824a1a78d39a896fc67f033d8b4b2d984a140b9f5b0ce2e39b",
+    "generation.json": "e7291c84080650cc9dc7628b7672713ff5aadce97e2795b0e737ad666225ca28"
+  },
+  "native_generator_sources": {
+    "crates/fastsecdec/examples/gghh_double_box/main.rs": "565782e64349a85e21f54b74cbb378bad8b9dcc7849152bfacb81015762c8041",
+    "crates/fastsecdec/examples/gghh_double_box/select.rs": "46366acaf478b713e9bda5374b7e9cc3dcb2e0b11fefc0d6f647382110034574",
+    "crates/fastsecdec/examples/gghh_double_box/export.rs": "debdbbd898efb7c75982ab68f7927450f41c4e65a362e658a06030bbb0fbe759",
+    "crates/fastsecdec/examples/gghh_double_box/color.rs": "525b46f6673a51d4cafeed18d56ba7bd3b86f4a58c05ac6ed7b401cea5dc3b73",
+    "crates/fastsecdec/examples/gghh_double_box/point.rs": "64b92f68d0d206acf13ab193cd6afc20e7676e5b498e7b01ac366962cfb69545"
+  },
+  "selection": "Native Linnet: six-top hexagon, central gluon, cycles [4,4,6], each box contains g and H. Live HEPKit generation must match the complete archived raw native input.",
+  "contains": "Model, parameter card and native raw diagram identity only. No generated kernels, integration checkpoints or numerical results."
+}
