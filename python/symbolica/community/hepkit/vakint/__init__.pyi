@@ -3,11 +3,7 @@
 
 import builtins
 import typing
-from symbolica.core import Expression, FormattedOutput
-from symbolica.community.hepkit import FeynmanDiagram, IntegralFamily
-
-def integral_from_diagram(diagram: FeynmanDiagram, family: IntegralFamily, numerator: Expression, *, powers: typing.Optional[typing.Sequence[int]] = None, parameter_substitutions: typing.Optional[typing.Mapping[Expression, Expression]] = None, external_momenta: typing.Sequence[Expression] = ()) -> VakintExpression:
-    """Checked scalar-vacuum ingress from the graph's stored routing; no text parsing."""
+from symbolica.core import Expression
 
 @typing.final
 class Vakint:
@@ -24,15 +20,32 @@ class Vakint:
 
         ## Examples
         ```python
-        >>> from symbolica.community.hepkit.vakint import Vakint
-        >>> vakint = Vakint(evaluation_order=[])
-        >>> vakint is not None
-        True
+        vakint = Vakint(
+            integral_normalization_factor="MSbar",
+            mu_r_sq_symbol=S("mursq"),
+            # If you select 5 terms, then MATAD will be used, but for 4 and fewer, alphaLoop is will be used as
+            # it is first in the evaluation_order supplied.
+            number_of_terms_in_epsilon_expansion=4,
+            evaluation_order=[
+                VakintEvaluationMethod.new_alphaloop_method(),
+                VakintEvaluationMethod.new_matad_method(),
+                VakintEvaluationMethod.new_fmft_method(),
+                VakintEvaluationMethod.new_pysecdec_method(
+                    min_n_evals=10_000,
+                    max_n_evals=1000_000,
+                    numerical_masses=masses,
+                    numerical_external_momenta=external_momenta
+                ),
+            ],
+            tensor_reduction_method="feynkit",
+            form_exe_path="form",
+            python_exe_path="python3",
+        )
         ```
 
         An empty evaluation order is appropriate for matching, canonicalization, and tensor
         reduction. Add explicit `VakintEvaluationMethod` entries before evaluating an integral;
-        each operation validates the external executables it needs.
+        construction validates the executables required by those entries.
 
         Parameters
         ----------
@@ -166,7 +179,8 @@ class Vakint:
         """
     def tensor_reduce(self, integral_expression: Expression) -> Expression:
         r"""
-        Reduce the tensor integrals in a Vakint expression to scalar integrals.
+        Convert a vakint expression to a form where tensor integrals are reduced to scalar integrals.
+        The backend is selected by `tensor_reduction_method` when constructing `Vakint`.
 
         ## Examples
         ```python
@@ -238,9 +252,8 @@ class Vakint:
         True
         ```
 
-        This path uses the selected tensor backend before integral evaluation. Here the native
-        FeynKit backend reduces the numerator; the AlphaLoop integral-evaluation method requires
-        FORM, just as it does for `evaluate_integral`.
+        This complete path performs tensor reduction before integral evaluation and therefore
+        has the same FORM requirement as `evaluate_integral` for the AlphaLoop method.
 
         Parameters
         ----------
@@ -259,13 +272,6 @@ class VakintEvaluationMethod:
         String representation of the evaluation method.
         """
     @classmethod
-    def new_rustred_method(cls, substitute_masters: typing.Optional[bool] = None) -> VakintEvaluationMethod:
-        """Native scalar reduction; pair with the default FeynKit tensor backend for no FORM.
-
-        Four-loop shipped candidates are checked at each requested integral;
-        successful evaluation is not unrestricted family closure.
-        """
-    @classmethod
     def new_alphaloop_method(cls) -> VakintEvaluationMethod:
         r"""
         Create a new VakintEvaluationMethod instance representing the AlphaLoop method.
@@ -278,6 +284,31 @@ class VakintEvaluationMethod:
         >>> "AlphaLoop" in str(alphaloop_method)
         True
         ```
+        """
+    @classmethod
+    def new_rustred_method(cls, substitute_masters: typing.Optional[builtins.bool] = None) -> VakintEvaluationMethod:
+        r"""
+        Create the opt-in FORM-independent RustRed scalar-integral evaluation method.
+
+        This method leaves Vakint's tensor-reduction selection unchanged. It uses
+        shipped closing artifacts for supported one- through three-loop equal-mass
+        vacuum families and guarded, finite-tested candidate programs at four loops.
+        Four-loop success is pointwise reduction, not arbitrary-index closure.
+        The default FeynKit tensor prepass is also FORM-independent; explicitly
+        choosing the historical AlphaLoop tensor prepass still requires FORM.
+
+        ## Examples
+        ```python
+        rustred_method = VakintEvaluationMethod.new_rustred_method(
+            substitute_masters=True
+        )
+        ```
+
+        Parameters
+        ----------
+
+        substitute_masters : Optional[bool]
+           Whether to substitute Vakint's known master evaluations. Default is True.
         """
     @classmethod
     def new_matad_method(cls, expand_masters: typing.Optional[builtins.bool] = None, susbstitute_masters: typing.Optional[builtins.bool] = None, substitute_hpls: typing.Optional[builtins.bool] = None, direct_numerical_substition: typing.Optional[builtins.bool] = None) -> VakintEvaluationMethod:
@@ -345,7 +376,7 @@ class VakintEvaluationMethod:
         it means `substitute_masters`.
         """
     @classmethod
-    def new_pysecdec_method(cls, quiet: typing.Optional[builtins.bool] = None, relative_precision: typing.Optional[builtins.float] = None, min_n_evals: typing.Optional[builtins.int] = None, max_n_evals: typing.Optional[builtins.int] = None, reuse_existing_output: typing.Optional[builtins.str] = None, numerical_parameters: typing.Optional[typing.Mapping[builtins.str, tuple[builtins.float, builtins.float]]] = None, numerical_external_momenta: typing.Optional[typing.Mapping[builtins.int, tuple[builtins.float, builtins.float, builtins.float, builtins.float]]] = None) -> VakintEvaluationMethod:
+    def new_pysecdec_method(cls, quiet: typing.Optional[builtins.bool] = None, relative_precision: typing.Optional[builtins.float] = None, min_n_evals: typing.Optional[builtins.int] = None, max_n_evals: typing.Optional[builtins.int] = None, reuse_existing_output: typing.Optional[builtins.str] = None, numerical_masses: typing.Optional[typing.Mapping[builtins.str, builtins.float]] = None, numerical_external_momenta: typing.Optional[typing.Mapping[builtins.int, tuple[builtins.float, builtins.float, builtins.float, builtins.float]]] = None) -> VakintEvaluationMethod:
         r"""
         Create a new VakintEvaluationMethod instance representing the numerical pySecDec method.
 
@@ -358,7 +389,7 @@ class VakintEvaluationMethod:
         ...     min_n_evals=10_000,
         ...     max_n_evals=1_000_000_000_000,
         ...     reuse_existing_output=None,
-        ...     numerical_parameters={"muvsq": (1.0, 0.0), "coupling": (1.0, 2.0)},
+        ...     numerical_masses={"muvsq": 1.0},
         ...     numerical_external_momenta={
         ...         1: (1.0, 0.0, 0.0, 0.0),
         ...         2: (0.0, 1.0, 0.0, 0.0),
@@ -368,7 +399,7 @@ class VakintEvaluationMethod:
         True
         ```
 
-        pySecDec performs numerical evaluation, so every required mass, numerator parameter and external momentum
+        pySecDec performs numerical evaluation, so every required mass and external momentum
         must have a numerical value. Constructing this method does not run pySecDec; evaluation
         requires a working Python/pySecDec installation.
 
@@ -385,8 +416,8 @@ class VakintEvaluationMethod:
            The maximum number of evaluations to be performed in the numerical integration. Default is 1,000,000,000,000.
         reuse_existing_output : Optional[str]
            Path to existing pySecDec output to reuse. Default is None.
-        numerical_parameters : Optional[Dict[str, Tuple[float, float]]]
-           Mass and numerator parameter values as (real, imaginary) pairs. Pole masses must be real. Default is an empty dictionary.
+        numerical_masses : Optional[Dict[str, float]]
+           A dictionary mapping mass parameter names to their numerical values. Default is an empty dictionary.
         numerical_external_momenta : Optional[Dict[int, Tuple[float, float, float, float]]]
            A dictionary mapping external momentum indices to their numerical 4-vector values. Default is an empty dictionary.
         """
@@ -398,8 +429,14 @@ class VakintExpression:
 
     Construct this wrapper from a Symbolica expression before applying Vakint operations.
     """
-    def _repr_html_(self) -> str: ...
-    def formatted(self, **options: typing.Any) -> FormattedOutput: ...
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Display through Symbolica's native rich expression printer.
+        """
+    def formatted(self, **options: typing.Any) -> typing.Any:
+        r"""
+        Return Symbolica's `FormattedOutput`; keyword options are forwarded unchanged.
+        """
     def __str__(self) -> builtins.str:
         r"""
         String representation of the VakintExpression.
@@ -460,9 +497,20 @@ class VakintNumericalResult:
     Numerical Laurent series in the dimensional-regularization parameter epsilon.
     """
     def to_expression(self, epsilon_symbol: typing.Optional[Expression] = None) -> Expression:
-        """Native arbitrary-precision Laurent expression; default variable vakint::ε."""
-    def _repr_html_(self) -> str: ...
-    def formatted(self, **options: typing.Any) -> FormattedOutput: ...
+        r"""
+        Return a native Symbolica expression without rounding coefficients to Python floats.
+
+        The default variable is `vakint::ε`. Use `Vakint.numerical_result_to_expression`
+        when the originating engine has a custom epsilon symbol.
+        """
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Display through Symbolica's native rich expression printer.
+        """
+    def formatted(self, **options: typing.Any) -> typing.Any:
+        r"""
+        Return Symbolica's `FormattedOutput`; keyword options are forwarded unchanged.
+        """
     def __str__(self) -> builtins.str:
         r"""
         String representation of the numerical result.

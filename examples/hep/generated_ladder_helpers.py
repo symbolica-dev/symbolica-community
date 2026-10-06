@@ -2,7 +2,8 @@
 
 from math import prod
 
-from symbolica import E, Graph, Replacement, S
+from symbolica import E, Replacement, S
+from symbolica.community.graph import Graph, node, edge, source, sink, Orientation
 from symbolica.community import hepkit as hep
 from symbolica.community import tensor as sp
 
@@ -15,27 +16,36 @@ def ladder_filter(outer_quark=False):
     """
     target = Graph()
     for _ in range(8):
-        target.add_node(0)
+        target.add_node(node(data=0))
     # Generator labels external legs by their signed, one-based global index.
-    target.add_node(-1)
-    target.add_node(2)
+    target.add_node(node(data=-1))
+    target.add_node(node(data=2))
     for i in range(8):
-        target.add_edge(i, (i + 1) % 8, data=5 if outer_quark else 21)
+        target.add_edge(
+            edge(
+                source(i),
+                second=sink((i + 1) % 8),
+                data=5 if outer_quark else 21,
+                orientation=Orientation.Undirected,
+            )
+        )
     for i, j in ((1, 7), (2, 6), (3, 5), (0, 8), (4, 9)):
-        target.add_edge(i, j, data=21)
+        target.add_edge(
+            edge(source(i), second=sink(j), data=21, orientation=Orientation.Undirected)
+        )
     target = target.canonize()[0]
 
     def accept(graph, completed):
         # An incomplete branch can still grow into the requested ladder.
         if completed < len(graph):
             return True
-        if len(graph) != 10 or graph.num_edges() != 13:
+        if len(graph) != 10 or graph.n_edges != 13:
             return False
         # Ignore orientation only in the callback snapshot. The generator keeps
         # the physical quark arrows and their signs in the returned diagram.
-        for edge in range(graph.num_edges()):
-            graph.set_directed(edge, False)
-        return graph.canonize()[0] == target
+        for index in range(graph.n_edges):
+            graph.set_orientation(index, Orientation.Undirected)
+        return graph.is_isomorphic(target)
 
     return accept
 
@@ -49,13 +59,13 @@ def project_and_split(numerator, dimension):
     ):
         slots = [
             slot.dual()
-            for slot in numerator.structure.slots
+            for slot in numerator.structure.slots()
             if slot.representation == representation
         ]
         assert len(slots) == 2
         projector *= sp.TensorExpression.g(representation)(*slots)
     projected = projector * numerator
-    assert not projected.structure.slots
+    assert not projected.structure.slots()
     color_reps = (
         sp.Representation.cof(3),
         sp.Representation.cof(3).dual(),
@@ -63,7 +73,7 @@ def project_and_split(numerator, dimension):
     )
     color, spacetime = [], []
     for factor in projected.to_expression():
-        slots = sp.TensorExpression(factor).structure.slots
+        slots = sp.TensorExpression(factor).structure.slots()
         if slots and all(slot.representation in color_reps for slot in slots):
             color.append(factor)
         else:

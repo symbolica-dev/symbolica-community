@@ -209,28 +209,37 @@ def test_page_source_can_serve_jupyter_comm_thread():
 
 def test_three_rung_ladder_pages_keep_factorization_and_budgets():
     """The 6,001-term example that formerly produced 380,000 MathML nodes."""
-    from symbolica import Graph
+    from symbolica.community.graph import Graph, node, edge, source, sink, Orientation
     from symbolica.community.hepkit import Model
 
     target = Graph()
     for _ in range(8):
-        target.add_node(0)
-    target.add_node(-1)
-    target.add_node(2)
+        target.add_node(node(data=0))
+    target.add_node(node(data=-1))
+    target.add_node(node(data=2))
     for i in range(8):
-        target.add_edge(i, (i + 1) % 8, data=21)
+        target.add_edge(
+            edge(
+                source(i),
+                second=sink((i + 1) % 8),
+                data=21,
+                orientation=Orientation.Undirected,
+            )
+        )
     for i, j in ((1, 7), (2, 6), (3, 5), (0, 8), (4, 9)):
-        target.add_edge(i, j, data=21)
+        target.add_edge(
+            edge(source(i), second=sink(j), data=21, orientation=Orientation.Undirected)
+        )
     target = target.canonize()[0]
 
     def accept(graph, completed):
         if completed < len(graph):
             return True
-        if len(graph) != 10 or graph.num_edges() != 13:
+        if len(graph) != 10 or graph.n_edges != 13:
             return False
-        for edge in range(graph.num_edges()):
-            graph.set_directed(edge, False)
-        return graph.canonize()[0] == target
+        for index in range(graph.n_edges):
+            graph.set_orientation(index, Orientation.Undirected)
+        return graph.is_isomorphic(target)
 
     model = Model.qcd()
     diagram = model.process(["g"], ["g"], vertex_allow=["V_36"]).generate_diagrams(

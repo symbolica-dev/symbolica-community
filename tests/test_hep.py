@@ -54,10 +54,8 @@ def test_flat_namespace_and_stubs():
     classes = {
         name: value for name, value in vars(hep).items() if isinstance(value, type)
     }
-    shared = {"DiagramRender", "LayoutSettings", "StrokeStyle"}
-    for name in shared:
-        assert classes.pop(name) is getattr(graph, name)
-        assert getattr(graph, name).__module__ == "symbolica.community.graph"
+    for name in ("DiagramRender", "RenderSettings", "LayoutSettings", "Stroke", "StrokeStyle"):
+        assert not hasattr(hep, name)
     assert all(
         value.__module__ == "symbolica.community.hepkit" for value in classes.values()
     )

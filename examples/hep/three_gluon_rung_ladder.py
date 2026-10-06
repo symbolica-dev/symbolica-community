@@ -6,7 +6,8 @@ app = marimo.App(width="medium", app_title="Three-rung ladders")
 with app.setup(hide_code=True):
     import marimo as mo
 
-    from symbolica import Graph, Replacement, S
+    from symbolica import S
+    from symbolica.community.graph import Graph, node, edge, source, sink, Orientation
     from symbolica.community.hepkit import Model
     from symbolica.community.tensor import TensorExpression, Representation
 
@@ -39,7 +40,7 @@ def _():
     mo.md("""
     ## Setup and notebook helpers
 
-    Imports, topology selection, and scalar-product coordinates are defined below.
+    Imports and topology selection are defined below.
     This notebook needs no companion helper module.
     The graph template only selects the topology: the generator supplies all
     Feynman rules, fermion arrows, symmetry factors and momentum routing.
@@ -56,27 +57,36 @@ def ladder_filter(outer_quark=False):
     """
     target = Graph()
     for _ in range(8):
-        target.add_node(0)
+        target.add_node(node(data=0))
     # Generator labels external legs by their signed, one-based global index.
-    target.add_node(-1)
-    target.add_node(2)
+    target.add_node(node(data=-1))
+    target.add_node(node(data=2))
     for i in range(8):
-        target.add_edge(i, (i + 1) % 8, data=5 if outer_quark else 21)
+        target.add_edge(
+            edge(
+                source(i),
+                second=sink((i + 1) % 8),
+                data=5 if outer_quark else 21,
+                orientation=Orientation.Undirected,
+            )
+        )
     for i, j in ((1, 7), (2, 6), (3, 5), (0, 8), (4, 9)):
-        target.add_edge(i, j, data=21)
+        target.add_edge(
+            edge(source(i), second=sink(j), data=21, orientation=Orientation.Undirected)
+        )
     target = target.canonize()[0]
 
     def accept(graph, completed):
         # An incomplete branch can still grow into the requested ladder.
         if completed < len(graph):
             return True
-        if len(graph) != 10 or graph.num_edges() != 13:
+        if len(graph) != 10 or graph.n_edges != 13:
             return False
         # Ignore orientation only in the callback snapshot. The generator keeps
         # the physical quark arrows and their signs in the returned diagram.
-        for edge in range(graph.num_edges()):
-            graph.set_directed(edge, False)
-        return graph.canonize()[0] == target
+        for index in range(graph.n_edges):
+            graph.set_orientation(index, Orientation.Undirected)
+        return graph.is_isomorphic(target)
 
     return accept
 
@@ -126,7 +136,6 @@ def _(ladders):
 @app.cell
 def _(ladder_choice, ladders):
     diagram = ladders[ladder_choice.value]
-    graph_weight = diagram.overall_factor_expression(evaluate=True)
     diagram
     return (diagram,)
 
@@ -168,8 +177,8 @@ def _():
 
 @app.cell
 def _(numerator, projector):
-    (projector * numerator).simplify_algebra(gamma=False,
-        contract="minimal", color_substitute_cof_dimension_invariants=True
+    (projector * numerator).simplify_algebra(
+        gamma=False, contract="minimal", color_substitute_cof_dimension_invariants=True
     )
     return
 
@@ -189,17 +198,18 @@ def _(numerator):
 
 
 @app.cell
-def _():
-    return
-
-
-@app.cell
 def _(D, numerator):
     mink = Representation.mink(D)
     adjoint = Representation.coad(8)
-    projector = (
-        TensorExpression.g(mink) * TensorExpression.g(adjoint) / 8
-    ).index(*(slot.dual() for slot in numerator.structure.slots))
+    projector = (TensorExpression.g(mink) * TensorExpression.g(adjoint) / 8).index(
+        # Match the metric product's Lorentz-then-color port order.
+        *(
+            slot.dual()
+            for representation in (mink, adjoint)
+            for slot in numerator.structure.slots()
+            if slot.representation == representation
+        )
+    )
     projector
     return (projector,)
 
@@ -212,7 +222,7 @@ def _():
     Reduce the projected tensor in one call, including color and Dirac identities
     and Lorentz contractions.
 
-    Graph-informed tensor simplfication resutls in fast execution.
+    Graph-informed tensor simplification reduces the contraction cost.
     """)
     return
 
@@ -237,11 +247,6 @@ def _():
 @app.cell
 def _(reduced):
     len(reduced.to_expression().expand())
-    return
-
-
-@app.cell
-def _():
     return
 
 

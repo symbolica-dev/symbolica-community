@@ -86,10 +86,37 @@ import numpy
 await pyodide.runPythonAsync(`
 import symbolica.community.tensor as tensor_module
 from symbolica.community import graph as graph_module, hepkit as hepkit_module
-for name in ("DiagramRender", "LayoutSettings", "StrokeStyle"):
+for name in ("DiagramRender", "LayoutSettings", "Stroke", "RenderSettings", "Graph"):
     shared_type = getattr(graph_module, name)
     assert shared_type.__module__ == "symbolica.community.graph"
-    assert getattr(tensor_module, name) is getattr(hepkit_module, name) is shared_type
+    assert not hasattr(tensor_module, name)
+    assert not hasattr(hepkit_module, name)
+from symbolica import core
+assert not hasattr(core, "Graph") and not hasattr(core, "HalfEdge")
+signature = graph_module.EdgeSignature(0)
+generated = graph_module.Graph.generate(
+    [(i, signature) for i in range(4)], [[signature] * 3], max_loops=0,
+)
+assert len(generated) == 3
+assert all(type(value) is graph_module.Graph and type(size) is int for value, size in generated)
+value = generated[0][0]
+canonical, vertex_map, group_size, orbit = value.canonize()
+assert value.is_isomorphic(canonical) and group_size > 0
+assert sorted(vertex_map) == list(range(value.n_nodes))
+settings = graph_module.RenderSettings(
+    layouts=graph_module.LayoutSettings(impred_steps=1).then(impred_steps=1),
+)
+rendered = value.full_subgraph().render(config=settings)
+assert type(rendered) is graph_module.DiagramRender
+assert "<svg" in rendered.to_svg() and "graph-spec-path" in rendered.typst_source
+pages = graph_module.DiagramRender.from_sources({"main.typ": b"one #pagebreak() two"})
+assert len(pages.to_svg_pages()) == 2
+try:
+    pages.to_svg()
+except ValueError as error:
+    assert "2 pages" in str(error)
+else:
+    raise AssertionError("single-SVG access accepted a multipage document")
 from symbolica.community.tensor import Representation, Tensor, TensorExpression, TensorLibrary, TensorName, TensorNetwork, dot
 metric = TensorExpression(E("g(bis(4,1),bis(4,1))", default_namespace="spenso"))
 assert metric.simplify_algebra(contract="dots").to_expression() == E("4")
@@ -132,6 +159,24 @@ assert generated.report.completed and len(generated) > 0
 diagram = generated[0]
 assert isinstance(diagram, hep.FeynmanDiagram) and diagram.loop_count == 1
 diagram.validate()
+# Every owner snapshots multipage templates into the canonical render result.
+from pathlib import Path
+from tempfile import TemporaryDirectory
+with TemporaryDirectory() as directory:
+    template = Path(directory) / "pages.typ"
+    template.write_text("#let render(config) = [one #pagebreak() two]")
+    config = graph_module.RenderSettings(template=template)
+    generic = diagram.to_graph()
+    snapshots = [owner.render(config=config) for owner in (
+        generic, generic.full_subgraph(), diagram, network, hep.Amplitude([diagram]),
+    )]
+    template.unlink()
+    for snapshot in snapshots:
+        assert type(snapshot) is graph_module.DiagramRender
+        assert len(snapshot.to_svg_pages()) == 2
+        assert snapshot._repr_svg_() is None
+        assert snapshot._mime_() == ("text/html", snapshot.to_html())
+assert not hasattr(hep, "AmplitudeRender")
 restored = hep.FeynmanDiagram.from_json(model, diagram.to_json())
 assert restored.loop_count == 1
 cff = restored.build_cff()
