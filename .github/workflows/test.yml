@@ -47,7 +47,7 @@ jobs:
                   for wheel in dist/*.whl; do
                       pip install "$wheel[notebook-display]"
                   done
-                  pip install pytest ty numpy
+                  pip install pytest ty numpy "tomli>=2.0.1; python_version < '3.11'"
 
             - name: Check public community import types
               run: ty check --python-version 3.10 tests/typing/community_layout.py tests/typing/expression_products.py tests/typing/integration.py tests/typing/loop_integration.py tests/typing/scoped_reductions.py tests/typing/tensor_evaluation.py
