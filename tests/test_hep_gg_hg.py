@@ -1,6 +1,7 @@
 """Lightweight stage safety checks; these never compute two-loop boundaries."""
 
 import importlib.util
+import asyncio
 import hashlib
 import json
 import runpy
@@ -88,6 +89,116 @@ def test_native_inputs_do_not_read_numerical_references(tmp_path, monkeypatch):
         session.close()
 
 
+def test_cooperative_transport_checkpoints_yields_and_cancels(tmp_path, monkeypatch):
+    def no_threads(*args, **kwargs):
+        raise AssertionError("Cooperative execution must not create worker threads")
+
+    monkeypatch.setattr(SUPPORT, "ThreadPoolExecutor", no_threads)
+    session = SUPPORT.CalculationSession(
+        EXAMPLES / "data" / "gg_hg" / "native-model.json", tmp_path, cooperative=True,
+    )
+    flow, coordinate, add = constant_boundary_adder()
+    add(session.cache, "0", "exact constant seed")
+    session.configurations = [
+        ("constant", SimpleNamespace(label=f"point-{i}", root_sheets={}))
+        for i in range(3)
+    ]
+    session.systems = {"constant": SimpleNamespace(
+        evaluate=lambda cache, destination, sheets, **kw: flow.evaluate(
+            cache, destination, 0, 0, admit_straight_path=True, control=kw["control"],
+        ),
+    )}
+    session._destination = lambda system, configuration: {
+        coordinate: E(str(int(configuration.label[-1]) + 1)),
+    }
+
+    async def run():
+        session.submit("transport")
+        with pytest.raises(RuntimeError, match="wait_async"):
+            session.wait()
+        with pytest.raises(RuntimeError, match="already running"):
+            session.submit("transport")
+        # A browser event gets a turn between synchronous native calls.
+        while not session.results and not session._future.done():
+            await asyncio.sleep(0)
+        if session._future.done():
+            await session.wait_async()
+        assert list(session.results) == ["point-0"]
+        saved = numerical.BoundaryCache.load(tmp_path / "transport")
+        assert SUPPORT.boundary_evidence(saved) == SUPPORT.boundary_evidence(session.cache)
+        session.cancel()
+        with pytest.raises(numerical.CalculationCancelled):
+            await session.wait_async()
+        assert list(session.results) == ["point-0"]
+        assert "CalculationCancelled" in session.snapshot()["status"]
+        session.submit("transport")
+        result = await session.wait_async()
+        assert len(result) == 3 and result["point-0"].cache_hit
+        assert session.wait() == result
+        session.submit("restart")
+        assert all(r.cache_hit for r in (await session.wait_async()).values())
+
+    try:
+        asyncio.run(run())
+    finally:
+        session.close()
+
+
+def test_cooperative_wait_timeout_retains_work(tmp_path):
+    session = SUPPORT.CalculationSession(
+        EXAMPLES / "data" / "gg_hg" / "native-model.json", tmp_path, cooperative=True,
+    )
+
+    async def run():
+        ready = asyncio.Event()
+        session._future = asyncio.create_task(ready.wait())
+        with pytest.raises(TimeoutError):
+            await session.wait_async(timeout=0)
+        assert not session._future.cancelled()
+        ready.set()
+        assert await session.wait_async() is True
+
+    try:
+        asyncio.run(run())
+    finally:
+        session.close()
+
+
+def test_supplied_only_build_rejects_native_recomputation_before_reset(session, monkeypatch):
+    populate_banks(session)
+    before = SUPPORT.boundary_evidence(session.cache)
+    session.automatic_boundary_generation_available = False
+    with pytest.raises(RuntimeError, match="requires a native build"):
+        session.submit("boundaries", recompute=True)
+    with pytest.raises(RuntimeError, match="requires a native build"):
+        session.generate_boundaries(recompute=True)
+    assert SUPPORT.boundary_evidence(session.cache) == before
+    assert not (session.directory / "numerical-history").exists()
+
+
+def test_insufficient_supplied_accuracy_preserves_banks_without_native_refinement(session, monkeypatch):
+    populate_banks(session)
+    before = SUPPORT.boundary_evidence(session.cache)
+    session.automatic_boundary_generation_available = False
+    session.results = {configuration.label: object() for _, configuration in session.configurations}
+    session.amplitude = SimpleNamespace(evaluate=lambda *a, **kw: SimpleNamespace(
+        verified_relative_digits={"ew": 19, "heft": 40, "interference": 21},
+    ))
+    monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector", lambda: SimpleNamespace(
+        evaluate=lambda *a: SimpleNamespace(values=[], absolute_errors=[], provenance="supplied input"),
+    ))
+
+    def must_not_regenerate(**kwargs):
+        raise AssertionError("A supplied-only build cannot launch native boundary generation")
+
+    session.generate_boundaries = must_not_regenerate
+    with pytest.raises(numerical.AccuracyError, match="Import more accurate boundaries"):
+        session.assemble(recompute=True)
+    assert SUPPORT.boundary_evidence(session.cache) == before
+    assert not (session.directory / "numerical-history").exists()
+    assert session.observables is None and session.form_factors == {}
+
+
 def test_boundary_step_budget_preserves_precision_and_physical_transport(session, monkeypatch):
     native_options = numerical.EvaluationOptions
     requested = []
@@ -104,9 +215,9 @@ def test_boundary_step_budget_preserves_precision_and_physical_transport(session
     assert requested[1]["max_steps"] == 2000
     assert physical.digits == session.digits
     assert boundary.digits == 40
-    for options in (physical, boundary):
-        assert options.guard_digits == 60
-        assert options.series_order == 96
+    for options, guard, order in ((physical, 20, 16), (boundary, 60, 96)):
+        assert options.guard_digits == guard
+        assert options.series_order == order
         # Exercise the native options handoff without evaluating an integral.
         prepared = numerical.IntegralEvaluator(options=options).options
         assert prepared.digits == options.digits
@@ -410,7 +521,8 @@ def test_forced_amplitude_failure_cannot_restore_old_derived_values(session, mon
 
     exact_kernel = SimpleNamespace(evaluate=cancelled)
     session.amplitude = exact_kernel
-    monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector", lambda: SimpleNamespace(evaluate=project))
+    projector = SimpleNamespace(evaluate=project)
+    monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector", lambda: projector)
     session.submit("amplitude", recompute=True)
     with pytest.raises(RuntimeError if failure_stage == "admission" else numerical.CalculationCancelled):
         session.wait()
@@ -422,8 +534,7 @@ def test_forced_amplitude_failure_cannot_restore_old_derived_values(session, mon
         def restarted_projection(*args):
             raise RuntimeError("load-or-assemble must retry projection")
 
-        monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector",
-                            lambda: SimpleNamespace(evaluate=restarted_projection))
+        monkeypatch.setattr(projector, "evaluate", restarted_projection)
         session.submit("amplitude")
         with pytest.raises(RuntimeError, match="must retry projection"):
             session.wait()
@@ -435,12 +546,12 @@ def test_forced_amplitude_uses_current_exact_kinematics_and_all_transport_blocks
     session.observables, session.form_factors = old, {"old": object()}
     session.results = {configuration.label: object() for _, configuration in session.configurations}
     session.point = [E("71"), E("-29/3"), E("1")]
-    projection_calls, evaluation_calls = [], []
+    projection_calls, evaluation_calls, constructions = [], [], []
     projected = []
 
     def project(*args):
         projection_calls.append(args)
-        mass = ("W", "Z")[len(projection_calls) - 1]
+        mass = ("W", "Z")[(len(projection_calls) - 1) % 2]
         assert list(args[:3]) == session.point and args[3] == session.masses[mass]
         for topology, actual in zip(("planar", "nonplanar"), args[4:]):
             ordered = sorted((c for name, c in session.configurations
@@ -453,20 +564,35 @@ def test_forced_amplitude_uses_current_exact_kinematics_and_all_transport_blocks
     def evaluate(*args, **kwargs):
         evaluation_calls.append((args, kwargs))
         assert list(args[:3]) == session.point
-        assert list(args[3:]) == [projected[0].values, projected[1].values,
-                                 projected[0].absolute_errors, projected[1].absolute_errors]
+        assert list(args[3:]) == [projected[-2].values, projected[-1].values,
+                                 projected[-2].absolute_errors, projected[-1].absolute_errors]
         assert "current W" in kwargs["provenance"] and "current Z" in kwargs["provenance"]
         return new
 
     exact_kernel = SimpleNamespace(evaluate=evaluate)
     session.amplitude = exact_kernel
-    monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector", lambda: SimpleNamespace(evaluate=project))
+
+    def construct():
+        constructions.append(True)
+        return SimpleNamespace(evaluate=project)
+
+    monkeypatch.setattr(numerical, "HiggsJetFormFactorProjector", construct)
     assert session.assemble() is old
     session.submit("amplitude", recompute=True)
     assert session.wait() is new
     assert session.amplitude is exact_kernel
     assert len(projection_calls) == 2 and len(evaluation_calls) == 1
     assert session.form_factors == dict(zip(("W", "Z"), projected))
+    assert len(constructions) == 1
+    # A retained exact projector must still use new momenta, masses and masters.
+    session.point = [E("72"), E("-31/3"), E("1")]
+    session.masses = {"W": E("2/5"), "Z": E("3/5")}
+    session.results = {configuration.label: object() for _, configuration in session.configurations}
+    session.submit("amplitude", recompute=True)
+    assert session.wait() is new
+    assert len(projection_calls) == 4 and len(evaluation_calls) == 2
+    assert session.form_factors == dict(zip(("W", "Z"), projected[-2:]))
+    assert len(constructions) == 1
 
 
 @pytest.fixture
@@ -1000,9 +1126,37 @@ def test_form_factor_comparison_uses_all_recorded_reference_allowances(acceptanc
         acceptance.compare_form_factors(native, reference)
 
 
-@pytest.mark.parametrize("nearby", [False, True])
-def test_notebook_displays_eight_native_form_factors_at_the_current_point(monkeypatch, nearby):
+def test_visible_notebook_keeps_kernel_preparation_stable_and_defers_table_requests():
+    pytest.importorskip("marimo", minversion="0.24.0")
+    app = runpy.run_path(str(EXAMPLES / "gg_hg.py"), run_name="notebook_dependencies")["app"]
+    cells = [cell._cell for cell in app._cell_manager.cells()]
+    for name in ("model", "amplitude", "cache"):
+        cell = next(cell for cell in cells if name in cell.defs)
+        assert not {"s", "t", "mh2", "masses"}.intersection(cell.refs)
+    tables = [cell for cell in cells if "mo.ui.table(" in cell.code]
+    assert len(tables) == 2
+    assert all("observables" in cell.refs for cell in tables)
+
+
+@pytest.mark.parametrize("nearby,changed_mass,changed_coupling", [
+    (False, False, False), (True, False, False), (False, True, False), (False, False, True),
+])
+def test_notebook_displays_eight_native_form_factors_at_the_current_point(monkeypatch, nearby, changed_mass, changed_coupling):
     marimo = pytest.importorskip("marimo", minversion="0.24.0")
+    from symbolica.community.hepkit import Model
+
+    from symbolica.community.hep.integration import HiggsJetAmplitude
+
+    model = HiggsJetAmplitude.with_form_factor_vertices(Model.standard_model())
+    mw2, mz2 = E("5399/13074"), E("7775/14631")
+    parameters = {
+        model.parameter("aEWM1").symbol: E("128"),
+        model.parameter("aS").symbol: E("118/1000"),
+        model.parameter("MZ").symbol: mz2.sqrt(),
+        model.parameter("Gf").symbol: E("𝜋") * E("1/128") * mz2 / (E("2").sqrt() * mw2 * (mz2 - mw2)),
+    }
+    if changed_coupling:
+        parameters[model.parameter("aS").symbol] = E("12/100")
     reference = json.loads((EXAMPLES / "data/gg_hg/amplitude-validation.json").read_text())
     point = [E(value) for value in reference["physical_s_t_MH_squared"]]
     if nearby:
@@ -1019,6 +1173,7 @@ def test_notebook_displays_eight_native_form_factors_at_the_current_point(monkey
     native_values = {name: Float(value, decimal_digits=100)
                      for name, value in reference["expected_observables"].items()}
     display_session = SimpleNamespace(
+        automatic_boundary_generation_available=True,
         point=point, masses={"W": E("5399/13074"), "Z": E("7775/14631")},
         results={}, amplitude=SimpleNamespace(diagrams=[]), form_factors=form_factors,
         observables=SimpleNamespace(
@@ -1030,26 +1185,58 @@ def test_notebook_displays_eight_native_form_factors_at_the_current_point(monkey
         snapshot=lambda: {"done": True, "status": "ready", "timings": [], "events": []},
     )
     captured = []
+    captured_observables = []
     table = marimo.ui.table
 
     def record_table(data, *args, **kwargs):
         if kwargs.get("label") == "Native W/Z form factors and propagated uncertainties":
             captured.extend(data)
+        if kwargs.get("label") == "Coherent observables and propagated uncertainties":
+            captured_observables.extend(data)
         return table(data, *args, **kwargs)
 
     monkeypatch.setattr(marimo.ui, "table", record_table)
     app = runpy.run_path(str(EXAMPLES / "gg_hg.py"), run_name="notebook_display_test")["app"]
-    app.run(defs={"session": display_session})
+    # Exercise rendering without turning this smoke test into a cold loop calculation.
+    app.run(defs={
+        "model": model, "s": point[0], "t": point[1], "mh2": point[2],
+        "masses": {"W": mw2 + E("1/1000"), "Z": mz2} if changed_mass else display_session.masses,
+        "cache": None, "cache_directory": None, "configurations": [], "systems": {},
+        "results": {}, "destinations": {}, "transport_seconds": 0.0,
+        "projector": None, "amplitude": display_session.amplitude,
+        "form_factors": form_factors, "observables": display_session.observables,
+        "parameters": parameters, "reloaded_cache": None,
+        "repeated": SimpleNamespace(cache_hit=True, steps=0),
+    })
     assert [row["form factor"] for row in captured] == [f"{mass}{i}" for mass in ("W", "Z") for i in range(1, 5)]
     for row in captured:
         mass, index = row["form factor"][0], int(row["form factor"][1]) - 1
-        assert row["native result"] == str(form_factors[mass].values[index])
-        assert row["propagated absolute uncertainty"] == str(form_factors[mass].absolute_errors[index])
+        assert row["native result"] == f"{form_factors[mass].values[index]:.20e}"
+        assert row["propagated absolute uncertainty"] == f"{form_factors[mass].absolute_errors[index]:.20e}"
         assert row["achieved relative digits"] == 30
-        if nearby:
+        if nearby or changed_mass:
             assert row["reference at recorded point"] == "different kinematics"
             assert row["reference absolute uncertainty"] == row["absolute difference"] == "—"
         else:
             assert row["reference at recorded point"] == row["native result"]
-            assert row["reference absolute uncertainty"] != "—"
+            expected = next(block for block in reference["form_factors"] if block["mass"] == mass)["values"][index]
+            assert row["reference absolute uncertainty"] == f'{Float(expected["absolute_error"], decimal_digits=100):.20e}'
             assert Float(row["absolute difference"], decimal_digits=100) == 0
+    assert len(captured_observables) == 3
+    for row in captured_observables:
+        name = row["observable"]
+        assert row["native result"] == f"{native_values[name]:.20e}"
+        assert row["propagated absolute uncertainty"] == f"{display_session.observables.absolute_errors[name]:.20e}"
+        assert row["achieved relative digits"] == 30
+        if nearby or changed_mass or changed_coupling:
+            assert row["reference at recorded point"] == "different inputs"
+            assert row["absolute difference"] == "—"
+        else:
+            assert row["reference at recorded point"] == row["native result"]
+            accuracy = reference["reference_accuracy"][name]
+            reference_error = Float(accuracy["input_absolute_error"], decimal_digits=80) + Float(
+                accuracy["rounding_absolute_error"], decimal_digits=80,
+            )
+            assert row["reference absolute uncertainty"] == f"{reference_error:.20e}"
+            reference_value = Float(reference["expected_observables"][name], decimal_digits=80)
+            assert row["absolute difference"] == f"{abs(native_values[name] - reference_value):.20e}"

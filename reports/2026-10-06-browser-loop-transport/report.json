@@ -1,0 +1,76 @@
+{
+  "schema": "community-supplied-loop-transport-runtime-v1",
+  "status": "passed",
+  "scope": "Actual Node-hosted Pyodide shared-extension smoke, including supplied loop transport. Full gg-to-Hg coefficients/amplitudes and browser DOM/UI acceptance are separate gates.",
+  "notebook_parent": "9507de0edbbc9214f5d8e1ee8ff82e286024877a",
+  "rustflow": "d81dae94a40e41e5d2dcd978f623e6e83abb3e4f",
+  "symbolica": "6defcca968ca8411977fb1f641a9dee49ee7b7a7",
+  "hepkit": "b96600b0085d9ddfa9e6acbc11fa72ec6163253c",
+  "artifact": {
+    "wheel": "symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+    "wheel_sha256": "fcc2367342481ebfac79ceb8b14f87e9a9afb1bcb326c54106340825576bfac2",
+    "wheel_bytes": 44721727,
+    "extension": "symbolica/core.abi3.so",
+    "extension_bytes": 174186956,
+    "stub_sha256": "41b2824610e10b9a2af06b001af26fdb06d001984539d342bf9f078e865582ca",
+    "notebook_sources": "9507de0edbbc9214f5d8e1ee8ff82e286024877a"
+  },
+  "runtime": {
+    "pyodide": "314.0.7",
+    "node": "24.18.0",
+    "cpu_affinity": [
+      44
+    ],
+    "license_environment_supplied": false,
+    "license_setter_called": false
+  },
+  "build": {
+    "rust": "1.98.0",
+    "emscripten": "5.0.3",
+    "pyodide_build": "0.39.0",
+    "maturin": "1.15.0",
+    "profile": "release-performance",
+    "binaryen_level": "-O0",
+    "jobs": 2,
+    "resumed_cargo_wall_seconds": 1404,
+    "observed_rustc_rss_kib": 16808184,
+    "local_dependency_patches": false,
+    "native_host_compiler_override": "HOST_CC and HOST_AR captured before Pyodide supplies target CC and AR"
+  },
+  "gates": [
+    "Published owners compiled for wasm32-unknown-emscripten; target graph excludes GMP, MPFR, native code generation and RustRed.",
+    "Native generated integration stub in wheel exactly matches validated source artifact; Python3.9 syntax retained.",
+    "Automatic-boundary capability false and native-only classes/methods absent; both canonical Higgs systems expose all eight configurations.",
+    "Supplied scalar epsilon/(1+x) transport checked against log(2) through epsilon^2 at requested20digits.",
+    "Nonzero rounded415-bit seed and all derived values/errors/per-number precision survive binary cache reload exactly.",
+    "Stored bank evidence unchanged on restart; selected-source accuracy cap and cache-hit provenance checked separately.",
+    "Exact repeated hit, intermediate-point insertion, nearby-source reuse and transactional pre-cancellation passed.",
+    "Existing algebra, symbolic integration, offline48-diagram/native-rendering, HEPKit, NumPy tensor and Symanzik checks passed.",
+    "Restricted WebAssembly export inventory:170exports, only PyInit_core/__wasm_call_ctors/__wasm_apply_data_relocs functions.",
+    "Successful smoke emitted a capability marker tied to the installed wheel SHA256."
+  ],
+  "resolved_failures": [
+    {
+      "kind": "host_cross_compiler_configuration",
+      "evidence": "build-initial.log",
+      "description": "Pyodide target CC was incorrectly used for the x86_64 BLAKE3 build dependency. Explicit native HOST_CC/HOST_AR fixed the build without changing dependency sources."
+    },
+    {
+      "kind": "optional_numpy_test_setup",
+      "evidence": "smoke-missing-numpy.log",
+      "description": "micropip considered the existing Symbolica wheel satisfied and did not install newly requested NumPy extras. Core returned a list without NumPy; inherited Spenso tensor wrapping expects ndarray.tolist. Final smoke explicitly installs the declared NumPy dependency. No claim of no-NumPy tensor-evaluator support; no owner source patch."
+    }
+  ],
+  "cache_contract": "Version8 owner bincode numeric payload; source/dependency/feature fingerprints remain enforced. Portable supplied seeds are imported through the admitted API, not through foreign binary-cache reuse.",
+  "limits": [
+    "Automatic boundary generation remains native.",
+    "No full gg-to-Hg scientific or browser UI timing claim from this smoke.",
+    "Browser filesystem persistence is session-local.",
+    "Compiler RSS is one observed sample, not a measured peak."
+  ],
+  "evidence": {
+    "file": "evidence.tar.gz",
+    "sha256": "349e999925c902845ff13b948dec97d48e5eb45d276780b2606e0bb8adb57732",
+    "bytes": 493583
+  }
+}

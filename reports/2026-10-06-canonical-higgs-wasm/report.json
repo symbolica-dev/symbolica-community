@@ -1,0 +1,294 @@
+{
+  "schema": "canonical-higgs-wasm-publication-validation-v1",
+  "status": "passed",
+  "created_utc": "2026-10-06T15:26:51.349162+00:00",
+  "tools": {
+    "python": "3.14.7",
+    "machine": "x86_64",
+    "tools": {
+      "rustc": {
+        "exit_code": 0,
+        "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)"
+      },
+      "cargo": {
+        "exit_code": 0,
+        "version": "cargo 1.98.0 (797e8a9bc 2026-08-05)"
+      },
+      "pyodide_build": {
+        "exit_code": 0,
+        "version": "pyodide CLI version: 0.5.0\npyodide-lock version: 0.2.1\npyodide-build version: 0.39.0\nauditwheel_emscripten version: 0.2.5"
+      },
+      "maturin": {
+        "exit_code": 0,
+        "version": "maturin 1.15.0"
+      },
+      "node": {
+        "exit_code": 0,
+        "version": "v24.19.0"
+      }
+    }
+  },
+  "source_parent_commit": "18571143b38097fc791bc102c23bf55b7037157c",
+  "source_unchanged_files": 296,
+  "source_notebook_sha256": "4609e39028a3cbaf3069c65121abc3552a834ee52a01902f00040d4ec71489c4",
+  "locked_owners": [
+    {
+      "name": "fastsecdec",
+      "version": "0.1.0",
+      "source": "git+https://github.com/alphal00p/fastSecDec?rev=9e4b5897fc9f2fe9d137dd18ed8dc0986ba6d5c5#9e4b5897fc9f2fe9d137dd18ed8dc0986ba6d5c5"
+    },
+    {
+      "name": "feynkit-graph",
+      "version": "0.1.0",
+      "source": "git+https://github.com/alphal00p/gammaloop?branch=feynkit#9d1d0cb401d84f2d66eef62971e387eecb8c0cc5"
+    },
+    {
+      "name": "feynkit-model",
+      "version": "0.1.0",
+      "source": "git+https://github.com/alphal00p/gammaloop?branch=feynkit#9d1d0cb401d84f2d66eef62971e387eecb8c0cc5"
+    },
+    {
+      "name": "idenso",
+      "version": "0.3.0",
+      "source": "git+https://github.com/alphal00p/gammaloop?branch=feynkit#9d1d0cb401d84f2d66eef62971e387eecb8c0cc5"
+    },
+    {
+      "name": "linnet",
+      "version": "0.17.0",
+      "source": "git+https://github.com/alphal00p/gammaloop?branch=feynkit#9d1d0cb401d84f2d66eef62971e387eecb8c0cc5"
+    },
+    {
+      "name": "spenso",
+      "version": "0.6.0",
+      "source": "git+https://github.com/alphal00p/gammaloop?branch=feynkit#9d1d0cb401d84f2d66eef62971e387eecb8c0cc5"
+    },
+    {
+      "name": "symbolica",
+      "version": "3.0.1",
+      "source": "git+https://github.com/symbolica-dev/symbolica?branch=community#58652fabc2f736302a570deaaf8d517679f7fe6e"
+    },
+    {
+      "name": "symbolica-amflow",
+      "version": "0.1.0",
+      "source": "git+https://github.com/alphal00p/RustFlow?rev=9599e35867119178ba3c02d7c55b998efab641f4#9599e35867119178ba3c02d7c55b998efab641f4"
+    }
+  ],
+  "wheel": {
+    "name": "symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+    "sha256": "04faf243f1ce1e89aa56df1249478827b22280ab430b67b3af50b9dc0f264484",
+    "bytes": 45973377,
+    "core_sha256": "004336ee483b93b73918f1db8ecdb129b0425af5dc5cb19e1f8ac78a020b09e6"
+  },
+  "processes": {
+    "build": {
+      "label": "build",
+      "command": [
+        "taskset",
+        "-c",
+        "96-111",
+        "bash",
+        "scripts/build_wasm_performance.sh",
+        "dist/canonical-higgs-wasm"
+      ],
+      "started_utc": "2026-10-06T15:04:51.510126+00:00",
+      "finished_utc": "2026-10-06T15:18:16.638470+00:00",
+      "elapsed_seconds": 805.1283433437347,
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "dependency-graphs": {
+      "label": "dependency-graphs",
+      "command": [
+        "python",
+        ".github/scripts/check_integration_package.py"
+      ],
+      "started_utc": "2026-10-06T15:07:39.883365+00:00",
+      "finished_utc": "2026-10-06T15:07:44.673927+00:00",
+      "elapsed_seconds": 4.790561676025391,
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "wheel-layout": {
+      "label": "wheel-layout",
+      "command": [
+        "python",
+        "-c",
+        "import importlib.util; from pathlib import Path; spec=importlib.util.spec_from_file_location(\"checker\", \".github/scripts/check_integration_package.py\"); module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module); module.check_wheel(next(Path(\"dist/canonical-higgs-wasm\").glob(\"*.whl\"))); print(\"Complete WASM wheel namespace and generated-stub layout passed\")"
+      ],
+      "started_utc": "2026-10-06T15:23:45.074145+00:00",
+      "finished_utc": "2026-10-06T15:23:45.124013+00:00",
+      "elapsed_seconds": 0.04986882209777832,
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "community-pyodide": {
+      "label": "community-pyodide",
+      "command": [
+        "taskset",
+        "-c",
+        "44",
+        "node",
+        ".github/scripts/test_pyodide.mjs",
+        "dist/canonical-higgs-wasm"
+      ],
+      "started_utc": "2026-10-06T15:18:17.847238+00:00",
+      "finished_utc": "2026-10-06T15:18:42.759274+00:00",
+      "elapsed_seconds": 24.912035703659058,
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "standard-model-amplitude": {
+      "label": "standard-model-amplitude",
+      "command": [
+        "taskset",
+        "-c",
+        "44",
+        "node",
+        "target/canonical-higgs-wasm-validation/check_standard_model_amplitude.mjs",
+        "dist/canonical-higgs-wasm",
+        "target/canonical-higgs-wasm-validation/standard-model-amplitude.json"
+      ],
+      "started_utc": "2026-10-06T15:18:42.803562+00:00",
+      "finished_utc": "2026-10-06T15:19:26.972868+00:00",
+      "elapsed_seconds": 44.16930532455444,
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "notebook-export": {
+      "label": "notebook-export",
+      "command": [
+        "/common/dev/amflow/target/gg-hg-standard-model-native/venv/bin/python",
+        "scripts/export_gg_hg_wasm.py",
+        "dist/canonical-higgs-wasm/symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+        "target/canonical-higgs-wasm-notebook"
+      ],
+      "started_utc": "2026-10-06T15:20:02.745536+00:00",
+      "finished_utc": "2026-10-06T15:20:04.021579+00:00",
+      "elapsed_seconds": 1.2760422229766846,
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "notebook-browser": {
+      "label": "notebook-browser",
+      "command": [
+        "taskset",
+        "-c",
+        "44",
+        "/common/dev/amflow/target/gg-hg-browser-seeds/browser-venv/bin/python",
+        "target/canonical-higgs-wasm-validation/check_notebook_browser.py"
+      ],
+      "started_utc": "2026-10-06T15:20:26.057065+00:00",
+      "finished_utc": "2026-10-06T15:26:17.833479+00:00",
+      "elapsed_seconds": 351.7764148712158,
+      "exit_code": 0,
+      "status": "passed"
+    }
+  },
+  "pyodide_marker": {
+    "schema": "supplied-loop-transport-runtime-v1",
+    "wheel": "symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+    "wheel_sha256": "04faf243f1ce1e89aa56df1249478827b22280ab430b67b3af50b9dc0f264484",
+    "supplied_loop_transport": true,
+    "higgs_standard_model": true
+  },
+  "standard_model_amplitude_component": {
+    "status": "passed",
+    "scope": "Actual Pyodide shared owner/model extension and three exact scalar kernels; archived form-factor amplitude component comparison, not fresh native transport or a new boundary-accuracy certificate.",
+    "exact_kernel_equal": [
+      true,
+      true,
+      true
+    ],
+    "shared_native_model": true,
+    "typed_collision": true,
+    "values_errors_arithmetic_changes_and_precision_exactly_match_legacy": true,
+    "working_bits": 322,
+    "observables": {
+      "effective_squared": {
+        "value": "0.00176839492856040838255513143874534782898210399687219844018557709100056424479576777129467967484813",
+        "absolute_error": "1E-50",
+        "working_precision": 322,
+        "error_precision": 322,
+        "verified_relative_digits": 47,
+        "absolute_difference": "3.996872198440185577091000564244795767771294679674848126E-45",
+        "reference_error": "1.00000000000000000000001E-42",
+        "arithmetic_change": "5.813916784325164506835758162040447699667692283796973934183810900532802416456177574480022037470184E-68"
+      },
+      "electroweak_squared": {
+        "value": "4.33089662023980781068590560932410740709958659250133221707250726553122998579540556742646725020047E-8",
+        "absolute_error": "1.03696527954088948422982660714721234748168074933744046124005777367267364428037526635691337397193E-27",
+        "working_precision": 322,
+        "error_precision": 322,
+        "verified_relative_digits": 19,
+        "absolute_difference": "1.309709958659250133221707250726553122998579540556742646725020047E-40",
+        "reference_error": "1.0369652795418894842298166071472123474916807493374404612400577736726736442803752663569133739719248915576820042E-27",
+        "arithmetic_change": "2.172545841098385963996530134392104811798697935045606668893572872835416417163595016430065880183171E-72"
+      },
+      "interference": {
+        "value": "0.000016658019366610435271343417452342751052535080375657874986887075452675062440750891773877479814185",
+        "absolute_error": "1.38617980757118932411681708070930692137968263265944969228219564759167706809401628222464433335982E-25",
+        "working_precision": 322,
+        "error_precision": 322,
+        "verified_relative_digits": 20,
+        "absolute_difference": "8.037565787498688707545267506244075089177387747981418497E-47",
+        "reference_error": "1.386179807571189334116816980709306921379782632659449692282195647591677068094016282224644333359816355956402394E-25",
+        "arithmetic_change": "1.775798069260790778575995973117099056307841236391869993215946111696944711338120742112838044784609E-69"
+      }
+    },
+    "standard_construction_seconds": 16.649053070999997,
+    "legacy_construction_seconds": 13.211829491000003,
+    "total_seconds": 35.557242795,
+    "wheel": "symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+    "wheel_sha256": "04faf243f1ce1e89aa56df1249478827b22280ab430b67b3af50b9dc0f264484",
+    "legacy_model_sha256": "1891f93a8b8926e1e66d54a95c03bba2d36e7ee1a812b91010fa0e88b4e92e12",
+    "amplitude_reference_sha256": "868b9fde9448e54b315e96c4ce5a83bcb2501f219cf45a4cf2c147e521fef071",
+    "pyodide_version": "314.0.7"
+  },
+  "fresh_browser_notebook": {
+    "schema": "gg-hg-visible-notebook-browser-v1",
+    "status": "passed",
+    "cpu_affinity": [
+      44
+    ],
+    "console_errors": [],
+    "page_errors": [],
+    "failed_requests": [],
+    "progress": [
+      [
+        15.173291982151568,
+        "for _topology, _configuration in mo.status.progress_bar(configurations, title=\"Transporting masters\"):\nmo.md(f\"Transport: **{transport_seconds:.2f} s**; {sum(r.cache_hit for r in results.values())}/16 exact cache hits.\")"
+      ],
+      [
+        315.9149316791445,
+        "for _topology, _configuration in mo.status.progress_bar(configurations, title=\"Transporting masters\"):\nmo.md(f\"Transport: **{transport_seconds:.2f} s**; {sum(r.cache_hit for r in results.values())}/16 exact cache hits.\")\nTransport: 288.62 s; 0/16 exact cache hits."
+      ]
+    ],
+    "browser_version": "153.0.8010.12",
+    "setup_seconds": 14.734766412060708,
+    "total_page_seconds": 345.9757495042868,
+    "scientific_table_cells": 55
+  },
+  "development_failures": [
+    {
+      "gate": "notebook export",
+      "cause": "Existing uv executable was absent from this shell PATH; added its bin directory and repeated export into a fresh bundle.",
+      "source_change": false
+    }
+  ],
+  "scope": [
+    "Complete canonical Community wheel; no extension overlays.",
+    "Actual Pyodide supplied transport, binary restart, nearby cache reuse, cancellation, shared HEPKit/Symbolica objects and new shared graph display types.",
+    "Exact Standard Model versus legacy scalar-kernel comparison and archived-input component amplitude agreement; this component retains its recorded reference precision.",
+    "Fresh one-core Chrome notebook with supplied boundaries, physical transport, coherent amplitude, repeat cache hit, citations and scientific table cells."
+  ],
+  "limits": [
+    "Supplied 40-digit boundaries; this gate does not certify generation from empty boundary caches.",
+    "Browser runtime is measured during concurrent build/test activity on other CPU cores, not a controlled performance comparison.",
+    "Numerical transport is single-core; compilation uses parallel jobs."
+  ],
+  "archive": {
+    "sha256": "ee5643e64f4177d3a8ced94cfc33a3fbc3db4b5e639964b3db2db26e4bf4598b",
+    "bytes": 343079,
+    "members": 51
+  }
+}

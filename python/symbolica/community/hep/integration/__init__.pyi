@@ -9,6 +9,7 @@ import typing
 from symbolica.community.hepkit import FeynmanDiagram, IntegralFamily, Kinematics, Model
 from symbolica.core import ComplexFloat, Expression, Float
 
+automatic_boundary_generation_available: builtins.bool
 class AccuracyError(NumericalError):
     r"""
     Numerical integration failure; see the exception message for context.
@@ -122,7 +123,8 @@ class CalculationCancelled(EvaluationError):
 class ComputationControl:
     r"""
     Thread-safe cancellation and progress polling for a running calculation.
-    Run an evaluator in a worker thread and poll this object from the UI thread.
+    Cooperative cancellation and queued progress for the active computation.
+    Native hosts may poll from another thread; browser hosts schedule serial stages.
     At most the 4096 most recent progress events are retained.
     """
     @property
@@ -274,6 +276,11 @@ class EvaluationOptions:
         Source-defect arithmetic: ball (default) or adaptive_integer (opt-in).
         """
     @property
+    def boundary_error_strategy(self) -> builtins.str:
+        r"""
+        Supplied-error propagation policy; unavailable proofs retain scalar bounds.
+        """
+    @property
     def workers(self) -> builtins.int: ...
     @property
     def dimension(self) -> builtins.int: ...
@@ -287,7 +294,7 @@ class EvaluationOptions:
         r"""
         Zero-based physical denominator slots, never HEPKit edge IDs or ISP slots.
         """
-    def __new__(cls, *, digits: builtins.int = 20, guard_digits: builtins.int = 40, series_order: builtins.int = 80, max_steps: builtins.int = 1000, workers: builtins.int = 1, dimension: builtins.int = 4, recursion: builtins.str = 'auxiliary_mass', prescription: builtins.str = '+i0', mass_mode: typing.Optional[builtins.str] = None, deformed_propagator_slots: typing.Optional[typing.Sequence[builtins.int]] = None, refine_basis: builtins.bool = False, skip_reduction: builtins.bool = False, sampled_reduction: builtins.bool = True, max_precision_attempts: builtins.int = 3, max_boundary_attempts: builtins.int = 8, cache_directory: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, local_coordinate: builtins.str = 'identity', sample_cache_directory: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, reuse_samples: builtins.bool = True, pade_degree: typing.Optional[builtins.int] = None, residual_arithmetic: builtins.str = 'ball') -> EvaluationOptions: ...
+    def __new__(cls, *, digits: builtins.int = 20, guard_digits: builtins.int = 40, series_order: builtins.int = 80, max_steps: builtins.int = 1000, workers: builtins.int = 1, dimension: builtins.int = 4, recursion: builtins.str = 'auxiliary_mass', prescription: builtins.str = '+i0', mass_mode: typing.Optional[builtins.str] = None, deformed_propagator_slots: typing.Optional[typing.Sequence[builtins.int]] = None, refine_basis: builtins.bool = False, skip_reduction: builtins.bool = False, sampled_reduction: builtins.bool = True, max_precision_attempts: builtins.int = 3, max_boundary_attempts: builtins.int = 8, cache_directory: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, local_coordinate: builtins.str = 'identity', sample_cache_directory: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, reuse_samples: builtins.bool = True, pade_degree: typing.Optional[builtins.int] = None, residual_arithmetic: builtins.str = 'ball', boundary_error_strategy: builtins.str = 'automatic') -> EvaluationOptions: ...
     def __repr__(self) -> builtins.str: ...
 
 @typing.final
@@ -324,6 +331,14 @@ class HiggsJetAmplitude:
         """
     @property
     def coordinate_symbols(self) -> builtins.list[Expression]: ...
+    @staticmethod
+    def with_form_factor_vertices(model: Model) -> Model:
+        r"""
+        Add the symbolic W, Z and HEFT gggH vertices to an existing Standard Model.
+        Returns a native HEPKit model retaining its existing particles, parameters
+        and interactions. Numerical form factors still come from loop evaluation;
+        conflicting declaration names are rejected rather than overwritten.
+        """
     def __new__(cls, model: Model, *, control: typing.Optional[ComputationControl] = None) -> HiggsJetAmplitude: ...
     def evaluate(self, s: Expression, t: Expression, higgs_mass_squared: Expression, w_factors: typing.Sequence[ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal]], z_factors: typing.Sequence[ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal]], w_errors: typing.Sequence[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], z_errors: typing.Sequence[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], *, parameters: typing.Mapping[Expression, Expression], provenance: builtins.str, digits: builtins.int = 20, guard_digits: builtins.int = 40, control: typing.Optional[ComputationControl] = None) -> AmplitudeResult:
         r"""
@@ -370,7 +385,18 @@ class HiggsJetIntegralSystem:
     own boundary values using the supplied IntegralEvaluator's reduction backend.
     """
     @property
+    def automatic_boundary_generation_available(self) -> builtins.bool:
+        r"""
+        Whether this build contains native reduction and boundary generation.
+        """
+    @property
     def dimension(self) -> builtins.int: ...
+    @property
+    def mathematical_fingerprint(self) -> builtins.str:
+        r"""
+        Stable mathematical certificate for portable, externally supplied seeds.
+        This does not bypass runtime-sensitive binary cache compatibility checks.
+        """
     @property
     def epsilon(self) -> Expression: ...
     @property
@@ -384,6 +410,11 @@ class HiggsJetIntegralSystem:
     @property
     def provenance(self) -> builtins.str: ...
     def __new__(cls, topology: builtins.str, *, namespace: builtins.str = 'hep_higgs_jet') -> HiggsJetIntegralSystem: ...
+    def kinematic_transport(self, options: typing.Optional[EvaluationOptions] = None) -> KinematicTransport:
+        r"""
+        Share this system's canonical connection and ordinary supplied-boundary
+        validation. No reduction, boundary generation or numeric transport runs.
+        """
     def configurations(self) -> builtins.list[HiggsJetConfiguration]: ...
     def verify_basis(self) -> None: ...
     def generate_boundary(self, evaluator: IntegralEvaluator, cache: BoundaryCache, point: typing.Mapping[Expression, Expression], root_sheets: typing.Mapping[Expression, builtins.int], *, last: builtins.int = 4, recompute: builtins.bool = False, control: typing.Optional[ComputationControl] = None) -> TransportResult:
@@ -665,6 +696,12 @@ class TransportResult:
     def rational_fallbacks(self) -> builtins.int: ...
     @property
     def last_rational_fallback(self) -> typing.Optional[builtins.str]: ...
+    @property
+    def fundamental_boundary_charts(self) -> builtins.int: ...
+    @property
+    def fundamental_boundary_fallback(self) -> typing.Optional[builtins.str]: ...
+    @property
+    def fundamental_boundary_retry(self) -> typing.Optional[builtins.str]: ...
     @property
     def conditioning_digits(self) -> typing.Optional[builtins.int]: ...
     @property

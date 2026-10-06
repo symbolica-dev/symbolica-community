@@ -19,7 +19,7 @@ mod citations;
 mod hepkit;
 #[cfg(feature = "community")]
 mod integration;
-#[cfg(all(feature = "community", not(target_arch = "wasm32")))]
+#[cfg(feature = "community")]
 mod loop_integration;
 #[cfg(feature = "community")]
 mod oneloop;

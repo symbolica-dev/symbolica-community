@@ -4,6 +4,10 @@ use pyo3::{
     types::{PyAnyMethods, PyModule, PyModuleMethods},
 };
 
+pub fn get_citations() -> Vec<symbolica::api::python::Citation> {
+    symbolica_amflow::python::get_citations()
+}
+
 pub fn register(hep: &Bound<'_, PyModule>) -> PyResult<()> {
     let name = "symbolica.community.hep_integration_native";
     let module = PyModule::new(hep.py(), name)?;

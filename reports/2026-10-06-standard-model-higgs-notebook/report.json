@@ -1,0 +1,360 @@
+{
+  "status": "passed",
+  "scope": "Complete installed native wheel and actual single-core Chrome notebook with supplied 40-digit boundaries; Standard Model form-factor extension, physical transport, amplitude, citations and scientific display.",
+  "native": {
+    "status": "passed",
+    "start_utc": "2026-10-06T14:43:17.732432+00:00",
+    "python": "/common/dev/amflow/target/gg-hg-standard-model-native/venv/bin/python",
+    "python_version": "3.14.7 (main, Aug  5 2026, 10:29:49) [GCC 15.3.0]",
+    "cpu_affinity": [
+      45
+    ],
+    "cwd": "/common/dev/amflow/target/gg-hg-standard-model-native/run-8egh1tgh",
+    "notebook": "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/gg_hg.py",
+    "source_before": {
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/gg_hg.py": "4609e39028a3cbaf3069c65121abc3552a834ee52a01902f00040d4ec71489c4",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/gg_hg_boundaries.py": "d3eeacce5e67607980bad57a96370119c2a68af552a0bad3db8071b15197c54a",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/gg_hg_acceptance.py": "6f1686b22017dce4d1f0a2f7cc2362a8d78dcc6aded49a6428355941ecf1ba3c",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/gg_hg_support.py": "ecad610397e57a0e93742b92de4beec64d31c96531e2360c283afdf5fb900fbf",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/data/gg_hg/amplitude-validation.json": "868b9fde9448e54b315e96c4ce5a83bcb2501f219cf45a4cf2c147e521fef071",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/data/gg_hg/boundaries-manifest.json": "767b359ab86aa06cc50a2624a7f992d9cb951061d302f18bda38ece14b062722",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/data/gg_hg/boundaries.json.gz": "984b64a1617eb111543fc3b97e1cd36c84c610cfd8a02b11e8dfa861809acee4",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/data/gg_hg/coherent-reference.json": "dd791b4d0400504ae8bc13e4e4bffa3d35773579a73c49ef4559d8e7985787e3",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/data/gg_hg/native-model-provenance.json": "572e5b473ae5c03699f8a87cd96cd6ac73a8ad8e798a47083c33d2e470c9068d",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/data/gg_hg/native-model.json": "1891f93a8b8926e1e66d54a95c03bba2d36e7ee1a812b91010fa0e88b4e92e12"
+    },
+    "native_extension": {
+      "path": "/common/dev/amflow/target/gg-hg-standard-model-native/venv/lib/python3.14/site-packages/symbolica/core.abi3.so",
+      "sha256": "7037cc4ec7bae60bf4dd47a768d3b0d58222aa4755a7216ba893cf3359cc9885",
+      "runtime_kind": "complete native community wheel installed in an isolated environment",
+      "source": "/common/dev/amflow/target/gg-hg-standard-model-native/venv/lib/python3.14/site-packages/symbolica/core.abi3.so",
+      "wheel": "/common/dev/amflow/target/gg-hg-standard-model-native/dist/symbolica-3.0.0-cp314-abi3-linux_x86_64.whl",
+      "wheel_sha256": "6e2c39ac5604c6f5146a84b4e0dd54e674b233222271f9b810d84b9ff73da8d8",
+      "host_worktree": "/common/dev/symbolica-community/notebook-supplied-boundaries",
+      "rustflow_revision": "9599e35867119178ba3c02d7c55b998efab641f4",
+      "symbolica_revision": "58652fabc2f736302a570deaaf8d517679f7fe6e",
+      "hepkit_revision": "41253945836953a99861612da786563ae3f0b3ca",
+      "host_features": "python_stubgen,pyo3/extension-module",
+      "no_default_features": true
+    },
+    "scope": "Actual unmodified notebook app.run() with no definition overrides. Cold destination transport uses supplied 40-digit starting boundaries. Native shared host using the recorded RustFlow revision and the Standard Model vertex extension. No new boundary generation or WASM timing claim.",
+    "runs": {
+      "cold": {
+        "configurations": 16,
+        "coefficients": 4360,
+        "maximum_scaled_reference_difference": "1.698022952500849738236628302047616E-30",
+        "form_factor_comparison": {
+          "components": 8,
+          "comparison": {
+            "W": [
+              {
+                "index": 1,
+                "value": "(0.00000196122238618354244187226751552453320477653483944165664762606489531587146343348055495671569214297803529307-0.00000809007076182998492997694095330234148133866943165310769334485592261678587299061732964845537527039648452708j)",
+                "absolute_difference": "5.143808442078450051612643023275571598935707911997221217868490925468602E-36",
+                "native_absolute_error": "2.2752949690894157298921619090375097444417281046947312376864631582E-42",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "2.2894422778484710617219023758127296980340123201305702853536819931315854569613945923191920875928305767078971597261130888225138070911525519357053588958538600877261666e-26"
+              },
+              {
+                "index": 2,
+                "value": "(0.000003118772859451160040831120305946749004857060011644839328781565854907916378508769605936953091651292305313-0.00000319630617603961230595104819312248865212806294553555074487246521566783166002138174826852255263989740419754j)",
+                "absolute_difference": "2.972825980245488824505888048245402515831890299571559278237810178938055E-36",
+                "native_absolute_error": "4.3275115537882461487890770607066603744667535306922036979644137241E-41",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "4.3530140922574367346069825631297457026237300281776625510195222985544606775618232408987391125346916753001696620985137181011120232532908393972071889336312263234000659e-25"
+              },
+              {
+                "index": 3,
+                "value": "(-0.00000242513800782883147494572181185168174690542507085904020898027352597569406753267337154007536424714448940765+0.00000348790358169000308503319605913086193810123417292375915259352318257503052212149063829405472952864291323165j)",
+                "absolute_difference": "6.858352966900754846893347336765554975643297344474512432497814162917983E-36",
+                "native_absolute_error": "4.0684648349621282902036152024466694616337410797165429871024180034E-42",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "4.1031713688203874617267147671521978982359561343847099674600667217295867776446285029394868152776080573874796524790687365319894624470261424412548734671996325004454210e-26"
+              },
+              {
+                "index": 4,
+                "value": "(0.0000047211241526797433551875806262286970463197849388729030005739895356879824170246936625284733233297666275032-0.0000129880123126617041227000407141235718309941498734878670586333424084712496018533880860881461171964594609351j)",
+                "absolute_difference": "9.374603750071727379251063167512033748008125081091969196686882101797691E-36",
+                "native_absolute_error": "1.8981177302332871331202475741490217316870744057276345156117177852E-41",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "1.9094573980705271453356802757638948060172978128304488653863004290182128447255574285641967745015322850106247319193602797553938530752662679457110187024301184619912323e-25"
+              }
+            ],
+            "Z": [
+              {
+                "index": 1,
+                "value": "(0.00000149584519527614786931022238968926179211529654689221343854458650155295201625093017975478234449688458964538-0.00000645820543916701705715581112889532758609497089669671070467787978112438677781062378602439584547215295994558j)",
+                "absolute_difference": "7.1531564062088553721724593462332147480731242803229728242234209407036762E-36",
+                "native_absolute_error": "3.066874651666031487256005930832202831620362962940205103944378393E-42",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "3.0850617437448454289042478895604472907991349916940237444912356572551816162999327330149626983955837842877165641790760177202838195326091938840114099087668125589542106e-26"
+              },
+              {
+                "index": 2,
+                "value": "(0.0000026422078939182674991350861057813597171159639136152325551930348409323226161970136846456670961650131049441-0.00000255024204961584667892488527407044226340730845904321189551829785904651319498368735323458803143312802055241j)",
+                "absolute_difference": "6.6390513225915319421042080584150226706893995702088402327031765374227703E-35",
+                "native_absolute_error": "5.526321682201705218114768111245802413525195546962184310693271785E-41",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "5.5597103718713992760207099541422720732121534798581672099528317771589607038154737432213500596489696049461799014198859006611423656892337659624777698076137696487113882e-25"
+              },
+              {
+                "index": 3,
+                "value": "(-0.00000201901733252621387687016087627611654726911972288811832524138170020984050033454119221864091957461031951226+0.00000279014951455226281385884472453395821897117977075193707796400553549611409328957784056794863175571343277596j)",
+                "absolute_difference": "2.9610172592520556764469743689316134820250809100221347896522383727846175E-35",
+                "native_absolute_error": "9.1908461328492328478650550892153591172351291693075899511505982839E-42",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "9.2721561940592548105963169949791233675514410882632020540084462640997947635386978524812090864272906423477908447474043250048144018137816077048655852131263861370412818e-26"
+              },
+              {
+                "index": 4,
+                "value": "(0.00000375132485640043335955350112366438195588328292200095344675857548213189593587192321741579750486506674967373-0.0000103869776958708844496710907773540796162523074370720286269506727768073445526598281747902781478790305019932j)",
+                "absolute_difference": "2.997401249980010051080527111307414712784131632250058952005104283070074E-35",
+                "native_absolute_error": "2.4839390939531243878520798077066675838920022203301177752573959619E-41",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "2.4987744496469589053257508973342428304922848075000439862141204924183340631536046473872500275855612750787128354083877781483922261005890440863712022753194839308751673e-25"
+              }
+            ]
+          }
+        },
+        "observable_comparison": {
+          "effective_squared": {
+            "value": "0.00176839492856040838255513143874534782898210399687219844018557709100056424479576777129467967484813",
+            "native_absolute_error": "1E-50",
+            "verified_relative_digits": 47,
+            "reference_absolute_error": "1.00000000000000000000001E-42",
+            "absolute_difference": "3.996872198440185577091000564244795767771294679674848127E-45"
+          },
+          "electroweak_squared": {
+            "value": "4.33089662023980781068590560931974942994040642487940681678246676165351094653647882553773163446691E-8",
+            "native_absolute_error": "1.0303890846798562770429084176047543939466685959416524266575687257442643999971417711292720439735E-43",
+            "verified_relative_digits": 35,
+            "reference_absolute_error": "1.036965279541889484229816607147212347491680749337440461240057773672673644280375266356913373971924892E-27",
+            "absolute_difference": "4.344880059593575120593183217533238346489053463521174462268365533094E-38"
+          },
+          "interference": {
+            "value": "0.0000166580193666104352713434174523346881653549846139505767407266481140623232693977962575088955080688",
+            "native_absolute_error": "1.37731891981951974719274801150899675192076956521079724586288026318455165326641411667254230882988E-41",
+            "verified_relative_digits": 36,
+            "reference_absolute_error": "1.386179807571189334116816980709306921379782632659449692282195647591677068094016282224644333359816356E-25",
+            "absolute_difference": "8.06288718001538604942325927335188593767673060220374249110449193115E-36"
+          }
+        },
+        "literature_citations": [
+          "arXiv:2006.05510",
+          "arXiv:2112.07578",
+          "arXiv:2201.11669",
+          "arXiv:2607.08477",
+          "doi:10.5281/zenodo.17054381",
+          "https://github.com/alphal00p/gammaloop#feynkit"
+        ],
+        "binary_repeated_hit": true,
+        "binary_repeat_errors_equal": true,
+        "transport_seconds": 80.52159589715302,
+        "cache_entries": 48,
+        "cache_hits": 0,
+        "steps": 16,
+        "inserted_points": 32,
+        "app_run_seconds": 95.99427069863304,
+        "rendered_output_count": 21
+      },
+      "warm": {
+        "configurations": 16,
+        "coefficients": 4360,
+        "maximum_scaled_reference_difference": "1.698022952500849738236628302047616E-30",
+        "form_factor_comparison": {
+          "components": 8,
+          "comparison": {
+            "W": [
+              {
+                "index": 1,
+                "value": "(0.00000196122238618354244187226751552453320477653483944165664762606489531587146343348055495671569214297803529307-0.00000809007076182998492997694095330234148133866943165310769334485592261678587299061732964845537527039648452708j)",
+                "absolute_difference": "5.143808442078450051612643023275571598935707911997221217868490925468602E-36",
+                "native_absolute_error": "2.2752949690894157298921619090375097444417281046947312376864631582E-42",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "2.2894422778484710617219023758127296980340123201305702853536819931315854569613945923191920875928305767078971597261130888225138070911525519357053588958538600877261666e-26"
+              },
+              {
+                "index": 2,
+                "value": "(0.000003118772859451160040831120305946749004857060011644839328781565854907916378508769605936953091651292305313-0.00000319630617603961230595104819312248865212806294553555074487246521566783166002138174826852255263989740419754j)",
+                "absolute_difference": "2.972825980245488824505888048245402515831890299571559278237810178938055E-36",
+                "native_absolute_error": "4.3275115537882461487890770607066603744667535306922036979644137241E-41",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "4.3530140922574367346069825631297457026237300281776625510195222985544606775618232408987391125346916753001696620985137181011120232532908393972071889336312263234000659e-25"
+              },
+              {
+                "index": 3,
+                "value": "(-0.00000242513800782883147494572181185168174690542507085904020898027352597569406753267337154007536424714448940765+0.00000348790358169000308503319605913086193810123417292375915259352318257503052212149063829405472952864291323165j)",
+                "absolute_difference": "6.858352966900754846893347336765554975643297344474512432497814162917983E-36",
+                "native_absolute_error": "4.0684648349621282902036152024466694616337410797165429871024180034E-42",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "4.1031713688203874617267147671521978982359561343847099674600667217295867776446285029394868152776080573874796524790687365319894624470261424412548734671996325004454210e-26"
+              },
+              {
+                "index": 4,
+                "value": "(0.0000047211241526797433551875806262286970463197849388729030005739895356879824170246936625284733233297666275032-0.0000129880123126617041227000407141235718309941498734878670586333424084712496018533880860881461171964594609351j)",
+                "absolute_difference": "9.374603750071727379251063167512033748008125081091969196686882101797691E-36",
+                "native_absolute_error": "1.8981177302332871331202475741490217316870744057276345156117177852E-41",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "1.9094573980705271453356802757638948060172978128304488653863004290182128447255574285641967745015322850106247319193602797553938530752662679457110187024301184619912323e-25"
+              }
+            ],
+            "Z": [
+              {
+                "index": 1,
+                "value": "(0.00000149584519527614786931022238968926179211529654689221343854458650155295201625093017975478234449688458964538-0.00000645820543916701705715581112889532758609497089669671070467787978112438677781062378602439584547215295994558j)",
+                "absolute_difference": "7.1531564062088553721724593462332147480731242803229728242234209407036762E-36",
+                "native_absolute_error": "3.066874651666031487256005930832202831620362962940205103944378393E-42",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "3.0850617437448454289042478895604472907991349916940237444912356572551816162999327330149626983955837842877165641790760177202838195326091938840114099087668125589542106e-26"
+              },
+              {
+                "index": 2,
+                "value": "(0.0000026422078939182674991350861057813597171159639136152325551930348409323226161970136846456670961650131049441-0.00000255024204961584667892488527407044226340730845904321189551829785904651319498368735323458803143312802055241j)",
+                "absolute_difference": "6.6390513225915319421042080584150226706893995702088402327031765374227703E-35",
+                "native_absolute_error": "5.526321682201705218114768111245802413525195546962184310693271785E-41",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "5.5597103718713992760207099541422720732121534798581672099528317771589607038154737432213500596489696049461799014198859006611423656892337659624777698076137696487113882e-25"
+              },
+              {
+                "index": 3,
+                "value": "(-0.00000201901733252621387687016087627611654726911972288811832524138170020984050033454119221864091957461031951226+0.00000279014951455226281385884472453395821897117977075193707796400553549611409328957784056794863175571343277596j)",
+                "absolute_difference": "2.9610172592520556764469743689316134820250809100221347896522383727846175E-35",
+                "native_absolute_error": "9.1908461328492328478650550892153591172351291693075899511505982839E-42",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "9.2721561940592548105963169949791233675514410882632020540084462640997947635386978524812090864272906423477908447474043250048144018137816077048655852131263861370412818e-26"
+              },
+              {
+                "index": 4,
+                "value": "(0.00000375132485640043335955350112366438195588328292200095344675857548213189593587192321741579750486506674967373-0.0000103869776958708844496710907773540796162523074370720286269506727768073445526598281747902781478790305019932j)",
+                "absolute_difference": "2.997401249980010051080527111307414712784131632250058952005104283070074E-35",
+                "native_absolute_error": "2.4839390939531243878520798077066675838920022203301177752573959619E-41",
+                "native_verified_relative_digits": 28,
+                "reference_absolute_error": "2.4987744496469589053257508973342428304922848075000439862141204924183340631536046473872500275855612750787128354083877781483922261005890440863712022753194839308751673e-25"
+              }
+            ]
+          }
+        },
+        "observable_comparison": {
+          "effective_squared": {
+            "value": "0.00176839492856040838255513143874534782898210399687219844018557709100056424479576777129467967484813",
+            "native_absolute_error": "1E-50",
+            "verified_relative_digits": 47,
+            "reference_absolute_error": "1.00000000000000000000001E-42",
+            "absolute_difference": "3.996872198440185577091000564244795767771294679674848127E-45"
+          },
+          "electroweak_squared": {
+            "value": "4.33089662023980781068590560931974942994040642487940681678246676165351094653647882553773163446691E-8",
+            "native_absolute_error": "1.0303890846798562770429084176047543939466685959416524266575687257442643999971417711292720439735E-43",
+            "verified_relative_digits": 35,
+            "reference_absolute_error": "1.036965279541889484229816607147212347491680749337440461240057773672673644280375266356913373971924892E-27",
+            "absolute_difference": "4.344880059593575120593183217533238346489053463521174462268365533094E-38"
+          },
+          "interference": {
+            "value": "0.0000166580193666104352713434174523346881653549846139505767407266481140623232693977962575088955080688",
+            "native_absolute_error": "1.37731891981951974719274801150899675192076956521079724586288026318455165326641411667254230882988E-41",
+            "verified_relative_digits": 36,
+            "reference_absolute_error": "1.386179807571189334116816980709306921379782632659449692282195647591677068094016282224644333359816356E-25",
+            "absolute_difference": "8.06288718001538604942325927335188593767673060220374249110449193115E-36"
+          }
+        },
+        "literature_citations": [
+          "arXiv:2006.05510",
+          "arXiv:2112.07578",
+          "arXiv:2201.11669",
+          "arXiv:2607.08477",
+          "doi:10.5281/zenodo.17054381",
+          "https://github.com/alphal00p/gammaloop#feynkit"
+        ],
+        "binary_repeated_hit": true,
+        "binary_repeat_errors_equal": true,
+        "transport_seconds": 1.3812288763001561,
+        "cache_entries": 48,
+        "cache_hits": 16,
+        "steps": 0,
+        "inserted_points": 0,
+        "app_run_seconds": 18.03069645818323,
+        "rendered_output_count": 21,
+        "warm_input_cap_equals_retained_destination_digits": true,
+        "cold_warm_exact_values_errors_identity_equal": true,
+        "cold_warm_native_bank_evidence_equal": true
+      }
+    },
+    "source_after": {
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/gg_hg.py": "4609e39028a3cbaf3069c65121abc3552a834ee52a01902f00040d4ec71489c4",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/gg_hg_boundaries.py": "d3eeacce5e67607980bad57a96370119c2a68af552a0bad3db8071b15197c54a",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/gg_hg_acceptance.py": "6f1686b22017dce4d1f0a2f7cc2362a8d78dcc6aded49a6428355941ecf1ba3c",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/gg_hg_support.py": "ecad610397e57a0e93742b92de4beec64d31c96531e2360c283afdf5fb900fbf",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/data/gg_hg/amplitude-validation.json": "868b9fde9448e54b315e96c4ce5a83bcb2501f219cf45a4cf2c147e521fef071",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/data/gg_hg/boundaries-manifest.json": "767b359ab86aa06cc50a2624a7f992d9cb951061d302f18bda38ece14b062722",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/data/gg_hg/boundaries.json.gz": "984b64a1617eb111543fc3b97e1cd36c84c610cfd8a02b11e8dfa861809acee4",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/data/gg_hg/coherent-reference.json": "dd791b4d0400504ae8bc13e4e4bffa3d35773579a73c49ef4559d8e7985787e3",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/data/gg_hg/native-model-provenance.json": "572e5b473ae5c03699f8a87cd96cd6ac73a8ad8e798a47083c33d2e470c9068d",
+      "/common/dev/symbolica-community/notebook-supplied-boundaries/examples/hep/data/gg_hg/native-model.json": "1891f93a8b8926e1e66d54a95c03bba2d36e7ee1a812b91010fa0e88b4e92e12"
+    },
+    "source_and_extension_unchanged": true,
+    "finish_utc": "2026-10-06T14:45:15.247107+00:00"
+  },
+  "browser": {
+    "schema": "gg-hg-visible-notebook-browser-v1",
+    "status": "passed",
+    "cpu_affinity": [
+      44
+    ],
+    "console_errors": [],
+    "page_errors": [],
+    "failed_requests": [],
+    "progress": [
+      [
+        14.278702455572784,
+        "for _topology, _configuration in mo.status.progress_bar(configurations, title=\"Transporting masters\"):\nmo.md(f\"Transport: **{transport_seconds:.2f} s**; {sum(r.cache_hit for r in results.values())}/16 exact cache hits.\")"
+      ],
+      [
+        304.94746576901525,
+        "for _topology, _configuration in mo.status.progress_bar(configurations, title=\"Transporting masters\"):\nmo.md(f\"Transport: **{transport_seconds:.2f} s**; {sum(r.cache_hit for r in results.values())}/16 exact cache hits.\")\nTransport: 280.58 s; 0/16 exact cache hits."
+      ]
+    ],
+    "browser_version": "153.0.8010.12",
+    "setup_seconds": 13.98601729562506,
+    "total_page_seconds": 335.01280137663707,
+    "scientific_table_cells": 55
+  },
+  "tests": {
+    "installed_host": 126,
+    "native_fastsecdec": 118,
+    "export": 8,
+    "dependency_variants": [
+      "native",
+      "stubgen",
+      "core-only",
+      "wasm",
+      "pyodide",
+      "wasm-core"
+    ]
+  },
+  "source_sha256": {
+    "Cargo.toml": "aef727a405293c7b1ddcfc019657c75750e0d12cd12a391dabd12cf74ee659fb",
+    "Cargo.lock": "15471c38c426b5532133450b7a3da48d09d234db862e8412fcae1b6f5b9d0926",
+    "examples/hep/gg_hg.py": "4609e39028a3cbaf3069c65121abc3552a834ee52a01902f00040d4ec71489c4",
+    "examples/hep/gg_hg_boundaries.py": "d3eeacce5e67607980bad57a96370119c2a68af552a0bad3db8071b15197c54a",
+    "examples/hep/gg_hg_support.py": "ecad610397e57a0e93742b92de4beec64d31c96531e2360c283afdf5fb900fbf",
+    "examples/hep/gg_hg_acceptance.py": "6f1686b22017dce4d1f0a2f7cc2362a8d78dcc6aded49a6428355941ecf1ba3c",
+    "scripts/export_gg_hg_wasm.py": "e2eafdda22bb646da87e1fab92cb749803891cb9c625baa8bfc79b8b6fcbc7db",
+    "tests/test_hep_gg_hg.py": "434933ff4a2c5ce02b7844298480b09806b031366f6b1c41e03f019010c1b5f3",
+    "tests/test_hep_gg_hg_export.py": "a0bed1b784588b2f4a016cc776d37b8051fec899c67d2df789cb4a6c25051040",
+    "tests/test_citations.py": "fa74a3f735b4a46e415f0f3a65c800695539663039bc901b3be11bca78b93539",
+    "src/hepkit.rs": "5fcdabf4ffc0ca93e8541571c63de54127d98bbd5b102235252effaf071390f1",
+    "src/loop_integration.rs": "3233a6a323a413df41750fe570446eb4428b2c5201550bb14841d72f3dafa394",
+    "python/symbolica/community/hep/integration/__init__.pyi": "195c32d90582eb09e5285903dcde4f8f9ec0b7792ff83e6e90472f8b958ece13",
+    ".github/scripts/check_integration_package.py": "a4e50cb5fd69e5bc8b69c984597ded7ee400e2a7c36d69d7a7ef47781bca4a7f",
+    "tests/test_integration_package.py": "d3d1dc6f411ef229f41f51a2e6012422e756f5be574355820286e8d9518d90d4"
+  },
+  "archive": {
+    "file": "evidence.tar.gz",
+    "sha256": "703e5007d01bc2073b92568c53182d612bdf4937c57c08fa0f965773d0174021",
+    "bytes": 1442640,
+    "verified_members": 46
+  },
+  "development_failures": "Initial graph check omitted a host build dependency from target-filtered metadata; corrected checker passed all six graphs. Initial Chrome run completed the calculation but its display assertion inspected body text outside widget shadow DOM. The corrected fresh run checks actual table cells. Both original failures are retained.",
+  "timing_scope": "Each scientific run was pinned to one CPU. Other compilation/test processes ran on other CPUs. Native warm app.run reconstructs the notebook objects; it is not a benchmark of retained interactive amplitude owners.",
+  "limits": "No fresh automatic boundary generation, Mathematica/plugin runtime or finite-top QCD. Reference accuracy caps remain separate from propagated numerical accuracy. Native wheel tested on Python 3.14; browser wheel tested in actual Pyodide. No performance-parity claim."
+}
