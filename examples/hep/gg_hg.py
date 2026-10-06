@@ -13,10 +13,12 @@ def _(mo):
     $g g\to H g$, including coherent $W/Z$ form factors, its square, and
     interference with the infinite-top effective QCD amplitude.
 
-    The integral evaluator generates the 48 planar and 61 nonplanar canonical
-    boundary values from their exact physical propagators. The same series
-    solver then transports these values in physical kinematics. Accepted
-    intermediate points stay in a reusable binary boundary cache.
+    The integral evaluator uses exact physical propagators and the published,
+    symbolically certified basis maps and differential equations for 48 planar
+    and 61 nonplanar masters. It computes boundary values through native auxiliary-mass flow
+    and recursive boundary reductions. The same series solver then transports
+    these values in physical kinematics. Accepted intermediate points stay in a
+    reusable binary boundary cache.
 
     **Run the stages in order.** Boundary generation is a substantial native
     computation. Opening this notebook starts no integral evaluation. Cancellation
@@ -26,9 +28,11 @@ def _(mo):
 
     **Current validation:** the native cold calculation generated all sixteen
     physical starting configurations from empty numerical caches. All 4,360
-    transport coefficients, eight W/Z form factors and three observables passed
-    comparisons at their recorded reference precision. Independent 40-digit
-    regeneration and restart acceptance are tracked in
+    transport coefficients passed 20-digit mixed absolute/relative comparisons.
+    Eight W/Z form factors and three observables agreed within the retained
+    native and reference uncertainties; the EW-square reference supports
+    19 relative comparison digits. Independent 40-digit regeneration and restart
+    acceptance are tracked in
     [the validation report](https://github.com/alphal00p/RustFlow/blob/main/docs/python-notebook-status.md).
     Published numerical reference values are comparison data only.
     """)
@@ -98,8 +102,9 @@ def _(mo, session):
     $\alpha_s=118/1000$. Every input is an exact Symbolica expression.
 
     The canonical integral measure is
-    $$e^{{2\gamma_E\epsilon}}\prod_{{j=1}}^2
-      \frac{{d^D k_j}}{{i\pi^{{D/2}}}},\qquad D=4-2\epsilon.$$
+
+    $$e^{{2\gamma_E\epsilon}}\prod_{{j=1}}^2\frac{{d^D k_j}}{{i\pi^{{D/2}}}},\qquad D=4-2\epsilon.$$
+
     Canonical kinematics use $m_V^2=\mu^2=1$ and the $+i0$ prescription.
     Each physical form factor includes
     $-1/[m_V^4(4\pi)^4]$ exactly once. HEPKit supplies the model couplings,
