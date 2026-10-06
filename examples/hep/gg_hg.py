@@ -9,32 +9,19 @@ def _(mo):
     mo.md(r"""
     # Two-loop Higgs + jet
 
-    Evaluate the light-quark mixed QCD–electroweak contribution to
-    $g g\to H g$, including coherent $W/Z$ form factors, its square, and
-    interference with the infinite-top effective QCD amplitude.
+    Compute the light-quark two-loop electroweak contribution to $gg \to Hg$:
+    coherent W/Z form factors, the EW square, the infinite-top QCD square, and
+    their interference. HEPKit supplies the model and tensor contractions.
 
-    The integral evaluator uses exact physical propagators and the published,
-    symbolically certified basis maps and differential equations for 48 planar
-    and 61 nonplanar masters. It computes boundary values through native auxiliary-mass flow
-    and recursive boundary reductions. The same series solver then transports
-    these values in physical kinematics. Accepted intermediate points stay in a
-    reusable binary boundary cache.
+    We load **40-digit starting values**, generated independently with native
+    auxiliary-mass flow, then **compute the physical transport live**. No
+    destination values or amplitudes are bundled. On one core, the browser run
+    takes about five minutes for transport and 25 seconds for amplitude assembly.
+    Rerunning with the same boundary cache reuses completed work.
 
-    **Run the stages in order.** Boundary generation is a substantial native
-    computation. Opening this notebook starts no integral evaluation. Cancellation
-    retains completed epsilon samples and completed boundary configurations.
-    Native typed errors remain visible if a reduction or accuracy check fails.
-    No Mathematica installation or plugin runtime is used.
-
-    **Current validation:** the native cold calculation generated all sixteen
-    physical starting configurations from empty numerical caches. All 4,360
-    transport coefficients passed 20-digit mixed absolute/relative comparisons.
-    Eight W/Z form factors and three observables agreed within the retained
-    native and reference uncertainties; the EW-square reference supports
-    19 relative comparison digits. Independent 40-digit regeneration and restart
-    acceptance are tracked in
-    [the validation report](https://github.com/alphal00p/RustFlow/blob/main/docs/python-notebook-status.md).
-    Published numerical reference values are comparison data only.
+    The cells below show the actual API calls. Change the exact kinematics and
+    rerun to evaluate a nearby point from the accumulated cache. Mathematica and
+    the original plugin are not needed.
     """)
     return
 
@@ -44,159 +31,260 @@ def _(mo):
     mo.md("""
     ## Setup and notebook helpers
 
-    Imports, the stage controller and controls are folded below. Opening the
-    notebook only loads exact inputs and existing caches; use the controls to
-    start numerical work.
+    Browser installation and input checks are folded below; the calculation is visible.
     """)
     return
 
 
 @app.cell(hide_code=True)
-def _():
+async def _():
+    import asyncio
     import importlib.util
+    from time import perf_counter
+    import hashlib as _hashlib
     import json
+    import sys as _sys
     from pathlib import Path
     import marimo as mo
+
+    if _sys.platform == "emscripten":
+        import micropip as _micropip
+        from pyodide.http import pyfetch as _pyfetch
+
+        _base = mo.notebook_location()
+        _response = await _pyfetch(str(_base / "gg-hg-assets.json"))
+        if _response.status != 200:
+            raise RuntimeError("Export this notebook with scripts/export_gg_hg_wasm.py to include its wheel and scientific inputs.")
+        _manifest = await _response.json()
+        if _manifest["schema"] != "higgs-jet-browser-assets-v1":
+            raise ValueError("Unsupported browser asset manifest")
+        _directory = Path.cwd() / "gg_hg_inputs"
+        for _name, _digest in _manifest["files"].items():
+            _relative = Path(_name)
+            if _relative.is_absolute() or ".." in _relative.parts:
+                raise ValueError("Invalid browser asset path")
+            _response = await _pyfetch(str(_base / _name))
+            if _response.status != 200:
+                raise RuntimeError(f"Cannot load browser input {_name}: HTTP {_response.status}")
+            _payload = await _response.bytes()
+            if _hashlib.sha256(_payload).hexdigest() != _digest:
+                raise ValueError(f"Browser input checksum mismatch: {_name}")
+            _path = _directory / _relative
+            _path.parent.mkdir(parents=True, exist_ok=True)
+            _path.write_bytes(_payload)
+        _wheel_name = _manifest["wheel"]
+        if Path(_wheel_name).name != _wheel_name or not _wheel_name.endswith(".whl"):
+            raise ValueError("Invalid browser wheel path")
+        _response = await _pyfetch(str(_base / _wheel_name))
+        if _response.status != 200:
+            raise RuntimeError(f"Cannot load browser wheel: HTTP {_response.status}")
+        _payload = await _response.bytes()
+        if _hashlib.sha256(_payload).hexdigest() != _manifest["wheel_sha256"]:
+            raise ValueError("Browser wheel checksum mismatch")
+        _wheel_path = _directory / _wheel_name
+        _wheel_path.write_bytes(_payload)
+        del _payload
+        await _micropip.install("emfs:" + str(_wheel_path))
+    else:
+        _directory = Path(__file__).resolve().parent
+
     from symbolica import ComplexFloat, E, Float
     from symbolica.community.hep.integration import (
+        AccuracyError,
         BoundaryCache,
         EvaluationOptions,
-        IntegralEvaluator,
-        KinematicTransport,
+        HiggsJetAmplitude,
+        HiggsJetFormFactorProjector,
+        HiggsJetIntegralSystem,
     )
 
-    _directory = Path(__file__).resolve().parent
-    _spec = importlib.util.spec_from_file_location("gg_hg_support", _directory / "gg_hg_support.py")
+    from symbolica.community.hepkit import Model
+
+    _spec = importlib.util.spec_from_file_location("gg_hg_boundaries", _directory / "gg_hg_boundaries.py")
     _support = importlib.util.module_from_spec(_spec)
     _spec.loader.exec_module(_support)
-    CalculationSession = _support.CalculationSession
+    load_boundary_bundle = _support.load_boundary_bundle
     data_directory = _directory / "data" / "gg_hg"
     return (
-        BoundaryCache, CalculationSession, ComplexFloat, E, EvaluationOptions, Float,
-        IntegralEvaluator, KinematicTransport, Path, data_directory, json, mo,
+        AccuracyError, BoundaryCache, ComplexFloat, E, EvaluationOptions, Float, HiggsJetAmplitude,
+        HiggsJetFormFactorProjector, HiggsJetIntegralSystem, Model, Path, asyncio,
+        data_directory, json, load_boundary_bundle, mo, perf_counter,
     )
 
 
-@app.cell(hide_code=True)
-def _(CalculationSession, Path, data_directory):
-    session = CalculationSession(
-        data_directory / "native-model.json",
-        Path.cwd() / "gg_hg_cache",
-        seed_digits=30,
-        digits=20,
-        workers=1,
-        boundary_workers=1,
-    )
-    return (session,)
+@app.cell
+def _(HiggsJetAmplitude, Model):
+    model = Model.standard_model()
+    # Add symbolic W/Z and HEFT vertices; compute their form factors below.
+    model = HiggsJetAmplitude.with_form_factor_vertices(model)
+    return (model,)
+
+
+@app.cell
+def _(E):
+    s = E("7173070292440521/111284741846000")  # Try adding E("1/100000").
+    t = E("-12058167788971/339319588980")
+    mh2 = E("1")
+    masses = {"W": E("5399/13074"), "Z": E("7775/14631")}
+    return masses, mh2, s, t
 
 
 @app.cell(hide_code=True)
-def _(mo, session):
-    mo.md(rf"""
-    ## Exact inputs and conventions
+def _(mo):
+    mo.md(r"""
+    ## Load reusable boundaries
 
-    A single native HEPKit model is shared by the effective diagrams and tensor
-    contractions. The physical point, in units $m_H^2=1$, is
-    $$s={session.point[0]},\qquad t={session.point[1]},\qquad u=m_H^2-s-t.$$
-    We use $m_W^2=5399/13074$, $m_Z^2=7775/14631$, $\alpha=1/128$ and
-    $\alpha_s=118/1000$. Every input is an exact Symbolica expression.
-
-    The canonical integral measure is
-
-    $$e^{{2\gamma_E\epsilon}}\prod_{{j=1}}^2\frac{{d^D k_j}}{{i\pi^{{D/2}}}},\qquad D=4-2\epsilon.$$
-
-    Canonical kinematics use $m_V^2=\mu^2=1$ and the $+i0$ prescription.
-    Each physical form factor includes
-    $-1/[m_V^4(4\pi)^4]$ exactly once. HEPKit supplies the model couplings,
-    Lorentz/color contractions and incoming spin/color average ($1/256$).
-    Observables contain no phase-space or flux factor. Finite-top QCD is outside
-    this demonstration.
-
-    Requested observable accuracy is **20 decimal digits**. Seeds start at
-    **30 digits**, and the displayed uncertainty is propagated from independent
-    sample/precision checks. Working precision alone is not an accuracy claim.
+    The 48 planar and 61 nonplanar masters use the canonical measure
+    $e^{2\gamma_E\epsilon}\prod_{j=1}^2 d^D k_j/(i\pi^{D/2})$, $D=4-2\epsilon$,
+    with $m_V^2=\mu^2=1$ and the $+i0$ prescription. The loader checks basis,
+    coordinates, root sheets, uncertainties and provenance before admitting seeds.
+    A binary cache preserves all that evidence and every accepted intermediate point.
     """)
     return
 
 
-@app.cell(hide_code=True)
-def _(mo, session):
-    def launch(stage, **kwargs):
-        session.submit(stage, **kwargs)
-        return f"Started {stage}"
+@app.cell
+def _(BoundaryCache, HiggsJetIntegralSystem, Path, data_directory, load_boundary_bundle):
+    systems = {name: HiggsJetIntegralSystem(name) for name in ("planar", "nonplanar")}
+    configurations = [(name, c) for name, system in systems.items() for c in system.configurations()]
+    cache_directory = Path.cwd() / "gg_hg_visible_cache"
+    if (cache_directory / "physical-boundaries.bin").exists():
+        cache = BoundaryCache.load(cache_directory)
+    else:
+        cache = BoundaryCache()
+    _seeds, _seed_results = load_boundary_bundle(data_directory, systems)
+    cache.extend(_seeds)
+    cache.save(cache_directory)
+    return cache, cache_directory, configurations, systems
 
-    boundary_load = mo.ui.button(label="1 · Load or compute boundaries", on_click=lambda _: launch("boundaries"))
-    boundary_force = mo.ui.button(label="Recompute boundaries", on_click=lambda _: launch("boundaries", recompute=True))
-    transport_load = mo.ui.button(label="2 · Load or compute transport", on_click=lambda _: launch("transport"))
-    transport_force = mo.ui.button(label="Recompute transport", on_click=lambda _: launch("transport", recompute=True))
-    amplitude_load = mo.ui.button(label="3 · Load or assemble amplitude", on_click=lambda _: launch("amplitude"))
-    amplitude_force = mo.ui.button(label="Reassemble amplitude", on_click=lambda _: launch("amplitude", recompute=True))
-    restart = mo.ui.button(label="Binary reload and exact repeated hit", on_click=lambda _: launch("restart"))
-    nearby = mo.ui.button(label="Transport to nearby s + 1/100000", on_click=lambda _: launch("transport", nearby=True))
-    cancel = mo.ui.button(label="Cancel current stage", kind="warn", on_click=lambda _: session.cancel())
-    refresh = mo.ui.refresh(options=[1, 5, 10], default_interval=5, label="Progress refresh (seconds)")
-    mo.vstack([
-        mo.hstack([boundary_load, boundary_force]),
-        mo.hstack([transport_load, transport_force]),
-        mo.hstack([amplitude_load, amplitude_force]),
-        mo.hstack([restart, nearby]),
-        mo.hstack([cancel, refresh]),
-        mo.md("Forced boundary recomputation bypasses numerical samples and boundary values while reusing exact reductions. Forced transport starts from the saved seed-only bank. Reassembly reruns the native contractions' scalar evaluation and uncertainty propagation."),
-    ])
-    return (refresh,)
+
+@app.cell
+def _(EvaluationOptions):
+    options = EvaluationOptions(digits=20, guard_digits=20, series_order=16, workers=1)
+    return (options,)
 
 
 @app.cell(hide_code=True)
-def _(mo, refresh, session):
-    refresh.value
-    state = session.snapshot()
-    mo.vstack([
-        mo.md(f"**{state['status']}**"),
-        mo.ui.table(state["timings"], label="Stage timings; nanoseconds, including failed/interrupted work"),
-        mo.accordion({"Recent native progress": mo.plain_text("\n".join(state["events"][-30:]))}),
-    ])
-    return (state,)
+def _(mo):
+    mo.md("""
+    ## Transport in physical kinematics
+
+    Each mass needs four crossed configurations. `evaluate` selects a compatible
+    cached starting point, continues the master integrals, checks the requested
+    accuracy and inserts accepted points into the same cache. We checkpoint after
+    each configuration; rerunning an interrupted cell reuses completed results.
+    """)
+    return
+
+
+@app.cell
+async def _(asyncio, cache, cache_directory, configurations, masses, mh2, mo, options, perf_counter, s, systems, t):
+    results, destinations = {}, {}
+    _started = perf_counter()
+    cache.save(cache_directory)
+    _crossings = [(s, mh2 - s - t), (s, t), (mh2 - s - t, t), (t, s)]
+    for _topology, _configuration in mo.status.progress_bar(configurations, title="Transporting masters"):
+        _system = systems[_topology]
+        _a, _b = _crossings[_configuration.permutation - 1]
+        _mass = masses[_configuration.mass]
+        _point = dict(zip(_system.coordinates, [_a / _mass, _b / _mass, mh2 / _mass]))
+        destinations[_configuration.label] = _point
+        _result = _system.evaluate(
+            cache, _point, _configuration.root_sheets, options=options,
+        )
+        results[_configuration.label] = _result
+        if not _result.cache_hit or _result.inserted_points:
+            cache.save(cache_directory)
+        await asyncio.sleep(0.05)  # Let the browser display progress between calls.
+    transport_seconds = perf_counter() - _started
+    mo.md(f"Transport: **{transport_seconds:.2f} s**; {sum(r.cache_hit for r in results.values())}/16 exact cache hits.")
+    return destinations, results, transport_seconds
 
 
 @app.cell(hide_code=True)
-def _(mo, session, state):
-    mo.stop(not state["done"], mo.md("Computation is running; progress and cancellation remain available above."))
-    _rows = [
-        {
-            "configuration": label,
-            "checked digits": result.verified_digits,
-            "input checked digits": result.input_verified_digits,
-            "working bits": result.working_bits,
-            "exact cache hit": result.cache_hit,
-            "steps": result.steps,
-            "inserted points": result.inserted_points,
-            "selected source": str(result.starting_coordinates),
-            "source history": result.provenance,
+def _(mo, observables, results):
+    # Marimo discovers dependencies in the body, not only in the signature.
+    assert observables is not None  # Defer table RPCs until amplitude work is done.
+    mo.ui.table([
+        {"configuration": name, "checked digits": r.verified_digits,
+         "steps": r.steps, "cached points added": r.inserted_points,
+         "selected source": str(r.starting_coordinates)}
+        for name, r in results.items()
+    ], label="Transport accuracy and boundary reuse")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Project and assemble the coherent amplitude
+
+    The kinematics-dependent projection includes $-1/[m_V^4(4\pi)^4]$ once.
+    We use $\alpha=1/128$, $\alpha_s=118/1000$, and the incoming spin/color
+    average $1/256$. Observables include no flux or phase-space factor.
+    Finite-top QCD is outside this example.
+    """)
+    return
+
+
+@app.cell
+def _(HiggsJetAmplitude, HiggsJetFormFactorProjector, model):
+    projector = HiggsJetFormFactorProjector()
+    amplitude = HiggsJetAmplitude(model)
+    return amplitude, projector
+
+
+@app.cell
+def _(configurations, masses, mh2, projector, results, s, t):
+    form_factors = {}
+    for _mass in ("W", "Z"):
+        _blocks = {
+            _topology: [results[c.label] for c in sorted(
+                (c for name, c in configurations if name == _topology and c.mass == _mass),
+                key=lambda c: c.permutation,
+            )] for _topology in ("planar", "nonplanar")
         }
-        for label, result in session.results.items()
-    ]
-    mo.ui.table(_rows, label="Transport and accumulated boundary reuse")
-    return
+        form_factors[_mass] = projector.evaluate(s, t, mh2, masses[_mass], _blocks["planar"], _blocks["nonplanar"])
+    return (form_factors,)
+
+
+@app.cell
+def _(AccuracyError, E, amplitude, form_factors, masses, mh2, model, s, t):
+    _mw2, _mz2 = masses["W"], masses["Z"]
+    parameters = {
+        model.parameter("aEWM1").symbol: E("128"),
+        model.parameter("aS").symbol: E("118/1000"),
+        model.parameter("MZ").symbol: _mz2.sqrt(),
+        model.parameter("Gf").symbol: E("𝜋") * E("1/128") * _mz2 / (E("2").sqrt() * _mw2 * (_mz2 - _mw2)),
+    }
+    _w, _z = form_factors["W"], form_factors["Z"]
+    observables = amplitude.evaluate(
+        s, t, mh2, _w.values, _z.values, _w.absolute_errors, _z.absolute_errors,
+        parameters=parameters, digits=20, provenance=_w.provenance + "; " + _z.provenance,
+    )
+    if any(d is None or d < 20 for d in observables.verified_relative_digits.values()):
+        raise AccuracyError("Refine the starting boundaries to reach 20 observable digits.")
+    return observables, parameters
 
 
 @app.cell(hide_code=True)
-def _(mo, session, state):
-    mo.stop(not state["done"] or session.amplitude is None, mo.md("Native effective diagrams appear after amplitude preparation."))
-    mo.vstack([mo.md("## Native HEPKit diagrams"), *session.amplitude.diagrams])
-    return
-
-
-@app.cell(hide_code=True)
-def _(ComplexFloat, E, Float, data_directory, json, mo, session, state):
-    mo.stop(not state["done"] or session.observables is None, mo.md("Assemble the amplitude to view observables and uncertainties."))
-    _result = session.observables
+def _(ComplexFloat, E, Float, HiggsJetAmplitude, Model, data_directory, form_factors, json, masses, mh2, mo, model, observables, parameters, s, t):
+    _result = observables
     # Comparison data is loaded only here, after the native result exists.
     _reference = json.loads((data_directory / "amplitude-validation.json").read_text())
-    _same_point = session.point == [E(value) for value in _reference["physical_s_t_MH_squared"]]
+    _mw2, _mz2 = E("5399/13074"), E("7775/14631")
+    _same_point = ([s, t, mh2] == [E(value) for value in _reference["physical_s_t_MH_squared"]]
+                   and masses == {"W": _mw2, "Z": _mz2})
+    _same_observables = _same_point and parameters == {
+        model.parameter("aEWM1").symbol: E("128"),
+        model.parameter("aS").symbol: E("118/1000"),
+        model.parameter("MZ").symbol: _mz2.sqrt(),
+        model.parameter("Gf").symbol: E("𝜋") * E("1/128") * _mz2 / (E("2").sqrt() * _mw2 * (_mz2 - _mw2)),
+    } and model.to_json() == HiggsJetAmplitude.with_form_factor_vertices(Model.standard_model()).to_json()
     _factor_reference = {block["mass"]: block["values"] for block in _reference["form_factors"]}
     _factor_rows = []
     for _mass in ("W", "Z"):
-        _factors = session.form_factors[_mass]
+        _factors = form_factors[_mass]
         for _index, (_value, _error, _digits, _expected) in enumerate(zip(
             _factors.values, _factors.absolute_errors, _factors.verified_relative_digits,
             _factor_reference[_mass], strict=True,
@@ -205,12 +293,12 @@ def _(ComplexFloat, E, Float, data_directory, json, mo, session, state):
             _reference_error = Float(_expected["absolute_error"], decimal_digits=100)
             _factor_rows.append({
                 "form factor": f"{_mass}{_index}",
-                "native result": str(_value),
-                "propagated absolute uncertainty": str(_error),
+                "native result": f"{_value:.20e}",
+                "propagated absolute uncertainty": f"{_error:.20e}",
                 "achieved relative digits": _digits,
-                "reference at recorded point": str(_reference_value) if _same_point else "different kinematics",
-                "reference absolute uncertainty": str(_reference_error) if _same_point else "—",
-                "absolute difference": str(abs(_value - _reference_value)) if _same_point else "—",
+                "reference at recorded point": f"{_reference_value:.20e}" if _same_point else "different kinematics",
+                "reference absolute uncertainty": f"{_reference_error:.20e}" if _same_point else "—",
+                "absolute difference": f"{abs(_value - _reference_value):.20e}" if _same_point else "—",
             })
     _rows = []
     for _name, _value in _result.values.items():
@@ -221,19 +309,19 @@ def _(ComplexFloat, E, Float, data_directory, json, mo, session, state):
         )
         _rows.append({
             "observable": _name,
-            "native result": str(_value),
-            "propagated absolute uncertainty": str(_result.absolute_errors[_name]),
+            "native result": f"{_value:.20e}",
+            "propagated absolute uncertainty": f"{_result.absolute_errors[_name]:.20e}",
             "achieved relative digits": _result.verified_relative_digits[_name],
-            "reference at recorded point": str(_ref) if _same_point else "different kinematics",
-            "reference absolute uncertainty": str(_ref_error) if _same_point else "—",
-            "absolute difference": str(abs(_value - _ref)) if _same_point else "—",
+            "reference at recorded point": f"{_ref:.20e}" if _same_observables else "different inputs",
+            "reference absolute uncertainty": f"{_ref_error:.20e}" if _same_observables else "—",
+            "absolute difference": f"{abs(_value - _ref):.20e}" if _same_observables else "—",
         })
     mo.vstack([
         mo.md("## W/Z form factors"),
-        mo.md(f"Current exact kinematics: s = {session.point[0]}, t = {session.point[1]}, m_H² = {session.point[2]}."),
+        mo.md(f"Current exact kinematics: s = {s}, t = {t}, m_H² = {mh2}."),
         mo.ui.table(_factor_rows, label="Native W/Z form factors and propagated uncertainties"),
         mo.md("## Coherent observables"),
-        mo.ui.table(_rows),
+        mo.ui.table(_rows, label="Coherent observables and propagated uncertainties"),
         mo.md("The archived reference has its own input-accuracy limits. Extra printed digits do not strengthen its uncertainty. Nearby evaluations use new kinematics-dependent projections; the original-point comparison is then omitted."),
         mo.accordion({"Numerical provenance": mo.plain_text(_result.provenance)}),
     ])
@@ -242,20 +330,61 @@ def _(ComplexFloat, E, Float, data_directory, json, mo, session, state):
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md(r"""
-    ## Reproduction
+    mo.md("""
+    ## Binary restart and exact cache reuse
 
-    The exact physical families and canonical transformations follow
-    [Becchetti, Moriello and Schweitzer, arXiv:2112.07578](https://arxiv.org/abs/2112.07578).
-    Basis transformations are checked with native exact Symbolica arithmetic.
-    Reference numerical coefficients are comparison data only.
-
-    For a restart, reopen the notebook with the same cache directory and run
-    the load-or-compute controls. The explicit binary-reload control verifies
-    bit-for-bit endpoint equality and zero transport steps. Nearby transport
-    retains and searches the growing collection of physical intermediate points.
-    Long headless acceptance is separate from ordinary notebook smoke checks.
+    Reload the cache and repeat one configuration: no ODE steps are needed.
+    Editing `s` above reruns transport and projection from nearby cached points.
+    Browser files live for this page's lifetime; native files survive reopening.
     """)
+    return
+
+
+@app.cell
+def _(BoundaryCache, cache, cache_directory, configurations, destinations, options, results, systems):
+    cache.save(cache_directory)
+    reloaded_cache = BoundaryCache.load(cache_directory)
+    _topology, _configuration = configurations[0]
+    repeated = systems[_topology].evaluate(
+        reloaded_cache, destinations[_configuration.label], _configuration.root_sheets, options=options,
+    )
+    assert repeated.cache_hit and repeated.steps == 0
+    assert repeated.coefficients == results[_configuration.label].coefficients
+    return reloaded_cache, repeated
+
+
+@app.cell(hide_code=True)
+def _(mo, repeated):
+    mo.md(f"Exact repeated cache hit: **{repeated.cache_hit}**, ODE steps: **{repeated.steps}**.")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    The physical families and exact canonical maps follow
+    [Becchetti, Moriello and Schweitzer](https://arxiv.org/abs/2112.07578).
+    All 4,360 transport coefficients and the coherent observables have independent
+    [native validation](https://github.com/alphal00p/RustFlow/blob/main/docs/python-notebook-status.md).
+    Numerical references above are loaded only after evaluation. The EW-square
+    reference supports 19 relative comparison digits; printed precision is not
+    an accuracy claim.
+
+    Native boundary regeneration is available through
+    `system.generate_boundary(evaluator, cache, configuration.start, configuration.root_sheets)`;
+    the separate `gg_hg_acceptance.py` runner exercises empty-cache generation,
+    cancellation, forced recomputation and precision refinement. That substantial
+    calculation is deliberately separate from this live transport demonstration.
+    """)
+    return
+
+
+@app.cell
+def _(observables, repeated):
+    from symbolica import get_citations
+
+    _ = observables, repeated  # Collect after numerical work has registered its citations.
+    get_citations()
     return
 
 

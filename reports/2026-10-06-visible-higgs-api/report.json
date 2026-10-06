@@ -1,0 +1,55 @@
+{
+  "schema": "visible-higgs-notebook-validation-v1",
+  "status": "passed",
+  "native": {
+    "source_sha256": "9567a8ce8e79c3bb7999f02b35b35493e8716ac9c76951d0f561f36faebfb5e7",
+    "rustflow": "7096ba8e1f4d7edda4402f9ff01c961f6f3e6a4e",
+    "cold_app_seconds": 115.34091374231502,
+    "cold_transport_seconds": 76.06988235376775,
+    "warm_app_seconds": 43.20713862217963,
+    "warm_transport_seconds": 1.3543269680812955,
+    "coefficients": 4360,
+    "form_factors": 8,
+    "observables": 3,
+    "exact_warm_hits": 16,
+    "warm_ode_steps": 0
+  },
+  "chromium": {
+    "schema": "gg-hg-visible-notebook-browser-v1",
+    "status": "passed",
+    "cpu_affinity": [
+      44
+    ],
+    "console_errors": [],
+    "page_errors": [],
+    "failed_requests": [],
+    "progress": [
+      [
+        13.876946178264916,
+        "for _topology, _configuration in mo.status.progress_bar(configurations, title=\"Transporting masters\"):\nmo.md(f\"Transport: **{transport_seconds:.2f} s**; {sum(r.cache_hit for r in results.values())}/16 exact cache hits.\")"
+      ],
+      [
+        309.6256222082302,
+        "for _topology, _configuration in mo.status.progress_bar(configurations, title=\"Transporting masters\"):\nmo.md(f\"Transport: **{transport_seconds:.2f} s**; {sum(r.cache_hit for r in results.values())}/16 exact cache hits.\")\nTransport: 280.67 s; 0/16 exact cache hits."
+      ]
+    ],
+    "browser_version": "153.0.8010.12",
+    "setup_seconds": 13.618400852195919,
+    "total_page_seconds": 339.70504351798445,
+    "source_sha256": "52f24a048ab98ecf46efc93b8b11be97dac5969aeac7a317f5339455879cd44d",
+    "rustflow": "d81dae94a40e41e5d2dcd978f623e6e83abb3e4f",
+    "wheel_sha256": "fcc2367342481ebfac79ceb8b14f87e9a9afb1bcb326c54106340825576bfac2",
+    "displayed_transport_seconds": 280.67
+  },
+  "scope": "Native direct-cell scientific checks and actual one-core Chromium DOM/API-display/cache-repeat gate. Node Pyodide full scientific comparison is reported separately. Browser execution uses supplied seeds; it does not regenerate boundaries.",
+  "retained_failures": [
+    "Native harness initially demanded identical cold/warm source accuracy caps; exact numeric values/errors/precisions were equal, and a fresh corrected warm gate passed.",
+    "An initial code-first browser run finished numerical stages but failed strict console checks because a table RPC overlapped amplitude construction. Final source makes table rendering depend on completed observables."
+  ],
+  "evidence": {
+    "file": "evidence.tar.gz",
+    "bytes": 1650794,
+    "sha256": "fc2e4885b435d72ca85729c822ec917a1646b02fc2ca4db81017b0e776133034",
+    "hashed_members": 39
+  }
+}

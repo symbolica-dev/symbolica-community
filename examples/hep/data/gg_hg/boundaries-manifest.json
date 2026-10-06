@@ -1,0 +1,29 @@
+{
+  "schema": "higgs-jet-boundary-bundle-v1",
+  "sha256": "984b64a1617eb111543fc3b97e1cd36c84c610cfd8a02b11e8dfa861809acee4",
+  "mathematical_fingerprints": {
+    "planar": "b77f8d97fadc07001ebf3cd87e68ed5338b40a4b0d58fb06a8636956fbd87dc8",
+    "nonplanar": "ab5364501a91e2e7c0960f2f8b84fe14f039321153145e62e55c75ecc4521958"
+  },
+  "origin": {
+    "binary_sha256": "5e8c60c1b5fce269b8f521821e37368b8272c4682afe6578a5b9891f4c136d98",
+    "description": "Rust-generated physical starting boundaries; independently refined native acceptance run. No plugin numerical seeds.",
+    "native_extension_sha256": "dc55af02da528c482c31882ce14c652ce328ba4d57fd985a5bc9380ea1b8bebf",
+    "report": "https://github.com/alphal00p/RustFlow/blob/115d9e5/reports/validation/2026-10-06-gg-hg-publication-complete/summary.json"
+  },
+  "configurations": 16,
+  "complex_coefficients": 4360,
+  "epsilon_range": [
+    0,
+    4
+  ],
+  "verified_digits": 40,
+  "working_bits": 415,
+  "compressed_bytes": 1054943,
+  "exact_input_sha256": {
+    "integral-systems.json": "c9db3346312a724abf8cc153ed511eaa9ebd14da68b17655827c4d54cc298c5d",
+    "plugin-physical-map.json": "3d6228c35861cc9ab9ec86f3ef4d90323af51780bd5e77af669239f2e30e17f9",
+    "physical-configurations.json": "af09a616fdd0224a2719776808bb3c4b17cd76d17cbf58519c8d8908af2e5596"
+  },
+  "usage": "Supplied starting values only. Current transport checks compatibility and propagates retained uncertainty; no destination or amplitude values are included."
+}

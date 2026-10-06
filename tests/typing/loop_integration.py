@@ -7,6 +7,7 @@ from symbolica.community.hep.integration import (
     ComputationControl,
     DifferentialSystem,
     EvaluationOptions,
+    HiggsJetIntegralSystem,
     IntegralEvaluator,
     KinematicTransport,
     LaurentExpansion,
@@ -54,3 +55,10 @@ def propagate(
     direct: TransportResult = system.transport(boundary, [endpoint])
     cached: TransportResult = flow.evaluate(cache, point, 0, 2, admit_straight_path=True)
     return direct, cached
+
+
+def certified_transport() -> tuple[str, KinematicTransport]:
+    system = HiggsJetIntegralSystem("planar")
+    fingerprint: str = system.mathematical_fingerprint
+    transport: KinematicTransport = system.kinematic_transport(EvaluationOptions(digits=20))
+    return fingerprint, transport

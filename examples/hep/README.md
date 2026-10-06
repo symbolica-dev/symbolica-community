@@ -129,8 +129,10 @@ notebook stay on the same server.
 Native numerical loop evaluation lives under
 `symbolica.community.hep.integration`. The [Higgs-jet notebook](gg_hg.py) uses
 these classes with the same HEPKit model, families and exact kinematics as the
-other examples. Its complete empty-cache two-loop boundary acceptance is still
-pending; opening the notebook starts no boundary calculation.
+other examples. The native empty-cache boundary calculation and independently
+refined observables are recorded in the
+[validation report](https://github.com/alphal00p/RustFlow/blob/main/docs/python-notebook-status.md).
+Opening the notebook starts no boundary calculation.
 
 `IntegralEvaluator(reductions=tables)` accepts a `ReductionTables` collection.
 Use `with_family` to add exact rules and declared residual masters for a native
@@ -160,20 +162,78 @@ python -m pytest tests/test_loop_integration_reductions.py -q
 
 ### Higgs-plus-jet calculation and acceptance
 
-The [gg→Hg notebook](gg_hg.py) separates native boundary generation, physical
-transport and coherent amplitude assembly. All three stages use one loaded
-HEPKit model. HEPKit supplies diagrams, state sums and model-parameter
+The [gg→Hg notebook](gg_hg.py) shows physical transport and coherent amplitude
+assembly as visible API calls, starting from `Model.standard_model()`. The call
+`HiggsJetAmplitude.with_form_factor_vertices(model)` adds the symbolic W/Z and
+HEFT vertices while retaining the Standard Model's particles and interactions.
+Their numerical form factors come from the transport below. HEPKit supplies
+diagrams, state sums and model-parameter
 expansion; Spenso and Idenso supply tensor and color contractions. The physical
 form-factor projections depend on the actual kinematics, including nearby
 evaluations. Numerical references never supply boundary or amplitude inputs.
 
-The load-or-compute controls preserve accumulated intermediate points. Forced
+The notebook runs from top to bottom without a button dashboard. It loads all
+sixteen independently refined, native-generated starting values from
+`data/gg_hg/boundaries.json.gz` (1,054,943 bytes). Each coefficient keeps its exact
+binary rational, working precision, comparison error, and 40-digit input cap.
+The manifest records its checksum and origin. Import verifies the equations,
+ordered bases, normalization, coordinates and root sheets, then admits the
+values through the current build's supplied-boundary API. This portable data
+does not bypass binary cache compatibility checks. Destination integrals and
+amplitudes are still computed live. Native regeneration remains available through
+`HiggsJetIntegralSystem.generate_boundary` and the long acceptance runner below.
+
+The visible loop calls `system.evaluate(cache, destination, root_sheets, options=...)`
+on one core and yields after each checkpointed configuration. The model and
+amplitude preparation are independent of the editable kinematic cell, so changing
+`s` reuses both the exact kernels and nearby cached numerical points. Native solver
+calls are synchronous; an interrupt takes effect between calls. Insufficient
+achieved observable accuracy raises a typed error and requires refined boundaries.
+Browser cache files live in the current page's virtual filesystem. Binary
+reload works within that session; page reload does not persist the files.
+
+The [single-core transport comparison](https://github.com/alphal00p/RustFlow/blob/main/reports/performance/2026-10-06-physical-transport-order16/README.md)
+measured all sixteen configurations with the same supplied seeds and growing
+cache. At requested 20-digit accuracy, initial guard 20/order 16 took 68.1 s,
+versus 91.5 s with guard 30/order 32 and 270.2 s with guard 60/order 96.
+Independent exact-arithmetic checks cover all 4,360 final coefficients,
+8,720 inserted coefficients, eight form factors and three observables.
+The notebook uses guard 20/order 16, retaining adaptive checks; automatic
+boundary generation keeps its previous settings. A guard-10 trial took 64.4 s
+but reduced the master accuracy estimate from 28 to 20 digits; guard 20 retains
+the additional margin. These are native solver component measurements from one
+run of each profile, excluding browser startup, UI and checkpoint I/O.
+
+To prepare a browser demonstration, use a community Pyodide wheel containing
+the physical transport API. Supplied-boundary transport, exact binary restart,
+nearby reuse and cancellation passed the
+[actual Pyodide smoke gate](../../reports/2026-10-06-browser-loop-transport/report.json)
+on one core without license credentials. The [full gg→Hg scientific gate](../../reports/2026-10-06-pyodide-gg-hg/README.md)
+and [visible notebook/browser gate](../../reports/2026-10-06-visible-higgs-api/README.md)
+also pass with separate timing and runtime attribution. The exporter requires a successful
+`test_pyodide.mjs` transport smoke report
+matching the exact wheel checksum. A Python namespace alone is insufficient.
+Marimo's exporter requires `uv` in the build environment.
+
+```sh
+python scripts/export_gg_hg_wasm.py /path/to/symbolica-*-pyemscripten_2026_0_wasm32.whl /path/to/new-export
+python scripts/serve_wasm_bundle.py /path/to/new-export
+```
+
+The export shows code by default and includes the wheel, exact model, supplied starting
+values and comparison-only observable data. The notebook fetches its inputs
+and wheel relative to its own URL, verifies their checksums, and installs the
+verified wheel bytes from Pyodide's filesystem.
+Ordinary HTML export does not package these external assets automatically.
+
+The separate headless controller supports load, recompute and cancellation for
+long acceptance and boundary generation. Forced
 boundary recomputation archives both verified-boundary banks and all completed
 numerical samples under `numerical-history/` before starting, while retaining
 exact reduction data. A durable generation record lets a restarted session
 reuse only new work, even at unchanged precision with identical sample keys.
 If preparation is interrupted between directory moves, ordinary stages fail
-closed; create or reuse a session and select **Recompute boundaries** again to
+closed; create or reuse a session and request forced boundary regeneration again to
 recover. Prior numerical files remain in the history directories. Forced
 transport resets its bank to the saved seed-only bank. Cancellation can leave
 completed samples or complete configurations for restart; it never admits a
@@ -287,8 +347,9 @@ Independent native planar and nonplanar Euclidean-anchor validation is the
 separate prerequisite described above. Supply its report with `--anchor-report`
 to associate the full physical run with that matching-source evidence. Success
 of the lightweight tests alone must not be reported as completion of the
-native-boundary acceptance. The full cold numerical calculation and its
-performance measurements remain pending until the long runs finish.
+native-boundary acceptance. Recorded cold native results, source versions and
+uncertainty limits are available in the validation report linked above; a new
+runtime or dependency graph needs its own acceptance evidence.
 
 ## Live RustRed generation and artifact exploration
 

@@ -76,6 +76,8 @@ app.run(defs=definitions)
 
 @pytest.mark.parametrize("path", NOTEBOOKS, ids=lambda path: path.stem)
 def test_notebook_runs_from_clean_session(path):
+    if path.stem == "gg_hg":
+        pytest.skip("Cold transport is a long acceptance; rendering has a separate lightweight fixture.")
     run_notebook(path)
 
 

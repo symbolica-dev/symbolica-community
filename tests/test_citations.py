@@ -5,6 +5,78 @@ import subprocess
 import sys
 import textwrap
 
+import pytest
+
+
+@pytest.mark.parametrize("operation", ["import", "ordinary", "kinematic", "higgs", "model", "automatic"])
+def test_numerical_transport_citations_are_usage_gated_and_cumulative(operation):
+    """Each case starts with a fresh native registry; no test-only reset exists."""
+    result = subprocess.run(
+        [sys.executable, "-c", textwrap.dedent("""
+            import sys
+            from symbolica import E, S, get_citations
+            from symbolica.community import hepkit as hep
+            from symbolica.community.hep import integration
+            operation = sys.argv[1]
+            method_ids = {'arXiv:2607.08477', 'arXiv:2006.05510'}
+            amflow_id, higgs_id = 'arXiv:2201.11669', 'arXiv:2112.07578'
+            all_ids = method_ids | {amflow_id, higgs_id}
+            def citations():
+                values = get_citations()
+                assert len(values) == len({c.id for c in values})
+                return {c.id:c for c in values}
+            assert not all_ids & citations().keys()
+            assert not hasattr(integration, 'get_citations')
+            integration.EvaluationOptions()
+            integration.BoundaryCache()
+            try:
+                integration.HiggsJetIntegralSystem('invalid')
+                raise AssertionError('invalid Higgs topology accepted')
+            except integration.InvalidInputError:
+                pass
+            assert not all_ids & citations().keys()
+            expected = set()
+            if operation == 'ordinary':
+                integration.DifferentialSystem(S('citation_x'), [[E('0')]])
+                expected = method_ids
+            elif operation == 'kinematic':
+                integration.KinematicTransport(S('citation_eps'), {S('citation_x'):[[E('0')]]},
+                    [S('citation_I')], E('1'), branch_domain='citation preparation')
+                expected = method_ids
+            elif operation == 'higgs':
+                integration.HiggsJetIntegralSystem('planar')
+                expected = all_ids
+            elif operation == 'model':
+                integration.HiggsJetAmplitude.with_form_factor_vertices(hep.Model.standard_model())
+                expected = all_ids
+            elif operation == 'automatic':
+                if integration.automatic_boundary_generation_available:
+                    integration.IntegralEvaluator()
+                    expected = method_ids | {amflow_id}
+            first = citations()
+            assert all_ids & first.keys() == expected
+            for identifier in expected:
+                citation = first[identifier]
+                assert citation.reference and citation.reasons
+                assert citation.to_bibtex().startswith('@article{')
+                assert identifier.split(':')[1] in citation.to_bibtex()
+            second = citations()
+            assert first.keys() == second.keys()
+            assert all(second[k].reasons == first[k].reasons for k in expected)
+            if operation != 'import':
+                integration.HiggsJetAmplitude.with_form_factor_vertices(hep.Model.standard_model())
+                accumulated = citations()
+                assert all_ids <= accumulated.keys()
+                for identifier in expected:
+                    assert set(first[identifier].reasons) <= set(accumulated[identifier].reasons)
+        """), operation],
+        capture_output=True,
+        text=True,
+        timeout=90,
+        env=os.environ.copy(),
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
 
 def test_rustred_strategy_citation_is_usage_gated_and_unique():
     """Importing the API is not evidence that its IBP strategy was used."""

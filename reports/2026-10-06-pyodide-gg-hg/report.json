@@ -1,0 +1,722 @@
+{
+  "schema": "gg-hg-actual-pyodide-publication-v1",
+  "status": "passed",
+  "scope": "Actual Node-hosted Pyodide, one CPU, no license credentials, supplied starting values. Browser/Marimo UI scheduling is a separate acceptance.",
+  "notebook_commit": "9507de0edbbc9214f5d8e1ee8ff82e286024877a",
+  "runtime_driver_commit": "63c6c2e373745d3e18d7ed95b78fc535192dfba4",
+  "harness_commit": "0cf7de154b7f605c6155af6995119411a0f98021",
+  "host_compiled_source_commit": "acc0eb576b0196b86faa8eb2cde2a341d9addceb",
+  "host_attribution": "Wheel built from0744 plus pending host patch; source hashes verified unchanged after notebook9507 integration. acc0 compiled Cargo/Rust and packaged integration sources match; final docs/smoke additions do not change the wheel. Exact build inputs and patch archived.",
+  "rustflow_commit": "d81dae94a40e41e5d2dcd978f623e6e83abb3e4f",
+  "symbolica_commit": "6defcca968ca8411977fb1f641a9dee49ee7b7a7",
+  "hepkit_commit": "b96600b0085d9ddfa9e6acbc11fa72ec6163253c",
+  "wheel": {
+    "filename": "symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+    "sha256": "fcc2367342481ebfac79ceb8b14f87e9a9afb1bcb326c54106340825576bfac2",
+    "smoke_validation": {
+      "schema": "supplied-loop-transport-runtime-v1",
+      "wheel": "symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+      "wheel_sha256": "fcc2367342481ebfac79ceb8b14f87e9a9afb1bcb326c54106340825576bfac2",
+      "supplied_loop_transport": true
+    },
+    "loaded_extension": {
+      "path": "/lib/python3.14/site-packages/symbolica/core.abi3.so",
+      "size_bytes": 174186956,
+      "sha256": "72f8fa41626030c8405a27ee282c885319438dc92d0d65901c3671fffa9b716c"
+    },
+    "loaded_extension_matches_wheel_member": "symbolica/core.abi3.so"
+  },
+  "runtime": {
+    "pyodide": "314.0.7",
+    "node": "v24.18.0",
+    "files": {
+      "pyodide.mjs": {
+        "bytes": 17931,
+        "sha256": "6f1d60f7bf529beb300f0f47983c921d3982363640ba20af0e38efdddbc66109"
+      },
+      "pyodide.asm.mjs": {
+        "bytes": 1250344,
+        "sha256": "f7cdc8ece80678ceb712f8e65ebe6d3a83203a180c399865f49612a051693635"
+      },
+      "pyodide.asm.wasm": {
+        "bytes": 9598218,
+        "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6"
+      },
+      "python_stdlib.zip": {
+        "bytes": 2545637,
+        "sha256": "fa1957e5777068fc4f7437f96d860ae2fbe9c19732ba06c84e004ec16dd7dd7a"
+      },
+      "pyodide-lock.json": {
+        "bytes": 119077,
+        "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010"
+      }
+    },
+    "cpu_affinity": "Cpus_allowed_list:\t43",
+    "available_parallelism": 1,
+    "license_environment_supplied": false
+  },
+  "settings": {
+    "digits": 20,
+    "guard_digits": 20,
+    "series_order": 16,
+    "workers": 1
+  },
+  "source_and_reference_identity": {
+    "wheel_sha256": "fcc2367342481ebfac79ceb8b14f87e9a9afb1bcb326c54106340825576bfac2",
+    "sources": {
+      "gg_hg.py": {
+        "bytes": 15165,
+        "sha256": "5f805c543f2b5f8d081a6d87a5da24b7396094510ca63d280d935e6fe3fb9683"
+      },
+      "gg_hg_support.py": {
+        "bytes": 26764,
+        "sha256": "ecad610397e57a0e93742b92de4beec64d31c96531e2360c283afdf5fb900fbf"
+      },
+      "gg_hg_boundaries.py": {
+        "bytes": 6101,
+        "sha256": "d3eeacce5e67607980bad57a96370119c2a68af552a0bad3db8071b15197c54a"
+      },
+      "gg_hg_acceptance.py": {
+        "bytes": 32119,
+        "sha256": "6f1686b22017dce4d1f0a2f7cc2362a8d78dcc6aded49a6428355941ecf1ba3c"
+      },
+      "gg_hg_anchor_acceptance.py": {
+        "bytes": 16657,
+        "sha256": "e666df0f743127df1a41667d81df73949190c4059b07aeb01da358863c7c23e1"
+      },
+      "data/gg_hg/native-model.json": {
+        "bytes": 207856,
+        "sha256": "1891f93a8b8926e1e66d54a95c03bba2d36e7ee1a812b91010fa0e88b4e92e12"
+      },
+      "data/gg_hg/boundaries-manifest.json": {
+        "bytes": 1489,
+        "sha256": "767b359ab86aa06cc50a2624a7f992d9cb951061d302f18bda38ece14b062722"
+      },
+      "data/gg_hg/boundaries.json.gz": {
+        "bytes": 1054943,
+        "sha256": "984b64a1617eb111543fc3b97e1cd36c84c610cfd8a02b11e8dfa861809acee4"
+      },
+      "data/gg_hg/amplitude-validation.json": {
+        "bytes": 6920,
+        "sha256": "868b9fde9448e54b315e96c4ce5a83bcb2501f219cf45a4cf2c147e521fef071"
+      },
+      "data/gg_hg/coherent-reference.json": {
+        "bytes": 1445530,
+        "sha256": "dd791b4d0400504ae8bc13e4e4bffa3d35773579a73c49ef4559d8e7985787e3"
+      },
+      "gg_hg_pyodide.py": {
+        "bytes": 26011,
+        "sha256": "489d31e91f7f6beff4b9af82e41e6b5877ea0b41ba78b322aa939039ddad6a12"
+      },
+      "gg_hg_pyodide.mjs": {
+        "bytes": 10441,
+        "sha256": "e6b726dea04a14e3c4d50765286b7489d560f628c1ec1ed14bff725f14147be0"
+      }
+    },
+    "native_reference_sha256": "f2139357e6db0fa470d40bc55c2b91958cc011c1e049244af6f7b90db14ba20e",
+    "runtime_files": {
+      "pyodide.mjs": {
+        "bytes": 17931,
+        "sha256": "6f1d60f7bf529beb300f0f47983c921d3982363640ba20af0e38efdddbc66109"
+      },
+      "pyodide.asm.mjs": {
+        "bytes": 1250344,
+        "sha256": "f7cdc8ece80678ceb712f8e65ebe6d3a83203a180c399865f49612a051693635"
+      },
+      "pyodide.asm.wasm": {
+        "bytes": 9598218,
+        "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6"
+      },
+      "python_stdlib.zip": {
+        "bytes": 2545637,
+        "sha256": "fa1957e5777068fc4f7437f96d860ae2fbe9c19732ba06c84e004ec16dd7dd7a"
+      },
+      "pyodide-lock.json": {
+        "bytes": 119077,
+        "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010"
+      }
+    }
+  },
+  "supplied_import": {
+    "configurations": 16,
+    "complex_coefficients": 4360,
+    "all_values_errors_and_precisions_exact": true,
+    "binary_restart_exact": true,
+    "input_verified_digits": 40,
+    "working_bits": 415
+  },
+  "proof": {
+    "final_complex_coefficients": 4360,
+    "form_factors": 8,
+    "observables": 3,
+    "exact_rational_comparison": true,
+    "both_backend_errors_and_differences_meet_requested20": true,
+    "all_differences_within_combined_admitted_errors": true,
+    "fresh_process_exact_computed_coefficients": 545,
+    "raw_binary_bank_and_warm_values_errors_precisions_exact": true,
+    "final_bank_entries": 48,
+    "master_verified_digits": [
+      28
+    ],
+    "master_working_bits": [
+      216
+    ],
+    "cold_original_input_caps": [
+      40
+    ],
+    "observable_relative_digits": {
+      "effective_squared": 47,
+      "electroweak_squared": 35,
+      "interference": 36
+    },
+    "form_factor_relative_digits": {
+      "W": [
+        28,
+        28,
+        28,
+        28
+      ],
+      "Z": [
+        28,
+        28,
+        28,
+        28
+      ]
+    },
+    "archived_external_reference": {
+      "path": "/acceptance/inputs/data/gg_hg/amplitude-validation.json",
+      "size_bytes": 6920,
+      "sha256": "868b9fde9448e54b315e96c4ce5a83bcb2501f219cf45a4cf2c147e521fef071",
+      "schema": 1,
+      "provenance": {
+        "scope": "Component-level amplitude validation with archived natively transported form factors; not an automatic-boundary acceptance. Never loaded by production evaluation.",
+        "source_input_sha256": "c8d2e3a61b0b1f97a82db89b1a7774531447cc221a5b3a6c43adf00fb247d674",
+        "references": [
+          "reports/validation/2026-10-04-gg-hg-squared-matrix-element.json",
+          "reports/validation/2026-10-05-gg-hg-heft-interference.json"
+        ],
+        "reference_accuracy": {
+          "scope": "Conditional on archived transported form-factor allowances. The 30-digit component comparison holds those form factors fixed and is not a physical-accuracy claim.",
+          "electroweak_squared": {
+            "input_absolute_error": "1.036965279540889484229816607147212347491680749337440461240057773672673644280375266356913373971924891557682004240003e-27",
+            "rounding_absolute_error": "1e-39",
+            "conditional_relative_digits": 19
+          },
+          "interference": {
+            "input_absolute_error": "1.386179807571189324116816980709306921379782632659449692282195647591677068094016282224644333359816355956402393946359e-25",
+            "rounding_absolute_error": "1e-42",
+            "conditional_relative_digits": 20
+          },
+          "effective_squared": {
+            "input_absolute_error": "1e-65",
+            "rounding_absolute_error": "1e-42",
+            "conditional_relative_digits": 39
+          }
+        },
+        "physical_s_t_MH_squared": [
+          "7173070292440521/111284741846000",
+          "-12058167788971/339319588980",
+          "1"
+        ]
+      }
+    },
+    "archived_observable_comparison": {
+      "effective_squared": {
+        "difference": [
+          "34968646451613464663033008404349541400266559062368162737",
+          "8749002899132047697490008908470485461412677723572849745703082425639811996797503692894052708092215296",
+          185
+        ],
+        "reference_allowance": [
+          "12194330274671844653834486122182302600276999838426832353602400178151556205200289889413681081175313159",
+          "12194330274671844653834364178879555881830461494785043558043581873536608354764709453594945715091765512343073949692994620685343654997219864477696",
+          333
+        ],
+        "reference_conditional_relative_digits": 39
+      },
+      "electroweak_squared": {
+        "difference": [
+          "12456220504150904962935560226715671174887826802389151660391970286475",
+          "286687326998758938951352611912760867599570623646035140467198604923365359511060601008752319138765710819328",
+          223
+        ],
+        "reference_allowance": [
+          "2807775590274722647516452955660853732257766610350578268772659282821920851885678685438017886883898361",
+          "2707685248164858261307045101702230179137145581421695874189921465443966120903931272499975005961073806735733604454495675614232576",
+          333
+        ],
+        "reference_conditional_relative_digits": 19
+      },
+      "interference": {
+        "difference": [
+          "2257351146026535459144031851493645244552214092165037779291831244951",
+          "279968092772225526319680285071055534765205687154331191862498637620473983897520118172609686658950889472",
+          222
+        ],
+        "reference_allowance": [
+          "11729183175826597696056778358437534481219910056615757129325855138351615693297867173230305041071849729",
+          "84615164005151820665845159428194693098035799419427996068435045795123941278247852265624218936283556460491675139202989862944768",
+          333
+        ],
+        "reference_conditional_relative_digits": 20
+      }
+    }
+  },
+  "timings_seconds": {
+    "supplied_import_controller": 2.077153315,
+    "sixteen_unique_cold_controller_calls": 275.747005855,
+    "sixteen_unique_cold_owner_calls": 267.078969875,
+    "pilot_cold_controller_calls": 29.521271407,
+    "resumed_controller_calls_including_two_hits": 246.768763511,
+    "first_amplitude_controller": 24.112904481,
+    "first_amplitude_owner_evaluation_only": 2.32015039,
+    "binary_reloaded_exact_hit_controller_calls": 1.354331537,
+    "warm_transport_controller_calls": 1.477440515,
+    "warm_amplitude_controller": 7.775791209,
+    "warm_amplitude_owner_evaluation_only": 2.320953029,
+    "pilot_setup": {
+      "pyodide_initialization": 2.3540540259999996,
+      "wheel_installation": 4.864550921
+    },
+    "resumed_setup": {
+      "pyodide_initialization": 2.3252323269999997,
+      "wheel_installation": 5.073584691
+    },
+    "pilot_session_construction": 3.167495055,
+    "resumed_session_construction_and_bank_load": 6.229107227,
+    "phase_wall_including_benchmark_validation": {
+      "cold_import": 2.077153315,
+      "cold_pilot": 33.112660857,
+      "resumed_transport": 279.252323817,
+      "first_use_amplitude": 24.112904481,
+      "binary_reloaded_transport": 52.236044437,
+      "warm_transport": 48.442010491,
+      "warm_amplitude": 7.775791209
+    },
+    "host_checkpoint_bridge": {
+      "pilot": 0.5334136539999945,
+      "full": 5.1550431210002134
+    }
+  },
+  "timing_limits": "Single observation of16 distinct cold solves split into a2-case pilot and fresh-process continuation with2hits+14cold cases. Controller-call clocks include notebook cache persistence, exclude benchmark validation/serialization/host checkpoint bridge. Full phase wall times include that substantial benchmark overhead. Binary-reloaded hit-call total excludes the preceding save/load and is not a total binary-restart time. No browser download, rendering, Marimo scheduling, uninterrupted-session or native/WASM speed-ratio claim.",
+  "retained_harness_failures": [
+    {
+      "artifact": "failures/pilot-original-checker-failure.log",
+      "correction_commit": "9acc6a0e",
+      "cause": "Computed wasm32 Astro values may have word-rounded mantissas beyond requested precision metadata. Host checker now retains full exact dyadics and permits only ceil(bits/32)*32 storage. Strict415-bit supplied-input checks and all numerical inequalities unchanged."
+    },
+    {
+      "artifact": "full/run.json",
+      "correction_commit": "63c6c2e3",
+      "cause": "Endpoint checkpoint and final boundary can have identical numerical evidence with different lineage/caps. Hit matching now includes owner provenance and source cap. Fresh-process raw bank comparison had already passed. New pilot/full pair avoids any checkpoint identity override."
+    }
+  ],
+  "validation": {
+    "actual_pilot_and_full_exit_codes": [
+      0,
+      0
+    ],
+    "exact_checker_exit_code": 0,
+    "comparator_unit_tests": 7,
+    "python_ast_and_node_syntax": "passed",
+    "archive_member_hashes_verified": 97,
+    "relocated_pilot_exact_coefficients": 545,
+    "relocated_full_exact_gate": "4360 masters + 8 form factors + 3 observables, including fresh-process exact reuse"
+  },
+  "evidence": {
+    "path": "evidence.tar.gz",
+    "bytes": 37451174,
+    "sha256": "d5b4ebeefc33322e1dcb044170e2f378b65b380380b80693197589278b0ba284",
+    "members": {
+      "pilot/run.json": {
+        "bytes": 6954869,
+        "sha256": "a9b7a172b8f18ec5128b74d36ac05b09f0bd6af0064c23ac8424e7da0ab6d994"
+      },
+      "pilot/run.log": {
+        "bytes": 470,
+        "sha256": "97e17a34819bd722ae7fea9c7f829a7d6f2444fb4ad99dd1e1ee46a32684e630"
+      },
+      "pilot/sources/data/gg_hg/amplitude-validation.json": {
+        "bytes": 6920,
+        "sha256": "868b9fde9448e54b315e96c4ce5a83bcb2501f219cf45a4cf2c147e521fef071"
+      },
+      "pilot/sources/data/gg_hg/boundaries-manifest.json": {
+        "bytes": 1489,
+        "sha256": "767b359ab86aa06cc50a2624a7f992d9cb951061d302f18bda38ece14b062722"
+      },
+      "pilot/sources/data/gg_hg/boundaries.json.gz": {
+        "bytes": 1054943,
+        "sha256": "984b64a1617eb111543fc3b97e1cd36c84c610cfd8a02b11e8dfa861809acee4"
+      },
+      "pilot/sources/data/gg_hg/coherent-reference.json": {
+        "bytes": 1445530,
+        "sha256": "dd791b4d0400504ae8bc13e4e4bffa3d35773579a73c49ef4559d8e7985787e3"
+      },
+      "pilot/sources/data/gg_hg/native-model.json": {
+        "bytes": 207856,
+        "sha256": "1891f93a8b8926e1e66d54a95c03bba2d36e7ee1a812b91010fa0e88b4e92e12"
+      },
+      "pilot/sources/gg_hg.py": {
+        "bytes": 15165,
+        "sha256": "5f805c543f2b5f8d081a6d87a5da24b7396094510ca63d280d935e6fe3fb9683"
+      },
+      "pilot/sources/gg_hg_acceptance.py": {
+        "bytes": 32119,
+        "sha256": "6f1686b22017dce4d1f0a2f7cc2362a8d78dcc6aded49a6428355941ecf1ba3c"
+      },
+      "pilot/sources/gg_hg_anchor_acceptance.py": {
+        "bytes": 16657,
+        "sha256": "e666df0f743127df1a41667d81df73949190c4059b07aeb01da358863c7c23e1"
+      },
+      "pilot/sources/gg_hg_boundaries.py": {
+        "bytes": 6101,
+        "sha256": "d3eeacce5e67607980bad57a96370119c2a68af552a0bad3db8071b15197c54a"
+      },
+      "pilot/sources/gg_hg_pyodide.mjs": {
+        "bytes": 10441,
+        "sha256": "e6b726dea04a14e3c4d50765286b7489d560f628c1ec1ed14bff725f14147be0"
+      },
+      "pilot/sources/gg_hg_pyodide.py": {
+        "bytes": 25775,
+        "sha256": "1492f961df9eda451f2695548fd41bed047221b755d731ae8276ced316680c5e"
+      },
+      "pilot/sources/gg_hg_support.py": {
+        "bytes": 26764,
+        "sha256": "ecad610397e57a0e93742b92de4beec64d31c96531e2360c283afdf5fb900fbf"
+      },
+      "pilot/sources/native-reference.json": {
+        "bytes": 9955821,
+        "sha256": "f2139357e6db0fa470d40bc55c2b91958cc011c1e049244af6f7b90db14ba20e"
+      },
+      "pilot/checkpoint/CURRENT": {
+        "bytes": 38,
+        "sha256": "0b2ac0110261900f279298e139111bfeec1484d64af867ae75489eeff79bc1d8"
+      },
+      "pilot/checkpoint/generation-0007/acceptance.json": {
+        "bytes": 6725161,
+        "sha256": "1d81d01aefcafbab7402e68527987edee1acbf243b3208ddbb37a9e16185250e"
+      },
+      "pilot/checkpoint/generation-0007/cache/seeds/physical-boundaries.bin": {
+        "bytes": 20430254,
+        "sha256": "78205ca4eeaeddf611fdb73a26389caff96b6bc0364fe8dcfaa72d4929076988"
+      },
+      "pilot/checkpoint/generation-0007/cache/transport/physical-boundaries.bin": {
+        "bytes": 20641564,
+        "sha256": "22023f1dcb8d04a7b84bb82b18bbedd5f8ace030b5efc73ba599faea21d19a1d"
+      },
+      "pilot/checkpoint/generation-0007/checkpoint.json": {
+        "bytes": 3365,
+        "sha256": "ceb2cb5f168965478b955b642f81066371a4812e2eb202b44915bdf3e29a52cc"
+      },
+      "full/run.json": {
+        "bytes": 6101,
+        "sha256": "d5801e1d2cf208b1615fb3c952a33d0ea08997584f9204ca1132d7d239d03aa8"
+      },
+      "full/run.log": {
+        "bytes": 1254951,
+        "sha256": "dccb20bd0fda67787081353422fd1786eefc7ec6629656b67285c2da1cd73997"
+      },
+      "full/sources/data/gg_hg/amplitude-validation.json": {
+        "bytes": 6920,
+        "sha256": "868b9fde9448e54b315e96c4ce5a83bcb2501f219cf45a4cf2c147e521fef071"
+      },
+      "full/sources/data/gg_hg/boundaries-manifest.json": {
+        "bytes": 1489,
+        "sha256": "767b359ab86aa06cc50a2624a7f992d9cb951061d302f18bda38ece14b062722"
+      },
+      "full/sources/data/gg_hg/boundaries.json.gz": {
+        "bytes": 1054943,
+        "sha256": "984b64a1617eb111543fc3b97e1cd36c84c610cfd8a02b11e8dfa861809acee4"
+      },
+      "full/sources/data/gg_hg/coherent-reference.json": {
+        "bytes": 1445530,
+        "sha256": "dd791b4d0400504ae8bc13e4e4bffa3d35773579a73c49ef4559d8e7985787e3"
+      },
+      "full/sources/data/gg_hg/native-model.json": {
+        "bytes": 207856,
+        "sha256": "1891f93a8b8926e1e66d54a95c03bba2d36e7ee1a812b91010fa0e88b4e92e12"
+      },
+      "full/sources/gg_hg.py": {
+        "bytes": 15165,
+        "sha256": "5f805c543f2b5f8d081a6d87a5da24b7396094510ca63d280d935e6fe3fb9683"
+      },
+      "full/sources/gg_hg_acceptance.py": {
+        "bytes": 32119,
+        "sha256": "6f1686b22017dce4d1f0a2f7cc2362a8d78dcc6aded49a6428355941ecf1ba3c"
+      },
+      "full/sources/gg_hg_anchor_acceptance.py": {
+        "bytes": 16657,
+        "sha256": "e666df0f743127df1a41667d81df73949190c4059b07aeb01da358863c7c23e1"
+      },
+      "full/sources/gg_hg_boundaries.py": {
+        "bytes": 6101,
+        "sha256": "d3eeacce5e67607980bad57a96370119c2a68af552a0bad3db8071b15197c54a"
+      },
+      "full/sources/gg_hg_pyodide.mjs": {
+        "bytes": 10441,
+        "sha256": "e6b726dea04a14e3c4d50765286b7489d560f628c1ec1ed14bff725f14147be0"
+      },
+      "full/sources/gg_hg_pyodide.py": {
+        "bytes": 25775,
+        "sha256": "1492f961df9eda451f2695548fd41bed047221b755d731ae8276ced316680c5e"
+      },
+      "full/sources/gg_hg_support.py": {
+        "bytes": 26764,
+        "sha256": "ecad610397e57a0e93742b92de4beec64d31c96531e2360c283afdf5fb900fbf"
+      },
+      "full/sources/native-reference.json": {
+        "bytes": 9955821,
+        "sha256": "f2139357e6db0fa470d40bc55c2b91958cc011c1e049244af6f7b90db14ba20e"
+      },
+      "full/checkpoint/CURRENT": {
+        "bytes": 38,
+        "sha256": "d1ade3fe15416291860be982e6fd8671079226fc1a5fd538c42b184b2f000d63"
+      },
+      "full/checkpoint/generation-0003/acceptance.json": {
+        "bytes": 5871972,
+        "sha256": "2c45ccfd482345a87b321062de5cab528ec01c499e851054e0a14252936bce5c"
+      },
+      "full/checkpoint/generation-0003/cache/seeds/physical-boundaries.bin": {
+        "bytes": 20430254,
+        "sha256": "78205ca4eeaeddf611fdb73a26389caff96b6bc0364fe8dcfaa72d4929076988"
+      },
+      "full/checkpoint/generation-0003/cache/transport/physical-boundaries.bin": {
+        "bytes": 20641564,
+        "sha256": "22023f1dcb8d04a7b84bb82b18bbedd5f8ace030b5efc73ba599faea21d19a1d"
+      },
+      "full/checkpoint/generation-0003/checkpoint.json": {
+        "bytes": 3365,
+        "sha256": "0f78b5b66dcc0b0f548fa55813ad3eef4a4550eb0fa78214254aaa2e2309a7ff"
+      },
+      "pilot-v2/run.json": {
+        "bytes": 6954869,
+        "sha256": "f3a01a7fb6454d808df0e3e38a37b55e7e0688b810bdfbf122a9107fb33d4fb9"
+      },
+      "pilot-v2/run.log": {
+        "bytes": 470,
+        "sha256": "1d13991fbf74b86eae12d015ea575a342a70bb3551a052884f6ff2bb985d2c78"
+      },
+      "pilot-v2/sources/data/gg_hg/amplitude-validation.json": {
+        "bytes": 6920,
+        "sha256": "868b9fde9448e54b315e96c4ce5a83bcb2501f219cf45a4cf2c147e521fef071"
+      },
+      "pilot-v2/sources/data/gg_hg/boundaries-manifest.json": {
+        "bytes": 1489,
+        "sha256": "767b359ab86aa06cc50a2624a7f992d9cb951061d302f18bda38ece14b062722"
+      },
+      "pilot-v2/sources/data/gg_hg/boundaries.json.gz": {
+        "bytes": 1054943,
+        "sha256": "984b64a1617eb111543fc3b97e1cd36c84c610cfd8a02b11e8dfa861809acee4"
+      },
+      "pilot-v2/sources/data/gg_hg/coherent-reference.json": {
+        "bytes": 1445530,
+        "sha256": "dd791b4d0400504ae8bc13e4e4bffa3d35773579a73c49ef4559d8e7985787e3"
+      },
+      "pilot-v2/sources/data/gg_hg/native-model.json": {
+        "bytes": 207856,
+        "sha256": "1891f93a8b8926e1e66d54a95c03bba2d36e7ee1a812b91010fa0e88b4e92e12"
+      },
+      "pilot-v2/sources/gg_hg.py": {
+        "bytes": 15165,
+        "sha256": "5f805c543f2b5f8d081a6d87a5da24b7396094510ca63d280d935e6fe3fb9683"
+      },
+      "pilot-v2/sources/gg_hg_acceptance.py": {
+        "bytes": 32119,
+        "sha256": "6f1686b22017dce4d1f0a2f7cc2362a8d78dcc6aded49a6428355941ecf1ba3c"
+      },
+      "pilot-v2/sources/gg_hg_anchor_acceptance.py": {
+        "bytes": 16657,
+        "sha256": "e666df0f743127df1a41667d81df73949190c4059b07aeb01da358863c7c23e1"
+      },
+      "pilot-v2/sources/gg_hg_boundaries.py": {
+        "bytes": 6101,
+        "sha256": "d3eeacce5e67607980bad57a96370119c2a68af552a0bad3db8071b15197c54a"
+      },
+      "pilot-v2/sources/gg_hg_pyodide.mjs": {
+        "bytes": 10441,
+        "sha256": "e6b726dea04a14e3c4d50765286b7489d560f628c1ec1ed14bff725f14147be0"
+      },
+      "pilot-v2/sources/gg_hg_pyodide.py": {
+        "bytes": 26011,
+        "sha256": "489d31e91f7f6beff4b9af82e41e6b5877ea0b41ba78b322aa939039ddad6a12"
+      },
+      "pilot-v2/sources/gg_hg_support.py": {
+        "bytes": 26764,
+        "sha256": "ecad610397e57a0e93742b92de4beec64d31c96531e2360c283afdf5fb900fbf"
+      },
+      "pilot-v2/sources/native-reference.json": {
+        "bytes": 9955821,
+        "sha256": "f2139357e6db0fa470d40bc55c2b91958cc011c1e049244af6f7b90db14ba20e"
+      },
+      "pilot-v2/checkpoint/CURRENT": {
+        "bytes": 38,
+        "sha256": "0b2ac0110261900f279298e139111bfeec1484d64af867ae75489eeff79bc1d8"
+      },
+      "pilot-v2/checkpoint/generation-0007/acceptance.json": {
+        "bytes": 6725161,
+        "sha256": "51bc4a98c63ba46a05fbe7b6970e6e62d6718d9be77dfdfc7aba874259d185e9"
+      },
+      "pilot-v2/checkpoint/generation-0007/cache/seeds/physical-boundaries.bin": {
+        "bytes": 20430254,
+        "sha256": "78205ca4eeaeddf611fdb73a26389caff96b6bc0364fe8dcfaa72d4929076988"
+      },
+      "pilot-v2/checkpoint/generation-0007/cache/transport/physical-boundaries.bin": {
+        "bytes": 20641564,
+        "sha256": "22023f1dcb8d04a7b84bb82b18bbedd5f8ace030b5efc73ba599faea21d19a1d"
+      },
+      "pilot-v2/checkpoint/generation-0007/checkpoint.json": {
+        "bytes": 3365,
+        "sha256": "872443049448b8ea2b22f025b920393c36156e5848269ea10bfd366b73133b5e"
+      },
+      "full-v2/run.json": {
+        "bytes": 26684545,
+        "sha256": "db7255682778310300bb5a9a0f5cdd605840f819955ade32147324fb582ac59a"
+      },
+      "full-v2/run.log": {
+        "bytes": 3483,
+        "sha256": "2e3ceda1a97bdddc8e7931a0e8743e278279e40781e141016f95a92fdfb536af"
+      },
+      "full-v2/sources/data/gg_hg/amplitude-validation.json": {
+        "bytes": 6920,
+        "sha256": "868b9fde9448e54b315e96c4ce5a83bcb2501f219cf45a4cf2c147e521fef071"
+      },
+      "full-v2/sources/data/gg_hg/boundaries-manifest.json": {
+        "bytes": 1489,
+        "sha256": "767b359ab86aa06cc50a2624a7f992d9cb951061d302f18bda38ece14b062722"
+      },
+      "full-v2/sources/data/gg_hg/boundaries.json.gz": {
+        "bytes": 1054943,
+        "sha256": "984b64a1617eb111543fc3b97e1cd36c84c610cfd8a02b11e8dfa861809acee4"
+      },
+      "full-v2/sources/data/gg_hg/coherent-reference.json": {
+        "bytes": 1445530,
+        "sha256": "dd791b4d0400504ae8bc13e4e4bffa3d35773579a73c49ef4559d8e7985787e3"
+      },
+      "full-v2/sources/data/gg_hg/native-model.json": {
+        "bytes": 207856,
+        "sha256": "1891f93a8b8926e1e66d54a95c03bba2d36e7ee1a812b91010fa0e88b4e92e12"
+      },
+      "full-v2/sources/gg_hg.py": {
+        "bytes": 15165,
+        "sha256": "5f805c543f2b5f8d081a6d87a5da24b7396094510ca63d280d935e6fe3fb9683"
+      },
+      "full-v2/sources/gg_hg_acceptance.py": {
+        "bytes": 32119,
+        "sha256": "6f1686b22017dce4d1f0a2f7cc2362a8d78dcc6aded49a6428355941ecf1ba3c"
+      },
+      "full-v2/sources/gg_hg_anchor_acceptance.py": {
+        "bytes": 16657,
+        "sha256": "e666df0f743127df1a41667d81df73949190c4059b07aeb01da358863c7c23e1"
+      },
+      "full-v2/sources/gg_hg_boundaries.py": {
+        "bytes": 6101,
+        "sha256": "d3eeacce5e67607980bad57a96370119c2a68af552a0bad3db8071b15197c54a"
+      },
+      "full-v2/sources/gg_hg_pyodide.mjs": {
+        "bytes": 10441,
+        "sha256": "e6b726dea04a14e3c4d50765286b7489d560f628c1ec1ed14bff725f14147be0"
+      },
+      "full-v2/sources/gg_hg_pyodide.py": {
+        "bytes": 26011,
+        "sha256": "489d31e91f7f6beff4b9af82e41e6b5877ea0b41ba78b322aa939039ddad6a12"
+      },
+      "full-v2/sources/gg_hg_support.py": {
+        "bytes": 26764,
+        "sha256": "ecad610397e57a0e93742b92de4beec64d31c96531e2360c283afdf5fb900fbf"
+      },
+      "full-v2/sources/native-reference.json": {
+        "bytes": 9955821,
+        "sha256": "f2139357e6db0fa470d40bc55c2b91958cc011c1e049244af6f7b90db14ba20e"
+      },
+      "full-v2/checkpoint/CURRENT": {
+        "bytes": 38,
+        "sha256": "7ab5ca8eaee0ae2b9a49fb570640ef1fe56ad5be8f995797ec30c56367c60867"
+      },
+      "full-v2/checkpoint/generation-0056/acceptance.json": {
+        "bytes": 25621105,
+        "sha256": "00fc48345ce6ca81f1f497a6fbb51cfd16c5a7ae9814d262acbe006c8ad0e067"
+      },
+      "full-v2/checkpoint/generation-0056/cache/seeds/physical-boundaries.bin": {
+        "bytes": 20430254,
+        "sha256": "78205ca4eeaeddf611fdb73a26389caff96b6bc0364fe8dcfaa72d4929076988"
+      },
+      "full-v2/checkpoint/generation-0056/cache/transport/physical-boundaries.bin": {
+        "bytes": 22119826,
+        "sha256": "0140e66afc2668e170e2c9d652f3b47af43a0761d65ae61ceb900c1f3786e9cb"
+      },
+      "full-v2/checkpoint/generation-0056/checkpoint.json": {
+        "bytes": 3366,
+        "sha256": "dad03ef32f46e5d5533612642b2f71cb8c345aab77fc5e3c3f6d0b6f1268440a"
+      },
+      "checks/pilot-exact-comparison.json": {
+        "bytes": 3720,
+        "sha256": "5693a47096bdcd07108866fce1c7b213cd6d6a9a56cb2e7cfdf34c790a993707"
+      },
+      "checks/pilot-v2-exact-comparison.json": {
+        "bytes": 3752,
+        "sha256": "b640b633e338aa46670d61c7ca7cc4a3bb54e26cdca5f0b1a1da5f173a05dc03"
+      },
+      "checks/full-v2-exact-comparison.json": {
+        "bytes": 12928,
+        "sha256": "7e044da548a5fa2ed46392dee4c82c70842a4429c70ec91e85c9b16ebf8b15ea"
+      },
+      "checks/full-v2-exact-comparison.log": {
+        "bytes": 82,
+        "sha256": "4529b4dc771947d492275cc987df81c2b2bd8c5c76ce92bcd218087782e67cf3"
+      },
+      "failures/pilot-original-checker-failure.log": {
+        "bytes": 921,
+        "sha256": "e1fc1a5b2c5e9fdd000aeba99e38884dfbd7bd96bc0d97c53fd44480298a4bed"
+      },
+      "failures/pilot-checker-original.py": {
+        "bytes": 8654,
+        "sha256": "f9a4efad9b62f1564f59993ee098839e5527be86087d712517cbc88db6239f61"
+      },
+      "failures/pilot-checker-correction.json": {
+        "bytes": 740,
+        "sha256": "4f0e93399989dffc870d60b1fb24f0d61df364fbffc7d55c5d628c10a7332aea"
+      },
+      "scripts/gg_hg_pyodide.mjs": {
+        "bytes": 10441,
+        "sha256": "e6b726dea04a14e3c4d50765286b7489d560f628c1ec1ed14bff725f14147be0"
+      },
+      "scripts/gg_hg_pyodide.py": {
+        "bytes": 26011,
+        "sha256": "489d31e91f7f6beff4b9af82e41e6b5877ea0b41ba78b322aa939039ddad6a12"
+      },
+      "scripts/gg_hg_pyodide_compare.py": {
+        "bytes": 11013,
+        "sha256": "891596a3ce102f4657bd5a7c1b92094675beecbee0ffb7905813c7248d6f51f9"
+      },
+      "scripts/gg_hg_pyodide.md": {
+        "bytes": 7085,
+        "sha256": "de371dda44cf44226e86fd356b880eb6f7ecc35d925994bed97baa4cf1d85e42"
+      },
+      "scripts/test_gg_hg_pyodide_compare.py": {
+        "bytes": 2417,
+        "sha256": "d064071c57b5678cd289b02f76909c36edb1cb1d8905e9e76de64f55f62daeaa"
+      },
+      "wheel-proof/build-inputs.json": {
+        "bytes": 1753,
+        "sha256": "aef8778186e1eaeaa851e450b56a8f2bc28fe04bc2e8937097d1a3d070d3b262"
+      },
+      "wheel-proof/host-build.patch": {
+        "bytes": 16247,
+        "sha256": "f391f6aaddc9582e072d21a6fc35fcb149d14604bece7dc1100cea7f53051471"
+      },
+      "wheel-proof/loop-transport-validation.json": {
+        "bytes": 246,
+        "sha256": "2d204bbd483dee95d512359565b1f4313bc883791b2f4f40a0bf0a60b97bf036"
+      },
+      "freeze_report.py": {
+        "bytes": 10804,
+        "sha256": "ddeb16cbfadea2f44598d80cfe35def1a28b26a9d36b45bd226b0c3cb50f2932"
+      },
+      "checks/pilot-v2-checker-frozen.py": {
+        "bytes": 10759,
+        "sha256": "b5ad6aa0e311f12477a94764299728e9ea4bca57fddb020a6d9a6625507bb16c"
+      }
+    },
+    "scope": "Latest complete checkpoint generation for each retained run, source snapshots, exact outputs, independent checks, two harness failures/corrections and compiled-input provenance. Intermediate generations remain in raw evidence. Wheel and Pyodide distribution bytes are identified by hashes and not included."
+  }
+}
