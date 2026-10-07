@@ -85,7 +85,7 @@ The checked-in manifest and lock fetch the shared dependencies from public Git
 sources. Build this checkout with the locked native installation command below;
 no sibling checkout, local path override or manual owner patch is required.
 The host owns the complete shared dependency graph, as described in the
-[integration dependency guide](https://github.com/alphal00p/RustFlow/blob/b77d87324592bf4680f4a1584f5352dd414bcd70/docs/dependency-embedding.md).
+[integration dependency guide](https://github.com/alphal00p/RustFlow/blob/b3a4843e8327835d1ec3ada5a6f32f1841bab2c2/docs/dependency-embedding.md).
 Generate these hints with `stub_gen --hepkit-only`; the public package and stubs
 are under `python/symbolica/community/hep/integration/`. Browser builds expose
 automatic evaluation, supplied-boundary solvers, transport, cache and amplitude APIs. Existing
@@ -97,25 +97,39 @@ and [visible notebook gate](reports/2026-10-06-visible-higgs-api/README.md) cove
 the scientific outputs and actual Chromium rendering separately.
 
 The Git dependency selects RustFlow
-[`b77d87324592bf4680f4a1584f5352dd414bcd70`](https://github.com/alphal00p/RustFlow/commit/b77d87324592bf4680f4a1584f5352dd414bcd70).
+[`b3a4843e8327835d1ec3ada5a6f32f1841bab2c2`](https://github.com/alphal00p/RustFlow/commit/b3a4843e8327835d1ec3ada5a6f32f1841bab2c2).
 HEPKit, Linnet, Spenso, Idenso and rendering share the official GammaLoop
 `feynkit` branch at
-[`635d3a1feb44067583a668c7d18f67405fe144e1`](https://github.com/alphal00p/gammaloop/commit/635d3a1feb44067583a668c7d18f67405fe144e1).
+[`69a6b97e6cd81ecba4f2000d68a4ca97245dab6c`](https://github.com/alphal00p/gammaloop/commit/69a6b97e6cd81ecba4f2000d68a4ca97245dab6c).
 Vakint retains its separate implementation at
 [`6203c6cbba6ae5e90329ba5081fad55319e678db`](https://github.com/ValentinHirschi/gammaloop/commit/6203c6cbba6ae5e90329ba5081fad55319e678db).
 Hyperbolica is pinned to
 [`31292085504b794dc444a006eba1d3013ed30944`](https://github.com/benruijl/hyperbolica/commit/31292085504b794dc444a006eba1d3013ed30944).
 RustRed uses official main
-[`acc92b0dad27b11fd194a4c284765fb6a93cbc94`](https://github.com/alphal00p/rustred/commit/acc92b0dad27b11fd194a4c284765fb6a93cbc94),
+[`f5237ce1c8725b9cb0e18bade464806df607806f`](https://github.com/alphal00p/rustred/commit/f5237ce1c8725b9cb0e18bade464806df607806f),
 with `campaign-api` enabled and experimental reconstruction disabled.
 These revisions keep over-aligned tensor, diagram-group and exact-coefficient
 payloads behind Rust-owned pointers at the WASM Python allocation boundary.
 
-Symbolica, Numerica and Graphica resolve together from official community
-commit
+Symbolica uses the native evaluator-composition prerequisite at
+[`1deccb8538ccb91dc2c1e58fc0a2e900d2276bf4`](https://github.com/ValentinHirschi/symbolica/commit/1deccb8538ccb91dc2c1e58fc0a2e900d2276bf4),
+published in [Symbolica PR #54](https://github.com/symbolica-dev/symbolica/pull/54)
+against `community`. That prerequisite remains a separate open PR. It lets
+FastSecDec compose numerical sector maps and endpoint dual jets through the
+native evaluator owner. Numerica and Graphica retain official community commit
 [`ed2374f1d880d52c3a7ca48cd7c22f4baad5c020`](https://github.com/symbolica-dev/symbolica/commit/ed2374f1d880d52c3a7ca48cd7c22f4baad5c020),
-selected by `Cargo.lock`. This revision includes the negative-integer
-serialization correction.
+including the negative-integer serialization correction. `Cargo.lock` selects
+one owner of each crate; the newer FeynKit and numerical dependencies are preserved.
+FastSecDec is pinned to
+[`dea66bfd116356092d3a68f19fdb77d2a6f55b25`](https://github.com/alphal00p/fastSecDec/commit/dea66bfd116356092d3a68f19fdb77d2a6f55b25).
+It exposes symbolic and numerical-dual generation, retained eager sessions,
+Taylor/IBP subtraction and measured shared-formula preparation. The
+[current ggHH notebook](examples/hep/gghh_complete.py) defaults to symbolic
+generation with native `to_dots` simplification and generation-time gluon mass
+shells. The [original triple box](https://github.com/alphal00p/fastSecDec/tree/dea66bfd116356092d3a68f19fdb77d2a6f55b25/examples/gghh_triple_box)
+and [outer-loop triple box](https://github.com/alphal00p/fastSecDec/tree/dea66bfd116356092d3a68f19fdb77d2a6f55b25/examples/gghh_triple_box_bis)
+are maintained in FastSecDec; publishing their cards does not claim completed
+three-loop generation or integration.
 The native graph wheel used in CI is built from the same HEPKit owner selected
 by this manifest and lock; it is a separate test dependency requiring Python
 3.10 or newer. The community package retains its Python 3.9 minimum.
@@ -205,7 +219,7 @@ Numerical master evaluation requires a native build.
 
 The host fetches OneLoopMaster from `alphal00p/oneloopmaster` and the reducer
 from the public `lcnbr/one-loop-reduce` fork, which CI can access. All modules
-share Symbolica 3.0.1 through the kernel's community-branch patch. The reducer includes
+share Symbolica 3.0.1 through the kernel patch described above. The reducer includes
 the canonical master symbols, scale-aware expressions, and feature selection needed
 by this host. Run
 `.venv-feynkit/bin/python examples/oneloop_smoke.py` to check numeric evaluation,

@@ -111,6 +111,11 @@ class CompactCoefficient:
         Compiled kernels may split it into separate real/imaginary components.
         """
     @property
+    def generation_mode(self) -> builtins.str:
+        r"""
+        Actual native sector route; a numerical-dual request can retain a symbolic fallback.
+        """
+    @property
     def root(self) -> Expression: ...
     @property
     def alias_count(self) -> builtins.int:
@@ -125,8 +130,9 @@ class CompactCoefficient:
         """
     def expression(self) -> Expression:
         r"""
-        Explicitly restore this selected coefficient with Symbolica's alias owner.
-        This can be expensive; passive views retain the compact root and aliases.
+        Explicitly materialize an actual coefficient through its native owner.
+        Numerical-dual sectors cache full expressions on this explicit request;
+        passive views retain only the compact recipe root and aliases.
         """
     def _repr_html_(self, slf: CompactCoefficient) -> builtins.str: ...
 
@@ -338,7 +344,41 @@ class FactorAssessment:
     def _repr_html_(self, slf: FactorAssessment) -> builtins.str: ...
 
 @typing.final
+class FormulaPreparationSnapshot:
+    r"""
+    Coordinator-owned counts for unique subtraction-formula precomputation.
+    """
+    @property
+    def completed(self) -> builtins.int:
+        r"""
+        Successfully completed unique formula builds.
+        """
+    @property
+    def total(self) -> builtins.int:
+        r"""
+        Distinct formula keys discovered for this generation.
+        """
+    @property
+    def sectors(self) -> builtins.int:
+        r"""
+        Eligible sectors which use these formulas.
+        """
+    @property
+    def reused(self) -> builtins.int:
+        r"""
+        Shared uses (eligible sectors minus distinct keys), not cache lookups.
+        """
+    def _repr_html_(self, slf: FormulaPreparationSnapshot) -> builtins.str: ...
+
+@typing.final
 class GeneratedIntegral:
+    @property
+    def mode(self) -> builtins.str:
+        r"""
+        Requested native generation lane, retained without recomputing sectors.
+        """
+    @property
+    def subtraction(self) -> builtins.str: ...
     @property
     def runtime_parameters(self) -> builtins.list[Expression]: ...
     @property
@@ -389,6 +429,11 @@ class GeneratedSector:
         Native numerical-sector index used by Chart.kernel_sector.
         """
     @property
+    def generation_mode(self) -> builtins.str:
+        r"""
+        Actual route used for this sector, including explicit local symbolic fallback.
+        """
+    @property
     def dimension(self) -> builtins.int: ...
     @property
     def parameters(self) -> builtins.list[Expression]: ...
@@ -431,6 +476,10 @@ class GenerationMetadata:
 
 @typing.final
 class GenerationSession:
+    @property
+    def mode(self) -> builtins.str: ...
+    @property
+    def subtraction(self) -> builtins.str: ...
     @property
     def complete(self) -> builtins.bool: ...
     @property
@@ -477,6 +526,11 @@ class GenerationSnapshot:
         Current or last named-coefficient attempt; None for physical-only generation.
         """
     @property
+    def formula_preparation(self) -> typing.Optional[FormulaPreparationSnapshot]:
+        r"""
+        Known unique-formula counts; None before discovery or without this phase.
+        """
+    @property
     def detail(self) -> builtins.str: ...
     def _repr_html_(self, slf: GenerationSnapshot) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
@@ -498,6 +552,12 @@ class GenerationTimings:
     def geometry_seconds(self) -> builtins.float: ...
     @property
     def mapping_seconds(self) -> builtins.float: ...
+    @property
+    def formula_preparation_seconds(self) -> typing.Optional[builtins.float]:
+        r"""
+        Distinct precomputation wall time, excluding paused session time.
+        None means the phase was not observed, not a zero-duration measurement.
+        """
     @property
     def symmetry_seconds(self) -> builtins.float: ...
     @property
@@ -594,7 +654,7 @@ class Integral:
     def dimension(self) -> Expression: ...
     @property
     def powers(self) -> builtins.list[tuple[builtins.int, builtins.int]]: ...
-    def generate(self, max_order: int = 0, *, coefficient_expansion: str = 'full_expression', observer: typing.Optional[typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
+    def generate(self, max_order: int = 0, *, coefficient_expansion: str = 'full_expression', mode: str = 'symbolic', subtraction: str = 'taylor', observer: typing.Optional[typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
         r"""
         Generate native sectors without compilation or numerical integration.
 
@@ -602,7 +662,7 @@ class Integral:
         None disables it. Callables receive all snapshots, observer first.
         None/True continues, False cancels; original exceptions propagate.
         """
-    def generation_session(self, max_order: int = 0, *, coefficient_expansion: str = 'coefficient_series', compilation_settings: typing.Optional[symbolica.community.hepkit.sector_decomposition.CompilationSettings] = None, runtime_parameters: typing.Optional[list[symbolica.Expression]] = None) -> symbolica.community.hepkit.sector_decomposition.GenerationSession:
+    def generation_session(self, max_order: int = 0, *, coefficient_expansion: str = 'coefficient_series', mode: str = 'symbolic', subtraction: str = 'taylor', compilation_settings: typing.Optional[symbolica.community.hepkit.sector_decomposition.CompilationSettings] = None, runtime_parameters: typing.Optional[list[symbolica.Expression]] = None) -> symbolica.community.hepkit.sector_decomposition.GenerationSession:
         r"""
         Create retained caller-stepped generation and compilation; construction performs no symbolic work.
         """
@@ -805,9 +865,14 @@ class PreSubtractionTerm:
     @property
     def prefactor(self) -> Expression: ...
     @property
+    def regular_expression_basis(self) -> builtins.str:
+        r"""
+        Whether regular_expression_bytes describes the source or mapped Atom.
+        """
+    @property
     def regular_expression_bytes(self) -> builtins.int:
         r"""
-        Native Atom storage at mapping, not an expanded term or evaluator count.
+        Native regular Atom storage in regular_expression_basis, not evaluator size.
         """
     @property
     def powers(self) -> builtins.list[EndpointPower]:
@@ -974,7 +1039,7 @@ class VectorEstimate:
         Delegate convergence to the native full-production and vector tolerance check.
         """
 
-def sector_decompose(input: typing.Union[symbolica.community.hepkit.FeynmanDiagram, symbolica.community.hepkit.IntegralFamily], *, regulator: symbolica.Expression, kinematics: typing.Optional[symbolica.community.hepkit.Kinematics] = None, dimension: typing.Optional[symbolica.Expression] = None, powers: typing.Optional[typing.Union[collections.abc.Mapping[int, int], collections.abc.Sequence[int]]] = None, numerator: typing.Optional[symbolica.Expression] = None, scalar_values: typing.Optional[dict[symbolica.Expression, symbolica.Expression]] = None, auxiliary_momenta: typing.Optional[collections.abc.Sequence[symbolica.Expression]] = None, measure_multiplier: typing.Optional[symbolica.Expression] = None, runtime_parameters: typing.Optional[list[symbolica.Expression]] = None, model_parameters: str = 'runtime', max_order: int = 0, coefficient_expansion: str = 'full_expression', observer: typing.Optional[collections.abc.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
+def sector_decompose(input: typing.Union[symbolica.community.hepkit.FeynmanDiagram, symbolica.community.hepkit.IntegralFamily], *, regulator: symbolica.Expression, kinematics: typing.Optional[symbolica.community.hepkit.Kinematics] = None, dimension: typing.Optional[symbolica.Expression] = None, powers: typing.Optional[typing.Union[collections.abc.Mapping[int, int], collections.abc.Sequence[int]]] = None, numerator: typing.Optional[symbolica.Expression] = None, scalar_values: typing.Optional[dict[symbolica.Expression, symbolica.Expression]] = None, auxiliary_momenta: typing.Optional[collections.abc.Sequence[symbolica.Expression]] = None, measure_multiplier: typing.Optional[symbolica.Expression] = None, runtime_parameters: typing.Optional[list[symbolica.Expression]] = None, model_parameters: str = 'runtime', max_order: int = 0, coefficient_expansion: str = 'full_expression', mode: str = 'symbolic', subtraction: str = 'taylor', observer: typing.Optional[collections.abc.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
     r"""
     Generate from an existing native diagram or an explicitly weighted family.
 

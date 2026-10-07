@@ -1229,7 +1229,7 @@ checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
 [[package]]
 name = "fastsecdec"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=2092eaaef92a80ebf66723f529f60e7e7d2a14ac#2092eaaef92a80ebf66723f529f60e7e7d2a14ac"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=dea66bfd116356092d3a68f19fdb77d2a6f55b25#dea66bfd116356092d3a68f19fdb77d2a6f55b25"
 dependencies = [
  "bincode",
  "blake3",
@@ -1252,7 +1252,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=2092eaaef92a80ebf66723f529f60e7e7d2a14ac#2092eaaef92a80ebf66723f529f60e7e7d2a14ac"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=dea66bfd116356092d3a68f19fdb77d2a6f55b25#dea66bfd116356092d3a68f19fdb77d2a6f55b25"
 dependencies = [
  "fastsecdec",
  "fastsecdec-sectors",
@@ -1267,7 +1267,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-qmc"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=2092eaaef92a80ebf66723f529f60e7e7d2a14ac#2092eaaef92a80ebf66723f529f60e7e7d2a14ac"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=dea66bfd116356092d3a68f19fdb77d2a6f55b25#dea66bfd116356092d3a68f19fdb77d2a6f55b25"
 dependencies = [
  "numerica",
  "rand 0.9.5",
@@ -1277,7 +1277,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-sectors"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=2092eaaef92a80ebf66723f529f60e7e7d2a14ac#2092eaaef92a80ebf66723f529f60e7e7d2a14ac"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=dea66bfd116356092d3a68f19fdb77d2a6f55b25#dea66bfd116356092d3a68f19fdb77d2a6f55b25"
 dependencies = [
  "numerica",
  "thiserror 2.0.21",
@@ -4147,7 +4147,7 @@ dependencies = [
 [[package]]
 name = "symbolica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#ed2374f1d880d52c3a7ca48cd7c22f4baad5c020"
+source = "git+https://github.com/ValentinHirschi/symbolica?rev=1deccb8538ccb91dc2c1e58fc0a2e900d2276bf4#1deccb8538ccb91dc2c1e58fc0a2e900d2276bf4"
 dependencies = [
  "ahash 0.8.12",
  "append-only-vec",

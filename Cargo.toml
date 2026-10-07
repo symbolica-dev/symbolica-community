@@ -77,7 +77,7 @@ python_stubgen = [
 ]
 
 [dependencies]
-fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "2092eaaef92a80ebf66723f529f60e7e7d2a14ac", default-features = false }
+fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "dea66bfd116356092d3a68f19fdb77d2a6f55b25", default-features = false }
 hyperbolica = { optional = true, git = "https://github.com/benruijl/hyperbolica", rev = "31292085504b794dc444a006eba1d3013ed30944", default-features = false, features = ["python"] }
 one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
 spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
@@ -102,13 +102,14 @@ oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster",
 # RustRed-enabled Vakint, with the same modern FeynKit tensor bridge as this host.
 vakint = { optional = true, git = "https://github.com/ValentinHirschi/gammaloop", rev = "6203c6cbba6ae5e90329ba5081fad55319e678db", features = ["symbolica_community_module"] }
 
-# All community modules share the Symbolica kernel from its community branch.
+# All community modules share one Symbolica kernel and numeric owners.
 [patch.crates-io]
 # Lean notebook Typst compiler; keep these on the same source as the bindings.
 typst-library = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
 typst-svg = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
-# Shared lazy FormattedOutput; see examples/reproducers/symbolic-display in Feynkit.
-symbolica = { git = "https://github.com/symbolica-dev/symbolica", branch = "community" }
+# Native evaluator composition for numerical-dual sector generation (Symbolica PR #54).
+symbolica = { git = "https://github.com/ValentinHirschi/symbolica", rev = "1deccb8538ccb91dc2c1e58fc0a2e900d2276bf4" }
+# Preserve the official negative-integer serialization fix and shared numeric types.
 numerica = { git = "https://github.com/symbolica-dev/symbolica", branch = "community" }
 graphica = { git = "https://github.com/symbolica-dev/symbolica", branch = "community" }
 symbolica-typst-plugin = { git = "https://github.com/symbolica-dev/symbolica-typst-plugin", rev = "57b7455b37c30f4f87353c0073e49f5225e937ab" }

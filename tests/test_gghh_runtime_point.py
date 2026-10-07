@@ -16,13 +16,15 @@ import runpy
 import sys
 
 app = runpy.run_path(sys.argv[1], run_name="notebook_check")["app"]
-cells = [cell for _, cell in app._cell_manager.valid_cells()]
-base_cell = next(cell for cell in cells if "ShowcaseInput" in cell.defs)
-_, base = base_cell.run()
-input_cell = next(cell for cell in cells if "gghh_prepare" in cell.defs)
-_, definitions = input_cell.run(ShowcaseInput=base["ShowcaseInput"])
-source = definitions["gghh_catalogue"](progress=None)
-prepared = definitions["gghh_prepare"](source=source)
+_, notebook = app.run()
+inputs = notebook["gghh_inputs"]
+source = inputs.catalogue(progress=None)
+# The unfiltered catalogue intentionally includes exact-zero diagrams. Select
+# a nonzero box for this changing-runtime-point regression.
+box = next(diagram for diagram in source.diagrams
+           if diagram.loop_count == 1 and len(diagram.internal_edges) == 4
+           and all(abs(edge.particle.pdg_code) == 6 for edge in diagram.internal_edges))
+prepared = inputs.prepare(source=source, selected=box.id)
 first = prepared.runtime_point({"sqrt_s": 300, "higgs_mass": 125, "cos_theta": 0.8})
 second = prepared.runtime_point({"sqrt_s": 400, "higgs_mass": 125, "cos_theta": 0.4})
 assert first
@@ -32,7 +34,6 @@ assert first != second, "Changing the physical point must update the Gram matrix
 
 # A clean launch leaves the calculation idle. Exercise the explicit build and
 # timer actions too: these resolve helpers after their defining cells have run.
-_, notebook = app.run()
 study, mo = notebook["study"], notebook["mo"]
 built = study.build(1, mo)
 assert built.default_diagram.id in study.choices().values()
@@ -53,28 +54,44 @@ assert not study.run.work_active
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_gghh_notebook_types(tmp_path):
+def test_gghh_notebook_dataflow_and_native_types(tmp_path):
     pytest.importorskip("marimo", minversion="0.24.0")
+    root = Path(__file__).parents[1]
+    checked = subprocess.run(
+        [sys.executable, "-m", "marimo", "check", "--strict",
+         str(root / "examples/hep/gghh_complete.py")],
+        cwd=root, capture_output=True, text=True, timeout=60,
+    )
+    assert checked.returncode == 0, checked.stdout + checked.stderr
+
     ty = Path(sys.executable).with_name("ty")
     if not ty.is_file():
-        pytest.skip("ty is required for the notebook type check")
-    import runpy
+        pytest.skip("ty is required for the native API type check")
+    # Marimo owns cell scoping. Concatenating cell bodies bypasses that compiler
+    # and exposes notebook-private dynamic UI wrappers as a synthetic module.
+    # Check the installed native objects that users actually call instead.
+    source = """
+from typing_extensions import assert_type
+from symbolica.community.hepkit import sector_decomposition as sd
 
-    root = Path(__file__).parents[1]
-    app = runpy.run_path(str(root / "examples/hep/gghh_complete.py"))["app"]
-    # Like marimo's editor document, place the cell bodies in one module so
-    # the checker can follow dependencies between cells.
-    source = "\n\n".join(cell._cell.code for _, cell in app._cell_manager.valid_cells())
-    source += "\nfrom typing_extensions import assert_type\n"
-    source += "assert_type(study, Study)\nassert_type(study.run, RunState)\n"
-    source += "assert_type(study.catalogue, GGHHCatalogue | None)\n"
-    path = tmp_path / "gghh_types.py"
+def generation_types(integral: sd.Integral) -> None:
+    session = integral.generation_session(
+        mode="numerical_dual", subtraction="taylor",
+        compilation_settings=sd.CompilationSettings(backend="eager"))
+    assert_type(session, sd.GenerationSession)
+    assert_type(session.mode, str)
+    assert_type(session.subtraction, str)
+    assert_type(session.generated, sd.GeneratedIntegral | None)
+    assert_type(session.kernels, sd.Kernels | None)
+    snapshot = session.snapshot()
+    assert_type(snapshot, sd.GenerationSnapshot)
+    assert_type(snapshot.formula_preparation, sd.FormulaPreparationSnapshot | None)
+    assert_type(snapshot.timings.formula_preparation_seconds, float | None)
+"""
+    path = tmp_path / "gghh_native_types.py"
     path.write_text(source)
-    result = subprocess.run(
+    checked = subprocess.run(
         [str(ty), "check", "--python", sys.executable, str(path)],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        timeout=60,
+        cwd=root, capture_output=True, text=True, timeout=60,
     )
-    assert result.returncode == 0, result.stdout + result.stderr
+    assert checked.returncode == 0, checked.stdout + checked.stderr

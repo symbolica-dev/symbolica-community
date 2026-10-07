@@ -17,12 +17,9 @@ import sys
 from symbolica import E
 
 app = runpy.run_path(sys.argv[1], run_name="notebook_check")["app"]
-cells = [cell for _, cell in app._cell_manager.valid_cells()]
-_, base = next(cell for cell in cells if "ShowcaseInput" in cell.defs).run()
-_, inputs = next(cell for cell in cells if "gghh_prepare" in cell.defs).run(
-    ShowcaseInput=base["ShowcaseInput"])
-_, science = next(cell for cell in cells if "science_generation" in cell.defs).run()
-catalogue = inputs["gghh_catalogue"](progress=None)
+_, notebook = app.run()
+inputs, science = notebook["gghh_inputs"], notebook["science"]
+catalogue = inputs.catalogue(progress=None)
 # The exact reported graph has two triple-gluon vertices. Minimal contraction
 # left a closed tensor network: is_scalar passed, but parametrization failed.
 identity = "6586fc41a2a00087ef7be79f59b61224"
@@ -30,7 +27,7 @@ diagram = catalogue.selected(identity)
 assert diagram.loop_count == 2
 assert sum(catalogue.model.vertex_rule(vertex.interaction).particles == ["g", "g", "g"]
            for vertex in diagram.vertices) == 2
-prepared = inputs["gghh_prepare"](selected=identity, source=catalogue)
+prepared = inputs.prepare(selected=identity, source=catalogue)
 assert prepared.simplified_numerator != E("0")
 legend = prepared.gram_legend()
 assert {row["Runtime symbol"] for row in legend} == {
@@ -39,7 +36,8 @@ assert {row["Runtime symbol"] for row in legend} == {
 }
 assert all("leg " in row["Left vector"] and "leg " in row["Right vector"] for row in legend)
 assert any("eps1" in row["Left vector"] and "eps2" in row["Right vector"] for row in legend)
-session = science["science_generation"](prepared, {"max_order": 0})
+session = science.generation(prepared, {"max_order": 0})
+assert session.mode == "symbolic" and session.subtraction == "taylor"
 snapshot = session.step(max_units=1)
 assert session.failed is None and snapshot.stage == "parametrization"
 assert snapshot.timings.parametrization_seconds > 0
@@ -70,8 +68,12 @@ import sys
 
 app = runpy.run_path(sys.argv[1], run_name="notebook_check")["app"]
 _, notebook = app.run()
-catalogue = notebook["gghh_catalogue"](progress=None)
-assert catalogue.default_diagram.loop_count == 1
+inputs, science = notebook["gghh_inputs"], notebook["science"]
+catalogue = inputs.catalogue(progress=None)
+# Keep the callback active through real sector and evaluator construction.
+box = next(diagram for diagram in catalogue.diagrams
+           if diagram.loop_count == 1 and len(diagram.internal_edges) == 4
+           and all(abs(edge.particle.pdg_code) == 6 for edge in diagram.internal_edges))
 state = notebook["RunState"]()
 rendered = []
 
@@ -79,12 +81,12 @@ def display():
     # This executes synchronously inside the actual native step's observer.
     # Reading generation_session.complete here re-borrows the mutably borrowed
     # PyO3 owner and used to pause generation with "Already mutably borrowed".
-    view = notebook["generation_view"](notebook["mo"], state)
+    view = notebook["generation_views"].generation_view(notebook["mo"], state)
     rendered.append((state.events[-1].stage if state.events else "preparing", view.text))
 
 state.start_generation(
-    lambda: notebook["gghh_prepare"](source=catalogue),
-    {"max_order": 0}, notebook["science_generation"], display=display)
+    lambda: inputs.prepare(source=catalogue, selected=box.id),
+    {"max_order": 0}, science.generation, display=display)
 assert state.error is None, state.error
 for _ in range(100):
     if not state.generation_active:
@@ -95,6 +97,9 @@ for _ in range(100):
 assert state.phase == "ready", (state.phase, state.message)
 assert state.generation_session.complete
 assert state.generated is not None and state.kernels is not None
+assert state.kernels.sector_count > 0
+assert state.generation_session.mode == "symbolic"
+assert state.generation_session.subtraction == "taylor"
 stages = {stage for stage, _ in rendered}
 assert "parametrization" in stages and "complete" in stages, stages
 assert all("Generation failed" not in html for _, html in rendered)
