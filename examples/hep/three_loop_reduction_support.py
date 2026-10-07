@@ -1,0 +1,117 @@
+"""Small notebook lifecycle helpers; all IBP algebra stays in native RustRed."""
+
+from collections import deque
+from pathlib import Path
+from time import monotonic
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
+
+
+DATA_DIRECTORY = Path(__file__).resolve().parent / "data" / "rustred_three_loop"
+
+
+def graph_inputs():
+    """Load the graph and its explicitly checked native source, from any cwd."""
+    return tuple((DATA_DIRECTORY / name).read_text() for name in ("k6.dot", "k6.toml"))
+
+
+def assert_source_matches_family(source, family):
+    """Check this example's fixed source against native routed scalar products.
+
+    No general graph serializer or polynomial parser lives here. The six
+    source expressions are checked literally; Symbolica performs the exact
+    comparison with the corresponding native HEPKit scalar products.
+    """
+    parsed = tomllib.loads(source)
+    definition = parsed["family"]
+    assert definition["dimension"] == "d"
+    assert definition["loop_momenta"] == ["k1", "k2", "k3"]
+    assert definition["external_momenta"] == []
+    assert [item["expression"] for item in definition["denominators"]] == [
+        "k1^2-1", "k2^2-1", "k3^2-1", "(k1-k3)^2-1",
+        "(k1-k2)^2-1", "(k2-k3)^2-1",
+    ]
+    assert len(family.loop_momenta) == 3 and not family.external_momenta
+    assert family.is_complete and family.is_independent
+    k1, k2, k3 = family.loop_momenta
+    momenta = [k1, k2, k3, k1 - k3, k1 - k2, k2 - k3]
+    assert len(family.denominators) == len(momenta)
+    for denominator, momentum in zip(family.denominators, momenta):
+        expected = family.kinematics.scalar_product(momentum, momentum) - 1
+        assert (denominator - expected).expand() == 0
+
+
+class ThreeLoopRun:
+    """One explicit native generation; no work starts when constructing this.
+
+    Certification and recursive reduction are visible notebook operations.
+    Their results are kept here so UI changes cannot repeat expensive algebra.
+    No artifact is loaded from a precomputed catalog or another notebook run.
+    """
+
+    def __init__(self, native, source, *, clock=monotonic):
+        self.native, self.source, self.clock = native, source, clock
+        self.state, self.session = "ready", None
+        self.started, self.finished = None, None
+        self.result, self.candidate = None, None
+        self.closing, self.inspection = None, None
+        self.reductions = {}
+        self.events = deque(maxlen=20)
+        self.counts, self.active_jobs = {}, []
+        self.dropped_events, self.error = 0, None
+
+    def start(self, **options):
+        if self.state != "ready":
+            return False
+        self.started, self.state = self.clock(), "running"
+        try:
+            self.session = self.native.start_family_candidates(
+                self.source, input_format="toml", **options)
+        except Exception as error:
+            self._fail(error)
+            return False
+        return True
+
+    def cancel(self):
+        if self.session is None or self.state not in {"running", "cancelling"}:
+            return False
+        self.session.cancel()
+        self.state = "cancelling"
+        return True
+
+    def _fail(self, error):
+        self.error, self.state = str(error), "failed"
+        self.finished, self.session = self.clock(), None
+
+    def poll(self):
+        """Drain at most 128 native events, without waiting or decoding algebra."""
+        if self.session is not None:
+            try:
+                batch = self.session.poll_events(max_events=128, timeout=0.0)
+                native = batch["snapshot"]
+                self.counts = dict(native["counts"])
+                self.active_jobs = native["active_jobs"]
+                self.events.extend(batch["events"])
+                self.dropped_events = batch["dropped_events"]
+                if native["done"]:
+                    if native["state"] == "completed":
+                        self.result = self.session.result()
+                        self.candidate = self.result.artifact()
+                        self.state = "generated"
+                    elif native["state"] == "cancelled":
+                        self.state = "cancelled"
+                    else:
+                        raise RuntimeError(native.get("last_error") or "Generation failed")
+                    self.finished, self.session = self.clock(), None
+            except Exception as error:
+                self._fail(error)
+        end = self.finished if self.finished is not None else self.clock()
+        return {
+            "state": self.state,
+            "elapsed_seconds": 0 if self.started is None else end - self.started,
+            "counts": dict(self.counts), "active_jobs": self.active_jobs,
+            "events": list(self.events), "dropped_events": self.dropped_events,
+            "error": self.error,
+        }

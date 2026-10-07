@@ -1,0 +1,37 @@
+schema = "rustred.project.toml.v1"
+
+# The same ordered family as k6.dot, after setting the common mass to one.
+# This is ordinary native input; it contains no reduction rules or hints.
+[family]
+name = "rustred_three_loop_unit_mass_vacuum_k6_v1"
+loop_momenta = ["k1", "k2", "k3"]
+external_momenta = []
+dimension = "d"
+
+[[family.denominators]]
+id = "D1"
+expression = "k1^2-1"
+
+[[family.denominators]]
+id = "D2"
+expression = "k2^2-1"
+
+[[family.denominators]]
+id = "D3"
+expression = "k3^2-1"
+
+[[family.denominators]]
+id = "D4"
+expression = "(k1-k3)^2-1"
+
+[[family.denominators]]
+id = "D5"
+expression = "(k1-k2)^2-1"
+
+[[family.denominators]]
+id = "D6"
+expression = "(k2-k3)^2-1"
+
+[target]
+powers = [1, 1, 1, 1, 1, 1]
+numerator = "1"

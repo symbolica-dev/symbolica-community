@@ -112,6 +112,12 @@ provides separate worked IBP notebooks:
   combinations, and exact checks of the defining IBP identities.
 - [Two-loop phi4 self-energy](ibp_phi4.py) and [vertex](phi4_two_loop_vertex.py):
   generated diagrams, reductions and counterterms.
+- [Three-loop massive vacuum reduction](three_loop_reduction.py): the equal-mass
+  Mercedes/K4 graph, live generation and publication of its K=6 closing artifact,
+  and recursive reduction of raised powers and pinches to exact master
+  coefficients. The displayed reductions use the artifact generated in the
+  notebook, not Vakint's precomputed rules. Its finite terminal basis is not
+  claimed to be minimal.
 - [Four-loop vacuum IBP laboratory](four_loop_reduction.py): standard
   DOT graphs for H, X, BMW and FG become routed HEPKit families, then run a
   native single-worker RustRed candidate search with streamed progress and
@@ -123,6 +129,38 @@ All these examples use the shared `hepkit.IntegralFamily` frontend with
 `hepkit.oneloop.reduce` for reduction to OneLoopMaster symbols; `hepkit.IBPFamily`
 provides native RustRed reductions of the same families. Links inside each
 notebook stay on the same server.
+
+## Three-loop reduction to masters
+
+With the native community package and Marimo installed, run:
+
+```sh
+marimo edit examples/hep/three_loop_reduction.py
+```
+
+Select **Generate**, then **Certify generated rules**. The notebook
+first checks its standard HEPKit DOT graph and routed denominators against the
+explicit unit-mass family input. RustRed then generates sector rules, publishes
+the closing binary artifact, and reads back its declared terminals. Generation
+does not run merely because the notebook is opened.
+
+For the supplied input, expect 623 generated recurrences and 38 terminal
+masters after certification. The doubled first propagator reduces to 30
+master terms; the factorized example reduces to one.
+
+The reduction section applies that same artifact recursively: a doubled line,
+pinched integrals and numerator powers are expressed entirely in its master
+integrals, with exact rational functions of the dimension. A separate check
+uses the factorized three-tadpole recurrence. The mass is normalized to one for
+generation; the displayed general-mass coefficients include the native
+homogeneity factor `(m²)^(sum(master powers) - sum(target powers))`.
+
+Browse bounded rule and terminal previews or download the binary artifact for
+reuse. “Complete reduction” here means no unreduced integrals remain outside
+the artifact's declared terminal set; it does not mean that those terminals
+form a proven independent or minimal basis. Their numerical evaluation is a
+separate operation and is not required in this notebook. Neither FORM nor
+Vakint is used in the generation or reduction.
 
 ## Numerical transport and supplied reductions
 

@@ -1,0 +1,9 @@
+digraph Mercedes {
+    // Three loop-basis chords; edge IDs fix the denominator order.
+    B -> A [id=0, particle="phi", lmb_id=0];
+    A -> C [id=1, particle="phi", lmb_id=1];
+    C -> B [id=2, particle="phi", lmb_id=2];
+    D -> B [id=3, particle="phi"];
+    A -> D [id=4, particle="phi"];
+    C -> D [id=5, particle="phi"];
+}
