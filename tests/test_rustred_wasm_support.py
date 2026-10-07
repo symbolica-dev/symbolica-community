@@ -3,6 +3,10 @@
 import importlib.util
 from pathlib import Path
 
+import pytest
+
+pytest.importorskip("marimo")
+
 
 EXAMPLES = Path(__file__).parents[1] / "examples/hep"
 
@@ -14,7 +18,7 @@ def load(name):
     return module
 
 
-THREE = load("three_loop_reduction_support")
+THREE = load("three_loop_reduction")
 FOUR = load("rustred_campaign_support")
 SYNCHRONOUS = {
     "execution_mode": "synchronous", "background_sessions": False,

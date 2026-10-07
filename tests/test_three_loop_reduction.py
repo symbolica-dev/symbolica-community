@@ -15,13 +15,14 @@ except ModuleNotFoundError:  # Python 3.9 and 3.10
 import pytest
 
 pytest.importorskip("symbolica")
+pytest.importorskip("marimo")
 from symbolica import E, S
 from symbolica.community import hepkit as hep
 
 
 SPEC = importlib.util.spec_from_file_location(
-    "three_loop_reduction_support",
-    Path(__file__).parents[1] / "examples/hep/three_loop_reduction_support.py",
+    "three_loop_reduction_notebook",
+    Path(__file__).parents[1] / "examples/hep/three_loop_reduction.py",
 )
 support = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(support)

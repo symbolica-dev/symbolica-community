@@ -13,10 +13,7 @@ from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
 INPUTS = {
-    "three_loop_reduction": (
-        "three_loop_reduction_support.py", "rustred_campaign_support.py",
-        "data/rustred_three_loop/k6.dot", "data/rustred_three_loop/k6.toml",
-    ),
+    "three_loop_reduction": (),
     "four_loop_reduction": (
         "rustred_campaign_support.py",
         "data/rustred_four_loop/h.dot", "data/rustred_four_loop/x.dot",
@@ -84,7 +81,10 @@ def export(wheel, output, *, notebook="three_loop_reduction"):
         "validation_scope": "K6 generation, closure and exact reduction; no four-loop completion claim",
     }
     (output / "rustred-assets.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    print(f"Exported {output}; serve this directory over HTTP. Generation requires an explicit click.")
+    generation = ("Generation starts automatically; certification requires an explicit click."
+                  if notebook == "three_loop_reduction"
+                  else "Generation requires an explicit click.")
+    print(f"Exported {output}; serve this directory over HTTP. {generation}")
 
 
 if __name__ == "__main__":

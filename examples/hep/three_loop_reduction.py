@@ -7,7 +7,237 @@ app = marimo.App(
 )
 
 with app.setup(hide_code=True):
+    from collections import deque
+    from textwrap import dedent
+    from time import monotonic
+
     import marimo as mo
+    try:
+        import tomllib
+    except ModuleNotFoundError:
+        import tomli as tomllib
+
+    def graph_inputs():
+        """The graph and checked native source travel with this notebook."""
+        return dedent('''\
+            digraph Mercedes {
+                // Three loop-basis chords; edge IDs fix the denominator order.
+                B -> A [id=0, particle="phi", lmb_id=0];
+                A -> C [id=1, particle="phi", lmb_id=1];
+                C -> B [id=2, particle="phi", lmb_id=2];
+                D -> B [id=3, particle="phi"];
+                A -> D [id=4, particle="phi"];
+                C -> D [id=5, particle="phi"];
+            }
+            '''), dedent('''\
+            schema = "rustred.project.toml.v1"
+
+            # The same ordered family as the graph, with common mass set to one.
+            # Ordinary native input: no reduction rules or hints.
+            [family]
+            name = "rustred_three_loop_unit_mass_vacuum_k6_v1"
+            loop_momenta = ["k1", "k2", "k3"]
+            external_momenta = []
+            dimension = "d"
+
+            [[family.denominators]]
+            id = "D1"
+            expression = "k1^2-1"
+
+            [[family.denominators]]
+            id = "D2"
+            expression = "k2^2-1"
+
+            [[family.denominators]]
+            id = "D3"
+            expression = "k3^2-1"
+
+            [[family.denominators]]
+            id = "D4"
+            expression = "(k1-k3)^2-1"
+
+            [[family.denominators]]
+            id = "D5"
+            expression = "(k1-k2)^2-1"
+
+            [[family.denominators]]
+            id = "D6"
+            expression = "(k2-k3)^2-1"
+
+            [target]
+            powers = [1, 1, 1, 1, 1, 1]
+            numerator = "1"
+            ''')
+
+    def assert_source_matches_family(source, family):
+        """Compare this fixed source to native routed scalar products exactly."""
+        definition = tomllib.loads(source)["family"]
+        assert definition["dimension"] == "d"
+        assert definition["loop_momenta"] == ["k1", "k2", "k3"]
+        assert definition["external_momenta"] == []
+        assert [item["expression"] for item in definition["denominators"]] == [
+            "k1^2-1", "k2^2-1", "k3^2-1", "(k1-k3)^2-1",
+            "(k1-k2)^2-1", "(k2-k3)^2-1",
+        ]
+        assert len(family.loop_momenta) == 3 and not family.external_momenta
+        assert family.is_complete and family.is_independent
+        k1, k2, k3 = family.loop_momenta
+        momenta = [k1, k2, k3, k1 - k3, k1 - k2, k2 - k3]
+        assert len(family.denominators) == len(momenta)
+        for denominator, momentum in zip(family.denominators, momenta):
+            expected = family.kinematics.scalar_product(momentum, momentum) - 1
+            assert (denominator - expected).expand() == 0
+
+    def rule_expressions(artifact, rule, integral, parameter_bindings=()):
+        """Materialize the selected source-input rule for Symbolica display.
+
+        This conversion binds native n0, n1, ... and d to display symbols; it
+        does not apply or certify a reduction rule.
+        """
+        from symbolica import E, S
+
+        indices = [S(f"n_{axis}") for axis in range(len(rule["target"]["values"]))]
+        bindings = [(S(f"rustred::n{axis}"), index)
+                    for axis, index in enumerate(indices)] + list(parameter_bindings)
+        coefficients = {}
+
+        def coefficient(cid):
+            if cid not in coefficients:
+                detail = artifact.coefficient(cid, max_output_bytes=65536)
+                value = (E(detail["numerator"], default_namespace="rustred")
+                         / E(detail["denominator"], default_namespace="rustred"))
+                for source, display in bindings:
+                    value = value.replace(source, display)
+                coefficients[cid] = value
+            return coefficients[cid]
+
+        def key_expression(key):
+            return integral(*(indices[axis] + value if symbolic else value
+                              for axis, (value, symbolic) in enumerate(
+                                  zip(key["values"], key["symbolic"]))))
+
+        return {
+            "target": key_expression(rule["target"]),
+            "rhs": sum((coefficient(term["coefficient_id"]) * key_expression(term["integral"])
+                        for term in rule["rhs"]), E("0")),
+            "affine": [coefficient(cid) for cid in rule["case"]["affine_zero_equations"]],
+            "excluded": [[coefficient(cid) for cid in branch]
+                         for branch in rule["excluded_all_zero_conjunctions"]],
+        }
+
+    def integral_notation(key):
+        """Format native integer structure without parsing coefficient text."""
+        if isinstance(key, dict):
+            values, symbolic = key["values"], key["symbolic"]
+            if len(values) != len(symbolic):
+                raise ValueError("Integral flags and values have different arities")
+        else:
+            values, symbolic = key, [False] * len(key)
+        powers = []
+        for axis, (value, variable) in enumerate(zip(values, symbolic)):
+            if type(value) is not int or type(variable) is not bool:
+                raise ValueError("Expected exact native integer powers and boolean flags")
+            if not variable:
+                powers.append(str(value))
+            else:
+                suffix = f" + {value}" if value > 0 else f" - {-value}" if value < 0 else ""
+                powers.append(f"n_{axis}{suffix}")
+        return "I(" + ", ".join(powers) + ")"
+
+    def rule_summary_rows(items):
+        return [
+            {"ordinal": row["ordinal"], "Target": integral_notation(row["target"]),
+             "Case": ", ".join(f"n_{item['axis']} = {item['value']}"
+                               for item in row["case"]["fixed"]) or row["case"]["kind"],
+             "Affine equations": row["case"]["affine_equation_count"],
+             "RHS terms": row["rhs_terms"], "Sources": row["retained_source_count"],
+             "Excluded equations": row["guard_count"]}
+            for row in items
+        ]
+
+    def terminal_rows(page):
+        return [{"ordinal": page["start"] + index, "Integral": integral_notation(key)}
+                for index, key in enumerate(page["items"])]
+
+    class ThreeLoopRun:
+        """Own one generation and cache the explicitly requested later algebra."""
+
+        def __init__(self, native, source, *, clock=monotonic):
+            self.native, self.source, self.clock = native, source, clock
+            # Older native hosts predate this query. Browser builds provide it.
+            self.capabilities = native.execution_capabilities() if (
+                native is not None and hasattr(native, "execution_capabilities")
+            ) else {
+                "execution_mode": "background-coordinator", "background_sessions": True,
+                "live_event_polling": True, "cancellation_in_flight": True,
+                "max_workers": None,
+            }
+            self.state, self.session = "ready", None
+            self.started, self.finished = None, None
+            self.result, self.candidate = None, None
+            self.closing, self.inspection = None, None
+            self.reductions = {}
+            self.events = deque(maxlen=20)
+            self.counts, self.active_jobs = {}, []
+            self.dropped_events, self.error = 0, None
+
+        def start(self, **options):
+            if self.state != "ready" or self.native is None:
+                return False
+            self.started, self.state = self.clock(), "running"
+            try:
+                self.session = self.native.start_family_candidates(
+                    self.source, input_format="toml", **options)
+                if not self.capabilities["background_sessions"]:
+                    # WASM returns finished work; native hosts remain nonblocking.
+                    self.poll()
+            except Exception as error:
+                self._fail(error)
+                return False
+            return True
+
+        def cancel(self):
+            if (not self.capabilities["cancellation_in_flight"] or self.session is None
+                    or self.state not in {"running", "cancelling"}):
+                return False
+            self.session.cancel()
+            self.state = "cancelling"
+            return True
+
+        def _fail(self, error):
+            self.error, self.state = str(error), "failed"
+            self.finished, self.session = self.clock(), None
+
+        def poll(self):
+            """Drain a bounded event batch, without waiting or decoding algebra."""
+            if self.session is not None:
+                try:
+                    batch = self.session.poll_events(max_events=128, timeout=0.0)
+                    native = batch["snapshot"]
+                    self.counts = dict(native["counts"])
+                    self.active_jobs = native["active_jobs"]
+                    self.events.extend(batch["events"])
+                    self.dropped_events = batch["dropped_events"]
+                    if native["done"]:
+                        if native["state"] == "completed":
+                            self.result = self.session.result()
+                            self.candidate = self.result.artifact()
+                            self.state = "generated"
+                        elif native["state"] == "cancelled":
+                            self.state = "cancelled"
+                        else:
+                            raise RuntimeError(native.get("last_error") or "Generation failed")
+                        self.finished, self.session = self.clock(), None
+                except Exception as error:
+                    self._fail(error)
+            end = self.finished if self.finished is not None else self.clock()
+            return {
+                "state": self.state,
+                "elapsed_seconds": 0 if self.started is None else end - self.started,
+                "counts": dict(self.counts), "active_jobs": self.active_jobs,
+                "events": list(self.events), "dropped_events": self.dropped_events,
+                "error": self.error,
+            }
 
 
 @app.cell(hide_code=True)
@@ -23,57 +253,29 @@ async def _():
         _base = mo.notebook_location()
         _response = await _pyfetch(str(_base / "rustred-assets.json"))
         if _response.status != 200:
-            raise RuntimeError("Export this notebook with scripts/export_rustred_wasm.py to include its WASM wheel and graph inputs.")
+            raise RuntimeError("Export this notebook with scripts/export_rustred_wasm.py to include its WASM wheel.")
         _manifest = await _response.json()
         if _manifest["schema"] != "rustred-browser-assets-v1":
             raise ValueError("Unsupported browser asset manifest")
-        _directory = _Path.cwd() / "rustred_notebook_inputs"
-        _files = dict(_manifest["files"])
+        _directory = _Path.cwd() / "rustred_notebook_wheel"
         _wheel = _manifest["wheel"]
         if _Path(_wheel).name != _wheel or not _wheel.endswith(".whl"):
             raise ValueError("Invalid browser wheel path")
-        _files[_wheel] = _manifest["wheel_sha256"]
-        for _name, _digest in _files.items():
-            _relative = _Path(_name)
-            if _relative.is_absolute() or ".." in _relative.parts:
-                raise ValueError("Invalid browser asset path")
-            _response = await _pyfetch(str(_base / _name))
-            if _response.status != 200:
-                raise RuntimeError(f"Cannot load browser input {_name}: HTTP {_response.status}")
-            _payload = await _response.bytes()
-            if _hashlib.sha256(_payload).hexdigest() != _digest:
-                raise ValueError(f"Browser input checksum mismatch: {_name}")
-            _path = _directory / _relative
-            _path.parent.mkdir(parents=True, exist_ok=True)
-            _path.write_bytes(_payload)
+        _response = await _pyfetch(str(_base / _wheel))
+        if _response.status != 200:
+            raise RuntimeError(f"Cannot load browser wheel {_wheel}: HTTP {_response.status}")
+        _payload = await _response.bytes()
+        if _hashlib.sha256(_payload).hexdigest() != _manifest["wheel_sha256"]:
+            raise ValueError(f"Browser wheel checksum mismatch: {_wheel}")
+        _directory.mkdir(parents=True, exist_ok=True)
+        (_directory / _wheel).write_bytes(_payload)
         del _payload
         await _micropip.install("emfs:" + str(_directory / _wheel))
-        _sys.path.insert(0, str(_directory))
 
     from symbolica import E, S
     from symbolica.community import hepkit as hep
-    from symbolica.community.hepkit import rustred
-    from three_loop_reduction_support import (
-        ThreeLoopRun, assert_source_matches_family, graph_inputs, rule_expressions, tomllib,
-    )
-    from rustred_campaign_support import (
-        integral_notation, rule_summary_rows, terminal_rows,
-    )
-
-    return (
-        E,
-        S,
-        ThreeLoopRun,
-        assert_source_matches_family,
-        graph_inputs,
-        hep,
-        integral_notation,
-        rule_expressions,
-        rule_summary_rows,
-        rustred,
-        terminal_rows,
-        tomllib,
-    )
+    rustred = getattr(hep, "rustred", None)
+    return E, S, hep, rustred
 
 
 @app.cell(hide_code=True)
@@ -96,8 +298,9 @@ def _():
     topology types**, shown below. The reductions keep the original keys;
     no numerical master values are needed, and this notebook does not prove
     that a terminal basis is minimal or linearly independent.
-    The folded setup imports the native HEP objects and small UI helpers;
-    this small three-loop generation starts automatically.
+    This file includes its graph, generation source and small UI helpers;
+    the folded startup cells load Symbolica and HEPKit. This small three-loop
+    generation starts automatically.
     """)
     return
 
@@ -107,9 +310,10 @@ def _():
     mo.md("""
     ## Setup and notebook helpers
 
-    The folded setup block imports HEPKit, native RustRed and the small session
-    and display helpers. Expand its code to inspect the imports. The visible
-    cells below route the graph, certify the rules and request exact reductions.
+    The folded startup cells contain the graph, native generation source,
+    session and display helpers, and Symbolica/HEPKit imports. Expand their code
+    to inspect them. No neighboring helper or data files are required. The
+    visible cells below route the graph, certify the rules and request reductions.
     """)
     return
 
@@ -130,7 +334,7 @@ def _():
 
 
 @app.cell
-def _(E, S, assert_source_matches_family, graph_inputs, hep):
+def _(E, S, hep):
     dimension, mass_squared, integral = S("d", "M", "I")
     scalar_model = hep.Model.phi_3_4()
     dot_input, generation_source = graph_inputs()
@@ -212,30 +416,37 @@ def _():
 
 
 @app.cell
-def _(ThreeLoopRun, generation_source, rustred):
+def _(generation_source, rustred):
     generation_options = {
         "n_cores": 1, "exact_backend": "sparse", "numerical_depth": 2,
         "event_capacity": 256,
     }
     run = ThreeLoopRun(rustred, generation_source)
-    run.start(**generation_options)
-    return generation_options, run
+    native_available = rustred is not None and all(hasattr(rustred, method) for method in (
+        "start_family_candidates", "certify_candidates",
+        "inspect_closing_artifact", "reduce_with_closing_artifact",
+    ))
+    if native_available:
+        run.start(**generation_options)
+    return native_available, run
 
 
 @app.cell(hide_code=True)
-def _(run):
+def _(native_available, run):
     cancel = mo.ui.button(label="Cancel", on_click=lambda value: run.cancel(),
-        disabled=not run.capabilities["cancellation_in_flight"])
+        disabled=not native_available or not run.capabilities["cancellation_in_flight"])
     heartbeat = (mo.ui.refresh(options=["1s", "3s", "10s"], default_interval="1s")
-                 if run.capabilities["live_event_polling"] else None)
-    _controls = [cancel, heartbeat] if heartbeat is not None else []
+                 if native_available and run.capabilities["live_event_polling"] else None)
+    _controls = [cancel, heartbeat] if heartbeat is not None else [cancel]
     mo.vstack([
         mo.hstack(_controls, justify="start", wrap=True),
         mo.md("Generation starts automatically. " + (
             "Keep refresh enabled to collect live native progress."
             if run.capabilities["live_event_polling"] else
             "This browser runs one worker synchronously; progress appears after completion."
-        )),
+        )) if native_available else mo.callout(
+            "This HEPKit installation lacks the native closing-artifact API. "
+            "Install a Community build with RustRed support to run the reduction.", kind="warn"),
     ])
     return cancel, heartbeat
 
@@ -263,14 +474,14 @@ def _(cancel, heartbeat, run):
 
 
 @app.cell(hide_code=True)
-def _():
-    certify = mo.ui.run_button(label="Certify generated rules")
+def _(native_available):
+    certify = mo.ui.run_button(label="Certify generated rules", disabled=not native_available)
     certify
     return (certify,)
 
 
 @app.cell
-def _(certify, run, rustred, tomllib):
+def _(certify, run, rustred):
     mo.stop(not certify.value, mo.md("Once automatic generation finishes, certify the resulting bundle."))
     run.poll()
     mo.stop(run.result is None, mo.callout("Generation has not completed successfully yet.", kind="info"))
@@ -309,7 +520,7 @@ def _(closing_artifact, inspection, master_powers, run):
 
 
 @app.cell(hide_code=True)
-def _(integral_notation, master_powers):
+def _(master_powers):
     _types = [
         {"Type": "T3,1", "Name": "Three one-loop tadpoles", "Raw keys": 16,
          "Representative": "I(1,1,1,0,0,0)"},
@@ -387,13 +598,7 @@ def _(candidate_artifact, sector_choice):
 
 
 @app.cell(hide_code=True)
-def _(
-    candidate_artifact,
-    rule_offset,
-    rule_summary_rows,
-    sector_choice,
-    terminal_rows,
-):
+def _(candidate_artifact, rule_offset, sector_choice):
     _sector = int(sector_choice.value)
     _page = candidate_artifact.rules(_sector, start=int(rule_offset.value), limit=10)
     rule_table = mo.ui.table(rule_summary_rows(_page["items"]), selection="single",
@@ -418,7 +623,13 @@ def _(candidate_artifact, rule_table, sector_choice):
 
 
 @app.cell(hide_code=True)
-def _(candidate_artifact, integral, parameter_bindings, rule_detail, rule_expressions, sector_choice):
+def _(
+    candidate_artifact,
+    integral,
+    parameter_bindings,
+    rule_detail,
+    sector_choice,
+):
     _sector = candidate_artifact.sectors(start=int(sector_choice.value), limit=1)["items"][0]
     _expressions = rule_expressions(candidate_artifact, rule_detail, integral, parameter_bindings)
     _conditions = [mo.md("**Sector:** " + ", ".join(
@@ -512,6 +723,11 @@ def _(
     return reduced_terms, reduction, selected_powers
 
 
+@app.cell
+def _():
+    return
+
+
 @app.cell(hide_code=True)
 def _(reduced_terms):
     term_offset = mo.ui.number(start=0, stop=max(0, len(reduced_terms) - 1),
@@ -528,7 +744,6 @@ def _(
     reduction,
     selected_powers,
     term_offset,
-    tomllib,
 ):
     _start = int(term_offset.value)
     _page = reduced_terms[_start:_start + 10]

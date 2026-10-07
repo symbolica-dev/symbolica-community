@@ -167,6 +167,9 @@ the closing binary artifact, and reads back its declared terminals. It shows the
 native `rustred.start_family_candidates(...)` call used to derive the rules.
 Selecting a recurrence displays its complete RHS as a Symbolica expression,
 one integral term per line, without a separate coefficient-rendering control.
+The notebook is self-contained: its folded setup includes the graph, the native
+family input, and the session/display code. No local helper modules or graph
+files are needed when copying the notebook to another directory.
 
 For the supplied input, expect 623 generated recurrences and 38 **raw terminal
 keys** after certification, not 38 independent masters. Equivalent
@@ -500,8 +503,9 @@ python scripts/export_rustred_wasm.py /path/to/validated-wheel.whl /tmp/three-lo
 python -m http.server --directory /tmp/three-loop-browser 8000
 ```
 
-Open the exported page over HTTP. Its folded bootstrap verifies the wheel and
-input checksums, installs the wheel in Pyodide and loads the graph/helper files.
+Open the exported page over HTTP. Its folded bootstrap verifies the wheel's
+checksum and installs it in Pyodide. The three-loop graph and
+supporting code are embedded in the notebook; no companion helper files are needed.
 Three-loop generation starts automatically; certification and reduction are
 separate explicit controls. The packaged inputs contain no precomputed rules.
 

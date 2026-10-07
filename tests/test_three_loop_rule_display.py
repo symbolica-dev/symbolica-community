@@ -7,11 +7,12 @@ from pathlib import Path
 import pytest
 
 pytest.importorskip("symbolica")
+pytest.importorskip("marimo")
 from symbolica import E, S
 
 HERE = Path(__file__).parents[1] / "examples/hep"
 SPEC = importlib.util.spec_from_file_location("three_loop_display_support",
-                                            HERE / "three_loop_reduction_support.py")
+                                            HERE / "three_loop_reduction.py")
 support = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(support)
 
@@ -112,3 +113,22 @@ def test_notebook_starts_once_in_setup_and_keeps_polling_separate():
     assert "session = rustred.start_family_candidates(" in source
     assert "render_coefficient" not in source and "rhs_offset" not in source
     assert "terms_on_new_line=True" in source and "max_terms=None" in source
+
+
+def test_notebook_has_no_local_helper_or_graph_file_dependencies(tmp_path, monkeypatch):
+    source = (HERE / "three_loop_reduction.py").read_text()
+    tree = ast.parse(source)
+    imports = [node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)]
+    assert "three_loop_reduction_support" not in imports
+    assert "rustred_campaign_support" not in imports
+    monkeypatch.chdir(tmp_path)
+    dot, family_source = support.graph_inputs()
+    assert "digraph Mercedes" in dot
+    assert support.tomllib.loads(family_source)["target"]["powers"] == [1] * 6
+
+
+def test_inlined_native_fallback_supports_hosts_without_capability_query():
+    run = support.ThreeLoopRun(object(), "unused")
+    assert run.capabilities["background_sessions"] is True
+    assert run.capabilities["live_event_polling"] is True
+    assert run.poll()["state"] == "ready"
