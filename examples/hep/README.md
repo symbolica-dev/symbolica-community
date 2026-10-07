@@ -23,15 +23,20 @@ FastSecDec wrappers use `symbolica.community.hepkit.sector_decomposition`.
 
 FastSecDec notebooks are available here:
 
-- [Interactive sector-decomposition showcase](fastsecdec_showcase.py): start with
-  a massive scalar triangle, then explore numerator examples, streamed generation
-  and integration, and individual sectors.
-- [One gg → HH double box](gghh.py): generate the Standard Model diagram, specify
-  masses and helicities inline, and call `diagram.sector_decompose(...)` before
-  QMC or Havana integration. Its expensive calculation cells start disabled.
+- [Legacy copied scalar showcase](fastsecdec_showcase.py): the earlier massive
+  triangle, numerator and sector-exploration workflow. The
+  [current scalar showcase](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/fastsecdec_showcase.py)
+  is maintained with the canonical FastSecDec helpers.
+- [Current modular gg → HH study](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/gghh.py):
+  the canonical FastSecDec workflow, maintained with its native bindings and tests.
+  The older local [ggHH walkthrough](gghh.py) is retained as a legacy example;
+  its disabled-cell workflow is not the current notebook UI.
 - [Self-contained gg → HH study](gghh_complete.py): the current one- and two-loop
   diagram catalogue, streamed generation, sector inspection, QMC/Havana and
   pause/resume controls in one file, with no local Python imports or input files.
+  It defaults to symbolic generation, native `to_dots` simplification,
+  eager evaluators and one caller. Incoming gluon mass shells are imposed before
+  generation; the remaining declared kinematics and model inputs bind at integration.
   Its classes and helpers are defined directly in folded cells for editor type
   hints. Install Symbolica with HEPKit before opening it, including in Pyodide;
   the notebook does not download packages at runtime.

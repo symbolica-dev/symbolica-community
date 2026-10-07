@@ -10,7 +10,6 @@ Or open one directly from the repository root:
 
 ```sh
 python -m marimo edit examples/hep/fastsecdec_showcase.py
-python -m marimo edit examples/hep/gghh.py
 python -m marimo edit examples/hep/gghh_complete.py
 ```
 
@@ -25,32 +24,39 @@ starts only through explicit buttons. Browser export uses
 `--notebook gghh_complete` with the FastSecDec exporter and packages only the
 community wheel and its manifest.
 
-Preparation uses HEPKit's `contract="dots"` to resolve closed tensor networks
-before scalar parametrization. The **Kinematic symbols** panel explains the
+The default generation mode is `symbolic`, with Taylor subtraction and
+native eager evaluators on one caller-owned worker. Preparation uses HEPKit's `contract="dots"`
+and `to_dots()` to resolve closed tensor networks before scalar parametrization.
+Incoming gluon self-products are exact zero before sector discovery; other
+declared products and model inputs remain runtime parameters. The **Kinematic symbols** panel explains the
 `dot_i_j` momentum and polarization products, whose values are supplied at
 integration. Failed generation retains its error and never represents a zero
 integral. The corrected native expression layout is embedded in the community
 extension: updating its wheel requires a fresh Python kernel.
 
-[The interactive showcase](fastsecdec_showcase.py) starts with a massive scalar
+[The legacy copied showcase](fastsecdec_showcase.py) starts with a massive scalar
 triangle and offers box and two-loop numerator examples, plus an optional longer
 gg → HH calculation. Select **Generate** and **Integrate** to start the respective
 calculations. Live status, sector inspection, and QMC/Havana controls are included.
 Its `showcase/` helpers and `fixtures/fastsecdec/` and `fixtures/gghh/` inputs are
 included beside the notebook; no FastSecDec source checkout is required to run it.
 
-[The standalone gg → HH notebook](gghh.py) contains the full walkthrough in one
-file: `Model.standard_model()`, inline masses and helicities, diagram generation,
-numerator contraction, `diagram.sector_decompose(...)`, and numerical integration.
-Use marimo's editor controls to enable and run the expensive cells, which start
-disabled. Both notebooks finish with `get_citations()` and a BibTeX download.
+The [current modular gg → HH notebook](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/gghh.py)
+is maintained in FastSecDec alongside its helper modules and native tests.
+The older local [ggHH walkthrough](gghh.py) is retained as a legacy example;
+its disabled-cell controls are not the current workflow. Use `gghh_complete.py`
+above for the current single-file version. The copied scalar showcase and its
+helper tree also retain their earlier workflow; the canonical
+[scalar showcase](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/fastsecdec_showcase.py)
+lives in FastSecDec.
 
 Use marimo 0.24.2 or newer and a standard community installation containing
 `symbolica.community.hepkit.sector_decomposition`. Browser execution also needs
 the explicit Wasm wheel and asset manifest produced by the
 [FastSecDec browser exporter](https://github.com/alphal00p/fastSecDec/blob/main/examples/hepkit/export.py);
 copying a notebook alone does not package a browser wheel. The exporter supports
-both notebooks (`--notebook dashboard` or `--notebook gghh`).
+the current notebooks (`--notebook dashboard`, `--notebook gghh`, or
+`--notebook gghh_complete`). This PR does not rebuild or validate a browser wheel.
 
 These are copies of the notebooks and example assets in
 [FastSecDec examples/hepkit](https://github.com/alphal00p/fastSecDec/tree/main/examples/hepkit).

@@ -35,6 +35,11 @@ import pytest
         ),
         ("symbolica.community.hepkit.oneloop", {"Reduction", "MasterIntegral"}),
         (
+            "symbolica.community.hepkit.sector_decomposition",
+            {"Integral", "GeneratedIntegral", "GenerationSession", "Kernels",
+             "CompilationSettings", "FormulaPreparationSnapshot"},
+        ),
+        (
             "symbolica.community.hepkit.vakint",
             {
                 "Vakint",
