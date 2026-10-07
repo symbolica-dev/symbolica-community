@@ -3,10 +3,24 @@ import { createHash } from "node:crypto";
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { assertWasmExports } from "./wasm_exports.mjs";
 
-const wheelDir = process.argv[2];
+const arguments_ = process.argv.slice(2);
+const rustredOnly = arguments_.includes("--rustred-only");
+assert(arguments_.every((value) => !value.startsWith("--") || value === "--rustred-only"),
+  "Unknown option; the only optional scope is --rustred-only");
+const wheelDirectories = arguments_.filter((value) => value !== "--rustred-only");
+assert.equal(wheelDirectories.length, 1, "Pass one wheel directory and optionally --rustred-only");
+const wheelDir = wheelDirectories[0];
+const validationScope = rustredOnly ? "rustred-only" : "full-community";
 const runtimeDir = process.env.PYODIDE_DIST_DIR;
 const expectCommunity = process.env.SYMBOLICA_EXPECT_COMMUNITY !== "0";
+assert(!rustredOnly || expectCommunity, "--rustred-only requires a Community wheel");
+const nativeArtifactPath = process.env.RUSTRED_NATIVE_ARTIFACT;
+const nativeReductionsPath = process.env.RUSTRED_NATIVE_REDUCTIONS;
+assert(Boolean(nativeArtifactPath) === Boolean(nativeReductionsPath),
+  "Set both RUSTRED_NATIVE_ARTIFACT and RUSTRED_NATIVE_REDUCTIONS, or neither");
+assert(!nativeArtifactPath || expectCommunity, "The RustRed native-artifact check requires a Community wheel");
 assert(wheelDir && runtimeDir, "Pass the wheel directory and set PYODIDE_DIST_DIR");
 const wheels = (await readdir(wheelDir)).filter((name) =>
   name.endsWith("-pyemscripten_2026_0_wasm32.whl"),
@@ -66,6 +80,8 @@ from symbolica import get_citations
 assert any(citation.id == "https://github.com/symbolica-dev/symbolica-integrate" for citation in get_citations())
 `);
 if (expectCommunity) {
+pyodide.globals.set("rustred_k6_dot", await readFile(new URL("../../examples/hep/data/rustred_three_loop/k6.dot", import.meta.url), "utf8"));
+pyodide.globals.set("rustred_k6_source", await readFile(new URL("../../examples/hep/data/rustred_three_loop/k6.toml", import.meta.url), "utf8"));
 await pyodide.runPythonAsync(`
 import importlib.util
 assert importlib.util.find_spec("numpy") is None
@@ -129,6 +145,9 @@ model = hep.Model.from_json(hep_model_json)
 process = model.process(["scalar_0"], ["scalar_0", "scalar_0"])
 generated = process.generate_diagrams(loops=1, max_vertices=3, allow_self_loops=False)
 assert generated.report.completed and len(generated) > 0
+alignment_members = [member for _ in range(16) for group in generated.groups for member in group.members]
+assert alignment_members and all(0 <= member.diagram < len(generated) for member in alignment_members)
+del alignment_members
 diagram = generated[0]
 assert isinstance(diagram, hep.FeynmanDiagram) and diagram.loop_count == 1
 diagram.validate()
@@ -146,6 +165,11 @@ numerator = (k(space(mu)) * k(space(nu)) * p(space(mu)) * p(space(nu))).to_expre
 reduced = hep.TensorReducer(D, integrated=[kv.to_expression()]).reduce(numerator)
 expected = (dot(kv, kv) * dot(pv, pv) / D).to_expression()
 assert (reduced - expected).expand() == E("0")
+# CPython's wasm32 heap supplies eight-byte alignment. Retain multiple wrappers
+# so inline over-aligned Rust payloads cannot pass by lucky address reuse.
+alignment_reducers = [hep.TensorReducer(D, integrated=[kv.to_expression()]) for _ in range(64)]
+assert all((item.reduce(numerator) - expected).expand() == E("0") for item in alignment_reducers)
+del alignment_reducers
 assert hep.ThreeMomentum(3.0, 4.0, 0.0).on_shell().components() == (5.0, 3.0, 4.0, 0.0)
 from symbolica.community.hepkit import oneloop
 d, ell, mass = S("oneloop_smoke::d", "oneloop_smoke::ell", "oneloop_smoke::m2")
@@ -169,6 +193,22 @@ else:
     raise AssertionError("vakint should require a native installation")
 assert "symbolica.community.hep_integration_native" in sys.modules
 `);
+console.log("HEPKit graph/tensor checks and retained-wrapper alignment regressions passed.");
+await pyodide.runPythonAsync(
+  await readFile(new URL("./check_wasm_rustred.py", import.meta.url), "utf8"),
+);
+if (nativeArtifactPath) {
+  const nativeArtifact = await readFile(nativeArtifactPath);
+  const nativeReductions = await readFile(nativeReductionsPath);
+  pyodide.FS.mkdirTree("/tmp/rustred-native-canary");
+  pyodide.FS.writeFile("/tmp/rustred-native-canary/artifact.rr", nativeArtifact);
+  pyodide.FS.writeFile("/tmp/rustred-native-canary/expected.json", nativeReductions);
+  await pyodide.runPythonAsync(
+    await readFile(new URL("./check_rustred_cross_platform.py", import.meta.url), "utf8"),
+  );
+  console.log("Native64-to-WASM32 RustRed artifact: exact master list and 11 reductions passed.");
+}
+if (!rustredOnly) {
 await pyodide.runPythonAsync(
   await readFile(new URL("./check_wasm_loop_transport.py", import.meta.url), "utf8"),
 );
@@ -177,6 +217,9 @@ console.log("Native Standard Model Higgs-jet extension, shared types and collisi
 const integrationContract = await readFile(new URL("../../tests/integration_contract.py", import.meta.url), "utf8");
 await pyodide.runPythonAsync(integrationContract + "\ncheck_integration_contract()\ncheck_symanzik_example()\nassert not hasattr(api, 'ibp')\n");
 console.log("Shared integration fixtures and HEPkit Symanzik example passed (parallel=False/True).");
+} else {
+  console.log("RustRed-only scope: loop transport and integration-contract gates were not run.");
+}
 
 } else {
 await pyodide.runPythonAsync(`
@@ -193,49 +236,40 @@ const modulePath = pyodide.runPython("import symbolica.core; symbolica.core.__fi
 const wasmBytes = pyodide.FS.readFile(modulePath);
 const wasm = await WebAssembly.compile(wasmBytes);
 const exports = WebAssembly.Module.exports(wasm);
-const allowedExports = new Set([
-  "PyInit_core",
-  "__wasm_call_ctors",
-  "__wasm_apply_data_relocs",
-]);
-// Rust retains these inventory registration globals even with an explicit
-// function export list. Accept Rust's legacy and v0 symbol mangling, keeping
-// the crate/module paths and constructor name restricted in both formats.
-const inventoryConstructors = [
-  /^_ZN(?:9symbolica(?:14transcendental|5state)|19symbolica_integrate|6idenso|6spenso9shadowing|17feynkit_generator)1_6__CTOR17h[0-9a-f]{16}E$/,
-  /^_RNvNv(?:Cs[0-9A-Za-z]+_(?:6idenso|19symbolica_integrate|17feynkit_generator)|NtCs[0-9A-Za-z]+_(?:6spenso9shadowing|9symbolica(?:14transcendental|5state)))1__6___CTOR$/,
-  /^_RNvNv(?:Cs[0-9A-Za-z]+_13feynkit_graph|NtCs[0-9A-Za-z]+_11feynkit_cff7symbols)1__6___CTOR$/,
-  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_11hyperbolica(?:7symbols|6python)[0-9A-Za-z_]*1__6___CTOR$/,
-  /^_ZN11hyperbolica7symbols1_6__CTOR17h[0-9a-f]{16}E$/,
-  // multiple-pymethods registers Python method blocks through inventory.
-  // Only accept constructor globals from the known binding namespaces.
-  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|17fastsecdec_python|7spynso3|9linnet_py|20oneloopreduce_python|16symbolica_amflow6python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
-];
-assert(exports.some(({ name }) => name === "PyInit_core"), "Missing Python module entry point");
-assert.deepEqual(
-  exports.filter(({ name, kind }) =>
-    !allowedExports.has(name) && !(kind === "global" && inventoryConstructors.some(pattern => pattern.test(name))),
-  ),
-  [],
-  "Unexpected public WebAssembly exports",
-);
+assertWasmExports(exports);
 console.log(`WebAssembly exports: ${exports.length}; functions: ${exports.filter(({ kind }) => kind === "function").map(({ name }) => name).join(", ")}`);
 console.log(`Wheel: ${wheelBytes.length} bytes; WebAssembly module: ${wasmBytes.length} bytes.`);
-console.log("PyEmscripten wheel installed with micropip; smoke test passed.");
+console.log(`PyEmscripten wheel installed with micropip; smoke test passed (${expectCommunity ? validationScope : "core-only"}).`);
 if (expectCommunity) {
   const installedWheelUri = pyodide.globals.get("wheel_uri");
   if (installedWheelUri.startsWith("emfs:")) {
     // Read the archive actually installed, including the zstd download mode.
     // A report for another local archive would not certify its capabilities.
     const installedWheelBytes = pyodide.FS.readFile(installedWheelUri.slice("emfs:".length));
+    const wheelSha256 = createHash("sha256").update(installedWheelBytes).digest("hex");
+    if (!rustredOnly) {
     const validation = {
       schema: "supplied-loop-transport-runtime-v1",
       wheel,
-      wheel_sha256: createHash("sha256").update(installedWheelBytes).digest("hex"),
+      wheel_sha256: wheelSha256,
       supplied_loop_transport: true,
       higgs_standard_model: true,
     };
     await writeFile(join(wheelDir, "loop-transport-validation.json"), JSON.stringify(validation, null, 2) + "\n");
+    }
+    const rustredValidation = {
+      schema: "rustred-wasm-runtime-v1",
+      wheel,
+      wheel_sha256: wheelSha256,
+      ...JSON.parse(pyodide.runPython("import json; json.dumps(rustred_wasm_validation)")),
+      scope: validationScope,
+    };
+    if (nativeArtifactPath) {
+      rustredValidation.native_artifact_cross_platform = JSON.parse(
+        pyodide.runPython("json.dumps(rustred_cross_platform_validation)"),
+      );
+    }
+    await writeFile(join(wheelDir, "rustred-wasm-validation.json"), JSON.stringify(rustredValidation, null, 2) + "\n");
   } else {
     console.log("Direct HTTP diagnostic mode does not retain the installed wheel archive; no capability report written.");
   }

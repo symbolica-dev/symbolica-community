@@ -3,8 +3,8 @@
 Models, Feynman diagrams, generation, CFFs, tensor reduction, and kinematics
 are available directly in this namespace, for example ``hepkit.FeynmanDiagram``.
 ``hepkit.oneloop`` provides symbolic one-loop reduction, with scalar master
-evaluation available in native builds. Native builds also provide exact
-parametric and Laporta IBP solving through ``hepkit.IBPFamily``.
+evaluation available in native builds. Exact parametric and Laporta IBP solving
+through ``hepkit.IBPFamily`` is available in native and Pyodide builds.
 """
 
 from symbolica.community.hepkit_native import *

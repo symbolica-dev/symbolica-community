@@ -73,11 +73,11 @@ evaluation fallback.
 Run it with `marimo edit examples/hep/gg_hg.py`. Long numerical acceptance lives
 in `examples/hep/gg_hg_acceptance.py`, separately from lightweight smoke tests.
 
-The checked-in manifest and lock fetch the native dependencies from public Git
+The checked-in manifest and lock fetch the shared dependencies from public Git
 sources. Build this checkout with the locked native installation command below;
 no sibling checkout, local path override or manual owner patch is required.
 The host owns the complete shared dependency graph, as described in the
-[integration dependency guide](https://github.com/alphal00p/RustFlow/blob/d81dae94a40e41e5d2dcd978f623e6e83abb3e4f/docs/dependency-embedding.md).
+[integration dependency guide](https://github.com/alphal00p/RustFlow/blob/9599e35867119178ba3c02d7c55b998efab641f4/docs/dependency-embedding.md).
 Generate these hints with `stub_gen --hepkit-only`; the public package and stubs
 are under `python/symbolica/community/hep/integration/`. Browser builds expose
 the supplied-boundary solver, transport, cache and amplitude APIs. Existing
@@ -89,20 +89,25 @@ and [visible notebook gate](reports/2026-10-06-visible-higgs-api/README.md) cove
 the scientific outputs and actual Chromium rendering separately.
 
 The Git dependency selects RustFlow
-[`d81dae94a40e41e5d2dcd978f623e6e83abb3e4f`](https://github.com/alphal00p/RustFlow/commit/d81dae94a40e41e5d2dcd978f623e6e83abb3e4f).
-HEPKit, Linnet, Spenso, Idenso and native rendering share public owner
-[`b96600b0085d9ddfa9e6acbc11fa72ec6163253c`](https://github.com/ValentinHirschi/gammaloop/commit/b96600b0085d9ddfa9e6acbc11fa72ec6163253c),
-based on upstream HEPKit `6c707c6b77a437256eb1180da13d4d327b371d13`.
+[`9599e35867119178ba3c02d7c55b998efab641f4`](https://github.com/alphal00p/RustFlow/commit/9599e35867119178ba3c02d7c55b998efab641f4).
+HEPKit, Linnet, Spenso, Idenso and rendering share the official GammaLoop
+`feynkit` branch at
+[`71552e8942236817185bf71e42d0583d93a7bc08`](https://github.com/alphal00p/gammaloop/commit/71552e8942236817185bf71e42d0583d93a7bc08).
 Vakint retains its separate implementation at
 [`6203c6cbba6ae5e90329ba5081fad55319e678db`](https://github.com/ValentinHirschi/gammaloop/commit/6203c6cbba6ae5e90329ba5081fad55319e678db).
-RustRed remains on official main `7c1ed03722b8c05daf60c89ba4ecc79457ed2ada`,
+Hyperbolica is pinned to
+[`31292085504b794dc444a006eba1d3013ed30944`](https://github.com/benruijl/hyperbolica/commit/31292085504b794dc444a006eba1d3013ed30944).
+RustRed uses official main
+[`00bf379338193441ba69de6ab19c26885eaf93f7`](https://github.com/alphal00p/rustred/commit/00bf379338193441ba69de6ab19c26885eaf93f7),
 with `campaign-api` enabled and experimental reconstruction disabled.
+These revisions keep over-aligned tensor, diagram-group and exact-coefficient
+payloads behind Rust-owned pointers at the WASM Python allocation boundary.
 
 Symbolica, Numerica and Graphica resolve together from official community
 commit
-[`6defcca968ca8411977fb1f641a9dee49ee7b7a7`](https://github.com/symbolica-dev/symbolica/commit/6defcca968ca8411977fb1f641a9dee49ee7b7a7),
-selected by `Cargo.lock`. This revision retains the root-convergence and
-exact-division corrections and adds the generic C++ complex-constant export fix.
+[`ed2374f1d880d52c3a7ca48cd7c22f4baad5c020`](https://github.com/symbolica-dev/symbolica/commit/ed2374f1d880d52c3a7ca48cd7c22f4baad5c020),
+selected by `Cargo.lock`. This revision includes the negative-integer
+serialization correction.
 The native graph wheel used in CI is built from the same HEPKit owner selected
 by this manifest and lock; it is a separate test dependency requiring Python
 3.10 or newer. The community package retains its Python 3.9 minimum.
@@ -256,6 +261,20 @@ For a browser build, use `--no-default-features --features wasm` (the
 `scripts/build_wasm_performance.sh` default). The explicit `wasm-core` feature
 keeps only the Symbolica kernel and integration, without community modules.
 
+For a faster functional WASM build, select Cargo's development profile and
+omit debug sections:
+
+```bash
+CARGO_PROFILE_DEV_DEBUG=0 WASM_RUST_PROFILE=dev WASM_OPT_LEVEL=-O0 \
+  bash scripts/build_wasm_performance.sh dist/wasm-dev
+```
+
+Use a fresh output directory. The script also sets the development link
+optimization to `-O0`; release profiles retain `-O3`. Development wheels are
+for correctness and compatibility checks, with no release-performance or
+download-size claims. Set `WASM_SKIP_TESTS=1` only when running the Pyodide
+acceptance gate separately against the resulting wheel.
+
 ## For developers
 
 ### Adding extensions
@@ -309,7 +328,21 @@ antiderivative API. Use `from symbolica.community.hepkit import ibp` for the
 existing native IBP tools. Reduction and master evaluation remain separate.
 
 The same expression API is available in Pyodide, where execution is serial
-regardless of `IntegrationOptions.parallel`. IBP retains native-only availability.
+regardless of `IntegrationOptions.parallel`. RustRed's exact IBP API is also
+included in the `wasm` Community build: `hepkit.IBPFamily` and
+`hepkit.rustred` share the browser's Symbolica kernel. Generation executes
+synchronously with one worker; `hepkit.rustred.execution_capabilities()` reports
+that live polling and in-flight cancellation are unavailable. The
+[three-loop notebook](examples/hep/three_loop_reduction.py) generates its own
+rules, certifies them, and reduces to their finite terminal basis in this mode.
+See the [browser export instructions](examples/hep/README.md#rustred-in-pyodide).
+The Pyodide gate defaults to the full Community suite; `--rustred-only` retains
+Symbolica, HEPKit graph/tensor/layout, exact RustRed and WASM-export checks while
+skipping the separate loop-transport and integration-contract gates. Its receipt
+states the selected scope. The current development-profile full-suite run passes
+RustRed and its native-artifact canary but aborts later in RustFlow's
+`KinematicTransport.add_boundary` due to a separate PyO3 alignment issue;
+focused RustRed validation is not a full-Community debug-build success claim.
 See `examples/hep_integration.py` for explicit integration of HEPkit Symanzik
 polynomials with stated normalization and projective gauge.
 

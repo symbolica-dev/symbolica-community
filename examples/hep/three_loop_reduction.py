@@ -1,10 +1,55 @@
 import marimo
 
 __generated_with = "0.24.2"
-app = marimo.App(width="medium", app_title="Three-loop massive vacuum reduction")
+app = marimo.App(
+    width="medium",
+    app_title="Three-loop massive vacuum reduction",
+)
 
 with app.setup(hide_code=True):
     import marimo as mo
+
+
+@app.cell(hide_code=True)
+async def _():
+    import hashlib as _hashlib
+    import sys as _sys
+    from pathlib import Path as _Path
+
+    if _sys.platform == "emscripten":
+        import micropip as _micropip
+        from pyodide.http import pyfetch as _pyfetch
+
+        _base = mo.notebook_location()
+        _response = await _pyfetch(str(_base / "rustred-assets.json"))
+        if _response.status != 200:
+            raise RuntimeError("Export this notebook with scripts/export_rustred_wasm.py to include its WASM wheel and graph inputs.")
+        _manifest = await _response.json()
+        if _manifest["schema"] != "rustred-browser-assets-v1":
+            raise ValueError("Unsupported browser asset manifest")
+        _directory = _Path.cwd() / "rustred_notebook_inputs"
+        _files = dict(_manifest["files"])
+        _wheel = _manifest["wheel"]
+        if _Path(_wheel).name != _wheel or not _wheel.endswith(".whl"):
+            raise ValueError("Invalid browser wheel path")
+        _files[_wheel] = _manifest["wheel_sha256"]
+        for _name, _digest in _files.items():
+            _relative = _Path(_name)
+            if _relative.is_absolute() or ".." in _relative.parts:
+                raise ValueError("Invalid browser asset path")
+            _response = await _pyfetch(str(_base / _name))
+            if _response.status != 200:
+                raise RuntimeError(f"Cannot load browser input {_name}: HTTP {_response.status}")
+            _payload = await _response.bytes()
+            if _hashlib.sha256(_payload).hexdigest() != _digest:
+                raise ValueError(f"Browser input checksum mismatch: {_name}")
+            _path = _directory / _relative
+            _path.parent.mkdir(parents=True, exist_ok=True)
+            _path.write_bytes(_payload)
+        del _payload
+        await _micropip.install("emfs:" + str(_directory / _wheel))
+        _sys.path.insert(0, str(_directory))
+
     from symbolica import E, S
     from symbolica.community import hepkit as hep
     from three_loop_reduction_support import (
@@ -16,6 +61,22 @@ with app.setup(hide_code=True):
     )
 
     rustred = getattr(hep, "rustred", None)
+    return (
+        E,
+        S,
+        ThreeLoopRun,
+        assert_source_matches_family,
+        coefficient_view,
+        graph_inputs,
+        hep,
+        integral_notation,
+        rule_coefficient_ids,
+        rule_summary_rows,
+        rule_view,
+        rustred,
+        terminal_rows,
+        tomllib,
+    )
 
 
 @app.cell(hide_code=True)
@@ -69,7 +130,7 @@ def _():
 
 
 @app.cell
-def _():
+def _(E, S, assert_source_matches_family, graph_inputs, hep):
     dimension, mass_squared, integral = S("d", "M", "I")
     scalar_model = hep.Model.phi_3_4()
     dot_input, generation_source = graph_inputs()
@@ -85,7 +146,14 @@ def _():
     # The source API preserves d; explicitly map its native symbol for display.
     parameter_bindings = [(S("rustred::d"), dimension)]
     mo.vstack([diagram, family])
-    return dimension, family, generation_source, integral, mass_squared, parameter_bindings, dot_input
+    return (
+        dimension,
+        dot_input,
+        generation_source,
+        integral,
+        mass_squared,
+        parameter_bindings,
+    )
 
 
 @app.cell(hide_code=True)
@@ -119,11 +187,11 @@ def _():
     mo.md("""
     ## 2. Generate, then certify
 
-    One native worker searches every sector of the six-propagator family,
-    including nonpositive powers. The bounded event stream reports real native
-    work. Keep refresh enabled to collect the result; **Cancel** requests a
-    stop at a native safe point. This session generates once; rerun the notebook
-    for a fresh session.
+    One worker searches every sector of the six-propagator family, including
+    nonpositive powers. Native hosts provide live events and cooperative
+    cancellation. Pyodide runs synchronously: Generate returns when the search
+    completes, with no intermediate progress or in-flight cancellation.
+    This session generates once; rerun the notebook for a fresh session.
 
     Generation produces candidates. **Certify generated rules** replays their
     sources and verifies coverage and termination before making an artifact
@@ -133,7 +201,7 @@ def _():
 
 
 @app.cell
-def _(generation_source):
+def _(ThreeLoopRun, generation_source, rustred):
     generation_options = {
         "n_cores": 1, "exact_backend": "sparse", "numerical_depth": 2,
         "event_capacity": 256,
@@ -151,11 +219,17 @@ def _(generation_options, native_available, run):
     generate = mo.ui.button(label="Generate", kind="success",
         on_click=lambda value: run.start(**generation_options), disabled=not native_available)
     cancel = mo.ui.button(label="Cancel", on_click=lambda value: run.cancel(),
-        disabled=not native_available)
-    heartbeat = mo.ui.refresh(options=["1s", "3s", "10s"], default_interval="1s")
+        disabled=not native_available or not run.capabilities["cancellation_in_flight"])
+    heartbeat = (mo.ui.refresh(options=["1s", "3s", "10s"], default_interval="1s")
+                 if run.capabilities["live_event_polling"] else None)
+    _controls = [generate, cancel, heartbeat] if heartbeat is not None else [generate]
     mo.vstack([
-        mo.hstack([generate, cancel, heartbeat], justify="start", wrap=True),
-        mo.md("The notebook is ready; Generate starts native algebra.") if native_available
+        mo.hstack(_controls, justify="start", wrap=True),
+        mo.md("Generate starts the calculation. " + (
+            "Keep refresh enabled to collect live native progress."
+            if run.capabilities["live_event_polling"] else
+            "This browser runs one worker synchronously; progress appears after completion."
+        )) if native_available
         else mo.callout("This HEPKit installation lacks the native closing-artifact API. "
                         "Install a Community build with RustRed support to run the reduction.", kind="warn"),
     ])
@@ -164,7 +238,7 @@ def _(generation_options, native_available, run):
 
 @app.cell(hide_code=True)
 def _(cancel, generate, heartbeat, run):
-    _ = cancel.value, generate.value, heartbeat.value
+    _ = cancel.value, generate.value, heartbeat.value if heartbeat is not None else None
     live = run.poll()
     _counts = live["counts"]
     mo.vstack([
@@ -175,7 +249,8 @@ def _(cancel, generate, heartbeat, run):
             mo.stat(f"{live['elapsed_seconds']:.2f} s", label="Observed time"),
         ], widths="equal"),
         mo.callout(live["error"], kind="danger") if live["error"] else mo.md(""),
-        mo.accordion({"Native progress · bounded history": mo.json({
+        mo.accordion({"Native execution evidence · bounded history": mo.json({
+            "execution_mode": run.capabilities["execution_mode"],
             "counts": _counts, "active_jobs": live["active_jobs"],
             "recent_events": live["events"], "dropped_events": live["dropped_events"],
         })}),
@@ -191,7 +266,7 @@ def _(native_available):
 
 
 @app.cell
-def _(certify, run):
+def _(certify, run, rustred, tomllib):
     mo.stop(not certify.value, mo.md("Generate first, then certify the resulting bundle."))
     run.poll()
     mo.stop(run.result is None, mo.callout("Generation has not completed successfully yet.", kind="info"))
@@ -229,7 +304,7 @@ def _(closing_artifact, inspection, master_powers, run):
 
 
 @app.cell(hide_code=True)
-def _(master_powers):
+def _(integral_notation, master_powers):
     _rows = [{"Master": integral_notation(powers), "Total power": sum(powers)}
              for powers in sorted(master_powers)]
     mo.vstack([
@@ -282,7 +357,13 @@ def _(candidate_artifact, sector_choice):
 
 
 @app.cell(hide_code=True)
-def _(candidate_artifact, rule_offset, sector_choice):
+def _(
+    candidate_artifact,
+    rule_offset,
+    rule_summary_rows,
+    sector_choice,
+    terminal_rows,
+):
     _sector = int(sector_choice.value)
     _page = candidate_artifact.rules(_sector, start=int(rule_offset.value), limit=10)
     rule_table = mo.ui.table(rule_summary_rows(_page["items"]), selection="single",
@@ -310,14 +391,14 @@ def _(candidate_artifact, rule_table, sector_choice):
 
 
 @app.cell(hide_code=True)
-def _(candidate_artifact, rhs_offset, rule_detail, sector_choice):
+def _(candidate_artifact, rhs_offset, rule_detail, rule_view, sector_choice):
     _sector = candidate_artifact.sectors(start=int(sector_choice.value), limit=1)["items"][0]
     rule_view(mo, rule_detail, _sector["sector"], rhs_start=int(rhs_offset.value))
     return
 
 
 @app.cell(hide_code=True)
-def _(rhs_offset, rule_detail):
+def _(rhs_offset, rule_coefficient_ids, rule_detail):
     _ids = rule_coefficient_ids(rule_detail, rhs_start=int(rhs_offset.value))
     mo.stop(not _ids, mo.md("This preview contains no coefficients."))
     coefficient_id = mo.ui.dropdown(options={f"c_{cid}": cid for cid in _ids},
@@ -329,7 +410,12 @@ def _(rhs_offset, rule_detail):
 
 
 @app.cell
-def _(candidate_artifact, coefficient_id, render_coefficient):
+def _(
+    candidate_artifact,
+    coefficient_id,
+    coefficient_view,
+    render_coefficient,
+):
     mo.stop(not render_coefficient.value)
     coefficient_view(mo, candidate_artifact.coefficient(int(coefficient_id.value),
                                                       max_output_bytes=65536))
@@ -371,7 +457,17 @@ def _(closing_artifact):
 
 
 @app.cell
-def _(closing_artifact, inspection, master_powers, parameter_bindings, reduce_target, run, target_choice):
+def _(
+    E,
+    closing_artifact,
+    inspection,
+    master_powers,
+    parameter_bindings,
+    reduce_target,
+    run,
+    rustred,
+    target_choice,
+):
     mo.stop(not reduce_target.value, mo.md("Select a target and request its complete reduction."))
     selected_powers = tuple(target_choice.value)
     if selected_powers not in run.reductions:
@@ -402,7 +498,15 @@ def _(reduced_terms):
 
 
 @app.cell(hide_code=True)
-def _(integral, mass_squared, reduced_terms, reduction, selected_powers, term_offset):
+def _(
+    integral,
+    mass_squared,
+    reduced_terms,
+    reduction,
+    selected_powers,
+    term_offset,
+    tomllib,
+):
     _start = int(term_offset.value)
     _page = reduced_terms[_start:_start + 10]
     mo.vstack([
@@ -424,7 +528,7 @@ def _(integral, mass_squared, reduced_terms, reduction, selected_powers, term_of
 
 
 @app.cell
-def _(closing_artifact, dimension, parameter_bindings, reduced_terms, run):
+def _(E, closing_artifact, dimension, parameter_bindings, run, rustred):
     # Independent factorized check: three one-loop tadpoles with two raised powers.
     _target = (2, 2, 1, 0, 0, 0)
     if _target not in run.reductions:

@@ -116,7 +116,7 @@ provides separate worked IBP notebooks:
 - [Two-loop phi4 self-energy](ibp_phi4.py) and [vertex](phi4_two_loop_vertex.py):
   generated diagrams, reductions and counterterms.
 - [Three-loop massive vacuum reduction](three_loop_reduction.py): the equal-mass
-  Mercedes/K4 graph, live generation and publication of its K=6 closing artifact,
+  Mercedes/K4 graph, explicit generation and publication of its K=6 closing artifact,
   and recursive reduction of raised powers and pinches to exact master
   coefficients. The displayed reductions use the artifact generated in the
   notebook, not Vakint's precomputed rules. Its finite terminal basis is not
@@ -130,7 +130,7 @@ provides separate worked IBP notebooks:
 All these examples use the shared `hepkit.IntegralFamily` frontend with
 `hepkit.Kinematics` and a symbolic dimension. The one-loop example chooses
 `hepkit.oneloop.reduce` for reduction to OneLoopMaster symbols; `hepkit.IBPFamily`
-provides native RustRed reductions of the same families. Links inside each
+provides RustRed reductions of the same families in native and Pyodide builds. Links inside each
 notebook stay on the same server.
 
 ## Three-loop reduction to masters
@@ -392,9 +392,80 @@ native-boundary acceptance. Recorded cold native results, source versions and
 uncertainty limits are available in the validation report linked above; a new
 runtime or dependency graph needs its own acceptance evidence.
 
+## RustRed in Pyodide
+
+The Community `wasm` feature includes `hepkit.IBPFamily` and the embedded
+`hepkit.rustred` API. The host shares one Symbolica kernel and uses portable
+arithmetic. Query `hepkit.rustred.execution_capabilities()` before offering
+background controls. On WASM, `start_family_candidates` and
+`IBPFamily.start_generation` run synchronously with `n_cores=1`, returning a
+completed session. Retained events describe completed work; there is no live
+polling or in-flight cancellation. Native sessions retain their background
+worker behavior. Vakint and native compiled evaluators remain unavailable.
+
+The actual-Pyodide gate `.github/scripts/test_pyodide.mjs` checks DOT-to-IBP
+construction, finite tadpole reduction, and fresh K=6 generation, certification,
+artifact loading, and exact reductions. It checks master membership,
+homogeneity, pinches and numerator powers, and writes a wheel-hash-bound
+`rustred-wasm-validation.json` after success. No prior native artifact is used.
+The default gate retains the complete Community suite. Add `--rustred-only`
+for focused acceptance: it still checks Symbolica, HEPKit graph/tensor/layout
+behavior, RustRed and the WASM export inventory, but skips the separate loop
+transport and integration-contract gates. The receipt records `scope` as
+`rustred-only` or `full-community`; only a successful full suite writes
+`loop-transport-validation.json`. The notebook exporter accepts either explicit
+RustRed validation scope and makes no full-Community validation claim.
+
+The 2026-10-07 development-profile full-suite run passed the RustRed checks and
+native-artifact canary, then aborted at RustFlow's
+`KinematicTransport.add_boundary` with a separate PyO3 alignment failure.
+Focused acceptance does not certify that full Community development build.
+The [2026-10-07 acceptance report](../../reports/2026-10-07-rustred-wasm/README.md)
+records successful focused Pyodide and actual static-browser notebook checks,
+the wheel identity, and separate generation/certification timings.
+
+Without additional inputs this checks artifacts produced inside WASM. An
+optional native64-to-WASM32 canary checks the exact same externally supplied
+artifact bytes, their SHA-256 and family identity, all 38 declared master keys,
+and 11 exact scalar/dotted/pinch/numerator/zero reductions. Prepare the JSON
+expectations in a native 64-bit Community interpreter, then provide both paths:
+
+```sh
+python .github/scripts/export_rustred_native_canary.py /path/to/native-k6.rr /path/to/native-k6-expected.json
+RUSTRED_NATIVE_ARTIFACT=/path/to/native-k6.rr \
+RUSTRED_NATIVE_REDUCTIONS=/path/to/native-k6-expected.json \
+PYODIDE_DIST_DIR="$(pyodide config get dist_dir)" \
+  node .github/scripts/test_pyodide.mjs /path/to/wheel-directory --rustred-only
+```
+
+The canary compares coefficients with exact Symbolica subtraction, independent
+of printer formatting. It adds its evidence to the wheel validation report;
+neither artifact bytes nor native expectations enter the notebook export.
+
+After building a full Community PyEmscripten wheel and running that gate:
+
+```sh
+PYODIDE_DIST_DIR="$(pyodide config get dist_dir)" \
+  node .github/scripts/test_pyodide.mjs /path/to/wheel-directory --rustred-only
+python scripts/export_rustred_wasm.py /path/to/validated-wheel.whl /tmp/three-loop-browser
+python -m http.server --directory /tmp/three-loop-browser 8000
+```
+
+Open the exported page over HTTP. Its folded bootstrap verifies the wheel and
+input checksums, installs the wheel in Pyodide and loads the graph/helper files.
+Generation starts only with **Generate**, and certification and reduction are
+separate explicit controls. The packaged inputs contain no precomputed rules.
+
+Add `--notebook four_loop_reduction` to export the four-family candidate
+laboratory instead. Its explicit generation button runs the queue synchronously
+and reports after completion; large searches may exceed browser memory. The
+WASM acceptance scope is the K=6 example, not successful completion or closure
+of the four-loop families. Browser artifact files live in Pyodide's virtual
+filesystem; download wanted outputs before closing the page.
+
 ## Live RustRed generation and artifact exploration
 
-The four-loop laboratory needs a native community build containing the
+For native live generation, the four-loop laboratory needs a community build containing the
 `rustred-feynkit/campaign-api` feature, enabled in this checkout. It uses the
 host's existing Symbolica kernel; do not install a separate RustRed extension
 to provide the notebook's native objects. From an activated virtual environment

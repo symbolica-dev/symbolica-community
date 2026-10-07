@@ -3,7 +3,9 @@
 Start from ``hepkit.IBPFamily(...).start_generation(...)`` to retain the usual
 HEPKit Graph, routing, and integral-family objects. This namespace exposes the
 same session/result types and optional text-input entry point, without importing
-a second Symbolica extension. Availability requires a native community build.
+a second Symbolica extension. Native builds provide background sessions;
+Pyodide builds execute synchronously with one worker. Query
+``execution_capabilities()`` before offering live polling or cancellation.
 """
 
 from symbolica.community.hepkit_native import rustred as _native
@@ -15,6 +17,7 @@ CandidateGenerationSession = _native.CandidateGenerationSession
 TerminalNormalization = _native.TerminalNormalization
 candidate_generation_request = _native.candidate_generation_request
 start_family_candidates = _native.start_family_candidates
+execution_capabilities = _native.execution_capabilities
 RustRedError = _native.RustRedError
 RustRedInputError = _native.RustRedInputError
 RustRedSchemaError = _native.RustRedSchemaError
@@ -31,7 +34,7 @@ RustRedCoordinatorPoisonedError = _native.RustRedCoordinatorPoisonedError
 __all__ = [
     "CandidateArtifact", "CandidateBundleResult", "CandidateGenerationRequest",
     "CandidateGenerationSession", "TerminalNormalization", "candidate_generation_request",
-    "start_family_candidates",
+    "start_family_candidates", "execution_capabilities",
     "RustRedError", "RustRedInputError", "RustRedSchemaError", "RustRedLimitError",
     "RustRedLoweringError", "RustRedDerivationError", "RustRedExecutionError",
     "RustRedLicenseError", "RustRedSerializationError", "RustRedOutputLimitError",

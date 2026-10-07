@@ -5,6 +5,48 @@ app = marimo.App(width="medium", app_title="Four-loop vacuum IBP laboratory")
 
 with app.setup(hide_code=True):
     import marimo as mo
+
+
+@app.cell(hide_code=True)
+async def _():
+    import hashlib as _hashlib
+    import sys as _sys
+    from pathlib import Path as _Path
+
+    if _sys.platform == "emscripten":
+        import micropip as _micropip
+        from pyodide.http import pyfetch as _pyfetch
+
+        _base = mo.notebook_location()
+        _response = await _pyfetch(str(_base / "rustred-assets.json"))
+        if _response.status != 200:
+            raise RuntimeError("Export this notebook with scripts/export_rustred_wasm.py to include its WASM wheel and graph inputs.")
+        _manifest = await _response.json()
+        if _manifest["schema"] != "rustred-browser-assets-v1":
+            raise ValueError("Unsupported browser asset manifest")
+        _directory = _Path.cwd() / "rustred_notebook_inputs"
+        _files = dict(_manifest["files"])
+        _wheel = _manifest["wheel"]
+        if _Path(_wheel).name != _wheel or not _wheel.endswith(".whl"):
+            raise ValueError("Invalid browser wheel path")
+        _files[_wheel] = _manifest["wheel_sha256"]
+        for _name, _digest in _files.items():
+            _relative = _Path(_name)
+            if _relative.is_absolute() or ".." in _relative.parts:
+                raise ValueError("Invalid browser asset path")
+            _response = await _pyfetch(str(_base / _name))
+            if _response.status != 200:
+                raise RuntimeError(f"Cannot load browser input {_name}: HTTP {_response.status}")
+            _payload = await _response.bytes()
+            if _hashlib.sha256(_payload).hexdigest() != _digest:
+                raise ValueError(f"Browser input checksum mismatch: {_name}")
+            _path = _directory / _relative
+            _path.parent.mkdir(parents=True, exist_ok=True)
+            _path.write_bytes(_payload)
+        del _payload
+        await _micropip.install("emfs:" + str(_directory / _wheel))
+        _sys.path.insert(0, str(_directory))
+
     from symbolica import E, N, S
     from symbolica.community import hepkit as hep
     rustred = getattr(hep, "rustred", None)
@@ -24,6 +66,28 @@ with app.setup(hide_code=True):
         normalization_summary_rows,
         normalization_relation_view,
         ExplicitNumeratorEvaluation,
+    )
+
+    return (
+        E,
+        ExplicitNumeratorEvaluation,
+        FAMILY_NAMES,
+        FourLoopCampaign,
+        N,
+        S,
+        coefficient_view,
+        dot_sources,
+        hep,
+        normalization_relation_view,
+        normalization_summary_rows,
+        parameter_rows,
+        preferred_auxiliaries,
+        rule_coefficient_ids,
+        rule_summary_rows,
+        rule_view,
+        rustred,
+        summary_rows,
+        terminal_rows,
     )
 
 
@@ -76,7 +140,7 @@ def _():
 
 
 @app.cell
-def _():
+def _(S, dot_sources, hep):
     dimension = S("d")
     scalar_model = hep.Model.phi_3_4()
     graph_inputs = dot_sources()
@@ -88,7 +152,7 @@ def _():
 
 
 @app.cell
-def _(diagrams, dimension, scalar_model):
+def _(E, diagrams, dimension, hep, preferred_auxiliaries, scalar_model):
     families = {}
     auxiliary_indices = {}
     for _name, _diagram in diagrams.items():
@@ -111,7 +175,7 @@ def _(diagrams, dimension, scalar_model):
 
 
 @app.cell(hide_code=True)
-def _():
+def _(FAMILY_NAMES):
     graph_choice = mo.ui.dropdown(
         options=list(FAMILY_NAMES), value="H", label="Vacuum topology",
         allow_select_none=False,
@@ -121,7 +185,15 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(auxiliary_indices, diagrams, families, graph_choice, graph_inputs, ibp_families):
+def _(
+    auxiliary_indices,
+    diagrams,
+    families,
+    graph_choice,
+    graph_inputs,
+    ibp_families,
+    parameter_rows,
+):
     _name = graph_choice.value
     _family = families[_name]
     _auxiliary_count = len(auxiliary_indices[_name])
@@ -155,11 +227,14 @@ def _():
     downset for each physical parent—not one preselected easy sector.
     Auxiliary ISP powers remain nonpositive; the per-sector numerical search
     depth is explicitly set to **2**, with the native exact sparse backend.
-    The explicit start button returns immediately; the dashboard consumes
-    bounded native event batches while the kernel continues working.
+    Native hosts return from the start button immediately and stream progress.
+    Pyodide runs the explicit queue synchronously with one worker; the dashboard
+    receives completed evidence when the calculation returns.
 
     A real four-loop campaign can take substantial time; no runtime estimate
-    is assumed here. **Cancel** requests a stop at native safe points; an
+    is assumed here. Browser memory limits may prevent large four-loop searches;
+    browser acceptance covers the smaller three-loop example. On native hosts,
+    **Cancel** requests a stop at native safe points; an
     in-flight sector may need time to drain. Keep refresh enabled to advance
     from one completed family to the next. Pausing refresh does not pause
     native work.
@@ -168,7 +243,7 @@ def _():
 
 
 @app.cell
-def _(auxiliary_indices, ibp_families):
+def _(FourLoopCampaign, auxiliary_indices, ibp_families, rustred):
     generation_options = {
         "n_cores": 1,
         "exact_backend": "sparse",
@@ -177,7 +252,10 @@ def _(auxiliary_indices, ibp_families):
         # Serialization/inspection allowance, not a larger algebra search.
         "bundle_max_entries": 10_000_000,
     }
-    campaign = FourLoopCampaign(ibp_families, auxiliary_indices)
+    _capabilities = rustred.execution_capabilities() if (
+        rustred is not None and hasattr(rustred, "execution_capabilities")
+    ) else None
+    campaign = FourLoopCampaign(ibp_families, auxiliary_indices, capabilities=_capabilities)
     native_generation_available = rustred is not None and all(
         hasattr(family, "start_generation") for family in ibp_families.values()
     )
@@ -193,12 +271,22 @@ def _(campaign, generation_options, native_generation_available):
     )
     cancel_generation = mo.ui.button(
         label="Cancel after safe point", on_click=lambda value: campaign.cancel(),
-        disabled=not native_generation_available,
+        disabled=not native_generation_available or not campaign.capabilities["cancellation_in_flight"],
     )
-    heartbeat = mo.ui.refresh(options=["1s", "3s", "10s"], default_interval="1s")
+    heartbeat = (mo.ui.refresh(options=["1s", "3s", "10s"], default_interval="1s")
+                 if campaign.capabilities["live_event_polling"] else None)
+    _buttons = ([start_generation, cancel_generation, heartbeat]
+                if heartbeat is not None else [start_generation])
     _controls = [mo.hstack(
-        [start_generation, cancel_generation, heartbeat], justify="start", wrap=True
+        _buttons, justify="start", wrap=True
     )]
+    if not campaign.capabilities["background_sessions"]:
+        _controls.append(mo.callout(
+            "Single-thread browser execution: this button runs the queue synchronously. "
+            "Live progress and in-flight cancellation are unavailable. Large four-loop "
+            "searches may exceed browser memory; start with the three-loop example.",
+            kind="info",
+        ))
     if not native_generation_available:
         _controls.insert(0, mo.callout(
             "This installed HEPKit host does not include the native generation "
@@ -211,8 +299,8 @@ def _(campaign, generation_options, native_generation_available):
 
 
 @app.cell(hide_code=True)
-def _(campaign, cancel_generation, heartbeat, start_generation):
-    _ = heartbeat.value, start_generation.value, cancel_generation.value
+def _(campaign, cancel_generation, heartbeat, start_generation, summary_rows):
+    _ = heartbeat.value if heartbeat is not None else None, start_generation.value, cancel_generation.value
     live_snapshot = campaign.poll()
     _state = live_snapshot["state"]
     _elapsed = live_snapshot["elapsed_seconds"]
@@ -269,7 +357,7 @@ def _(live_snapshot):
 
 
 @app.cell(hide_code=True)
-def _():
+def _(FAMILY_NAMES):
     _intro = mo.md("""
     ## 3. Explore without loading every expression
 
@@ -346,11 +434,23 @@ def _(sector_table):
         value=0, label="Terminal page offset",
     )
     mo.hstack([rule_page_start, terminal_page_start], justify="start")
-    return rule_page_start, selected_sector, selected_sector_mask, terminal_page_start
+    return (
+        rule_page_start,
+        selected_sector,
+        selected_sector_mask,
+        terminal_page_start,
+    )
 
 
 @app.cell(hide_code=True)
-def _(artifact, artifact_family, campaign, rule_page_start, selected_sector):
+def _(
+    artifact,
+    artifact_family,
+    campaign,
+    rule_page_start,
+    rule_summary_rows,
+    selected_sector,
+):
     rule_page = campaign.observe_view(artifact_family.value, "rules", lambda:
         artifact.rules(selected_sector, start=int(rule_page_start.value), limit=25))
     rule_table = mo.ui.table(
@@ -375,7 +475,14 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(artifact, artifact_family, campaign, selected_sector, terminal_page_start):
+def _(
+    artifact,
+    artifact_family,
+    campaign,
+    selected_sector,
+    terminal_page_start,
+    terminal_rows,
+):
     terminal_page = campaign.observe_view(artifact_family.value, "terminals", lambda:
         artifact.terminals(selected_sector, start=int(terminal_page_start.value), limit=25))
     mo.accordion({
@@ -390,7 +497,14 @@ def _(artifact, artifact_family, campaign, selected_sector, terminal_page_start)
 
 
 @app.cell(hide_code=True)
-def _(artifact, artifact_family, campaign, rule_detail_budget, rule_table, selected_sector):
+def _(
+    artifact,
+    artifact_family,
+    campaign,
+    rule_detail_budget,
+    rule_table,
+    selected_sector,
+):
     mo.stop(not rule_table.value)
     rule_detail = None
     _error = None
@@ -418,14 +532,27 @@ def _(rule_detail):
 
 
 @app.cell(hide_code=True)
-def _(condition_page_start, rhs_page_start, rule_detail, selected_sector_mask):
+def _(
+    condition_page_start,
+    rhs_page_start,
+    rule_detail,
+    rule_view,
+    selected_sector_mask,
+):
     rule_view(mo, rule_detail, selected_sector_mask,
         rhs_start=int(rhs_page_start.value), condition_start=int(condition_page_start.value))
     return
 
 
 @app.cell(hide_code=True)
-def _(campaign, condition_page_start, metadata, rhs_page_start, rule_detail):
+def _(
+    campaign,
+    condition_page_start,
+    metadata,
+    rhs_page_start,
+    rule_coefficient_ids,
+    rule_detail,
+):
     _ids = rule_coefficient_ids(rule_detail, rhs_start=int(rhs_page_start.value),
                                 condition_start=int(condition_page_start.value))
     mo.stop(not metadata["total_coefficients"], mo.md("This artifact has no coefficient IDs."))
@@ -451,7 +578,15 @@ def _(campaign, condition_page_start, metadata, rhs_page_start, rule_detail):
 
 
 @app.cell
-def _(artifact, artifact_family, campaign, coefficient_budget, coefficient_id, load_coefficient):
+def _(
+    artifact,
+    artifact_family,
+    campaign,
+    coefficient_budget,
+    coefficient_id,
+    coefficient_view,
+    load_coefficient,
+):
     mo.stop(not load_coefficient.value)
     mo.stop(campaign.state in {"running", "cancelling"}, mo.callout(
         "Native algebra is active; coefficient rendering waits until the campaign drains.", kind="info"))
@@ -467,7 +602,7 @@ def _(artifact, artifact_family, campaign, coefficient_budget, coefficient_id, l
         f"Coefficient not rendered: {_error}. Increase the explicit print budget and click "
         "Render again if a larger view is needed.", kind="warn"))
     coefficient_view(mo, coefficient)
-    return (coefficient,)
+    return
 
 
 @app.cell(hide_code=True)
@@ -515,7 +650,7 @@ def _(campaign, ibp_families):
 
 
 @app.cell(hide_code=True)
-def _(campaign, normalize_terminals):
+def _(campaign, normalization_summary_rows, normalize_terminals):
     _ = normalize_terminals.value
     normalization_snapshot = dict(campaign.normalization_rows)
     _panels = [mo.ui.table(normalization_summary_rows(campaign), selection=None,
@@ -568,7 +703,7 @@ def _(normalized_metadata):
 
 
 @app.cell(hide_code=True)
-def _(normalized, normalized_key_start):
+def _(normalized, normalized_key_start, terminal_rows):
     _page = normalized.terminals(start=int(normalized_key_start.value), limit=25)
     mo.ui.table(terminal_rows(_page), selection=None, pagination=False,
         show_download=False, show_column_summaries=False,
@@ -607,7 +742,11 @@ def _(normalization_relation_table, normalized):
 
 
 @app.cell(hide_code=True)
-def _(normalization_relation, normalized_rhs_start):
+def _(
+    normalization_relation,
+    normalization_relation_view,
+    normalized_rhs_start,
+):
     normalization_relation_view(mo, normalization_relation, start=int(normalized_rhs_start.value))
     return
 
@@ -626,7 +765,12 @@ def _(normalization_relation, normalized_metadata, normalized_rhs_start):
 
 
 @app.cell(hide_code=True)
-def _(normalized, normalized_coefficient_id, render_normalized_coefficient):
+def _(
+    coefficient_view,
+    normalized,
+    normalized_coefficient_id,
+    render_normalized_coefficient,
+):
     mo.stop(not render_normalized_coefficient.value)
     _detail = None
     _error = None
@@ -639,7 +783,6 @@ def _(normalized, normalized_coefficient_id, render_normalized_coefficient):
     return
 
 
-
 @app.cell(hide_code=True)
 def _():
     mo.md(r"""
@@ -647,7 +790,7 @@ def _():
 
     Generation, terminal normalization, and numerical integration are different
     tasks. This optional **explicit** calculation uses the H graph with
-    
+
     $N=(k_1\!\cdot k_2)^2+(p_1\!\cdot k_3)(k_3\!\cdot p_2)
        +(p_1\!\cdot p_2)((k_2+k_1)\!\cdot k_2)$.
 
@@ -668,7 +811,7 @@ def _():
 
 
 @app.cell
-def _(diagrams, dimension, scalar_model):
+def _(N, S, diagrams, dimension, hep, scalar_model):
     from symbolica import Replacement
     try:
         from symbolica.community.hepkit import vakint
@@ -689,7 +832,15 @@ def _(diagrams, dimension, scalar_model):
 
 
 @app.cell
-def _(diagrams, dimension, h_evaluation_family, h_mass_substitutions, vakint):
+def _(
+    S,
+    diagrams,
+    dimension,
+    h_evaluation_family,
+    h_mass_substitutions,
+    hep,
+    vakint,
+):
     _p1, _p2 = S("h_reference_p1", "h_reference_p2")
     _kinematics = hep.Kinematics(dimension, momenta=[*h_evaluation_family.loop_momenta, _p1, _p2])
     _k1, _k2, _k3, _k4 = h_evaluation_family.loop_momenta
@@ -705,17 +856,17 @@ def _(diagrams, dimension, h_evaluation_family, h_mass_substitutions, vakint):
                              h_evaluation_family,
                              "Native Vakint integral · bounded rich preview":
                              h_vakint_integral.formatted(max_terms=8)})])
-    return h_numerator, h_vakint_integral
+    return (h_vakint_integral,)
 
 
 @app.cell(hide_code=True)
-def _():
+def _(ExplicitNumeratorEvaluation):
     h_evaluation = ExplicitNumeratorEvaluation()
     return (h_evaluation,)
 
 
 @app.cell(hide_code=True)
-def _(campaign, live_snapshot, h_evaluation, h_vakint_integral):
+def _(campaign, h_evaluation, h_vakint_integral, live_snapshot):
     evaluate_h = mo.ui.button(
         value=0, label="Evaluate H numerator once",
         disabled=live_snapshot["state"] != "completed" or h_evaluation.state != "ready",

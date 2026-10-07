@@ -19,7 +19,7 @@ OPTIONAL_HEPKIT = (
     "three-dimensional-reps", "kurvst",
 )
 RUSTRED = ("rustred", "rustred-order", "rustred-app", "rustred-feynkit", "rustred-python")
-NATIVE_ONLY = (*RUSTRED, "vakint", "oneloop", "oneloop-python")
+NATIVE_ONLY = ("vakint", "oneloop", "oneloop-python")
 
 
 def output(command):
@@ -33,6 +33,8 @@ def active_graph(target, feature_args):
     its unfiltered catalogue: filtering for WASM also drops host-only children of
     build dependencies (for example BLAKE3's x86 cpufeatures). Cargo tree supplies
     actual active names for both host and target, excluding dev dependencies.
+    Target-active features also come from Cargo tree: metadata's resolver node
+    may include native features activated only by an inactive Vakint dependency.
     Exact sources still come from metadata, never abbreviated tree output or
     Cargo.lock.
     """
@@ -41,9 +43,20 @@ def active_graph(target, feature_args):
     ]))
     tree = output([
         "cargo", "tree", "--locked", "--target", target, *feature_args,
-        "--edges", "normal,build", "--prefix", "none", "--format", "{p}",
+        "--edges", "normal,build", "--prefix", "none", "--format", "{p}|{f}",
     ])
-    names = {line.split(" ", 1)[0] for line in tree.splitlines() if line}
+    target_features = {}
+    for line in tree.splitlines():
+        if not line:
+            continue
+        package_label, separator, features = line.partition("|")
+        assert separator, ("Cargo tree omitted target features", line)
+        name = package_label.split(" ", 1)[0]
+        target_features.setdefault(name, set()).update(
+            feature for feature in features.removesuffix(" (*)").strip().split(",")
+            if feature
+        )
+    names = set(target_features)
     packages = {p["id"]: p for p in metadata["packages"]}
     nodes = {n["id"]: n for n in metadata["resolve"]["nodes"]}
     root = metadata["resolve"]["root"]
@@ -64,6 +77,11 @@ def active_graph(target, feature_args):
         "Cargo tree/metadata traversal disagrees",
         {"tree_only": sorted(names - active_names), "metadata_only": sorted(active_names - names)},
     )
+    nodes = {
+        package_id: {**node, "features": sorted(target_features[packages[package_id]["name"]])}
+        if package_id in reachable else node
+        for package_id, node in nodes.items()
+    }
     return active, nodes, packages[root]
 
 
@@ -101,7 +119,7 @@ def check_graph(label, packages, nodes, root, *, community, native):
     assert "faster_alloc" not in nodes[symbolica["id"]]["features"], "host allocator policy changed"
     names = {p["name"] for p in packages}
     if not community:
-        forbidden = (*HEPKIT, *OPTIONAL_HEPKIT, "hyperbolica", "symbolica-amflow", *NATIVE_ONLY)
+        forbidden = (*HEPKIT, *OPTIONAL_HEPKIT, "hyperbolica", "symbolica-amflow", *RUSTRED, *NATIVE_ONLY)
         assert not names.intersection(forbidden), (
             label, "community crates in core-only build", names.intersection(forbidden),
         )
@@ -120,23 +138,28 @@ def check_graph(label, packages, nodes, root, *, community, native):
         singleton(packages, "hyperbolica")
         # Supplied-boundary transport is shared by native and browser hosts.
         singleton(packages, "symbolica-amflow")
+        reducers = {owner(singleton(packages, name)) for name in RUSTRED}
+        assert len(reducers) == 1, (label, "mixed RustRed core/app/bridge", reducers)
+        reducer_source = next(iter(reducers))
+        assert reducer_source.startswith("git+https://github.com/alphal00p/rustred?"), (
+            label, "expected official RustRed source", reducer_source,
+        )
+        assert reducer_source.startswith(declared_source(root, "rustred-feynkit") + "#"), (
+            label, "RustRed source differs from host declaration", reducer_source,
+        )
+        bridge = singleton(packages, "rustred-feynkit")
+        assert "campaign-api" in nodes[bridge["id"]]["features"], "RustRed campaign API disabled"
+        for name in RUSTRED:
+            package = singleton(packages, name)
+            features = nodes[package["id"]]["features"]
+            assert "reconstruction" not in features, (
+                label, "experimental RustRed reconstruction enabled", name,
+            )
+            if not native:
+                assert "native" not in features, (label, "native RustRed feature in browser build", name)
+        if not native:
+            assert "wasm" in nodes[bridge["id"]]["features"], "RustRed WASM API disabled"
         if native:
-            reducers = {owner(singleton(packages, name)) for name in RUSTRED}
-            assert len(reducers) == 1, (label, "mixed RustRed core/app/bridge", reducers)
-            reducer_source = next(iter(reducers))
-            assert reducer_source.startswith("git+https://github.com/alphal00p/rustred?"), (
-                label, "expected official RustRed source", reducer_source,
-            )
-            assert reducer_source.startswith(declared_source(root, "rustred-feynkit") + "#"), (
-                label, "RustRed source differs from host declaration", reducer_source,
-            )
-            bridge = singleton(packages, "rustred-feynkit")
-            assert "campaign-api" in nodes[bridge["id"]]["features"], "RustRed campaign API disabled"
-            for name in RUSTRED:
-                package = singleton(packages, name)
-                assert "reconstruction" not in nodes[package["id"]]["features"], (
-                    label, "experimental RustRed reconstruction enabled", name,
-                )
             vakint = singleton(packages, "vakint")
             assert owner(vakint) != hepkit_owner, "Vakint must retain its separate owner revision"
             if vakint["source"] is not None:
@@ -163,6 +186,11 @@ def check_wheel(wheel):
         source = archive.read(base + "__init__.pyi").decode()
         assert "class IntegrationOptions" in source and "class IntegrationError" in source
         assert "class Expression" not in source
+        rustred_base = "symbolica/community/hepkit/rustred/"
+        assert {rustred_base + "__init__.py", rustred_base + "__init__.pyi"} <= names
+        rustred_stub = archive.read(rustred_base + "__init__.pyi").decode()
+        assert "def execution_capabilities(" in rustred_stub
+        assert "class CandidateGenerationSession" in rustred_stub
         assert not any(n.startswith("hyperbolica/") for n in names)
         base = "symbolica/community/hep/integration/"
         assert {base + "__init__.py", base + "__init__.pyi"} <= names

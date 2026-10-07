@@ -51,13 +51,17 @@ class FourLoopCampaign:
     """
 
     def __init__(self, families, nonpositive_indices, *, output_directory=None,
-                 clock=monotonic):
+                 clock=monotonic, capabilities=None):
         if tuple(families) != FAMILY_NAMES:
             raise ValueError("The demonstration must retain H, X, BMW and FG in order")
         self.families = families
         self.nonpositive_indices = nonpositive_indices
         self.output_directory = output_directory
         self.clock = clock
+        self.capabilities = capabilities or {
+            "background_sessions": True, "live_event_polling": True,
+            "cancellation_in_flight": True,
+        }
         self.state = "ready"
         self.started = None
         self.finished = None
@@ -91,9 +95,15 @@ class FourLoopCampaign:
             "schema": "hepkit.four-loop-notebook-controls.v1",
             "families": list(self.families), "options": self.options,
             "nonpositive_indices": self.nonpositive_indices,
-            "scope": "Live candidate generation only; no traversal or closure proof",
+            "scope": "Candidate generation only; no traversal or closure proof",
+            "execution_capabilities": self.capabilities,
         })
         self._start_next()
+        if not self.capabilities["background_sessions"]:
+            # Single-thread browser calls return completed sessions. Run the
+            # explicit queue to completion; polling records completed evidence.
+            while self.session is not None:
+                self.poll()
         self._record_snapshot()
         return True
 
@@ -128,7 +138,8 @@ class FourLoopCampaign:
         self.session = None
 
     def cancel(self):
-        if self.state not in {"running", "cancelling"}:
+        if (not self.capabilities["cancellation_in_flight"]
+                or self.state not in {"running", "cancelling"}):
             return False
         self.cancel_requested = True
         self.state = "cancelling"

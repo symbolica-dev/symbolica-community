@@ -53,6 +53,15 @@ class ThreeLoopRun:
 
     def __init__(self, native, source, *, clock=monotonic):
         self.native, self.source, self.clock = native, source, clock
+        # Older native hosts predate the capability query. Browser-capable
+        # builds always provide it; do not infer concurrency from a session type.
+        self.capabilities = native.execution_capabilities() if (
+            native is not None and hasattr(native, "execution_capabilities")
+        ) else {
+            "execution_mode": "background-coordinator", "background_sessions": True,
+            "live_event_polling": True, "cancellation_in_flight": True,
+            "max_workers": None,
+        }
         self.state, self.session = "ready", None
         self.started, self.finished = None, None
         self.result, self.candidate = None, None
@@ -69,13 +78,17 @@ class ThreeLoopRun:
         try:
             self.session = self.native.start_family_candidates(
                 self.source, input_format="toml", **options)
+            if not self.capabilities["background_sessions"]:
+                # WASM completes inside start(); collect only real finished work.
+                self.poll()
         except Exception as error:
             self._fail(error)
             return False
         return True
 
     def cancel(self):
-        if self.session is None or self.state not in {"running", "cancelling"}:
+        if (not self.capabilities["cancellation_in_flight"] or self.session is None
+                or self.state not in {"running", "cancelling"}):
             return False
         self.session.cancel()
         self.state = "cancelling"

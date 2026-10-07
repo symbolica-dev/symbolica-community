@@ -62,6 +62,12 @@ the quick start (for example, `integrate.py`). This also works before Python
 finishes loading. Only the focused cell is saved; outputs are not included.
 
 Vakint and compiled native evaluators are unavailable in this WASM build.
+RustRed's exact `hepkit.IBPFamily` and `hepkit.rustred` APIs are available in a
+full Community WASM wheel. They execute synchronously with one worker; inspect
+`hepkit.rustred.execution_capabilities()` before showing concurrency controls.
+The [RustRed browser notebook guide](../hep/README.md#rustred-in-pyodide) includes
+the K=6 acceptance test and an exporter that bundles checked graph inputs with
+the validated wheel. Opening a notebook does not start its IBP generation.
 If needed, set your Symbolica license in the editor with
 `symbolica.set_license_key(...)`; the playground does not persist the editor.
 

@@ -1,4 +1,4 @@
-"""Native, bounded event streams and lazy generated-candidate views."""
+"""Shared-kernel generation and lazy views on native and Pyodide hosts."""
 
 import os
 from typing import Any, final
@@ -34,6 +34,8 @@ class CandidateGenerationRequest:
 @final
 class CandidateGenerationSession:
     def _repr_html_(self) -> str: ...
+    @property
+    def execution_mode(self) -> str: ...
     @property
     def done(self) -> bool: ...
     def cancel(self) -> None: ...
@@ -77,6 +79,13 @@ class TerminalNormalization:
 
 def candidate_generation_request(source: str, **options: object) -> CandidateGenerationRequest: ...
 def start_family_candidates(source: str, *, event_capacity: int = 256, **options: object) -> CandidateGenerationSession: ...
+def execution_capabilities() -> dict[str, object]:
+    """Describe worker limits, background sessions, live events and cancellation.
+
+    Pyodide executes synchronously with one worker and returns a completed
+    session. Its buffered events describe completed work, not live progress.
+    """
+    ...
 
 # Match the runtime namespace's forwarding of other embedded native APIs.
 def __getattr__(name: str) -> Any: ...

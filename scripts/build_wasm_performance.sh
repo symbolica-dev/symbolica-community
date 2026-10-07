@@ -18,9 +18,16 @@ case "$wasm_opt_level" in
   *) echo "Invalid WASM_OPT_LEVEL: $wasm_opt_level" >&2; exit 2 ;;
 esac
 case "$rust_profile" in
-  release-performance|release-small) ;;
+  dev|release-performance|release-small) ;;
   *) echo "Invalid WASM_RUST_PROFILE: $rust_profile" >&2; exit 2 ;;
 esac
+link_opt_level=-O3
+if [[ "$rust_profile" == dev ]]; then
+  # Development wheels exercise functionality, not release performance. Keep
+  # debug sections out of the side module unless explicitly requested.
+  export CARGO_PROFILE_DEV_DEBUG="${CARGO_PROFILE_DEV_DEBUG:-0}"
+  link_opt_level=-O0
+fi
 if [[ -e "$outdir/compiler-output" ]]; then
   echo "Choose a fresh output directory; compiler-output already exists in $outdir" >&2
   exit 2
@@ -43,7 +50,7 @@ export WASM_OPT_CAPTURE_DIR="$outdir/compiler-output"
 export WASM_OPT_CAPTURE_INPUT_NAME=symbolica_community.wasm
 export WASM_OPT_FORCE_LEVEL="$wasm_opt_level"
 # Fingerprint the same host feature graph that maturin builds below. Native
-# reducers remain outside this target; portable transport uses supplied values.
+# reducers use portable arithmetic on this target.
 export RUSTFLOW_WORKSPACE_MANIFEST="$PWD/Cargo.toml"
 export RUSTFLOW_WORKSPACE_FEATURES="$wasm_features,pyo3/extension-module"
 export RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES=1
@@ -51,12 +58,12 @@ export RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES=1
 # fingerprint hash) execute on the host and must retain native compilers.
 export HOST_CC="${HOST_CC:-$(command -v cc)}"
 export HOST_AR="${HOST_AR:-$(command -v ar)}"
-# Use the same Emscripten linker settings at every Binaryen level; changing the
-# linker's -O flag can also change its defaults outside wasm-opt.
+# Release comparisons use fixed Emscripten linker optimization. Development
+# builds skip those optimizations as well as the default Binaryen work.
 # Bind internal references locally so ThinLTO does not expose Rust symbols
 # through self-imports in the side module's global offset table.
 pyodide build . --outdir "$outdir" --no-isolation \
-  -C "maturin.build-args=--locked --profile $rust_profile --no-default-features --features $wasm_features -- -C link-arg=-sEXPORTED_FUNCTIONS=_PyInit_core -C link-arg=-Wl,-Bsymbolic -C link-arg=-O3"
+  -C "maturin.build-args=--locked --profile $rust_profile --no-default-features --features $wasm_features -- -C link-arg=-sEXPORTED_FUNCTIONS=_PyInit_core -C link-arg=-Wl,-Bsymbolic -C link-arg=$link_opt_level"
 export SYMBOLICA_EXPECT_COMMUNITY=1
 if [[ "$wasm_features" == wasm-core ]]; then
   python scripts/prepare_core_wheel.py "$outdir"/*-pyemscripten_2026_0_wasm32.whl

@@ -11,7 +11,6 @@ impl SymbolicaCommunityModule for HepKitModule {
         citations.extend(crate::oneloop::get_citations());
         citations.extend(fastsecdec_python::get_citations());
         citations.extend(crate::loop_integration::get_citations());
-        #[cfg(not(target_arch = "wasm32"))]
         if rustred_feynkit::was_used() {
             citations.push(Citation {
                 id: "https://github.com/alphal00p/rustred".into(),
@@ -23,7 +22,7 @@ impl SymbolicaCommunityModule for HepKitModule {
   url = {https://github.com/alphal00p/rustred}
 }"#
                 .into(),
-                reasons: vec!["Provides the native HEP IBP solver.".into()],
+                reasons: vec!["Provides the exact HEP IBP solver.".into()],
                 description: String::new(),
                 relevance: None,
             });
@@ -64,7 +63,6 @@ impl SymbolicaCommunityModule for HepKitModule {
         crate::loop_integration::register(module)?;
         crate::oneloop::register(module)?;
         fastsecdec_python::register(module)?;
-        #[cfg(not(target_arch = "wasm32"))]
         rustred_feynkit::register_hep_module(module)?;
         Ok(())
     }
