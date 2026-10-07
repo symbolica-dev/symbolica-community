@@ -92,13 +92,13 @@ The Git dependency selects RustFlow
 [`9599e35867119178ba3c02d7c55b998efab641f4`](https://github.com/alphal00p/RustFlow/commit/9599e35867119178ba3c02d7c55b998efab641f4).
 HEPKit, Linnet, Spenso, Idenso and rendering share the official GammaLoop
 `feynkit` branch at
-[`71552e8942236817185bf71e42d0583d93a7bc08`](https://github.com/alphal00p/gammaloop/commit/71552e8942236817185bf71e42d0583d93a7bc08).
+[`635d3a1feb44067583a668c7d18f67405fe144e1`](https://github.com/alphal00p/gammaloop/commit/635d3a1feb44067583a668c7d18f67405fe144e1).
 Vakint retains its separate implementation at
 [`6203c6cbba6ae5e90329ba5081fad55319e678db`](https://github.com/ValentinHirschi/gammaloop/commit/6203c6cbba6ae5e90329ba5081fad55319e678db).
 Hyperbolica is pinned to
 [`31292085504b794dc444a006eba1d3013ed30944`](https://github.com/benruijl/hyperbolica/commit/31292085504b794dc444a006eba1d3013ed30944).
 RustRed uses official main
-[`00bf379338193441ba69de6ab19c26885eaf93f7`](https://github.com/alphal00p/rustred/commit/00bf379338193441ba69de6ab19c26885eaf93f7),
+[`acc92b0dad27b11fd194a4c284765fb6a93cbc94`](https://github.com/alphal00p/rustred/commit/acc92b0dad27b11fd194a4c284765fb6a93cbc94),
 with `campaign-api` enabled and experimental reconstruction disabled.
 These revisions keep over-aligned tensor, diagram-group and exact-coefficient
 payloads behind Rust-owned pointers at the WASM Python allocation boundary.

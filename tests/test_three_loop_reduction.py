@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+from collections import Counter
 from pathlib import Path
 import subprocess
 import sys
@@ -48,7 +49,7 @@ def test_generation_requires_explicit_start_and_cannot_restart():
     })]
 
 
-def test_graph_routing_matches_the_certified_source():
+def graph_family_and_source():
     dot, source = support.graph_inputs()
     model = hep.Model.phi_3_4()
     diagram = hep.FeynmanDiagram.from_dot(model, dot)
@@ -59,10 +60,81 @@ def test_graph_routing_matches_the_certified_source():
         [denominator.replace(mass, E("1")) for denominator in routed.denominators],
         kinematics=routed.kinematics,
     )
+    return family, source
+
+
+def test_graph_routing_matches_the_certified_source():
+    family, source = graph_family_and_source()
     support.assert_source_matches_family(source, family)
     assert hep.IBPFamily(family, name="K6_graph_test").denominator_count == 6
     with pytest.raises(AssertionError):
         support.assert_source_matches_family(source.replace("k1^2-1", "k1^2+1"), family)
+
+
+def test_native_terminal_normalization_identifies_five_integral_types():
+    family, source = graph_family_and_source()
+    support.assert_source_matches_family(source, family)
+    ibp = hep.IBPFamily(family, name="K6_terminal_normalization_test")
+    session = ibp.start_generation(n_cores=1)
+    assert session.wait(timeout=30), "small K6 candidate generation timed out"
+    candidate = session.result().artifact()
+
+    # Use the candidate from this exact graph family: the source-input closing
+    # fixture has a different family fingerprint despite matching denominators.
+    def raw_terminals():
+        sectors = candidate.sectors(start=0, limit=100)
+        assert len(sectors["items"]) == sectors["total"]
+        result = set()
+        for sector in sectors["items"]:
+            page = candidate.terminals(sector["ordinal"], start=0, limit=100)
+            assert len(page["items"]) == page["total"]
+            result.update(tuple(powers) for powers in page["items"])
+        return result
+
+    raw = raw_terminals()
+    assert len(raw) == 38
+    assert all(set(powers) <= {0, 1} for powers in raw)
+    normalized = ibp.normalize_candidate_terminals(candidate)
+    metadata = normalized.metadata()
+    assert metadata["unique_raw_terminals"] == 38
+    assert metadata["unit_aliases"] == 33
+    assert metadata["canonical_terminals"] == 5
+    assert metadata["skipped"] == []
+    assert metadata["exact_within_family"] is True
+    assert metadata["closure_claim"] is False
+    assert metadata["master_minimality_claim"] is False
+
+    # Native canonical keys in the example's checked denominator order. These
+    # are exact integral types, not an additional proof of master minimality.
+    expected = {
+        (0, 0, 1, 0, 1, 1): 16,  # T3,1: three one-loop tadpoles
+        (0, 0, 1, 1, 1, 1): 12,  # T4,1: sunset times one-loop tadpole
+        (0, 1, 1, 1, 1, 0): 3,   # T4,2: three-loop basketball
+        (0, 1, 1, 1, 1, 1): 6,   # T5,1: five-line vacuum
+        (1, 1, 1, 1, 1, 1): 1,   # T6,1: tetrahedron / Mercedes
+    }
+    terminals = normalized.terminals(start=0, limit=100)
+    assert terminals["total"] == len(terminals["items"]) == 5
+    assert {tuple(powers) for powers in terminals["items"]} == set(expected)
+    relations = normalized.relations(start=0, limit=100)
+    assert relations["total"] == len(relations["items"]) == 38
+    seen, multiplicities = set(), Counter()
+    for row in relations["items"]:
+        relation = normalized.relation(row["ordinal"])
+        integral = tuple(relation["integral"])
+        assert integral == tuple(row["integral"])
+        assert integral not in seen
+        seen.add(integral)
+        assert len(relation["rhs"]) == 1
+        term = relation["rhs"][0]
+        representative = tuple(term["integral"])
+        assert representative in expected
+        coefficient = normalized.coefficient(term["coefficient_id"])
+        assert coefficient["numerator"] == coefficient["denominator"] == "1"
+        multiplicities[representative] += 1
+    assert seen == raw
+    assert multiplicities == expected
+    assert raw_terminals() == raw  # Normalization leaves the candidate unchanged.
 
 
 @pytest.fixture(scope="module")

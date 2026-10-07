@@ -94,8 +94,11 @@ def _():
     raised propagators, pinches and numerator insertions. The recursive native
     reducer uses the artifact generated and certified in this notebook.
 
-    Here “masters” means the certificate's finite terminal basis. It need not
-    be minimal or linearly independent. No numerical master values are needed.
+    The certificate retains **38 raw terminal keys**, not 38 independent
+    masters. Equivalent loop-momentum routings group them into **five named
+    topology types**, shown below. The reductions keep the original keys;
+    no numerical master values are needed, and this notebook does not prove
+    that a terminal basis is minimal or linearly independent.
     The folded setup imports the native HEP objects and small UI helpers;
     generation starts only when you click **Generate**.
     """)
@@ -288,8 +291,9 @@ def _(certify, run, rustred, tomllib):
 @app.cell(hide_code=True)
 def _(closing_artifact, inspection, master_powers, run):
     mo.vstack([
-        mo.callout(f"Closure certified: {len(master_powers)} finite master terminals. "
-                   "Every successful reduction below ends entirely in this set.", kind="success"),
+        mo.callout(f"Closure certified: {len(master_powers)} raw terminal keys. "
+                   "These are not independent masters. Every successful reduction "
+                   "below ends entirely in this set.", kind="success"),
         mo.accordion({
             "Native certificate and replay evidence": mo.json(inspection),
             "Download this run's artifacts": mo.hstack([
@@ -305,16 +309,40 @@ def _(closing_artifact, inspection, master_powers, run):
 
 @app.cell(hide_code=True)
 def _(integral_notation, master_powers):
-    _rows = [{"Master": integral_notation(powers), "Total power": sum(powers)}
+    _types = [
+        {"Type": "T3,1", "Name": "Three one-loop tadpoles", "Raw keys": 16,
+         "Representative": "I(1,1,1,0,0,0)"},
+        {"Type": "T4,1", "Name": "Two-loop sunset × one-loop tadpole", "Raw keys": 12,
+         "Representative": "I(1,1,1,1,0,0)"},
+        {"Type": "T4,2", "Name": "Three-loop basketball (four-line banana)", "Raw keys": 3,
+         "Representative": "I(0,1,1,1,1,0)"},
+        {"Type": "T5,1", "Name": "Connected five-line vacuum", "Raw keys": 6,
+         "Representative": "I(0,1,1,1,1,1)"},
+        {"Type": "T6,1", "Name": "Mercedes (tetrahedron / K4)", "Raw keys": 1,
+         "Representative": "I(1,1,1,1,1,1)"},
+    ]
+    _rows = [{"Raw terminal key": integral_notation(powers), "Total power": sum(powers)}
              for powers in sorted(master_powers)]
     mo.vstack([
-        mo.md("""
-        ### The certified terminal basis
+        mo.md(r"""
+        ### Five topology types, 38 raw terminal keys
 
-        These are the actual terminal keys in this freshly generated certificate.
-        Symmetries and additional identities may relate different keys, so the
-        table is not a claim of a minimal or independent basis. Pinched sectors
-        and their nonpositive indices are retained explicitly.
+        For this equal-mass input, changes of loop-momentum variables identify
+        the raw keys in the following groups: $16+12+3+6+1=38$.
+        The labels follow [R. N. Lee, Figure 2](https://arxiv.org/pdf/1203.4868#page=5).
+        They name graph types, not a conversion to that paper's normalization.
+        Each representative uses this notebook's denominator order, not a
+        relabeling of the artifact. The first two types factorize into
+        lower-loop integrals; the last three are connected three-loop graphs.
+        """),
+        mo.ui.table(_types, selection=None, pagination=False,
+                    show_column_summaries=False, show_download=False),
+        mo.md("""
+        **The certified artifact is unchanged.** The following table and the
+        reductions retain all 38 raw keys: the display does not apply the
+        topology identifications, merge coefficients, or supply an additional
+        proof of master independence. Closure means reduction terminates in
+        these keys; independence and basis minimization are different questions.
         """),
         mo.ui.table(_rows, selection=None, pagination=True, page_size=10,
                     show_column_summaries=False, show_download=False),
@@ -429,7 +457,7 @@ def _():
 
     Choose an integral and click **Reduce to certified masters**. The native
     reducer recursively follows the certified rules, combines coefficients
-    exactly and returns only master terminals. Results are cached per target.
+    exactly and returns only raw terminal keys. Results are cached per target.
 
     For three loops, $I_M(n)=M^{3d/2-\sum_i n_i}I_1(n)$. Thus a unit-mass
     coefficient $c_a(d)$ becomes
@@ -511,7 +539,7 @@ def _(
     _page = reduced_terms[_start:_start + 10]
     mo.vstack([
         mo.hstack([integral(*selected_powers), mo.md(
-            f"**= sum of {len(reduced_terms)} master {'term' if len(reduced_terms) == 1 else 'terms'}**"
+            f"**= sum of {len(reduced_terms)} raw terminal {'term' if len(reduced_terms) == 1 else 'terms'}**"
             if reduced_terms else "**= 0**")],
             justify="start"),
         *[mo.hstack([coefficient * mass_squared**power, mo.md(r"$\times$"), integral(*master)],

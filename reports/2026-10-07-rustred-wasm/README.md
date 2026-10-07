@@ -99,3 +99,30 @@ certified masters. The exporter requires the matching real runtime receipt.
 The [HEP notebook guide](../../examples/hep/README.md#rustred-in-pyodide) describes
 the additional native-artifact canary. Build outputs and browser evidence are
 not committed; this report records their identities and measured scope.
+
+## Follow-up: name the terminal values
+
+The 38 certificate entries are raw labelled keys, not 38 independent masters.
+The existing native `IBPFamily.normalize_candidate_terminals` API was checked
+on a freshly generated graph-family candidate with exactly the same 38 raw
+keys: it returned 33 unit-coefficient aliases, five canonical representatives
+and no skipped shapes. Their multiplicities are 16 three-tadpole products,
+12 sunset × tadpole products, three basketballs, six five-line connected
+vacua, and one Mercedes. The notebook now names these types explicitly and
+retains the original certificate and raw reductions. See the
+[complete named census](https://github.com/alphal00p/rustred/blob/main/docs/k6_terminal_names.md).
+
+The updated notebook passed the same real-browser generation, certification
+and reduction controls using the existing validated wheel. Dependency updates
+following that wheel only document the required aligned wrapper allocations
+and the terminal census; no solver or ABI behavior changed. The wheel hashes
+and source revisions recorded above remain its actual build provenance, not
+the subsequently updated lockfile's identity.
+
+The follow-up adds a native regression for all 38 aliases and their five
+representatives. The focused native routing/normalization checks passed, as
+did the three-loop notebook checks and the six dependency-ownership graphs.
+A broader HEP-notebook sweep in the pre-existing native test environment was
+not clean (193 passed, 105 failed, one skipped); it includes unrelated missing
+optional packages such as NumPy and older installed API mismatches. It is not
+reported as full native-suite acceptance, and those tests were not weakened.

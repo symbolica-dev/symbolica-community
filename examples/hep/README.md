@@ -119,8 +119,8 @@ provides separate worked IBP notebooks:
   Mercedes/K4 graph, explicit generation and publication of its K=6 closing artifact,
   and recursive reduction of raised powers and pinches to exact master
   coefficients. The displayed reductions use the artifact generated in the
-  notebook, not Vakint's precomputed rules. Its finite terminal basis is not
-  claimed to be minimal.
+  notebook, not Vakint's precomputed rules. Its 38 raw terminal keys fall into
+  five named topology types; the notebook does not claim 38 independent masters.
 - [Four-loop vacuum IBP laboratory](four_loop_reduction.py): standard
   DOT graphs for H, X, BMW and FG become routed HEPKit families, then run a
   native single-worker RustRed candidate search with streamed progress and
@@ -147,9 +147,25 @@ explicit unit-mass family input. RustRed then generates sector rules, publishes
 the closing binary artifact, and reads back its declared terminals. Generation
 does not run merely because the notebook is opened.
 
-For the supplied input, expect 623 generated recurrences and 38 terminal
-masters after certification. The doubled first propagator reduces to 30
-master terms; the factorized example reduces to one.
+For the supplied input, expect 623 generated recurrences and 38 **raw terminal
+keys** after certification, not 38 independent masters. Equivalent
+loop-momentum routings group these into five types, named as in
+[Lee, Figure 2](https://arxiv.org/pdf/1203.4868#page=5):
+
+| Type | Name | Raw keys | Representative in the notebook's denominator order |
+|---|---|---:|---|
+| T3,1 | Three one-loop tadpoles | 16 | `I(1,1,1,0,0,0)` |
+| T4,1 | Two-loop sunset × one-loop tadpole | 12 | `I(1,1,1,1,0,0)` |
+| T4,2 | Three-loop basketball (four-line banana) | 3 | `I(0,1,1,1,1,0)` |
+| T5,1 | Connected five-line vacuum | 6 | `I(0,1,1,1,1,1)` |
+| T6,1 | Mercedes (tetrahedron / K4) | 1 | `I(1,1,1,1,1,1)` |
+
+These labels identify graph types; they do not import the paper's normalization
+or numerical values. The first two types factorize; the last three are connected
+three-loop graphs. The artifact and reductions retain all 38 keys, without
+applying these identifications or claiming a separate independence proof. The
+doubled first propagator reduces to 30 raw terminal terms; the factorized
+example reduces to one.
 
 The reduction section applies that same artifact recursively: a doubled line,
 pinched integrals and numerator powers are expressed entirely in its master
