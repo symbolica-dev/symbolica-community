@@ -32,6 +32,13 @@ FastSecDec notebooks are available here:
 - [Self-contained gg → HH study](gghh_complete.py): the current one- and two-loop
   diagram catalogue, streamed generation, sector inspection, QMC/Havana and
   pause/resume controls in one file, with no local Python imports or input files.
+  Its classes and helpers are defined directly in folded cells for editor type
+  hints. Install Symbolica with HEPKit before opening it, including in Pyodide;
+  the notebook does not download packages at runtime.
+- [Two-loop kite](hep_two_loop_kite.py): derive the massless propagator coefficient
+  `6 zeta(3)`, compare with quasi-Monte Carlo integration, and optionally compute
+  an AMFlow boundary and transport it with DiffExp. The numerical comparison
+  also requires NumPy, SciPy and Matplotlib.
 
 See the [local notebook guide](FASTSECDEC_SHOWCASE.md) for launch commands.
 The notebooks and showcase input/presentation helpers are copied from
