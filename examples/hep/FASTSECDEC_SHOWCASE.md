@@ -25,6 +25,13 @@ starts only through explicit buttons. Browser export uses
 `--notebook gghh_complete` with the FastSecDec exporter and packages only the
 community wheel and its manifest.
 
+Preparation uses HEPKit's `contract="dots"` to resolve closed tensor networks
+before scalar parametrization. The **Kinematic symbols** panel explains the
+`dot_i_j` momentum and polarization products, whose values are supplied at
+integration. Failed generation retains its error and never represents a zero
+integral. The corrected native expression layout is embedded in the community
+extension: updating its wheel requires a fresh Python kernel.
+
 [The interactive showcase](fastsecdec_showcase.py) starts with a massive scalar
 triangle and offers box and two-loop numerator examples, plus an optional longer
 gg → HH calculation. Select **Generate** and **Integrate** to start the respective
