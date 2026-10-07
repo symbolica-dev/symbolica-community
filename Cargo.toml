@@ -77,7 +77,7 @@ python_stubgen = [
 ]
 
 [dependencies]
-fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "7f75c1588901a4564df74f0a57a58dedfe7f5925", default-features = false }
+fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "2092eaaef92a80ebf66723f529f60e7e7d2a14ac", default-features = false }
 hyperbolica = { optional = true, git = "https://github.com/benruijl/hyperbolica", rev = "31292085504b794dc444a006eba1d3013ed30944", default-features = false, features = ["python"] }
 one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
 spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
