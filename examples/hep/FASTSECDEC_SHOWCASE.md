@@ -1,6 +1,6 @@
 # FastSecDec notebooks
 
-Both notebooks are available in the community example browser:
+The notebooks are available in the community example browser:
 
 ```sh
 python -m marimo edit examples/
@@ -11,7 +11,19 @@ Or open one directly from the repository root:
 ```sh
 python -m marimo edit examples/hep/fastsecdec_showcase.py
 python -m marimo edit examples/hep/gghh.py
+python -m marimo edit examples/hep/gghh_complete.py
 ```
+
+[The self-contained gg → HH study](gghh_complete.py) includes all of its input,
+presentation and lifecycle helpers in folded notebook cells. Copy this one file
+to another directory and run it with marimo and a current community installation;
+it needs no neighboring Python modules, graph fixtures or parameter cards.
+It offers the current native one- and two-loop Standard Model catalogue, selecting
+a one-loop diagram by default, and keeps generation, inspection, QMC/Havana,
+pause/resume, runtime parameters and citations in the notebook. Scientific work
+starts only through explicit buttons. Browser export uses
+`--notebook gghh_complete` with the FastSecDec exporter and packages only the
+community wheel and its manifest.
 
 [The interactive showcase](fastsecdec_showcase.py) starts with a massive scalar
 triangle and offers box and two-loop numerator examples, plus an optional longer

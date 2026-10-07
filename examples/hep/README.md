@@ -21,7 +21,7 @@ Existing HEPKit class identities and the exception hierarchy are preserved;
 their Python `__module__` and bundled stubs name `symbolica.community.hepkit`.
 FastSecDec wrappers use `symbolica.community.hepkit.sector_decomposition`.
 
-Two FastSecDec notebooks are available here:
+FastSecDec notebooks are available here:
 
 - [Interactive sector-decomposition showcase](fastsecdec_showcase.py): start with
   a massive scalar triangle, then explore numerator examples, streamed generation
@@ -29,6 +29,9 @@ Two FastSecDec notebooks are available here:
 - [One gg → HH double box](gghh.py): generate the Standard Model diagram, specify
   masses and helicities inline, and call `diagram.sector_decompose(...)` before
   QMC or Havana integration. Its expensive calculation cells start disabled.
+- [Self-contained gg → HH study](gghh_complete.py): the current one- and two-loop
+  diagram catalogue, streamed generation, sector inspection, QMC/Havana and
+  pause/resume controls in one file, with no local Python imports or input files.
 
 See the [local notebook guide](FASTSECDEC_SHOWCASE.md) for launch commands.
 The notebooks and showcase input/presentation helpers are copied from
