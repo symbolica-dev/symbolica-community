@@ -54,11 +54,10 @@ async def _():
     from symbolica.community import hepkit as hep
     from symbolica.community.hepkit import rustred
     from three_loop_reduction_support import (
-        ThreeLoopRun, assert_source_matches_family, graph_inputs, tomllib,
+        ThreeLoopRun, assert_source_matches_family, graph_inputs, rule_expressions, tomllib,
     )
     from rustred_campaign_support import (
-        coefficient_view, integral_notation, rule_coefficient_ids,
-        rule_summary_rows, rule_view, terminal_rows,
+        integral_notation, rule_summary_rows, terminal_rows,
     )
 
     return (
@@ -66,13 +65,11 @@ async def _():
         S,
         ThreeLoopRun,
         assert_source_matches_family,
-        coefficient_view,
         graph_inputs,
         hep,
         integral_notation,
-        rule_coefficient_ids,
+        rule_expressions,
         rule_summary_rows,
-        rule_view,
         rustred,
         terminal_rows,
         tomllib,
@@ -100,7 +97,7 @@ def _():
     no numerical master values are needed, and this notebook does not prove
     that a terminal basis is minimal or linearly independent.
     The folded setup imports the native HEP objects and small UI helpers;
-    generation starts only when you click **Generate**.
+    this small three-loop generation starts automatically.
     """)
     return
 
@@ -192,9 +189,20 @@ def _():
 
     One worker searches every sector of the six-propagator family, including
     nonpositive powers. Native hosts provide live events and cooperative
-    cancellation. Pyodide runs synchronously: Generate returns when the search
-    completes, with no intermediate progress or in-flight cancellation.
+    cancellation. Generation starts automatically. Pyodide runs synchronously:
+    the call returns when the search completes, with no intermediate progress
+    or in-flight cancellation.
     This session generates once; rerun the notebook for a fresh session.
+
+    The session helper below calls this native Python API to derive the rules
+    from the checked family input (no precomputed rules are loaded):
+
+    ```python
+    session = rustred.start_family_candidates(
+        generation_source, input_format="toml", n_cores=1,
+        exact_backend="sparse", numerical_depth=2, event_capacity=256,
+    )
+    ```
 
     Generation produces candidates. **Certify generated rules** replays their
     sources and verifies coverage and termination before making an artifact
@@ -210,32 +218,31 @@ def _(ThreeLoopRun, generation_source, rustred):
         "event_capacity": 256,
     }
     run = ThreeLoopRun(rustred, generation_source)
+    run.start(**generation_options)
     return generation_options, run
 
 
 @app.cell(hide_code=True)
-def _(generation_options, run):
-    generate = mo.ui.button(label="Generate", kind="success",
-        on_click=lambda value: run.start(**generation_options))
+def _(run):
     cancel = mo.ui.button(label="Cancel", on_click=lambda value: run.cancel(),
         disabled=not run.capabilities["cancellation_in_flight"])
     heartbeat = (mo.ui.refresh(options=["1s", "3s", "10s"], default_interval="1s")
                  if run.capabilities["live_event_polling"] else None)
-    _controls = [generate, cancel, heartbeat] if heartbeat is not None else [generate]
+    _controls = [cancel, heartbeat] if heartbeat is not None else []
     mo.vstack([
         mo.hstack(_controls, justify="start", wrap=True),
-        mo.md("Generate starts the calculation. " + (
+        mo.md("Generation starts automatically. " + (
             "Keep refresh enabled to collect live native progress."
             if run.capabilities["live_event_polling"] else
             "This browser runs one worker synchronously; progress appears after completion."
         )),
     ])
-    return cancel, generate, heartbeat
+    return cancel, heartbeat
 
 
 @app.cell(hide_code=True)
-def _(cancel, generate, heartbeat, run):
-    _ = cancel.value, generate.value, heartbeat.value if heartbeat is not None else None
+def _(cancel, heartbeat, run):
+    _ = cancel.value, heartbeat.value if heartbeat is not None else None
     live = run.poll()
     _counts = live["counts"]
     mo.vstack([
@@ -264,7 +271,7 @@ def _():
 
 @app.cell
 def _(certify, run, rustred, tomllib):
-    mo.stop(not certify.value, mo.md("Generate first, then certify the resulting bundle."))
+    mo.stop(not certify.value, mo.md("Once automatic generation finishes, certify the resulting bundle."))
     run.poll()
     mo.stop(run.result is None, mo.callout("Generation has not completed successfully yet.", kind="info"))
     if run.closing is None:
@@ -361,8 +368,9 @@ def _(candidate_artifact):
         ## 3. Inspect a generated recurrence
 
         Browse ten rules at a time from the same candidate bundle that was
-        certified above. A selected rule shows bounded structure; coefficient
-        rendering is a separate request. Native index labels start at zero.
+        certified above. Selecting a rule materializes its full right-hand side
+        as a Symbolica expression, with one integral term per line. Only the
+        selected rule is decoded. Native index labels start at zero.
         """),
         sector_choice,
     ])
@@ -406,41 +414,34 @@ def _(candidate_artifact, rule_table, sector_choice):
     mo.stop(not rule_table.value, mo.md("Select a rule on a populated page."))
     rule_detail = candidate_artifact.rule(int(sector_choice.value),
         rule_table.value[0]["ordinal"], max_output_bytes=65536)
-    rhs_offset = mo.ui.number(start=0, stop=max(0, len(rule_detail["rhs"]) - 1),
-        step=10, value=0, label="RHS term offset")
-    rhs_offset
-    return rhs_offset, rule_detail
+    return (rule_detail,)
 
 
 @app.cell(hide_code=True)
-def _(candidate_artifact, rhs_offset, rule_detail, rule_view, sector_choice):
+def _(candidate_artifact, integral, parameter_bindings, rule_detail, rule_expressions, sector_choice):
     _sector = candidate_artifact.sectors(start=int(sector_choice.value), limit=1)["items"][0]
-    rule_view(mo, rule_detail, _sector["sector"], rhs_start=int(rhs_offset.value))
-    return
-
-
-@app.cell(hide_code=True)
-def _(rhs_offset, rule_coefficient_ids, rule_detail):
-    _ids = rule_coefficient_ids(rule_detail, rhs_start=int(rhs_offset.value))
-    mo.stop(not _ids, mo.md("This preview contains no coefficients."))
-    coefficient_id = mo.ui.dropdown(options={f"c_{cid}": cid for cid in _ids},
-        value=f"c_{_ids[0]}",
-        label="Coefficient in this preview", allow_select_none=False)
-    render_coefficient = mo.ui.run_button(label="Render coefficient")
-    mo.hstack([coefficient_id, render_coefficient], justify="start")
-    return coefficient_id, render_coefficient
-
-
-@app.cell
-def _(
-    candidate_artifact,
-    coefficient_id,
-    coefficient_view,
-    render_coefficient,
-):
-    mo.stop(not render_coefficient.value)
-    coefficient_view(mo, candidate_artifact.coefficient(int(coefficient_id.value),
-                                                      max_output_bytes=65536))
+    _expressions = rule_expressions(candidate_artifact, rule_detail, integral, parameter_bindings)
+    _conditions = [mo.md("**Sector:** " + ", ".join(
+        f"n_{axis} {'> 0' if active else '≤ 0'}" for axis, active in enumerate(_sector["sector"])))]
+    _conditions.append(mo.md("**Fixed powers:** " + (", ".join(
+        f"n_{item['axis']} = {item['value']}" for item in rule_detail["case"]["fixed"]) or "None")))
+    for _equation in _expressions["affine"]:
+        _conditions.append(mo.hstack([mo.md("Required zero:"),
+                                     _equation.formatted(max_terms=None)], justify="start"))
+    for _number, _branch in enumerate(_expressions["excluded"], 1):
+        _conditions.append(mo.md(f"**Excluded branch {_number}:** all expressions below vanish"
+                                 if _branch else f"**Excluded branch {_number}:** always true"))
+        _conditions.extend(expr.formatted(max_terms=None) for expr in _branch)
+    _conditions.append(mo.md("Any excluded branch forbids the rule; equations within a branch "
+        "are joined by **AND**. Denominator poles, source conditions and native rule priority "
+        "still govern applicability. This display does not replace the native dispatcher."))
+    mo.vstack([
+        mo.md(f"**Rule {rule_detail['ordinal']} · {len(rule_detail['rhs'])} RHS terms · "
+              f"{rule_detail['retained_source_count']} retained sources**"),
+        mo.hstack([_expressions["target"], mo.md("**=**")], justify="start"),
+        _expressions["rhs"].formatted(max_terms=None, max_line_length=None, terms_on_new_line=True),
+        mo.accordion({"Applicability conditions": mo.vstack(_conditions)}),
+    ])
     return
 
 

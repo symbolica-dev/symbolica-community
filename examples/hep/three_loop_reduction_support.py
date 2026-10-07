@@ -17,6 +17,45 @@ def graph_inputs():
     return tuple((DATA_DIRECTORY / name).read_text() for name in ("k6.dot", "k6.toml"))
 
 
+def rule_expressions(artifact, rule, integral, parameter_bindings=()):
+    """Materialize only the selected source-input rule for Symbolica display.
+
+    The native polynomial printer uses bare n0, n1, ... and d. Parse them in
+    rustred's namespace and bind the indices to the displayed n_0, n_1, ... .
+    This display conversion does not apply or certify a reduction rule.
+    """
+    from symbolica import E, S
+
+    indices = [S(f"n_{axis}") for axis in range(len(rule["target"]["values"]))]
+    bindings = [(S(f"rustred::n{axis}"), index)
+                for axis, index in enumerate(indices)] + list(parameter_bindings)
+    coefficients = {}
+
+    def coefficient(cid):
+        if cid not in coefficients:
+            detail = artifact.coefficient(cid, max_output_bytes=65536)
+            value = (E(detail["numerator"], default_namespace="rustred")
+                     / E(detail["denominator"], default_namespace="rustred"))
+            for source, display in bindings:
+                value = value.replace(source, display)
+            coefficients[cid] = value
+        return coefficients[cid]
+
+    def key_expression(key):
+        return integral(*(indices[axis] + value if symbolic else value
+                          for axis, (value, symbolic) in enumerate(
+                              zip(key["values"], key["symbolic"]))))
+
+    return {
+        "target": key_expression(rule["target"]),
+        "rhs": sum((coefficient(term["coefficient_id"]) * key_expression(term["integral"])
+                    for term in rule["rhs"]), E("0")),
+        "affine": [coefficient(cid) for cid in rule["case"]["affine_zero_equations"]],
+        "excluded": [[coefficient(cid) for cid in branch]
+                     for branch in rule["excluded_all_zero_conjunctions"]],
+    }
+
+
 def assert_source_matches_family(source, family):
     """Check this example's fixed source against native routed scalar products.
 

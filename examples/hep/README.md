@@ -135,7 +135,7 @@ provides separate worked IBP notebooks:
 - [Two-loop phi4 self-energy](ibp_phi4.py) and [vertex](phi4_two_loop_vertex.py):
   generated diagrams, reductions and counterterms.
 - [Three-loop massive vacuum reduction](three_loop_reduction.py): the equal-mass
-  Mercedes/K4 graph, explicit generation and publication of its K=6 closing artifact,
+  Mercedes/K4 graph, automatic generation and explicit certification of its K=6 closing artifact,
   and recursive reduction of raised powers and pinches to exact master
   coefficients. The displayed reductions use the artifact generated in the
   notebook, not Vakint's precomputed rules. Its 38 raw terminal keys fall into
@@ -160,11 +160,13 @@ With the native community package and Marimo installed, run:
 marimo edit examples/hep/three_loop_reduction.py
 ```
 
-Select **Generate**, then **Certify generated rules**. The notebook
+Generation starts automatically; then select **Certify generated rules**. The notebook
 first checks its standard HEPKit DOT graph and routed denominators against the
 explicit unit-mass family input. RustRed then generates sector rules, publishes
-the closing binary artifact, and reads back its declared terminals. Generation
-does not run merely because the notebook is opened.
+the closing binary artifact, and reads back its declared terminals. It shows the
+native `rustred.start_family_candidates(...)` call used to derive the rules.
+Selecting a recurrence displays its complete RHS as a Symbolica expression,
+one integral term per line, without a separate coefficient-rendering control.
 
 For the supplied input, expect 623 generated recurrences and 38 **raw terminal
 keys** after certification, not 38 independent masters. Equivalent
@@ -500,7 +502,7 @@ python -m http.server --directory /tmp/three-loop-browser 8000
 
 Open the exported page over HTTP. Its folded bootstrap verifies the wheel and
 input checksums, installs the wheel in Pyodide and loads the graph/helper files.
-Generation starts only with **Generate**, and certification and reduction are
+Three-loop generation starts automatically; certification and reduction are
 separate explicit controls. The packaged inputs contain no precomputed rules.
 
 Add `--notebook four_loop_reduction` to export the four-family candidate
