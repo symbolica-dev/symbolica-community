@@ -1,5 +1,6 @@
 """Portable notebook lifecycle checks; fakes are not solver evidence."""
 
+import ast
 import importlib.util
 from pathlib import Path
 
@@ -18,7 +19,6 @@ def load(name):
     return module
 
 
-THREE = load("three_loop_reduction")
 FOUR = load("rustred_campaign_support")
 SYNCHRONOUS = {
     "execution_mode": "synchronous", "background_sessions": False,
@@ -61,52 +61,34 @@ class Session:
         raise AssertionError("Synchronous sessions cannot cancel in flight")
 
 
-class Native:
-    def __init__(self, *, state="completed", error=None):
-        self.calls, self.state, self.error = 0, state, error
+def test_three_loop_api_cells_are_visible_and_do_not_require_native_capabilities():
+    source = (EXAMPLES / "three_loop_reduction.py").read_text()
+    tree = ast.parse(source)
+    cells = [node for node in tree.body if isinstance(node, ast.FunctionDef)]
+    for method in ("family_candidates", "certify_candidates", "inspect_closing_artifact"):
+        matching = [cell for cell in cells if any(
+            isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "rustred" and node.func.attr == method
+            for node in ast.walk(cell))]
+        assert len(matching) == 1, f"{method} must have one direct notebook call"
+        assert not any(
+            isinstance(decorator, ast.Call)
+            and any(keyword.arg == "hide_code" and isinstance(keyword.value, ast.Constant)
+                    and keyword.value.value for keyword in decorator.keywords)
+            for decorator in matching[0].decorator_list)
 
-    def execution_capabilities(self):
-        return dict(SYNCHRONOUS)
-
-    def start_family_candidates(self, source, **options):
-        assert source == "test-only-source" and options["n_cores"] == 1
-        self.calls += 1
-        if self.error:
-            raise self.error
-        self.session = Session(self.state)
-        return self.session
-
-
-def test_synchronous_generation_is_explicit_and_collects_once():
-    native = Native()
-    run = THREE.ThreeLoopRun(native, "test-only-source")
-    assert run.poll()["state"] == "ready" and native.calls == 0
-    assert not run.cancel()
-    assert run.start(n_cores=1)
-    assert run.poll()["state"] == "generated"
-    assert run.session is None and run.result is run.candidate
-    assert run.closing is run.inspection is None and run.reductions == {}
-    assert not run.start(n_cores=1) and not run.cancel()
-    run.poll()
-    assert native.calls == native.session.results == 1
-
-
-def test_synchronous_failure_retains_error_without_restarting():
-    native = Native(error=ValueError("test-only rejection"))
-    run = THREE.ThreeLoopRun(native, "test-only-source")
-    assert not run.start(n_cores=1)
-    assert run.poll()["state"] == "failed"
-    assert run.error == "test-only rejection" and run.finished is not None
-    assert not run.start(n_cores=1) and native.calls == 1
-    assert run.result is run.candidate is run.closing is None
-
-
-def test_completed_failure_never_fetches_a_result():
-    native = Native(state="failed")
-    run = THREE.ThreeLoopRun(native, "test-only-source")
-    run.start(n_cores=1)
-    assert run.poll()["state"] == "failed"
-    assert run.error == "test-only failure" and native.session.results == 0
+    attributes = {node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute)}
+    assert attributes.isdisjoint({"execution_capabilities", "start_family_candidates",
+                                  "poll_events"})
+    names = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)}
+    assert "native_available" not in names and "ThreeLoopRun" not in names
+    calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
+             and isinstance(node.func, ast.Attribute)
+             and node.func.attr == "family_candidates"]
+    options = {keyword.arg: ast.literal_eval(keyword.value) for keyword in calls[0].keywords}
+    assert options == {"input_format": "toml", "n_cores": 1,
+                       "exact_backend": "sparse", "numerical_depth": 2}
 
 
 def test_four_loop_synchronous_queue_starts_only_on_request(tmp_path):

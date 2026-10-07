@@ -1,4 +1,4 @@
-"""Real native closure/reduction gates for the explicit three-loop notebook."""
+"""Exact closure, reduction and normalization gates for the three-loop notebook."""
 
 import importlib.util
 import json
@@ -26,31 +26,6 @@ SPEC = importlib.util.spec_from_file_location(
 )
 support = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(support)
-
-
-def test_generation_requires_explicit_start_and_cannot_restart():
-    class Native:
-        def __init__(self):
-            self.calls = []
-
-        def execution_capabilities(self):
-            return hep.rustred.execution_capabilities()
-
-        def start_family_candidates(self, source, **options):
-            self.calls.append((source, options))
-            return object()
-
-    native = Native()
-    run = support.ThreeLoopRun(native, "test-only-source")
-    assert run.poll()["state"] == "ready"
-    assert native.calls == []
-    assert run.result is run.candidate is run.closing is run.inspection is None
-    assert run.reductions == {}
-    assert run.start(n_cores=1)
-    assert not run.start(n_cores=1)
-    assert native.calls == [("test-only-source", {
-        "input_format": "toml", "n_cores": 1,
-    })]
 
 
 def graph_family_and_source():
@@ -144,13 +119,12 @@ def test_native_terminal_normalization_identifies_five_integral_types():
 @pytest.fixture(scope="module")
 def closed_family(tmp_path_factory):
     _, source = support.graph_inputs()
-    run = support.ThreeLoopRun(hep.rustred, source)
-    assert run.start(n_cores=1)
-    assert run.session.wait(timeout=120), "small K6 candidate generation timed out"
-    assert run.poll()["state"] == "generated"
-    candidate = run.result
+    candidate = hep.rustred.family_candidates(
+        source, input_format="toml", n_cores=1,
+        exact_backend="sparse", numerical_depth=2,
+    )
     assert candidate.status == "uncertified-candidates"
-    assert run.candidate.metadata()["closure_claim"] is False
+    assert candidate.artifact().metadata()["closure_claim"] is False
     generated = tomllib.loads(candidate.to_toml())
     assert generated["solved_sectors"] == 38
     assert generated["zero_sectors"] == 26

@@ -7,9 +7,8 @@ app = marimo.App(
 )
 
 with app.setup(hide_code=True):
-    from collections import deque
     from textwrap import dedent
-    from time import monotonic
+    from time import perf_counter
 
     import marimo as mo
     try:
@@ -18,7 +17,7 @@ with app.setup(hide_code=True):
         import tomli as tomllib
 
     def graph_inputs():
-        """The graph and checked native source travel with this notebook."""
+        """The graph and generation input travel with this notebook."""
         return dedent('''\
             digraph Mercedes {
                 // Three loop-basis chords; edge IDs fix the denominator order.
@@ -33,7 +32,7 @@ with app.setup(hide_code=True):
             schema = "rustred.project.toml.v1"
 
             # The same ordered family as the graph, with common mass set to one.
-            # Ordinary native input: no reduction rules or hints.
+            # Family input: no reduction rules or hints.
             [family]
             name = "rustred_three_loop_unit_mass_vacuum_k6_v1"
             loop_momenta = ["k1", "k2", "k3"]
@@ -70,7 +69,7 @@ with app.setup(hide_code=True):
             ''')
 
     def assert_source_matches_family(source, family):
-        """Compare this fixed source to native routed scalar products exactly."""
+        """Check that the input matches the routed scalar products exactly."""
         definition = tomllib.loads(source)["family"]
         assert definition["dimension"] == "d"
         assert definition["loop_momenta"] == ["k1", "k2", "k3"]
@@ -144,100 +143,26 @@ with app.setup(hide_code=True):
                 powers.append(f"n_{axis}{suffix}")
         return "I(" + ", ".join(powers) + ")"
 
-    def rule_summary_rows(items):
-        return [
-            {"ordinal": row["ordinal"], "Target": integral_notation(row["target"]),
-             "Case": ", ".join(f"n_{item['axis']} = {item['value']}"
-                               for item in row["case"]["fixed"]) or row["case"]["kind"],
-             "Affine equations": row["case"]["affine_equation_count"],
-             "RHS terms": row["rhs_terms"], "Sources": row["retained_source_count"],
-             "Excluded equations": row["guard_count"]}
-            for row in items
-        ]
+    def rule_fixed_conditions(rule):
+        """Only conditions not already displayed as literal target powers."""
+        target = rule["target"]
+        return [item for item in rule["case"]["fixed"]
+                if target["symbolic"][item["axis"]]
+                or target["values"][item["axis"]] != item["value"]]
 
-    def terminal_rows(page):
-        return [{"ordinal": page["start"] + index, "Integral": integral_notation(key)}
-                for index, key in enumerate(page["items"])]
+    def rule_case_summary(rule):
+        case = rule["case"]
+        parts = [f"n_{item['axis']} = {item['value']}"
+                 for item in rule_fixed_conditions(rule)]
+        affine = case.get("affine_equation_count", len(case.get("affine_zero_equations", [])))
+        if affine:
+            parts.append(f"{affine} affine {'condition' if affine == 1 else 'conditions'}")
+        return "; ".join(parts)
 
-    class ThreeLoopRun:
-        """Own one generation and cache the explicitly requested later algebra."""
-
-        def __init__(self, native, source, *, clock=monotonic):
-            self.native, self.source, self.clock = native, source, clock
-            # Older native hosts predate this query. Browser builds provide it.
-            self.capabilities = native.execution_capabilities() if (
-                native is not None and hasattr(native, "execution_capabilities")
-            ) else {
-                "execution_mode": "background-coordinator", "background_sessions": True,
-                "live_event_polling": True, "cancellation_in_flight": True,
-                "max_workers": None,
-            }
-            self.state, self.session = "ready", None
-            self.started, self.finished = None, None
-            self.result, self.candidate = None, None
-            self.closing, self.inspection = None, None
-            self.reductions = {}
-            self.events = deque(maxlen=20)
-            self.counts, self.active_jobs = {}, []
-            self.dropped_events, self.error = 0, None
-
-        def start(self, **options):
-            if self.state != "ready" or self.native is None:
-                return False
-            self.started, self.state = self.clock(), "running"
-            try:
-                self.session = self.native.start_family_candidates(
-                    self.source, input_format="toml", **options)
-                if not self.capabilities["background_sessions"]:
-                    # WASM returns finished work; native hosts remain nonblocking.
-                    self.poll()
-            except Exception as error:
-                self._fail(error)
-                return False
-            return True
-
-        def cancel(self):
-            if (not self.capabilities["cancellation_in_flight"] or self.session is None
-                    or self.state not in {"running", "cancelling"}):
-                return False
-            self.session.cancel()
-            self.state = "cancelling"
-            return True
-
-        def _fail(self, error):
-            self.error, self.state = str(error), "failed"
-            self.finished, self.session = self.clock(), None
-
-        def poll(self):
-            """Drain a bounded event batch, without waiting or decoding algebra."""
-            if self.session is not None:
-                try:
-                    batch = self.session.poll_events(max_events=128, timeout=0.0)
-                    native = batch["snapshot"]
-                    self.counts = dict(native["counts"])
-                    self.active_jobs = native["active_jobs"]
-                    self.events.extend(batch["events"])
-                    self.dropped_events = batch["dropped_events"]
-                    if native["done"]:
-                        if native["state"] == "completed":
-                            self.result = self.session.result()
-                            self.candidate = self.result.artifact()
-                            self.state = "generated"
-                        elif native["state"] == "cancelled":
-                            self.state = "cancelled"
-                        else:
-                            raise RuntimeError(native.get("last_error") or "Generation failed")
-                        self.finished, self.session = self.clock(), None
-                except Exception as error:
-                    self._fail(error)
-            end = self.finished if self.finished is not None else self.clock()
-            return {
-                "state": self.state,
-                "elapsed_seconds": 0 if self.started is None else end - self.started,
-                "counts": dict(self.counts), "active_jobs": self.active_jobs,
-                "events": list(self.events), "dropped_events": self.dropped_events,
-                "error": self.error,
-            }
+    def rule_label(rule):
+        label = f"{rule['ordinal']} · {integral_notation(rule['target'])}"
+        case = rule_case_summary(rule)
+        return f"{label} · Case: {case}" if case else label
 
 
 @app.cell(hide_code=True)
@@ -274,7 +199,7 @@ async def _():
 
     from symbolica import E, S
     from symbolica.community import hepkit as hep
-    rustred = getattr(hep, "rustred", None)
+    from symbolica.community.hepkit import rustred
     return E, S, hep, rustred
 
 
@@ -290,7 +215,7 @@ def _():
 
     The equal-mass **Mercedes graph** has four vertices, six edges and three
     loops. We compute exact coefficients in symbolic dimension $d$, including
-    raised propagators, pinches and numerator insertions. The recursive native
+    raised propagators, pinches and numerator insertions. The recursive
     reducer uses the artifact generated and certified in this notebook.
 
     The certificate retains **38 raw terminal keys**, not 38 independent
@@ -310,8 +235,8 @@ def _():
     mo.md("""
     ## Setup and notebook helpers
 
-    The folded startup cells contain the graph, native generation source,
-    session and display helpers, and Symbolica/HEPKit imports. Expand their code
+    The folded startup cells contain the graph, generation input, display
+    helpers, and Symbolica/HEPKit imports. Expand their code
     to inspect them. No neighboring helper or data files are required. The
     visible cells below route the graph, certify the rules and request reductions.
     """)
@@ -370,15 +295,15 @@ def _(dot_input, generation_source, parameter_bindings):
     mo.vstack([
         mo.md("""
         **Generation input.** The current closure verifier accepts the explicit
-        native source below. HEPKit routes the DOT graph; the preceding assertion
-        checks that every source denominator equals its routed native scalar
+        source below. HEPKit routes the DOT graph; the preceding assertion
+        checks that every source denominator equals its routed scalar
         product, in the same order. The source contains the family definition
         and an ordinary target, with no saved rules. Its dimension is `d`;
-        the table records the native symbol used in reduction coefficients.
+        the table records the symbol used in reduction coefficients.
         """),
         mo.accordion({
             "DOT graph": mo.md(f"```dot\n{dot_input}\n```"),
-            "Checked native generation source": mo.md(f"```toml\n{generation_source}\n```"),
+            "Generation input": mo.md(f"```toml\n{generation_source}\n```"),
             "Coefficient parameter legend": mo.ui.table(_bindings,
                 selection=None, show_column_summaries=False, show_download=False),
         }),
@@ -389,127 +314,60 @@ def _(dot_input, generation_source, parameter_bindings):
 @app.cell(hide_code=True)
 def _():
     mo.md("""
-    ## 2. Generate, then certify
+    ## 2. Generate and certify the rules
 
-    One worker searches every sector of the six-propagator family, including
-    nonpositive powers. Native hosts provide live events and cooperative
-    cancellation. Generation starts automatically. Pyodide runs synchronously:
-    the call returns when the search completes, with no intermediate progress
-    or in-flight cancellation.
-    This session generates once; rerun the notebook for a fresh session.
-
-    The session helper below calls this native Python API to derive the rules
-    from the checked family input (no precomputed rules are loaded):
-
-    ```python
-    session = rustred.start_family_candidates(
-        generation_source, input_format="toml", n_cores=1,
-        exact_backend="sparse", numerical_depth=2, event_capacity=256,
-    )
-    ```
-
-    Generation produces candidates. **Certify generated rules** replays their
-    sources and verifies coverage and termination before making an artifact
-    available to the recursive reducer. This is a separate, explicit operation.
+    These calls generate the rules from the family, then verify coverage and
+    termination before reduction. They run on one core in both Python and WASM.
+    Changing a sector, rule or target below reuses this result.
     """)
     return
 
 
 @app.cell
 def _(generation_source, rustred):
-    generation_options = {
-        "n_cores": 1, "exact_backend": "sparse", "numerical_depth": 2,
-        "event_capacity": 256,
-    }
-    run = ThreeLoopRun(rustred, generation_source)
-    native_available = rustred is not None and all(hasattr(rustred, method) for method in (
-        "start_family_candidates", "certify_candidates",
-        "inspect_closing_artifact", "reduce_with_closing_artifact",
-    ))
-    if native_available:
-        run.start(**generation_options)
-    return native_available, run
+    _started = perf_counter()
+    candidates = rustred.family_candidates(
+        generation_source, input_format="toml", n_cores=1,
+        exact_backend="sparse", numerical_depth=2,
+    )
+    candidate_artifact = candidates.artifact()
+    generation_seconds = perf_counter() - _started
+    mo.show_code()
+    return candidate_artifact, candidates, generation_seconds
 
 
 @app.cell(hide_code=True)
-def _(native_available, run):
-    cancel = mo.ui.button(label="Cancel", on_click=lambda value: run.cancel(),
-        disabled=not native_available or not run.capabilities["cancellation_in_flight"])
-    heartbeat = (mo.ui.refresh(options=["1s", "3s", "10s"], default_interval="1s")
-                 if native_available and run.capabilities["live_event_polling"] else None)
-    _controls = [cancel, heartbeat] if heartbeat is not None else [cancel]
-    mo.vstack([
-        mo.hstack(_controls, justify="start", wrap=True),
-        mo.md("Generation starts automatically. " + (
-            "Keep refresh enabled to collect live native progress."
-            if run.capabilities["live_event_polling"] else
-            "This browser runs one worker synchronously; progress appears after completion."
-        )) if native_available else mo.callout(
-            "This HEPKit installation lacks the native closing-artifact API. "
-            "Install a Community build with RustRed support to run the reduction.", kind="warn"),
-    ])
-    return cancel, heartbeat
-
-
-@app.cell(hide_code=True)
-def _(cancel, heartbeat, run):
-    _ = cancel.value, heartbeat.value if heartbeat is not None else None
-    live = run.poll()
-    _counts = live["counts"]
-    mo.vstack([
-        mo.hstack([
-            mo.stat(live["state"].title(), label="Generation"),
-            mo.stat(f"{_counts.get('generated', 0)} / {_counts.get('sectors_total', '—')}", label="Sectors"),
-            mo.stat(_counts.get("rules", 0), label="Candidate rules"),
-            mo.stat(f"{live['elapsed_seconds']:.2f} s", label="Observed time"),
-        ], widths="equal"),
-        mo.callout(live["error"], kind="danger") if live["error"] else mo.md(""),
-        mo.accordion({"Native execution evidence · bounded history": mo.json({
-            "execution_mode": run.capabilities["execution_mode"],
-            "counts": _counts, "active_jobs": live["active_jobs"],
-            "recent_events": live["events"], "dropped_events": live["dropped_events"],
-        })}),
-    ])
+def _(candidate_artifact, generation_seconds):
+    mo.hstack([
+        mo.stat(candidate_artifact.metadata()["total_rules"], label="Generated rules"),
+        mo.stat(f"{generation_seconds:.2f} s", label="Generation time"),
+    ], widths="equal")
     return
 
 
-@app.cell(hide_code=True)
-def _(native_available):
-    certify = mo.ui.run_button(label="Certify generated rules", disabled=not native_available)
-    certify
-    return (certify,)
-
-
 @app.cell
-def _(certify, run, rustred):
-    mo.stop(not certify.value, mo.md("Once automatic generation finishes, certify the resulting bundle."))
-    run.poll()
-    mo.stop(run.result is None, mo.callout("Generation has not completed successfully yet.", kind="info"))
-    if run.closing is None:
-        run.closing = rustred.certify_candidates(run.result.bundle)
-        assert run.closing.status == "generated-durable"
-    closing_artifact = run.closing.artifact
-    if run.inspection is None:
-        _inspection = rustred.inspect_closing_artifact(closing_artifact)
-        assert _inspection.status == "inspected"
-        run.inspection = tomllib.loads(_inspection.to_toml())
-    inspection = run.inspection
-    candidate_artifact = run.candidate
+def _(candidates, rustred):
+    certificate = rustred.certify_candidates(candidates.bundle)
+    closing_artifact = certificate.artifact
+    inspected = rustred.inspect_closing_artifact(closing_artifact)
+    inspection = tomllib.loads(inspected.to_toml())
     master_powers = {tuple(item["powers"]) for item in inspection["artifact"]["masters"]}
+    assert certificate.status == "generated-durable" and inspected.status == "inspected"
     assert inspection["artifact"]["arity"] == 6 and master_powers
-    return candidate_artifact, closing_artifact, inspection, master_powers
+    reductions = {}
+    mo.show_code()
+    return closing_artifact, inspection, master_powers, reductions
 
 
 @app.cell(hide_code=True)
-def _(closing_artifact, inspection, master_powers, run):
+def _(candidates, closing_artifact, inspection, master_powers):
     mo.vstack([
-        mo.callout(f"Closure certified: {len(master_powers)} raw terminal keys. "
-                   "These are not independent masters. Every successful reduction "
-                   "below ends entirely in this set.", kind="success"),
+        mo.md(f"The certified rules terminate in **{len(master_powers)} raw integral keys**, "
+              "grouped into the five topology types below."),
         mo.accordion({
-            "Native certificate and replay evidence": mo.json(inspection),
-            "Download this run's artifacts": mo.hstack([
-                mo.download(run.result.bundle, filename="three-loop-candidates.rrbin",
+            "Certificate details": mo.json(inspection),
+            "Download the generated rules": mo.hstack([
+                mo.download(candidates.bundle, filename="three-loop-candidates.rrbin",
                             label="Candidate bundle"),
                 mo.download(closing_artifact, filename="three-loop-certified.rr",
                             label="Certified closing artifact"),
@@ -566,22 +424,20 @@ def _(master_powers):
 def _(candidate_artifact):
     _sectors = candidate_artifact.sectors(start=0, limit=64)["items"]
     _options = {
-        f"{row['ordinal']} · {''.join('1' if b else '0' for b in row['sector'])} · {row['total_rules']} rules": row["ordinal"]
+        f"{''.join('1' if b else '0' for b in row['sector'])} · {row['total_rules']} rules": row["ordinal"]
         for row in _sectors
     }
-    _default = next((row["ordinal"] for row in _sectors
-                     if all(row["sector"]) and row["total_rules"]), _sectors[0]["ordinal"])
+    _default = next(row["ordinal"] for row in _sectors
+                    if all(row["sector"]) and row["total_rules"])
     sector_choice = mo.ui.dropdown(options=_options,
         value=next(label for label, ordinal in _options.items() if ordinal == _default),
-        label="Sector", allow_select_none=False)
+        label="Sector", allow_select_none=False, searchable=True, full_width=True)
     mo.vstack([
         mo.md("""
         ## 3. Inspect a generated recurrence
 
-        Browse ten rules at a time from the same candidate bundle that was
-        certified above. Selecting a rule materializes its full right-hand side
-        as a Symbolica expression, with one integral term per line. Only the
-        selected rule is decoded. Native index labels start at zero.
+        Select a sector, then a rule. The label shows the target and any extra
+        case conditions. Only the selected rule's coefficients are decoded.
         """),
         sector_choice,
     ])
@@ -590,35 +446,25 @@ def _(candidate_artifact):
 
 @app.cell(hide_code=True)
 def _(candidate_artifact, sector_choice):
-    _sector = candidate_artifact.sectors(start=int(sector_choice.value), limit=1)["items"][0]
-    rule_offset = mo.ui.number(start=0, stop=max(0, _sector["total_rules"] - 1),
-        step=10, value=0, label="Rule page offset")
-    rule_offset
-    return (rule_offset,)
-
-
-@app.cell(hide_code=True)
-def _(candidate_artifact, rule_offset, sector_choice):
     _sector = int(sector_choice.value)
-    _page = candidate_artifact.rules(_sector, start=int(rule_offset.value), limit=10)
-    rule_table = mo.ui.table(rule_summary_rows(_page["items"]), selection="single",
-        initial_selection=[0] if _page["items"] else [], pagination=False,
-        show_column_summaries=False, show_download=False,
-        label=f"Rules · {_page['total']} in this sector")
-    _terminals = candidate_artifact.terminals(_sector, start=0, limit=10)
-    mo.vstack([rule_table, mo.accordion({
-        f"Candidate terminal preview · first 10 of {_terminals['total']}": mo.ui.table(
-            terminal_rows(_terminals), selection=None, pagination=False,
-            show_column_summaries=False, show_download=False),
-    })])
-    return (rule_table,)
+    _page = candidate_artifact.rules(_sector, start=0, limit=1000)
+    _summaries = list(_page["items"])
+    for _start in range(1000, _page["total"], 1000):
+        _summaries.extend(candidate_artifact.rules(_sector, start=_start, limit=1000)["items"])
+    _options = {rule_label(rule): rule["ordinal"] for rule in _summaries}
+    mo.stop(not _options, mo.md("This sector has no recurrence rules."))
+    rule_choice = mo.ui.dropdown(options=_options, value=next(iter(_options)),
+        label="Rule", allow_select_none=False, searchable=True, full_width=True)
+    rule_choice
+    return (rule_choice,)
 
 
-@app.cell(hide_code=True)
-def _(candidate_artifact, rule_table, sector_choice):
-    mo.stop(not rule_table.value, mo.md("Select a rule on a populated page."))
-    rule_detail = candidate_artifact.rule(int(sector_choice.value),
-        rule_table.value[0]["ordinal"], max_output_bytes=65536)
+@app.cell
+def _(candidate_artifact, rule_choice, sector_choice):
+    rule_detail = candidate_artifact.rule(
+        int(sector_choice.value), int(rule_choice.value), max_output_bytes=65536,
+    )
+    mo.show_code()
     return (rule_detail,)
 
 
@@ -634,21 +480,20 @@ def _(
     _expressions = rule_expressions(candidate_artifact, rule_detail, integral, parameter_bindings)
     _conditions = [mo.md("**Sector:** " + ", ".join(
         f"n_{axis} {'> 0' if active else '≤ 0'}" for axis, active in enumerate(_sector["sector"])))]
-    _conditions.append(mo.md("**Fixed powers:** " + (", ".join(
-        f"n_{item['axis']} = {item['value']}" for item in rule_detail["case"]["fixed"]) or "None")))
-    for _equation in _expressions["affine"]:
-        _conditions.append(mo.hstack([mo.md("Required zero:"),
-                                     _equation.formatted(max_terms=None)], justify="start"))
+    _case = [mo.md(f"$n_{item['axis']} = {item['value']}$")
+             for item in rule_fixed_conditions(rule_detail)]
+    _case.extend(mo.hstack([equation.formatted(max_terms=None), mo.md("**= 0**")],
+                          justify="start") for equation in _expressions["affine"])
     for _number, _branch in enumerate(_expressions["excluded"], 1):
         _conditions.append(mo.md(f"**Excluded branch {_number}:** all expressions below vanish"
                                  if _branch else f"**Excluded branch {_number}:** always true"))
         _conditions.extend(expr.formatted(max_terms=None) for expr in _branch)
     _conditions.append(mo.md("Any excluded branch forbids the rule; equations within a branch "
-        "are joined by **AND**. Denominator poles, source conditions and native rule priority "
-        "still govern applicability. This display does not replace the native dispatcher."))
+        "are joined by **AND**. Denominator poles, source conditions and rule priority "
+        "also govern applicability."))
     mo.vstack([
-        mo.md(f"**Rule {rule_detail['ordinal']} · {len(rule_detail['rhs'])} RHS terms · "
-              f"{rule_detail['retained_source_count']} retained sources**"),
+        mo.md(f"**Rule {rule_detail['ordinal']} · {len(rule_detail['rhs'])} RHS terms**"),
+        *([mo.hstack([mo.md("**Case:**"), *_case], justify="start", wrap=True)] if _case else []),
         mo.hstack([_expressions["target"], mo.md("**=**")], justify="start"),
         _expressions["rhs"].formatted(max_terms=None, max_line_length=None, terms_on_new_line=True),
         mo.accordion({"Applicability conditions": mo.vstack(_conditions)}),
@@ -661,14 +506,14 @@ def _():
     mo.md(r"""
     ## 4. Reduce completely and restore the mass
 
-    Choose an integral and click **Reduce to certified masters**. The native
-    reducer recursively follows the certified rules, combines coefficients
+    Selecting an integral calls the reducer below. It follows the certified
+    rules recursively, combines coefficients
     exactly and returns only raw terminal keys. Results are cached per target.
 
     For three loops, $I_M(n)=M^{3d/2-\sum_i n_i}I_1(n)$. Thus a unit-mass
     coefficient $c_a(d)$ becomes
     $c_a(d)\,M^{\sum_i a_i-\sum_i n_i}$ multiplying $I_M(a)$.
-    The native result supplies that integer exponent; the notebook checks it.
+    The returned terms include this integer mass exponent.
     """)
     return
 
@@ -685,29 +530,28 @@ def _(closing_artifact):
     }
     target_choice = mo.ui.dropdown(options=targets, value=next(iter(targets)),
         label="Target integral", allow_select_none=False)
-    reduce_target = mo.ui.run_button(label="Reduce to certified masters")
-    mo.hstack([target_choice, reduce_target], justify="start", wrap=True)
-    return reduce_target, target_choice
+    target_choice
+    return (target_choice,)
 
 
 @app.cell
 def _(
-    E,
     closing_artifact,
-    inspection,
-    master_powers,
-    parameter_bindings,
-    reduce_target,
-    run,
+    reductions,
     rustred,
     target_choice,
 ):
-    mo.stop(not reduce_target.value, mo.md("Select a target and request its complete reduction."))
     selected_powers = tuple(target_choice.value)
-    if selected_powers not in run.reductions:
-        run.reductions[selected_powers] = rustred.reduce_with_closing_artifact(
+    if selected_powers not in reductions:
+        reductions[selected_powers] = rustred.reduce_with_closing_artifact(
             closing_artifact, list(selected_powers))
-    reduction = run.reductions[selected_powers]
+    reduction = reductions[selected_powers]
+    mo.show_code()
+    return reduction, selected_powers
+
+
+@app.cell(hide_code=True)
+def _(E, inspection, master_powers, parameter_bindings, reduction, selected_powers):
     assert reduction.status == "reduced"
     assert reduction.family_fingerprint == inspection["artifact"]["family_fingerprint"]
     reduced_terms = []
@@ -720,12 +564,7 @@ def _(
         for _internal, _original in parameter_bindings:
             _coefficient = _coefficient.replace(_internal, _original)
         reduced_terms.append((_master, _coefficient, _term.common_mass_squared_power))
-    return reduced_terms, reduction, selected_powers
-
-
-@app.cell
-def _():
-    return
+    return (reduced_terms,)
 
 
 @app.cell(hide_code=True)
@@ -756,7 +595,7 @@ def _(
                     justify="start", wrap=True) for master, coefficient, power in _page],
         mo.md(f"Showing {_start + 1 if _page else 0}–{_start + len(_page)} of "
               f"{len(reduced_terms)} terms. Every displayed integral has common squared mass $M$."),
-        mo.accordion({"Native traversal statistics and complete result": mo.vstack([
+        mo.accordion({"Reduction details": mo.vstack([
             mo.json(tomllib.loads(reduction.to_toml())["statistics"]),
             mo.download(reduction.to_toml(), filename="three-loop-reduction.toml",
                         label="Download all exact terms"),
@@ -766,12 +605,12 @@ def _(
 
 
 @app.cell
-def _(E, closing_artifact, dimension, parameter_bindings, run, rustred):
+def _(E, closing_artifact, dimension, parameter_bindings, reductions, rustred):
     # Independent factorized check: three one-loop tadpoles with two raised powers.
     _target = (2, 2, 1, 0, 0, 0)
-    if _target not in run.reductions:
-        run.reductions[_target] = rustred.reduce_with_closing_artifact(closing_artifact, list(_target))
-    _terms = run.reductions[_target].terms
+    if _target not in reductions:
+        reductions[_target] = rustred.reduce_with_closing_artifact(closing_artifact, list(_target))
+    _terms = reductions[_target].terms
     assert len(_terms) == 1 and _terms[0].master_powers == [1, 1, 1, 0, 0, 0]
     _coefficient = E(_terms[0].unit_mass_coefficient)
     for _internal, _original in parameter_bindings:

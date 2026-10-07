@@ -154,22 +154,24 @@ notebook stay on the same server.
 
 ## Three-loop reduction to masters
 
-With the native community package and Marimo installed, run:
+With the Community package and Marimo installed, run:
 
 ```sh
 marimo edit examples/hep/three_loop_reduction.py
 ```
 
-Generation starts automatically; then select **Certify generated rules**. The notebook
-first checks its standard HEPKit DOT graph and routed denominators against the
-explicit unit-mass family input. RustRed then generates sector rules, publishes
-the closing binary artifact, and reads back its declared terminals. It shows the
-native `rustred.start_family_candidates(...)` call used to derive the rules.
-Selecting a recurrence displays its complete RHS as a Symbolica expression,
-one integral term per line, without a separate coefficient-rendering control.
-The notebook is self-contained: its folded setup includes the graph, the native
-family input, and the session/display code. No local helper modules or graph
-files are needed when copying the notebook to another directory.
+The visible `rustred.family_candidates(...)` and `rustred.certify_candidates(...)`
+cells generate and certify the rules on one core, in both native Python and WASM.
+The notebook checks its HEPKit DOT graph and routed denominators against the
+unit-mass family input, then reads the generated artifact's declared terminals.
+Choose a sector, then a rule from the searchable dropdown below it. Labels show the
+target and any extra case conditions; fixed powers already visible in the target
+are not repeated. The selected recurrence displays its complete RHS as a
+Symbolica expression, one integral term per line. Selecting a target runs the
+visible reduction call without repeating generation or certification.
+The notebook is self-contained: its folded setup includes the graph, family
+input and display helpers. No local helper modules or graph files are needed
+when copying the notebook to another directory.
 
 For the supplied input, expect 623 generated recurrences and 38 **raw terminal
 keys** after certification, not 38 independent masters. Equivalent
