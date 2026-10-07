@@ -10,8 +10,8 @@ wasm_opt_level="${WASM_OPT_LEVEL:--O0}"
 rust_profile="${WASM_RUST_PROFILE:-release-performance}"
 wasm_features="${WASM_FEATURES:-wasm}"
 case "$wasm_features" in
-  wasm|wasm-core) ;;
-  *) echo "Invalid WASM_FEATURES: $wasm_features (expected wasm or wasm-core)" >&2; exit 2 ;;
+  wasm|wasm-core|wasm,ibp-capacity-dispatch|wasm,ibp-runtime-arity-selection|wasm,ibp-capacity-dispatch,ibp-runtime-arity-selection) ;;
+  *) echo "Invalid WASM_FEATURES: $wasm_features (expected wasm, wasm-core, or wasm with explicit IBP features)" >&2; exit 2 ;;
 esac
 case "$wasm_opt_level" in
   -O0|-O1|-O2|-O3|-Os|-Oz) ;;
