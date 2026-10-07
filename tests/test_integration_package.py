@@ -64,6 +64,8 @@ def browser_graph():
     nodes = {p["id"]: {"features": []} for p in packages}
     bridge = next(p for p in packages if p["name"] == "rustred-feynkit")
     nodes[bridge["id"]]["features"] = ["campaign-api", "wasm"]
+    flow = next(p for p in packages if p["name"] == "symbolica-amflow")
+    nodes[flow["id"]]["features"] = ["automatic", "python_wasm", "wasm"]
     root = {"dependencies": [
         {"name": "feynkit-py", "source": hepkit},
         {"name": "rustred-feynkit", "source": rustred},
@@ -71,11 +73,24 @@ def browser_graph():
     return packages, nodes, root
 
 
-def test_browser_requires_supplied_transport():
+def test_browser_requires_automatic_evaluation_and_transport():
     packages, nodes, root = browser_graph()
     CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
     packages[:] = [p for p in packages if p["name"] != "symbolica-amflow"]
     with pytest.raises(AssertionError, match="symbolica-amflow"):
+        CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
+
+
+@pytest.mark.parametrize("features, message", [
+    (["python_wasm", "wasm"], "Automatic loop evaluation disabled"),
+    (["automatic", "wasm"], "Browser loop API disabled"),
+    (["automatic", "python_wasm", "wasm", "native"], "Native loop feature"),
+])
+def test_browser_rejects_disabled_or_native_automatic_evaluation(features, message):
+    packages, nodes, root = browser_graph()
+    flow = next(p for p in packages if p["name"] == "symbolica-amflow")
+    nodes[flow["id"]]["features"] = features
+    with pytest.raises(AssertionError, match=message):
         CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
 
 

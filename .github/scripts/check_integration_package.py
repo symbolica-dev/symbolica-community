@@ -136,8 +136,13 @@ def check_graph(label, packages, nodes, root, *, community, native):
                 label, "HEPKit source differs from the host declaration", feynkit_source,
             )
         singleton(packages, "hyperbolica")
-        # Supplied-boundary transport is shared by native and browser hosts.
-        singleton(packages, "symbolica-amflow")
+        # Automatic reduction/boundaries and supplied transport share this kernel.
+        flow = singleton(packages, "symbolica-amflow")
+        flow_features = nodes[flow["id"]]["features"]
+        assert "automatic" in flow_features, "Automatic loop evaluation disabled"
+        if not native:
+            assert "python_wasm" in flow_features, "Browser loop API disabled"
+            assert "native" not in flow_features, "Native loop feature in browser build"
         reducers = {owner(singleton(packages, name)) for name in RUSTRED}
         assert len(reducers) == 1, (label, "mixed RustRed core/app/bridge", reducers)
         reducer_source = next(iter(reducers))

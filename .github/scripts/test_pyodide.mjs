@@ -214,6 +214,10 @@ await pyodide.runPythonAsync(
 );
 console.log("Supplied loop transport, exact binary restart, nearby reuse and cancellation passed.");
 console.log("Native Standard Model Higgs-jet extension, shared types and collision rejection passed.");
+await pyodide.runPythonAsync(
+  await readFile(new URL("./check_wasm_automatic_integrals.py", import.meta.url), "utf8"),
+);
+console.log("Automatic tadpole/bubble evaluation, exact IBP, fresh boundary transport and restart passed.");
 const integrationContract = await readFile(new URL("../../tests/integration_contract.py", import.meta.url), "utf8");
 await pyodide.runPythonAsync(integrationContract + "\ncheck_integration_contract()\ncheck_symanzik_example()\nassert not hasattr(api, 'ibp')\n");
 console.log("Shared integration fixtures and HEPkit Symanzik example passed (parallel=False/True).");
@@ -254,6 +258,7 @@ if (expectCommunity) {
       wheel_sha256: wheelSha256,
       supplied_loop_transport: true,
       higgs_standard_model: true,
+      ...JSON.parse(pyodide.runPython("import json; json.dumps(automatic_integral_validation)")),
     };
     await writeFile(join(wheelDir, "loop-transport-validation.json"), JSON.stringify(validation, null, 2) + "\n");
     }

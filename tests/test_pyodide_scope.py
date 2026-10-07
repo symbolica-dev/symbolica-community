@@ -14,8 +14,10 @@ NODE = shutil.which("node")
 
 
 @pytest.mark.skipif(NODE is None, reason="Node is needed to check the JS runner")
-@pytest.mark.parametrize("focused, fail_transport", [(False, False), (True, False), (False, True)])
-def test_pyodide_scope_preserves_gates_and_receipts(tmp_path, focused, fail_transport):
+@pytest.mark.parametrize("focused, fail_stage", [
+    (False, ""), (True, ""), (False, "transport"), (False, "automatic"),
+])
+def test_pyodide_scope_preserves_gates_and_receipts(tmp_path, focused, fail_stage):
     runtime = tmp_path / "runtime"
     runtime.mkdir()
     (runtime / "pyodide.mjs").write_text("""
@@ -40,10 +42,14 @@ export async function loadPyodide() {
       if (process.env.TEST_FAIL_TRANSPORT === '1' && source.includes('def check_higgs_standard_model')) {
         throw new Error('simulated independent loop-transport failure');
       }
+      if (process.env.TEST_FAIL_AUTOMATIC === '1' && source.includes('automatic_integral_validation =')) {
+        throw new Error('simulated automatic-integral failure');
+      }
     },
     runPython: (source) => {
       if (source.includes('rustred_cross_platform_validation')) return '{"cases":11}';
       if (source.includes('rustred_wasm_validation')) return '{"generated_and_certified_k6":true}';
+      if (source.includes('automatic_integral_validation')) return '{"automatic_boundary_generation":true}';
       if (source.includes('symbolica.core.__file__')) return '/core.wasm';
       throw new Error('Unexpected fake-runtime call: ' + source);
     },
@@ -65,7 +71,8 @@ export async function loadPyodide() {
         "PYODIDE_DIST_DIR": str(runtime), "SYMBOLICA_EXPECT_COMMUNITY": "1",
         "RUSTRED_NATIVE_ARTIFACT": str(native_artifact),
         "RUSTRED_NATIVE_REDUCTIONS": str(expected),
-        "TEST_FAIL_TRANSPORT": str(int(fail_transport)),
+        "TEST_FAIL_TRANSPORT": str(int(fail_stage == "transport")),
+        "TEST_FAIL_AUTOMATIC": str(int(fail_stage == "automatic")),
     })
     command = [NODE, str(ROOT / ".github/scripts/test_pyodide.mjs"), str(wheel_dir)]
     if focused:
@@ -79,11 +86,14 @@ export async function loadPyodide() {
     assert (ROOT / ".github/scripts/check_rustred_cross_platform.py").read_text() in calls
     transport = (ROOT / ".github/scripts/check_wasm_loop_transport.py").read_text()
     assert (transport in calls) is (not focused)
+    automatic = (ROOT / ".github/scripts/check_wasm_automatic_integrals.py").read_text()
+    assert (automatic in calls) is (not focused and fail_stage != "transport")
     rustred_receipt = wheel_dir / "rustred-wasm-validation.json"
     loop_receipt = wheel_dir / "loop-transport-validation.json"
-    if fail_transport:
+    if fail_stage:
         assert result.returncode != 0
-        assert "simulated independent loop-transport failure" in result.stderr
+        message = "independent loop-transport" if fail_stage == "transport" else "automatic-integral"
+        assert f"simulated {message} failure" in result.stderr
         assert not rustred_receipt.exists() and not loop_receipt.exists()
     else:
         assert result.returncode == 0, result.stderr
@@ -93,3 +103,5 @@ export async function loadPyodide() {
         assert receipt["scope"] == ("rustred-only" if focused else "full-community")
         assert receipt["native_artifact_cross_platform"]["cases"] == 11
         assert loop_receipt.exists() is (not focused)
+        if not focused:
+            assert json.loads(loop_receipt.read_text())["automatic_boundary_generation"] is True

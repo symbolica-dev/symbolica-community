@@ -22,7 +22,8 @@ Version 3.0 ships core Symbolica and symbolic integration via
 `symbolica-integrate` 2.0, plus Idenso, Spenso, FeynKit HEP tools and Vakint.
 The HEP extensions share the public owner revision pinned below and in
 `Cargo.lock`. PyEmscripten wheels include Idenso, Spenso, HEP tools and numerical
-loop transport with supplied boundary values. Automatic loop-boundary generation,
+loop evaluation, automatic boundary generation and transport with supplied
+boundary values. Browser calculations use portable arithmetic on one worker.
 Vakint and Spenso's compiled evaluators require a native installation.
 
 The integrator enables `compressed-step-metadata`, preserving integration steps
@@ -58,10 +59,16 @@ from symbolica.community.hep.integration import (
 The bindings live in the `symbolica-amflow` dependency and register in this
 shared extension. They preserve arbitrary precision, supply typed errors and
 cancellation, and retain reusable intermediate points in binary boundary caches.
-Native builds also expose `IntegralEvaluator`, `PreparedIntegralFamily` and
-`ReductionTables` for automatic evaluation and boundary generation. Check
+Native and browser builds expose `IntegralEvaluator`, `PreparedIntegralFamily`
+and `ReductionTables` for automatic evaluation and boundary generation. Check
 `integration.automatic_boundary_generation_available` before offering those
-operations in code that also runs in the browser.
+operations in custom feature builds. Browser calls run synchronously: progress
+can be read after a call returns and a pre-cancelled control stops the next
+call. Another browser callback cannot interrupt an active synchronous call.
+Cache files live in Pyodide's virtual filesystem; download them for persistence
+across browser sessions.
+The [automatic browser evaluation status](reports/2026-10-07-automatic-integrals-wasm/README.md)
+records the completed checks and the precision validation still in progress.
 The [gg → Hg Marimo notebook](examples/hep/gg_hg.py) shows the native transport,
 cache, form-factor projection and coherent EW/HEFT amplitude API calls directly.
 It loads supplied starting boundaries, then computes transport and the amplitude
@@ -77,10 +84,10 @@ The checked-in manifest and lock fetch the shared dependencies from public Git
 sources. Build this checkout with the locked native installation command below;
 no sibling checkout, local path override or manual owner patch is required.
 The host owns the complete shared dependency graph, as described in the
-[integration dependency guide](https://github.com/alphal00p/RustFlow/blob/9599e35867119178ba3c02d7c55b998efab641f4/docs/dependency-embedding.md).
+[integration dependency guide](https://github.com/alphal00p/RustFlow/blob/b34ff6b3261bcc48f867d704e1d560e1bc4a4fec/docs/dependency-embedding.md).
 Generate these hints with `stub_gen --hepkit-only`; the public package and stubs
 are under `python/symbolica/community/hep/integration/`. Browser builds expose
-the supplied-boundary solver, transport, cache and amplitude APIs. Existing
+automatic evaluation, supplied-boundary solvers, transport, cache and amplitude APIs. Existing
 `hepkit` and Hyperbolica imports are preserved. The
 [actual Pyodide smoke report](reports/2026-10-06-browser-loop-transport/report.json)
 records exact restart, nearby reuse and cancellation on one core without license
@@ -89,7 +96,7 @@ and [visible notebook gate](reports/2026-10-06-visible-higgs-api/README.md) cove
 the scientific outputs and actual Chromium rendering separately.
 
 The Git dependency selects RustFlow
-[`9599e35867119178ba3c02d7c55b998efab641f4`](https://github.com/alphal00p/RustFlow/commit/9599e35867119178ba3c02d7c55b998efab641f4).
+[`b34ff6b3261bcc48f867d704e1d560e1bc4a4fec`](https://github.com/alphal00p/RustFlow/commit/b34ff6b3261bcc48f867d704e1d560e1bc4a4fec).
 HEPKit, Linnet, Spenso, Idenso and rendering share the official GammaLoop
 `feynkit` branch at
 [`635d3a1feb44067583a668c7d18f67405fe144e1`](https://github.com/alphal00p/gammaloop/commit/635d3a1feb44067583a668c7d18f67405fe144e1).

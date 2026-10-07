@@ -183,7 +183,7 @@ Vakint is used in the generation or reduction.
 
 ## Numerical transport and supplied reductions
 
-Native numerical loop evaluation lives under
+Numerical loop evaluation lives under
 `symbolica.community.hep.integration`. The [Higgs-jet notebook](gg_hg.py) uses
 these classes with the same HEPKit model, families and exact kinematics as the
 other examples. The native empty-cache boundary calculation and independently
@@ -209,6 +209,16 @@ and nonzero conditions for inspection. `BoundaryCache` separates entries for
 different ordered bases, normalizations and conditions, including after binary
 reload. A condition omitted from a simplified differential matrix still
 restricts endpoint and path admissibility.
+
+Pyodide includes the same automatic evaluator and RustRed reduction backend,
+using portable arbitrary-precision arithmetic on one worker. Calls run
+synchronously. `ComputationControl.poll()` returns retained progress after
+completion; pre-cancellation stops a subsequent call, but a UI callback cannot
+interrupt synchronous work already running in the same worker. Break interactive
+work into calls or manage the enclosing browser worker. The automatic runtime
+gate checks fresh tadpole and bubble evaluations, exact IBP target reductions,
+generated boundaries, physical transport and binary restart. It does not imply
+that large multiloop boundary calculations are practical in a live browser.
 
 Focused native-object examples and regressions are executable without the
 two-loop notebook:

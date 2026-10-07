@@ -60,14 +60,14 @@ def check_higgs_standard_model():
 
 
 def check_supplied_loop_transport():
-    assert not integration.automatic_boundary_generation_available
+    assert integration.automatic_boundary_generation_available
     for name in ("IntegralEvaluator", "PreparedIntegralFamily", "ReductionTables"):
-        assert not hasattr(integration, name)
-        assert name not in integration.__all__
+        assert hasattr(integration, name)
+        assert name in integration.__all__
     for kind in ("planar", "nonplanar"):
         system = integration.HiggsJetIntegralSystem(kind)
-        assert not system.automatic_boundary_generation_available
-        assert not hasattr(system, "generate_boundary")
+        assert system.automatic_boundary_generation_available
+        assert hasattr(system, "generate_boundary")
         assert len(system.configurations()) == 8
 
     x, epsilon, master = S("wasm_transport::x", "wasm_transport::epsilon", "wasm_transport::I")
