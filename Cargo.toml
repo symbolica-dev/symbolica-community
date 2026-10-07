@@ -50,6 +50,10 @@ codegen-units = 1
 strip = "symbols"
 
 [features]
+# Explicit solver-storage policy. Neither changes the default arity registry.
+ibp-capacity-dispatch = ["rustred-feynkit?/capacity-dispatch", "symbolica-amflow?/capacity-dispatch"]
+# Required before RUSTRED_RUNTIME_ARITIES may restrict/extend the registry.
+ibp-runtime-arity-selection = ["rustred-feynkit?/runtime-arity-selection", "symbolica-amflow?/runtime-arity-selection"]
 default = ["module", "native", "community"]
 module = ["pyo3/abi3-py39"] # incompatible with stub_gen
 community = [
@@ -87,7 +91,7 @@ feynkit-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", 
 rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", branch = "main", default-features = false, features = ["campaign-api"] }
 symbolica = { version = "3.0.1", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
-symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "b3a4843e8327835d1ec3ada5a6f32f1841bab2c2", default-features = false, features = ["python_api"] }
+symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "c04ea606049007efb780683332a3440dc20317e7", default-features = false, features = ["python_api"] }
 # Tensor bindings split methods across impl blocks on both native and WASM.
 pyo3 = { version = "0.28", features = ["multiple-pymethods"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [

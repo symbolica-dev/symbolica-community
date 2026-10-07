@@ -14,6 +14,10 @@ from symbolica.community import hepkit as hep
 
 
 assert sys.platform == "emscripten", "Run this gate inside actual Pyodide"
+arities = hep.IBPFamily.compiled_runtime_arities()
+capacities = hep.IBPFamily.compiled_runtime_capacities()
+assert capacities == sorted(set(capacities))
+assert all(any(capacity >= arity for capacity in capacities) for arity in arities)
 capabilities = hep.rustred.execution_capabilities()
 package = importlib.import_module("symbolica.community.hepkit.rustred")
 assert package.CandidateGenerationSession is hep.rustred.CandidateGenerationSession

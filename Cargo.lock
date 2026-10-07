@@ -3596,7 +3596,7 @@ dependencies = [
 [[package]]
 name = "rustred"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#acc92b0dad27b11fd194a4c284765fb6a93cbc94"
+source = "git+https://github.com/alphal00p/rustred?branch=main#1e9723f874ae375cdbf87df7ffd0c6bfc8a9fd29"
 dependencies = [
  "bincode",
  "blake3",
@@ -3609,7 +3609,7 @@ dependencies = [
 [[package]]
 name = "rustred-app"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#acc92b0dad27b11fd194a4c284765fb6a93cbc94"
+source = "git+https://github.com/alphal00p/rustred?branch=main#1e9723f874ae375cdbf87df7ffd0c6bfc8a9fd29"
 dependencies = [
  "bincode",
  "blake3",
@@ -3624,7 +3624,7 @@ dependencies = [
 [[package]]
 name = "rustred-feynkit"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#acc92b0dad27b11fd194a4c284765fb6a93cbc94"
+source = "git+https://github.com/alphal00p/rustred?branch=main#1e9723f874ae375cdbf87df7ffd0c6bfc8a9fd29"
 dependencies = [
  "pyo3",
  "rustred",
@@ -3635,12 +3635,12 @@ dependencies = [
 [[package]]
 name = "rustred-order"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#f5237ce1c8725b9cb0e18bade464806df607806f"
+source = "git+https://github.com/alphal00p/rustred?branch=main#1e9723f874ae375cdbf87df7ffd0c6bfc8a9fd29"
 
 [[package]]
 name = "rustred-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#acc92b0dad27b11fd194a4c284765fb6a93cbc94"
+source = "git+https://github.com/alphal00p/rustred?branch=main#1e9723f874ae375cdbf87df7ffd0c6bfc8a9fd29"
 dependencies = [
  "pyo3",
  "rustred-app",
@@ -4187,7 +4187,7 @@ dependencies = [
 [[package]]
 name = "symbolica-amflow"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/RustFlow?rev=b3a4843e8327835d1ec3ada5a6f32f1841bab2c2#b3a4843e8327835d1ec3ada5a6f32f1841bab2c2"
+source = "git+https://github.com/alphal00p/RustFlow?rev=c04ea606049007efb780683332a3440dc20317e7#c04ea606049007efb780683332a3440dc20317e7"
 dependencies = [
  "ahash 0.8.12",
  "bincode",

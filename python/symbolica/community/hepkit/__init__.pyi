@@ -11331,6 +11331,11 @@ class IBPFamily:
         >>> arities = hep.IBPFamily.compiled_runtime_arities()
         >>> assert arities == sorted(set(arities))
         """
+    @staticmethod
+    def compiled_runtime_capacities() -> list[int]:
+        """Compiled storage capacities, shared when ibp-capacity-dispatch is enabled."""
+        ...
+
     @property
     def cut(self) -> list[bool]:
         """Reverse-unitarity flags in denominator order; nonpositive cut powers vanish.
