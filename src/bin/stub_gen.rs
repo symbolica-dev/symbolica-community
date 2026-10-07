@@ -185,7 +185,7 @@ other : object
     let source = hepkit
         + "\n"
         + include_str!("../../stubs/ibp.pyi")
-        + "\nfrom . import integration as integration\nfrom . import ibp as ibp\nfrom . import rustred as rustred\nfrom . import oneloop as oneloop\nfrom . import sector_decomposition as sector_decomposition\nfrom . import vakint as vakint\n";
+        + "\nfrom . import integration as integration\nfrom . import ibp as ibp\nfrom . import rustred as rustred\nfrom . import oneloop as oneloop\nfrom . import sector_decomposition as sector_decomposition\nfrom .sector_decomposition import CompilationSettings as CompilationSettings, StabilitySettings as StabilitySettings, GenerationSession as GenerationSession, IntegrationObservation as IntegrationObservation, SectorContribution as SectorContribution, LiveObservation as LiveObservation, LiveSector as LiveSector, LiveEstimate as LiveEstimate, EvaluatorTiming as EvaluatorTiming\nfrom . import vakint as vakint\n";
     write_package("symbolica.community.hepkit", &source)?;
     Ok(())
 }

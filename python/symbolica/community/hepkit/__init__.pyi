@@ -12072,4 +12072,5 @@ from . import ibp as ibp
 from . import rustred as rustred
 from . import oneloop as oneloop
 from . import sector_decomposition as sector_decomposition
+from .sector_decomposition import CompilationSettings as CompilationSettings, StabilitySettings as StabilitySettings, GenerationSession as GenerationSession, IntegrationObservation as IntegrationObservation, SectorContribution as SectorContribution, LiveObservation as LiveObservation, LiveSector as LiveSector, LiveEstimate as LiveEstimate, EvaluatorTiming as EvaluatorTiming
 from . import vakint as vakint

@@ -58,14 +58,32 @@ def test_flat_namespace_and_stubs():
     for name in shared:
         assert classes.pop(name) is getattr(graph, name)
         assert getattr(graph, name).__module__ == "symbolica.community.graph"
+    sector_shared = {
+        "CompilationSettings", "StabilitySettings", "GenerationSession",
+        "IntegrationObservation", "SectorContribution", "LiveObservation",
+        "LiveSector", "LiveEstimate", "EvaluatorTiming",
+    }
+    for name in sector_shared:
+        assert classes.pop(name) is getattr(hep.sector_decomposition, name)
+        assert getattr(hep, name).__module__ == "symbolica.community.hepkit.sector_decomposition"
     assert all(
         value.__module__ == "symbolica.community.hepkit" for value in classes.values()
     )
     stub = Path(hep.__file__).with_name("__init__.pyi").read_text()
+    stub_ast = ast.parse(stub, feature_version=9)
     declarations = {
-        node.name for node in ast.parse(stub).body if isinstance(node, ast.ClassDef)
+        node.name for node in stub_ast.body if isinstance(node, ast.ClassDef)
     }
     assert classes.keys() <= declarations
+    reexports = {
+        alias.name
+        for node in stub_ast.body
+        if isinstance(node, ast.ImportFrom)
+        and node.level == 1 and node.module == "sector_decomposition"
+        for alias in node.names
+        if alias.name == alias.asname
+    }
+    assert sector_shared <= reexports
     assert "symbolica.community.feynkit" not in stub
 
 

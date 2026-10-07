@@ -15,4 +15,15 @@ del initialize_module
 from . import oneloop as oneloop
 
 from . import sector_decomposition as sector_decomposition
+from .sector_decomposition import (
+    CompilationSettings as CompilationSettings,
+    StabilitySettings as StabilitySettings,
+    GenerationSession as GenerationSession,
+    IntegrationObservation as IntegrationObservation,
+    SectorContribution as SectorContribution,
+    LiveObservation as LiveObservation,
+    LiveSector as LiveSector,
+    LiveEstimate as LiveEstimate,
+    EvaluatorTiming as EvaluatorTiming,
+)
 from . import integration as integration

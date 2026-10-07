@@ -39,6 +39,7 @@ class Chart:
         Source-chart endpoint powers before symmetry, multiplicity and subtraction.
         None denotes an older artifact without this retained record.
         """
+    def _repr_html_(self, slf: Chart) -> builtins.str: ...
 
 @typing.final
 class CoefficientExpansionSnapshot:
@@ -77,6 +78,7 @@ class CoefficientExpansionSnapshot:
         """
     @property
     def requests(self) -> CoefficientRequestCounts: ...
+    def _repr_html_(self, slf: CoefficientExpansionSnapshot) -> builtins.str: ...
 
 @typing.final
 class CoefficientRequestCounts:
@@ -95,6 +97,7 @@ class CoefficientRequestCounts:
     def interleaved_requests(self) -> builtins.int: ...
     @property
     def fallback_requests(self) -> builtins.int: ...
+    def _repr_html_(self, slf: CoefficientRequestCounts) -> builtins.str: ...
 
 @typing.final
 class CompactCoefficient:
@@ -120,6 +123,30 @@ class CompactCoefficient:
         Alias/definition pairs in native Atom order. Definitions may reference aliases.
         Read only for selected detail; this does not inline or expand any expression.
         """
+    def expression(self) -> Expression:
+        r"""
+        Explicitly restore this selected coefficient with Symbolica's alias owner.
+        This can be expensive; passive views retain the compact root and aliases.
+        """
+    def _repr_html_(self, slf: CompactCoefficient) -> builtins.str: ...
+
+@typing.final
+class CompilationSettings:
+    @property
+    def backend(self) -> builtins.str: ...
+    @property
+    def horner_iterations(self) -> builtins.int: ...
+    @property
+    def cpe_rounds(self) -> typing.Optional[builtins.int]: ...
+    @property
+    def cores(self) -> builtins.int: ...
+    def _repr_html_(self) -> builtins.str: ...
+    def __new__(cls, *, backend: builtins.str = 'eager', horner_iterations: builtins.int = 10, cpe_rounds: typing.Optional[builtins.int] = 1000, cores: builtins.int = 1, max_horner_scheme_variables: builtins.int = 500, max_common_pair_cache_entries: builtins.int = 1000000, max_common_pair_distance: builtins.int = 1000, verbose: builtins.bool = False, direct_translation: builtins.bool = True) -> CompilationSettings:
+        r"""
+        Eager execution is the notebook default on every host. None means unlimited CPE rounds.
+        """
+    def to_json(self) -> builtins.str: ...
+    def __repr__(self) -> builtins.str: ...
 
 @typing.final
 class CoordinateMap:
@@ -142,6 +169,7 @@ class CoordinateMap:
     def source_domain(self) -> builtins.str: ...
     @property
     def projective_fixed_parameter(self) -> typing.Optional[builtins.int]: ...
+    def _repr_html_(self, slf: CoordinateMap) -> builtins.str: ...
 
 @typing.final
 class DiscreteSectorAllocation:
@@ -152,11 +180,12 @@ class DiscreteSectorAllocation:
     def probability(self) -> builtins.float: ...
     @property
     def points_per_batch(self) -> builtins.int: ...
+    def _repr_html_(self, slf: DiscreteSectorAllocation) -> builtins.str: ...
 
 @typing.final
 class DomainAssessment:
     r"""
-    The original native domain admission and its retained factor certificates.
+    The native domain and threshold policy, including historical assessments.
     """
     @property
     def domain(self) -> builtins.str: ...
@@ -170,6 +199,7 @@ class DomainAssessment:
     def parameters(self) -> builtins.list[Expression]: ...
     @property
     def factors(self) -> builtins.list[FactorAssessment]: ...
+    def _repr_html_(self, slf: DomainAssessment) -> builtins.str: ...
 
 @typing.final
 class EndpointPower:
@@ -189,12 +219,31 @@ class EndpointPower:
         r"""
         Required endpoint Taylor coefficients; vanishing boundary terms may cancel.
         """
+    def _repr_html_(self, slf: EndpointPower) -> builtins.str: ...
 
 @typing.final
 class EvaluationDiagnostics:
     r"""
     Native caller-aggregated evaluation counters, including failed attempts.
     """
+    @property
+    def f64_points(self) -> builtins.int: ...
+    @property
+    def double_float_points(self) -> builtins.int: ...
+    @property
+    def arbitrary_points(self) -> builtins.int: ...
+    @property
+    def unstable_points(self) -> builtins.int: ...
+    @property
+    def cutoff_zero_points(self) -> builtins.int: ...
+    @property
+    def unclassified_points(self) -> builtins.int: ...
+    @property
+    def f64_timing(self) -> EvaluatorTiming: ...
+    @property
+    def double_float_timing(self) -> EvaluatorTiming: ...
+    @property
+    def arbitrary_timing(self) -> EvaluatorTiming: ...
     @property
     def evaluations(self) -> builtins.int: ...
     @property
@@ -209,6 +258,7 @@ class EvaluationDiagnostics:
     def weighted_checks(self) -> builtins.int: ...
     @property
     def additional_replays(self) -> builtins.int: ...
+    def _repr_html_(self, slf: EvaluationDiagnostics) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
 
 @typing.final
@@ -224,6 +274,7 @@ class EvaluatorOperations:
     def inversions(self) -> builtins.int: ...
     @property
     def function_calls(self) -> builtins.int: ...
+    def _repr_html_(self, slf: EvaluatorOperations) -> builtins.str: ...
 
 @typing.final
 class EvaluatorStatistics:
@@ -255,6 +306,22 @@ class EvaluatorStatistics:
         r"""
         Actual compressed SymJIT application bytes, not machine-code size; None for interpreter.
         """
+    def _repr_html_(self, slf: EvaluatorStatistics) -> builtins.str: ...
+
+@typing.final
+class EvaluatorTiming:
+    @property
+    def calls(self) -> builtins.int:
+        r"""
+        Evaluated points, including speculative or repeated numerical attempts.
+        """
+    @property
+    def nanoseconds(self) -> builtins.int: ...
+    @property
+    def matrix_invocations(self) -> builtins.int: ...
+    @property
+    def matrix_points(self) -> builtins.int: ...
+    def _repr_html_(self, slf: EvaluatorTiming) -> builtins.str: ...
 
 @typing.final
 class FactorAssessment:
@@ -268,9 +335,22 @@ class FactorAssessment:
     def exponent(self) -> Expression: ...
     @property
     def certificate(self) -> builtins.str: ...
+    def _repr_html_(self, slf: FactorAssessment) -> builtins.str: ...
 
 @typing.final
 class GeneratedIntegral:
+    @property
+    def runtime_parameters(self) -> builtins.list[Expression]: ...
+    @property
+    def model_parameter_defaults(self) -> builtins.dict[builtins.str, builtins.float]:
+        r"""
+        Model-card defaults are human metadata, never automatically bound.
+        """
+    @property
+    def runtime_parameter_defaults(self) -> dict:
+        r"""
+        Explicitly inspectable defaults keyed by the actual native runtime symbols.
+        """
     @property
     def sectors(self) -> builtins.list[GeneratedSector]:
         r"""
@@ -288,7 +368,7 @@ class GeneratedIntegral:
     @property
     def exact_coefficients(self) -> builtins.list[Expression]: ...
     def snapshot(self) -> GenerationSnapshot: ...
-    def compile(self, *, observer: typing.Optional[typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.Kernels:
+    def compile(self, *, backend: str = 'eager', settings: typing.Optional[symbolica.community.hepkit.sector_decomposition.CompilationSettings] = None, observer: typing.Optional[typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.Kernels:
         r"""
         Compile native evaluators without creating or advancing a session.
 
@@ -296,6 +376,7 @@ class GeneratedIntegral:
         None disables it. Callables receive all snapshots, observer first.
         None/True continues, False cancels; original exceptions propagate.
         """
+    def _repr_html_(self, slf: GeneratedIntegral) -> builtins.str: ...
 
 @typing.final
 class GeneratedSector:
@@ -335,6 +416,7 @@ class GeneratedSector:
         Native complex coefficient roots/definitions aligned with GeneratedIntegral.orders.
         This creates cheap views; no coefficients are materialized or expanded.
         """
+    def _repr_html_(self, slf: GeneratedSector) -> builtins.str: ...
 
 @typing.final
 class GenerationMetadata:
@@ -345,6 +427,27 @@ class GenerationMetadata:
     def domain(self) -> DomainAssessment: ...
     @property
     def charts(self) -> builtins.list[Chart]: ...
+    def _repr_html_(self, slf: GenerationMetadata) -> builtins.str: ...
+
+@typing.final
+class GenerationSession:
+    @property
+    def complete(self) -> builtins.bool: ...
+    @property
+    def failed(self) -> typing.Optional[builtins.str]: ...
+    @property
+    def generated(self) -> typing.Optional[GeneratedIntegral]: ...
+    @property
+    def kernels(self) -> typing.Optional[Kernels]: ...
+    def step(self, max_units: builtins.int = 1, *, observer: typing.Optional[typing.Any] = None) -> GenerationSnapshot:
+        r"""
+        Run at most max_units indivisible native units on this caller's thread.
+        False observers and KeyboardInterrupt pause; already completed work is retained.
+        Numerical/algebra errors are terminal and expose no partial kernels.
+        """
+    def snapshot(self) -> GenerationSnapshot: ...
+    def __repr__(self) -> builtins.str: ...
+    def _repr_html_(self, slf: GenerationSession) -> builtins.str: ...
 
 @typing.final
 class GenerationSnapshot:
@@ -375,6 +478,7 @@ class GenerationSnapshot:
         """
     @property
     def detail(self) -> builtins.str: ...
+    def _repr_html_(self, slf: GenerationSnapshot) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
 
 @typing.final
@@ -409,6 +513,7 @@ class GenerationTimings:
     def compilation_seconds(self) -> builtins.float: ...
     @property
     def total_seconds(self) -> builtins.float: ...
+    def _repr_html_(self, slf: GenerationTimings) -> builtins.str: ...
 
 @typing.final
 class HavanaDiscreteSession:
@@ -437,6 +542,11 @@ class HavanaDiscreteSession:
         Persist accepted frozen-production batches and native replay state.
         Pilot training is deliberately not serialized; retain the session to resume it.
         """
+    def observation(self) -> IntegrationObservation: ...
+    def live_observation(self) -> LiveObservation:
+        r"""
+        Native point-statistics preview, separate from accepted complete-batch covariance.
+        """
     def snapshot(self) -> IntegrationSnapshot: ...
     def adapt_pilot(self, *, discrete_learning_rate: builtins.float = 1.0, continuous_learning_rate: builtins.float = 1.0) -> IntegrationSnapshot:
         r"""
@@ -446,11 +556,12 @@ class HavanaDiscreteSession:
         r"""
         Adapt a completed pilot, freeze both grids, and discard all pilot estimates.
         """
-    def step(self, max_batches: builtins.int = 1, *, observer: typing.Optional[typing.Any] = None) -> IntegrationSnapshot:
+    def step(self, max_batches: builtins.int = 1, *, evaluation_batch_size: builtins.int = 256, observer: typing.Optional[typing.Any] = None) -> IntegrationSnapshot:
         r"""
         Execute at most max_batches. False from observer pauses after an accepted
         global batch. Interrupted batches are retried, without partial statistics.
         """
+    def _repr_html_(self, slf: HavanaDiscreteSession) -> builtins.str: ...
 
 @typing.final
 class HavanaDiscreteSettings:
@@ -470,6 +581,7 @@ class HavanaDiscreteSettings:
     @property
     def maximum_sector_probability_ratio(self) -> builtins.float: ...
     def __new__(cls, *, points_per_batch: builtins.int = 4096, batches: builtins.int = 64, seed: builtins.int = 0, bins: builtins.int = 32, minimum_probability_density: builtins.float = 0.01, maximum_sector_probability_ratio: builtins.float = 100.0) -> HavanaDiscreteSettings: ...
+    def _repr_html_(self, slf: HavanaDiscreteSettings) -> builtins.str: ...
 
 @typing.final
 class Integral:
@@ -482,7 +594,7 @@ class Integral:
     def dimension(self) -> Expression: ...
     @property
     def powers(self) -> builtins.list[tuple[builtins.int, builtins.int]]: ...
-    def generate(self, max_order: int = 0, *, coefficient_expansion: str = 'physical', observer: typing.Optional[typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
+    def generate(self, max_order: int = 0, *, coefficient_expansion: str = 'full_expression', observer: typing.Optional[typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
         r"""
         Generate native sectors without compilation or numerical integration.
 
@@ -490,10 +602,35 @@ class Integral:
         None disables it. Callables receive all snapshots, observer first.
         None/True continues, False cancels; original exceptions propagate.
         """
-    def __new__(cls, diagram: FeynmanDiagram, kinematics: Kinematics, *, regulator: Expression, dimension: typing.Optional[Expression] = None, powers: typing.Optional[typing.Mapping[builtins.int, builtins.int]] = None, scalar_values: typing.Optional[dict] = None, auxiliary_momenta: typing.Optional[typing.Sequence[Expression]] = None, measure_multiplier: typing.Optional[Expression] = None) -> Integral:
+    def generation_session(self, max_order: int = 0, *, coefficient_expansion: str = 'coefficient_series', compilation_settings: typing.Optional[symbolica.community.hepkit.sector_decomposition.CompilationSettings] = None, runtime_parameters: typing.Optional[list[symbolica.Expression]] = None) -> symbolica.community.hepkit.sector_decomposition.GenerationSession:
+        r"""
+        Create retained caller-stepped generation and compilation; construction performs no symbolic work.
+        """
+    def __new__(cls, diagram: FeynmanDiagram, kinematics: Kinematics, *, regulator: Expression, dimension: typing.Optional[Expression] = None, powers: typing.Optional[typing.Mapping[builtins.int, builtins.int]] = None, scalar_values: typing.Optional[dict] = None, auxiliary_momenta: typing.Optional[typing.Sequence[Expression]] = None, measure_multiplier: typing.Optional[Expression] = None, runtime_parameters: typing.Optional[typing.Sequence[Expression]] = None, model_parameters: builtins.str = 'runtime') -> Integral:
         r"""
         Kinematics retains its symbolic tensor dimension; dimension defaults to 4-2*regulator.
         """
+    def _repr_html_(self, slf: Integral) -> builtins.str: ...
+
+@typing.final
+class IntegrationObservation:
+    @property
+    def snapshot(self) -> IntegrationSnapshot: ...
+    @property
+    def total(self) -> typing.Optional[VectorEstimate]: ...
+    @property
+    def sectors(self) -> builtins.list[SectorContribution]: ...
+    @property
+    def exact_coefficients(self) -> builtins.list[builtins.float]: ...
+    @property
+    def orders(self) -> builtins.list[builtins.int]: ...
+    @property
+    def components(self) -> builtins.list[builtins.str]: ...
+    @property
+    def replica_relation(self) -> builtins.str: ...
+    def _repr_html_(self, slf: IntegrationObservation) -> builtins.str: ...
+    def to_json(self) -> builtins.str: ...
+    def __str__(self) -> builtins.str: ...
 
 @typing.final
 class IntegrationSnapshot:
@@ -544,6 +681,7 @@ class IntegrationSnapshot:
         """
     @property
     def evaluation_diagnostics(self) -> typing.Optional[EvaluationDiagnostics]: ...
+    def _repr_html_(self, slf: IntegrationSnapshot) -> builtins.str: ...
     def __str__(self) -> builtins.str: ...
 
 @typing.final
@@ -551,6 +689,14 @@ class Kernels:
     r"""
     Compiled native evaluator owners. Each session owns one lazy execution context.
     """
+    @property
+    def runtime_parameters(self) -> builtins.list[Expression]: ...
+    @property
+    def parameters_bound(self) -> builtins.bool: ...
+    @property
+    def compilation_settings(self) -> CompilationSettings: ...
+    @property
+    def stability_settings(self) -> StabilitySettings: ...
     @property
     def content_id(self) -> builtins.str: ...
     @property
@@ -568,6 +714,11 @@ class Kernels:
     def exact_coefficients(self) -> builtins.list[builtins.float]: ...
     @property
     def backend(self) -> builtins.str: ...
+    def with_parameters(self, values: dict, *, stability: typing.Optional[StabilitySettings] = None) -> Kernels:
+        r"""
+        Bind an explicit complete physical point on independently owned native evaluators.
+        """
+    def with_stability(self, settings: StabilitySettings) -> Kernels: ...
     def to_bytes(self) -> bytes:
         r"""
         Persist the library's native portable program/metadata codec, excluding machine code.
@@ -591,6 +742,47 @@ class Kernels:
         r"""
         Restore only a native frozen-production discrete Havana checkpoint.
         """
+    def _repr_html_(self, slf: Kernels) -> builtins.str: ...
+
+@typing.final
+class LiveEstimate:
+    @property
+    def mean(self) -> typing.Optional[builtins.list[builtins.float]]: ...
+    @property
+    def standard_error(self) -> typing.Optional[builtins.list[builtins.float]]: ...
+    @property
+    def points(self) -> builtins.int: ...
+    @property
+    def replicas(self) -> builtins.int: ...
+    @property
+    def status(self) -> builtins.str: ...
+    def _repr_html_(self, slf: LiveEstimate) -> builtins.str: ...
+
+@typing.final
+class LiveObservation:
+    @property
+    def source(self) -> builtins.str: ...
+    @property
+    def stage(self) -> builtins.str: ...
+    @property
+    def total(self) -> LiveEstimate: ...
+    @property
+    def sectors(self) -> builtins.list[LiveSector]: ...
+    @property
+    def orders(self) -> builtins.list[builtins.int]: ...
+    @property
+    def components(self) -> builtins.list[builtins.str]: ...
+    def _repr_html_(self, slf: LiveObservation) -> builtins.str: ...
+    def to_json(self) -> builtins.str: ...
+    def __repr__(self) -> builtins.str: ...
+
+@typing.final
+class LiveSector:
+    @property
+    def id(self) -> builtins.int: ...
+    @property
+    def estimate(self) -> LiveEstimate: ...
+    def _repr_html_(self, slf: LiveSector) -> builtins.str: ...
 
 @typing.final
 class PreSubtractionMetadata:
@@ -603,6 +795,7 @@ class PreSubtractionMetadata:
     def regulator(self) -> Expression: ...
     @property
     def terms(self) -> builtins.list[PreSubtractionTerm]: ...
+    def _repr_html_(self, slf: PreSubtractionMetadata) -> builtins.str: ...
 
 @typing.final
 class PreSubtractionTerm:
@@ -621,6 +814,7 @@ class PreSubtractionTerm:
         r"""
         Ordered like this source chart's coordinate target_parameters.
         """
+    def _repr_html_(self, slf: PreSubtractionTerm) -> builtins.str: ...
 
 @typing.final
 class QmcSession:
@@ -631,8 +825,11 @@ class QmcSession:
     def complete(self) -> builtins.bool: ...
     @property
     def settings(self) -> QmcSettings: ...
+    def _repr_html_(self, slf: QmcSession) -> builtins.str: ...
+    def observation(self) -> IntegrationObservation: ...
+    def live_observation(self) -> LiveObservation: ...
     def snapshot(self) -> IntegrationSnapshot: ...
-    def step(self, max_packages: builtins.int = 1, *, observer: typing.Optional[typing.Any] = None) -> IntegrationSnapshot:
+    def step(self, max_packages: builtins.int = 1, *, evaluation_batch_size: builtins.int = 256, observer: typing.Optional[typing.Any] = None) -> IntegrationSnapshot:
         r"""
         Execute at most max_packages, returning to the Python caller between steps.
         An observer receives immutable snapshots after accepted packages; False stops this call.
@@ -653,10 +850,29 @@ class QmcSettings:
     def periodization(self) -> builtins.str: ...
     @property
     def rule(self) -> builtins.str: ...
+    def _repr_html_(self, slf: QmcSettings) -> builtins.str: ...
     def __new__(cls, *, points: builtins.int = 4096, shifts: builtins.int = 64, seed: builtins.int = 0, package_points: builtins.int = 1024, periodization: builtins.str = 'korobov3', rule: builtins.str = 'kuo_33002') -> QmcSettings:
         r"""
         Democratic QMC uses the native Kuo rule and retains full shift covariance.
         """
+
+@typing.final
+class SectorContribution:
+    @property
+    def id(self) -> builtins.int: ...
+    @property
+    def completed_points(self) -> builtins.int: ...
+    @property
+    def planned_points(self) -> typing.Optional[builtins.int]: ...
+    @property
+    def used_points(self) -> builtins.int: ...
+    @property
+    def used_replicas(self) -> builtins.int: ...
+    @property
+    def estimate(self) -> typing.Optional[VectorEstimate]: ...
+    @property
+    def uncertainty(self) -> builtins.str: ...
+    def _repr_html_(self, slf: SectorContribution) -> builtins.str: ...
 
 @typing.final
 class SectorMap:
@@ -680,6 +896,7 @@ class SectorMap:
         r"""
         Indices follow deduplicated support order, not uniquely named U/F factors.
         """
+    def _repr_html_(self, slf: SectorMap) -> builtins.str: ...
 
 @typing.final
 class SectorSnapshot:
@@ -705,6 +922,18 @@ class SectorSnapshot:
     def planned_replicas(self) -> builtins.int: ...
     @property
     def worker_seconds(self) -> builtins.float: ...
+    def _repr_html_(self, slf: SectorSnapshot) -> builtins.str: ...
+
+@typing.final
+class StabilitySettings:
+    @property
+    def mode(self) -> builtins.str: ...
+    def _repr_html_(self) -> builtins.str: ...
+    def __new__(cls, *, mode: builtins.str = 'distance', f64_distance: builtins.float = 0.001, double_float_distance: builtins.float = 1e-08, large_weight_threshold: typing.Optional[builtins.float] = 0.9, double_float_large_weight_threshold: typing.Optional[builtins.float] = None, unstable_cutoff: typing.Optional[builtins.float] = None, f64_power_thresholds: typing.Optional[typing.Mapping[builtins.str, builtins.float]] = None, double_float_power_thresholds: typing.Optional[typing.Mapping[builtins.str, builtins.float]] = None, unstable_power_thresholds: typing.Optional[typing.Mapping[builtins.str, builtins.float]] = None) -> StabilitySettings: ...
+    @staticmethod
+    def from_json(value: builtins.str) -> StabilitySettings: ...
+    def to_json(self) -> builtins.str: ...
+    def __repr__(self) -> builtins.str: ...
 
 @typing.final
 class VectorEstimate:
@@ -739,12 +968,13 @@ class VectorEstimate:
         r"""
         Only a complete production allocation can certify an accuracy stop.
         """
+    def _repr_html_(self, slf: VectorEstimate) -> builtins.str: ...
     def meets(self, *, absolute: builtins.float = 0.0, relative: builtins.float = 0.001) -> builtins.bool:
         r"""
         Delegate convergence to the native full-production and vector tolerance check.
         """
 
-def sector_decompose(input: typing.Union[symbolica.community.hepkit.FeynmanDiagram, symbolica.community.hepkit.IntegralFamily], *, regulator: symbolica.Expression, kinematics: typing.Optional[symbolica.community.hepkit.Kinematics] = None, dimension: typing.Optional[symbolica.Expression] = None, powers: typing.Optional[typing.Union[collections.abc.Mapping[int, int], collections.abc.Sequence[int]]] = None, numerator: typing.Optional[symbolica.Expression] = None, scalar_values: typing.Optional[dict[symbolica.Expression, symbolica.Expression]] = None, auxiliary_momenta: typing.Optional[collections.abc.Sequence[symbolica.Expression]] = None, measure_multiplier: typing.Optional[symbolica.Expression] = None, max_order: int = 0, coefficient_expansion: str = 'physical', observer: typing.Optional[collections.abc.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
+def sector_decompose(input: typing.Union[symbolica.community.hepkit.FeynmanDiagram, symbolica.community.hepkit.IntegralFamily], *, regulator: symbolica.Expression, kinematics: typing.Optional[symbolica.community.hepkit.Kinematics] = None, dimension: typing.Optional[symbolica.Expression] = None, powers: typing.Optional[typing.Union[collections.abc.Mapping[int, int], collections.abc.Sequence[int]]] = None, numerator: typing.Optional[symbolica.Expression] = None, scalar_values: typing.Optional[dict[symbolica.Expression, symbolica.Expression]] = None, auxiliary_momenta: typing.Optional[collections.abc.Sequence[symbolica.Expression]] = None, measure_multiplier: typing.Optional[symbolica.Expression] = None, runtime_parameters: typing.Optional[list[symbolica.Expression]] = None, model_parameters: str = 'runtime', max_order: int = 0, coefficient_expansion: str = 'full_expression', observer: typing.Optional[collections.abc.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
     r"""
     Generate from an existing native diagram or an explicitly weighted family.
 
