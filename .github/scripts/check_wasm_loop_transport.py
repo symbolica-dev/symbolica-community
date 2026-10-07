@@ -52,9 +52,11 @@ def check_higgs_standard_model():
     assert extended.to_json() == before_collision and model.to_json() == original
     assert Model.from_json(before_collision).to_json() == before_collision
     citations = {c.id: c for c in get_citations()}
-    assert _numerical_reference_ids <= citations.keys()
-    for identifier in _numerical_reference_ids:
-        assert citations[identifier].reasons
+    # Supplied transport and tensor preparation do not generate AMF boundaries.
+    expected = _numerical_reference_ids - {"arXiv:2201.11669"}
+    assert _numerical_reference_ids & citations.keys() == expected
+    for identifier in expected:
+        assert citations[identifier].description and citations[identifier].reasons
         assert identifier.split(":")[1] in citations[identifier].to_bibtex()
     assert citations.keys() == {c.id for c in get_citations()}
 

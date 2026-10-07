@@ -8,7 +8,7 @@ import textwrap
 import pytest
 
 
-@pytest.mark.parametrize("operation", ["import", "ordinary", "kinematic", "higgs", "model", "automatic"])
+@pytest.mark.parametrize("operation", ["import", "ordinary", "kinematic", "higgs", "model", "projector", "automatic"])
 def test_numerical_transport_citations_are_usage_gated_and_cumulative(operation):
     """Each case starts with a fresh native registry; no test-only reset exists."""
     result = subprocess.run(
@@ -38,17 +38,20 @@ def test_numerical_transport_citations_are_usage_gated_and_cumulative(operation)
             expected = set()
             if operation == 'ordinary':
                 integration.DifferentialSystem(S('citation_x'), [[E('0')]])
-                expected = method_ids
+                expected = set(method_ids)
             elif operation == 'kinematic':
                 integration.KinematicTransport(S('citation_eps'), {S('citation_x'):[[E('0')]]},
                     [S('citation_I')], E('1'), branch_domain='citation preparation')
-                expected = method_ids
+                expected = set(method_ids)
             elif operation == 'higgs':
                 integration.HiggsJetIntegralSystem('planar')
-                expected = all_ids
+                expected = method_ids | {higgs_id}
             elif operation == 'model':
                 integration.HiggsJetAmplitude.with_form_factor_vertices(hep.Model.standard_model())
-                expected = all_ids
+                expected = {higgs_id}
+            elif operation == 'projector':
+                integration.HiggsJetFormFactorProjector()
+                expected = {higgs_id}
             elif operation == 'automatic':
                 if integration.automatic_boundary_generation_available:
                     integration.IntegralEvaluator()
@@ -57,17 +60,31 @@ def test_numerical_transport_citations_are_usage_gated_and_cumulative(operation)
             assert all_ids & first.keys() == expected
             for identifier in expected:
                 citation = first[identifier]
-                assert citation.reference and citation.reasons
+                assert citation.reference and citation.description and citation.reasons
                 assert citation.to_bibtex().startswith('@article{')
                 assert identifier.split(':')[1] in citation.to_bibtex()
+            if method_ids <= expected:
+                methods = [first[identifier] for identifier in sorted(method_ids)]
+                assert methods[0].description != methods[1].description
+                assert methods[0].reasons != methods[1].reasons
             second = citations()
             assert first.keys() == second.keys()
             assert all(second[k].reasons == first[k].reasons for k in expected)
             if operation != 'import':
                 integration.HiggsJetAmplitude.with_form_factor_vertices(hep.Model.standard_model())
                 accumulated = citations()
-                assert all_ids <= accumulated.keys()
+                assert all_ids & accumulated.keys() == expected | {higgs_id}
                 for identifier in expected:
+                    assert set(first[identifier].reasons) <= set(accumulated[identifier].reasons)
+                integration.DifferentialSystem(S('citation_second_x'), [[E('0')]])
+                expected |= method_ids | {higgs_id}
+                assert all_ids & citations().keys() == expected
+                if integration.automatic_boundary_generation_available:
+                    integration.IntegralEvaluator()
+                    expected |= {amflow_id}
+                accumulated = citations()
+                assert all_ids & accumulated.keys() == expected
+                for identifier in first.keys() & all_ids:
                     assert set(first[identifier].reasons) <= set(accumulated[identifier].reasons)
         """), operation],
         capture_output=True,
