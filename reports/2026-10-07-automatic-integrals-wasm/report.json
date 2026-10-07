@@ -1,0 +1,101 @@
+{
+  "status": "passed",
+  "scope": "complete Community development-profile Pyodide runtime gate",
+  "artifact": {
+    "community_commit": "99ccc95a1ed3391acbdbe82d266ef28f45a950b3",
+    "profile": "dev",
+    "features": [
+      "wasm",
+      "pyo3/extension-module"
+    ],
+    "default_features": false,
+    "wheel": "symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+    "wheel_sha256": "ca73c9304e5314b3ff0d99454fc8bfa858640bb83936a660fc60e0173cd65785",
+    "wheel_bytes": 69191265,
+    "extension_sha256": "de8baf43e5f89df66e80e591818b2754dce641d099209e7d50098b84b9366cec",
+    "extension_bytes": 337700375,
+    "runtime_dir": "/common/dev/rustred/TMP/rustred-wasm-xbuildenv/314.0.4/xbuildenv/pyodide-root/dist",
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "owners": {
+      "feynkit-model": "git+https://github.com/alphal00p/gammaloop?branch=feynkit#635d3a1feb44067583a668c7d18f67405fe144e1",
+      "feynkit-py": "git+https://github.com/alphal00p/gammaloop?branch=feynkit#635d3a1feb44067583a668c7d18f67405fe144e1",
+      "graphica": "git+https://github.com/symbolica-dev/symbolica?branch=community#ed2374f1d880d52c3a7ca48cd7c22f4baad5c020",
+      "idenso": "git+https://github.com/alphal00p/gammaloop?branch=feynkit#635d3a1feb44067583a668c7d18f67405fe144e1",
+      "linnet": "git+https://github.com/alphal00p/gammaloop?branch=feynkit#635d3a1feb44067583a668c7d18f67405fe144e1",
+      "numerica": "git+https://github.com/symbolica-dev/symbolica?branch=community#ed2374f1d880d52c3a7ca48cd7c22f4baad5c020",
+      "rustred": "git+https://github.com/alphal00p/rustred?branch=main#acc92b0dad27b11fd194a4c284765fb6a93cbc94",
+      "spenso": "git+https://github.com/alphal00p/gammaloop?branch=feynkit#635d3a1feb44067583a668c7d18f67405fe144e1",
+      "symbolica": "git+https://github.com/symbolica-dev/symbolica?branch=community#ed2374f1d880d52c3a7ca48cd7c22f4baad5c020",
+      "symbolica-amflow": "git+https://github.com/alphal00p/RustFlow?rev=b34ff6b3261bcc48f867d704e1d560e1bc4a4fec#b34ff6b3261bcc48f867d704e1d560e1bc4a4fec"
+    },
+    "source_sha256": {
+      "Cargo.toml": "7ef9c1d23ffd3eef00d4049e6f59586393e4bbac5f6c204bc658665a0a54daa7",
+      "Cargo.lock": "c9730df6ef4b04ede9a2379f1cffdaf7645469b24af90abef7a42022c2c18ff5",
+      ".github/scripts/test_pyodide.mjs": "922ef283d2b2a5ea4c104b8b523964d25cce4cb25f45526c5f441dbe84cd2631",
+      ".github/scripts/check_wasm_loop_transport.py": "4f0d6e28a66e382ca5da1d13d4f8f633e88404dda1be7b533ca4ca1bc9154a71",
+      ".github/scripts/check_wasm_automatic_integrals.py": "0b1eaa50909487fc475065deb6a1a17efccfb42570d59158952ab9221e010703"
+    }
+  },
+  "runtime": {
+    "returncode": 0,
+    "elapsed_seconds": 574.0871319579892
+  },
+  "automatic_and_transport": {
+    "schema": "supplied-loop-transport-runtime-v1",
+    "wheel": "symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+    "wheel_sha256": "ca73c9304e5314b3ff0d99454fc8bfa858640bb83936a660fc60e0173cd65785",
+    "supplied_loop_transport": true,
+    "higgs_standard_model": true,
+    "automatic_boundary_generation": true,
+    "exact_tadpole_ibp": true,
+    "scoped_supplied_reductions": true,
+    "finite_epsilon_tadpole_and_bubble": true,
+    "tadpole_laurent_verified_digits": 20,
+    "fresh_boundary_verified_digits": 30,
+    "generated_boundary_transport_and_restart": true,
+    "precancelled_evaluation": true,
+    "retained_progress": true,
+    "multiple_workers_rejected": true,
+    "execution": "synchronous single worker"
+  },
+  "rustred": {
+    "schema": "rustred-wasm-runtime-v1",
+    "wheel": "symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+    "wheel_sha256": "ca73c9304e5314b3ff0d99454fc8bfa858640bb83936a660fc60e0173cd65785",
+    "execution_mode": "synchronous",
+    "generated_seconds": 3.078180112000002,
+    "total_seconds": 101.834482247,
+    "arity": 6,
+    "terminal_masters": 38,
+    "generated_and_certified_k6": true,
+    "graph_ibp": true,
+    "exact_homogeneity": true,
+    "pinch_and_numerator": true,
+    "scope": "full-community"
+  },
+  "dependency_graphs": 6,
+  "focused_tests_passed": 17,
+  "evidence_sha256": "419ff1f36975426c536cc130a16f785f57bbe8047c5ee4aa241a7d7c12cf74e7",
+  "evidence_members_sha256": {
+    "build-pinned.log": "7e9f45384a5ebdcc06a850cc4cdf0c26158e1ca09fc120587b195796e199f9d3",
+    "dependency-pinned-update.log": "784d710bc51b108d1d4d1c0df391d563c99ff5579a5c2ea28f4fe8c35ed193e2",
+    "owner-checks-pinned.log": "6cd4fa5dae435af292f826b3a130ce145272c0041cfe7fa27141abf0ecb5e335",
+    "pinned-artifact.json": "641311d990afb022568f16260c3f43c45657ac2383ad5271ac3e0285b67cc02e",
+    "pinned-wheel/loop-transport-validation.json": "b9b4d10a6be7f7d96fa4c8365931da6ee86e0748b97c0f2daa1e02f67bb70e22",
+    "pinned-wheel/rustred-wasm-validation.json": "21d9f70937056d5aae74921ad4702f5df1e044c50e18b2f8fa6b88b3970fb7e4",
+    "pure-tests-pinned.log": "2b2d767105fcadd6caca0788dc8b5865e63271d079fdf44070bda78649e483f5",
+    "pyodide-pinned-run.json": "0b8be8f4719868a89acf69c6b7b4dd15bcaab72a79d3ce58cfa496e5fa826b0d",
+    "pyodide-pinned.log": "4d5361c4b3f3cda457bbd899ad8eea914f89c321f0c0699a514d3b2152dd8fa8",
+    "source/.github/scripts/check_wasm_automatic_integrals.py": "0b1eaa50909487fc475065deb6a1a17efccfb42570d59158952ab9221e010703",
+    "source/.github/scripts/check_wasm_loop_transport.py": "4f0d6e28a66e382ca5da1d13d4f8f633e88404dda1be7b533ca4ca1bc9154a71",
+    "source/.github/scripts/test_pyodide.mjs": "922ef283d2b2a5ea4c104b8b523964d25cce4cb25f45526c5f441dbe84cd2631",
+    "source/Cargo.lock": "c9730df6ef4b04ede9a2379f1cffdaf7645469b24af90abef7a42022c2c18ff5",
+    "source/Cargo.toml": "7ef9c1d23ffd3eef00d4049e6f59586393e4bbac5f6c204bc658665a0a54daa7"
+  },
+  "limits": [
+    "Development profile; these timings are not release-performance measurements.",
+    "One synchronous WASM worker; no in-flight UI cancellation in that same worker.",
+    "Fresh tadpole and bubble automatic evaluation; no new complete Higgs-jet boundary acceptance.",
+    "Node-hosted actual Pyodide runtime; no new Chromium notebook acceptance."
+  ]
+}

@@ -219,6 +219,8 @@ work into calls or manage the enclosing browser worker. The automatic runtime
 gate checks fresh tadpole and bubble evaluations, exact IBP target reductions,
 generated boundaries, physical transport and binary restart. It does not imply
 that large multiloop boundary calculations are practical in a live browser.
+The [complete Pyodide acceptance](../../reports/2026-10-07-automatic-integrals-wasm/README.md)
+records the immutable dependency pins and verified numerical coverage.
 
 Focused native-object examples and regressions are executable without the
 two-loop notebook:

@@ -68,7 +68,8 @@ call. Another browser callback cannot interrupt an active synchronous call.
 Cache files live in Pyodide's virtual filesystem; download them for persistence
 across browser sessions.
 The [automatic browser evaluation status](reports/2026-10-07-automatic-integrals-wasm/README.md)
-records the completed checks and the precision validation still in progress.
+records the complete Pyodide gate, including automatic evaluation and verified
+30-digit boundary generation.
 The [gg → Hg Marimo notebook](examples/hep/gg_hg.py) shows the native transport,
 cache, form-factor projection and coherent EW/HEFT amplitude API calls directly.
 It loads supplied starting boundaries, then computes transport and the amplitude
