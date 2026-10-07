@@ -85,7 +85,7 @@ The checked-in manifest and lock fetch the shared dependencies from public Git
 sources. Build this checkout with the locked native installation command below;
 no sibling checkout, local path override or manual owner patch is required.
 The host owns the complete shared dependency graph, as described in the
-[integration dependency guide](https://github.com/alphal00p/RustFlow/blob/b34ff6b3261bcc48f867d704e1d560e1bc4a4fec/docs/dependency-embedding.md).
+[integration dependency guide](https://github.com/alphal00p/RustFlow/blob/b77d87324592bf4680f4a1584f5352dd414bcd70/docs/dependency-embedding.md).
 Generate these hints with `stub_gen --hepkit-only`; the public package and stubs
 are under `python/symbolica/community/hep/integration/`. Browser builds expose
 automatic evaluation, supplied-boundary solvers, transport, cache and amplitude APIs. Existing
@@ -97,7 +97,7 @@ and [visible notebook gate](reports/2026-10-06-visible-higgs-api/README.md) cove
 the scientific outputs and actual Chromium rendering separately.
 
 The Git dependency selects RustFlow
-[`b34ff6b3261bcc48f867d704e1d560e1bc4a4fec`](https://github.com/alphal00p/RustFlow/commit/b34ff6b3261bcc48f867d704e1d560e1bc4a4fec).
+[`b77d87324592bf4680f4a1584f5352dd414bcd70`](https://github.com/alphal00p/RustFlow/commit/b77d87324592bf4680f4a1584f5352dd414bcd70).
 HEPKit, Linnet, Spenso, Idenso and rendering share the official GammaLoop
 `feynkit` branch at
 [`635d3a1feb44067583a668c7d18f67405fe144e1`](https://github.com/alphal00p/gammaloop/commit/635d3a1feb44067583a668c7d18f67405fe144e1).

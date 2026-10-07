@@ -30,6 +30,18 @@ No new complete Higgs-jet boundary/amplitude or Chromium notebook acceptance is
 claimed here. Browser support refers to Pyodide/Emscripten; this report does not
 establish bare `wasm32-unknown-unknown` runtime support.
 
+## Subsequent dependency pin
+
+Community now pins RustFlow `b77d87324592bf4680f4a1584f5352dd414bcd70`.
+Relative to the tested `b34ff6b` revision, it changes only
+`tests/banana_equal.rs`, `tests/banana_unequal.rs` and `tests/common/banana.rs`
+to evaluate zeta through Symbolica in portable tests. Runtime source, manifests
+and the RustFlow lockfile are identical. All six host dependency ownership
+checks passed again. The wheel and archived runtime evidence below continue to
+identify `b34ff6b`; they have not been relabelled as a build of the newer pin.
+Rebuilding the newer pin changes its source-sensitive cache identity despite
+identical runtime source.
+
 ## Artifact and evidence
 
 - Wheel: `symbolica-3.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl`, 69,191,265 bytes.
