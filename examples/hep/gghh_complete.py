@@ -270,8 +270,8 @@ def _(ShowcaseInput):
         native_process = gghh_process(model)
         result = native_process.generate_diagrams(
             loops=(1, 2), coupling_orders={"QED": 2}, threads=1,
-            symmetrize_initial=True, symmetrize_final=True, allow_zero_flow_edges=True,
-            maximum_bridges=None, self_energy=None, tadpoles=None, zero_snails=None,
+            symmetrize_initial=True, symmetrize_final=True, allow_zero_flow_edges=False,
+            filter_zero_color=True,
             numerator_grouping=None,
             projector=_gghh_E("1"), progress=progress,
         )
@@ -1801,7 +1801,7 @@ def _(mo):
     sibling Python modules, parameter cards, DOT files or fixture folders.
     The folded definition cells expose every native HEPKit call used below.
 
-    All one- and two-loop Standard Model diagrams with $QED=2$, restricted to Higgs, gluon and top particles. Initial and final states are symmetrized. The first one-loop diagram is selected by default. The initial integration point uses $\sqrt{s}=300$ GeV, $m_H=125$ GeV, $m_t=172.5$ GeV and $\cos\theta=4/5$, with $(+,+)$ gluon helicities and color projection $\delta_{ab}$. Each calculation is one diagram contribution.
+    One- and two-loop one-particle-irreducible Standard Model diagrams with $QED=2$, restricted to Higgs, gluon and top particles. Native scattering filters reject self-energy and tadpole subgraphs and zero snails attached to massless lines; identically zero color factors and zero-flow propagators are excluded. Initial and final states are symmetrized. The first one-loop diagram is selected by default. The initial integration point uses $\sqrt{s}=300$ GeV, $m_H=125$ GeV, $m_t=172.5$ GeV and $\cos\theta=4/5$, with $(+,+)$ gluon helicities and color projection $\delta_{ab}$. Each calculation is one diagram contribution.
 
     **Build diagrams → Generate → Inspect → Integrate QMC → Integrate Havana.**
     Every calculation starts with a button. Pause retains the native owner;
