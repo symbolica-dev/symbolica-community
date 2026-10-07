@@ -49,13 +49,13 @@ def project_and_split(numerator, dimension):
     ):
         slots = [
             slot.dual()
-            for slot in numerator.structure.slots
+            for slot in numerator.structure.slots()
             if slot.representation == representation
         ]
         assert len(slots) == 2
         projector *= sp.TensorExpression.g(representation)(*slots)
     projected = projector * numerator
-    assert not projected.structure.slots
+    assert not projected.structure.slots()
     color_reps = (
         sp.Representation.cof(3),
         sp.Representation.cof(3).dual(),
@@ -63,7 +63,7 @@ def project_and_split(numerator, dimension):
     )
     color, spacetime = [], []
     for factor in projected.to_expression():
-        slots = sp.TensorExpression(factor).structure.slots
+        slots = sp.TensorExpression(factor).structure.slots()
         if slots and all(slot.representation in color_reps for slot in slots):
             color.append(factor)
         else:
@@ -92,15 +92,17 @@ def reduce_color(tensor):
 
 def dot_coordinates(expression, dimension, namespace):
     """Name the 15 independent products of four loop vectors and external p."""
-    rep = sp.Representation.mink(dimension).to_expression()
-    vectors = [hep.Kinematics.loop_momentum(i, rep) for i in range(4)]
-    vectors.append(hep.Kinematics.external_momentum(0, rep))
+    loop_momentum = hep.Kinematics.loop_momentum()
+    external_momentum = hep.Kinematics.external_momentum()
+    vectors = [loop_momentum(i) for i in range(4)]
+    vectors.append(external_momentum(0))
+    kinematics = hep.Kinematics(dimension, momenta=vectors)
     labels = ["k0", "k1", "k2", "k3", "p"]
     replacements, rows, symbols = [], [], []
     for i in range(5):
         for j in range(i, 5):
             symbol = S(f"{namespace}::s{i}{j}")
-            product = sp.dot(vectors[i], vectors[j]).to_expression()
+            product = kinematics.scalar_product(vectors[i], vectors[j])
             replacements.append(Replacement(product, symbol))
             symbols.append(symbol)
             rows.append(

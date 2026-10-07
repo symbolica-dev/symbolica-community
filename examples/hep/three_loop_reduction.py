@@ -52,6 +52,7 @@ async def _():
 
     from symbolica import E, S
     from symbolica.community import hepkit as hep
+    from symbolica.community.hepkit import rustred
     from three_loop_reduction_support import (
         ThreeLoopRun, assert_source_matches_family, graph_inputs, tomllib,
     )
@@ -60,7 +61,6 @@ async def _():
         rule_summary_rows, rule_view, terminal_rows,
     )
 
-    rustred = getattr(hep, "rustred", None)
     return (
         E,
         S,
@@ -210,19 +210,15 @@ def _(ThreeLoopRun, generation_source, rustred):
         "event_capacity": 256,
     }
     run = ThreeLoopRun(rustred, generation_source)
-    native_available = rustred is not None and all(hasattr(rustred, method) for method in (
-        "start_family_candidates", "certify_candidates",
-        "inspect_closing_artifact", "reduce_with_closing_artifact",
-    ))
-    return generation_options, native_available, run
+    return generation_options, run
 
 
 @app.cell(hide_code=True)
-def _(generation_options, native_available, run):
+def _(generation_options, run):
     generate = mo.ui.button(label="Generate", kind="success",
-        on_click=lambda value: run.start(**generation_options), disabled=not native_available)
+        on_click=lambda value: run.start(**generation_options))
     cancel = mo.ui.button(label="Cancel", on_click=lambda value: run.cancel(),
-        disabled=not native_available or not run.capabilities["cancellation_in_flight"])
+        disabled=not run.capabilities["cancellation_in_flight"])
     heartbeat = (mo.ui.refresh(options=["1s", "3s", "10s"], default_interval="1s")
                  if run.capabilities["live_event_polling"] else None)
     _controls = [generate, cancel, heartbeat] if heartbeat is not None else [generate]
@@ -232,9 +228,7 @@ def _(generation_options, native_available, run):
             "Keep refresh enabled to collect live native progress."
             if run.capabilities["live_event_polling"] else
             "This browser runs one worker synchronously; progress appears after completion."
-        )) if native_available
-        else mo.callout("This HEPKit installation lacks the native closing-artifact API. "
-                        "Install a Community build with RustRed support to run the reduction.", kind="warn"),
+        )),
     ])
     return cancel, generate, heartbeat
 
@@ -262,8 +256,8 @@ def _(cancel, generate, heartbeat, run):
 
 
 @app.cell(hide_code=True)
-def _(native_available):
-    certify = mo.ui.run_button(label="Certify generated rules", disabled=not native_available)
+def _():
+    certify = mo.ui.run_button(label="Certify generated rules")
     certify
     return (certify,)
 

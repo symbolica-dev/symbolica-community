@@ -65,9 +65,7 @@ class CalculationSession:
         self.cooperative = sys.platform == "emscripten" if cooperative is None else cooperative
         if self.cooperative and (workers != 1 or boundary_workers != 1):
             raise ValueError("Cooperative notebook execution requires one worker.")
-        self.automatic_boundary_generation_available = getattr(
-            integration, "automatic_boundary_generation_available", True,
-        )
+        self.automatic_boundary_generation_available = integration.automatic_boundary_generation_available
         self.directory = Path(directory)
         self.boundary_bundle = None if boundary_bundle is None else Path(boundary_bundle)
         self.model = hep.Model.from_json(Path(model_path).read_text())

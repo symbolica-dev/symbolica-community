@@ -53,15 +53,7 @@ class ThreeLoopRun:
 
     def __init__(self, native, source, *, clock=monotonic):
         self.native, self.source, self.clock = native, source, clock
-        # Older native hosts predate the capability query. Browser-capable
-        # builds always provide it; do not infer concurrency from a session type.
-        self.capabilities = native.execution_capabilities() if (
-            native is not None and hasattr(native, "execution_capabilities")
-        ) else {
-            "execution_mode": "background-coordinator", "background_sessions": True,
-            "live_event_polling": True, "cancellation_in_flight": True,
-            "max_workers": None,
-        }
+        self.capabilities = native.execution_capabilities()
         self.state, self.session = "ready", None
         self.started, self.finished = None, None
         self.result, self.candidate = None, None

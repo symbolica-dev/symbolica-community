@@ -451,30 +451,14 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _():
-    try:
-        import symbolica.community.hep.integration as numerical_flow
-    except ModuleNotFoundError as _error:
-        if _error.name not in {
-            "symbolica.community.hep",
-            "symbolica.community.hep.integration",
-            "symbolica.community.hep_integration_native",
-        }:
-            raise
-        numerical_flow = None
+    from symbolica.community.hep import integration as numerical_flow
     return (numerical_flow,)
 
 
 @app.cell(hide_code=True)
-def _(mo, numerical_flow):
+def _(mo):
     run_amflow = mo.ui.run_button(label="Compute AMFlow starting value at p² = −1")
-    mo.vstack(
-        [
-            mo.md(
-                "The numerical-flow sections require a Symbolica community installation with `hep.integration`."
-            ),
-            run_amflow,
-        ]
-    )
+    run_amflow
     return (run_amflow,)
 
 
@@ -483,13 +467,6 @@ def _(E, Q2, S, diagram, flow_cache_root, hep, mass, mo, numerical_flow, p, run_
     mo.stop(
         not run_amflow.value,
         mo.md("Press **Compute AMFlow starting value** to evaluate this graph."),
-    )
-    mo.stop(
-        numerical_flow is None,
-        mo.callout(
-            "This installation does not include HEPkit's numerical integration API.",
-            kind="info",
-        ),
     )
     flow_dimension, flow_epsilon = S("kite_flow::D", "kite_flow::epsilon")
     flow_kinematics = hep.Kinematics(flow_dimension, momenta=[p]).with_scalar_product(

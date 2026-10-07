@@ -32,6 +32,9 @@ def test_generation_requires_explicit_start_and_cannot_restart():
         def __init__(self):
             self.calls = []
 
+        def execution_capabilities(self):
+            return hep.rustred.execution_capabilities()
+
         def start_family_candidates(self, source, **options):
             self.calls.append((source, options))
             return object()

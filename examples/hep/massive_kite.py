@@ -60,18 +60,8 @@ def _():
     from scipy.integrate import quad
     from symbolica import E, S, get_citations
     from symbolica.community import hepkit as hep
+    from symbolica.community.hep import integration as numerical_flow
     from symbolica.community.hepkit import integration
-
-    try:
-        from symbolica.community.hep import integration as numerical_flow
-    except ModuleNotFoundError as error:
-        if error.name not in {
-            "symbolica.community.hep",
-            "symbolica.community.hep.integration",
-            "symbolica.community.hep_integration_native",
-        }:
-            raise
-        numerical_flow = None
 
     def is_kite(candidate):
         pairs = [tuple(sorted((e.source, e.target))) for e in candidate.internal_edges]
@@ -488,12 +478,6 @@ def _(
     mo.stop(
         not run_amflow.value,
         mo.md("Press **Compute AMFlow seed** to start the independent comparison."),
-    )
-    mo.stop(
-        numerical_flow is None,
-        mo.callout(
-            "This installation needs HEPkit's numerical integration API.", kind="info"
-        ),
     )
     D, epsilon = S("massive_kite_flow::D", "massive_kite_flow::epsilon")
     flow_kinematics = hep.Kinematics(D, momenta=[p]).with_scalar_product(p, p, -rho)

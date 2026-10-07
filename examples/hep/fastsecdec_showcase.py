@@ -101,11 +101,7 @@ async def _(mo):
 @app.cell
 def _(mo):
     # The canonical HEPKit API. Importing it starts no scientific work.
-    from symbolica.community import hepkit as _hep
-    if hasattr(_hep, "sector_decomposition"):
-        import symbolica.community.hepkit.sector_decomposition as sd
-    else:
-        sd = None
+    from symbolica.community.hepkit import sector_decomposition as sd
     mo.show_code()
     return (sd,)
 
@@ -355,8 +351,6 @@ def _(adapt_button, advance_session, allocation_controls, builders, cancel_butto
         _validation = None if draft["example"] == "gghh" else presentation.validate_configuration(draft)
         if _validation:
             run_state.message = _validation
-        elif sd is None:
-            run_state.message = "Install a community wheel with the FastSecDec API."
         else:
             _configuration = dict(draft)
             _prepare = (lambda observer: gghh_builder.prepare(observer=observer)) if draft["example"] == "gghh" else (lambda observer: builders.prepare(_configuration))

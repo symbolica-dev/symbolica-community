@@ -49,7 +49,7 @@ async def _():
 
     from symbolica import E, N, S
     from symbolica.community import hepkit as hep
-    rustred = getattr(hep, "rustred", None)
+    from symbolica.community.hepkit import rustred
 
     from rustred_campaign_support import (
         FAMILY_NAMES,
@@ -210,8 +210,6 @@ def _(
             "Native parameter legend": mo.ui.table(
                 parameter_rows(ibp_families[_name].parameter_bindings),
                 selection=None, show_column_summaries=False, show_download=False,
-            ) if hasattr(ibp_families[_name], "parameter_bindings") else mo.md(
-                "The parameter legend is available with the native session API."
             ),
         }),
     ])
@@ -252,26 +250,21 @@ def _(FourLoopCampaign, auxiliary_indices, ibp_families, rustred):
         # Serialization/inspection allowance, not a larger algebra search.
         "bundle_max_entries": 10_000_000,
     }
-    _capabilities = rustred.execution_capabilities() if (
-        rustred is not None and hasattr(rustred, "execution_capabilities")
-    ) else None
+    _capabilities = rustred.execution_capabilities()
     campaign = FourLoopCampaign(ibp_families, auxiliary_indices, capabilities=_capabilities)
-    native_generation_available = rustred is not None and all(
-        hasattr(family, "start_generation") for family in ibp_families.values()
-    )
-    return campaign, generation_options, native_generation_available
+    return campaign, generation_options
 
 
 @app.cell(hide_code=True)
-def _(campaign, generation_options, native_generation_available):
+def _(campaign, generation_options):
     start_generation = mo.ui.button(
         label="Generate H → X → BMW → FG",
         on_click=lambda value: campaign.start(**generation_options),
-        kind="success", disabled=not native_generation_available,
+        kind="success",
     )
     cancel_generation = mo.ui.button(
         label="Cancel after safe point", on_click=lambda value: campaign.cancel(),
-        disabled=not native_generation_available or not campaign.capabilities["cancellation_in_flight"],
+        disabled=not campaign.capabilities["cancellation_in_flight"],
     )
     heartbeat = (mo.ui.refresh(options=["1s", "3s", "10s"], default_interval="1s")
                  if campaign.capabilities["live_event_polling"] else None)
@@ -286,13 +279,6 @@ def _(campaign, generation_options, native_generation_available):
             "Live progress and in-flight cancellation are unavailable. Large four-loop "
             "searches may exceed browser memory; start with the three-loop example.",
             kind="info",
-        ))
-    if not native_generation_available:
-        _controls.insert(0, mo.callout(
-            "This installed HEPKit host does not include the native generation "
-            "session API yet. Graph setup is available; generation is disabled. "
-            "Install a community build with RustRed session support to run it.",
-            kind="warn",
         ))
     mo.vstack(_controls)
     return cancel_generation, heartbeat, start_generation
@@ -636,16 +622,14 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(campaign, ibp_families):
-    _available = all(hasattr(family, "normalize_candidate_terminals")
-                     for family in ibp_families.values())
+def _(campaign):
     normalize_terminals = mo.ui.button(
-        value=0, label="Normalize completed terminal sets", kind="neutral", disabled=not _available,
+        value=0, label="Normalize completed terminal sets", kind="neutral",
         on_click=lambda value: (campaign.normalize_completed(), value + 1)[1],
     )
     mo.vstack([normalize_terminals, mo.md(
         "Explicit native algebra, only after generation drains. Already normalized families are reused."
-        if _available else "This host does not yet include the native terminal-normalization API.")])
+    )])
     return (normalize_terminals,)
 
 
@@ -817,7 +801,7 @@ def _(N, S, diagrams, dimension, hep, scalar_model):
         from symbolica.community.hepkit import vakint
     except ImportError:
         vakint = None
-    mo.stop(vakint is None or not hasattr(vakint, "integral_from_diagram"), mo.callout(
+    mo.stop(vakint is None, mo.callout(
         "This section requires the native HEPKit Vakint graph adapter.", kind="warn"))
     _base = diagrams["H"].integral_family(kinematics=hep.Kinematics(dimension))
     _mass_squared = S("vakint::muvsq")

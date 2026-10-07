@@ -106,22 +106,7 @@ def _(S, hep, ladder_filter):
 
 @app.cell(hide_code=True)
 def _(diagram, graph_weight, mo):
-    try:
-        _drawing = diagram.render()
-    except ImportError:
-        _lines = ["graph LR"]
-        for _edge in diagram.edges:
-            _source = (
-                f"v{_edge.source}" if _edge.source is not None else f"ext{_edge.id}"
-            )
-            _target = (
-                f"v{_edge.target}" if _edge.target is not None else f"ext{_edge.id}"
-            )
-            _arrow = "-->" if _edge.particle_name in ("b", "b~") else "---"
-            _lines.append(
-                f'{_source} {_arrow}|"{_edge.particle_name}, e{_edge.id}"| {_target}'
-            )
-        _drawing = mo.mermaid("\n".join(_lines))
+    _drawing = diagram.render()
     mo.vstack(
         [
             _drawing,
