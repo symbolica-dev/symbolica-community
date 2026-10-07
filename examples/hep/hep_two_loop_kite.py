@@ -44,6 +44,8 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _():
+    from pathlib import Path
+
     import marimo as mo
     import matplotlib.pyplot as plt
     import numpy as np
@@ -72,7 +74,8 @@ def _():
             and len({vertex for pair in pairs for vertex in pair}) == 4
         )
 
-    return E, S, get_citations, hep, integration, is_kite, mo, np, plt, qmc
+    flow_cache_root = Path.home() / ".cache/symbolica/kite/central-line-one-core-v3"
+    return E, S, flow_cache_root, get_citations, hep, integration, is_kite, mo, np, plt, qmc
 
 
 @app.cell(hide_code=True)
@@ -338,7 +341,7 @@ def _(integrand, mo, np, qmc, reference, variables):
     # Evaluate the integrand at a batch of integration points.
     numeric_kernel = integrand.evaluator(variables, n_cores=1, jit_compile=False)
     replicates = 8
-    powers = [12, 14, 16, 18]  # points per scramble: 4096 ... 262144
+    powers = [10, 12, 14, 16]  # points per scramble: 1024 ... 65536
     estimates, standard_errors = ([], [])
     for power in powers:
         replicate_means = []
@@ -422,7 +425,7 @@ def _(mo):
 
     An independent route is to evaluate the dimensionally regulated family
     numerically at one point, then solve its differential equations at other
-    points. We use HEPkit's native implementations of the
+    points. We use HEPkit's implementations of the
     [AMFlow auxiliary-mass method](https://arxiv.org/abs/2201.11669) and
     [DiffExp series-transport method](https://arxiv.org/abs/2006.05510).
 
@@ -441,8 +444,8 @@ def _(mo):
     with the positive Euclidean integral defined above.
 
     **Compute the starting value once**, then change the destination below.
-    The first calculation can take several minutes. Opening this section does
-    not start the boundary calculation.
+    The starting value is computed with one worker. Moving the slider reuses
+    that value; opening this section does not start the boundary calculation.
     """)
 
 
@@ -467,7 +470,7 @@ def _(mo, numerical_flow):
     mo.vstack(
         [
             mo.md(
-                "The numerical-flow sections require a native Symbolica community installation with `hep.integration`."
+                "The numerical-flow sections require a Symbolica community installation with `hep.integration`."
             ),
             run_amflow,
         ]
@@ -476,9 +479,7 @@ def _(mo, numerical_flow):
 
 
 @app.cell
-def _(E, Q2, S, diagram, hep, mass, mo, numerical_flow, p, run_amflow):
-    from pathlib import Path
-
+def _(E, Q2, S, diagram, flow_cache_root, hep, mass, mo, numerical_flow, p, run_amflow):
     mo.stop(
         not run_amflow.value,
         mo.md("Press **Compute AMFlow starting value** to evaluate this graph."),
@@ -486,7 +487,7 @@ def _(E, Q2, S, diagram, hep, mass, mo, numerical_flow, p, run_amflow):
     mo.stop(
         numerical_flow is None,
         mo.callout(
-            "This installation does not include HEPkit's native numerical integration API.",
+            "This installation does not include HEPkit's numerical integration API.",
             kind="info",
         ),
     )
@@ -507,13 +508,14 @@ def _(E, Q2, S, diagram, hep, mass, mo, numerical_flow, p, run_amflow):
     )
     flow_evaluator = numerical_flow.IntegralEvaluator(
         options=numerical_flow.EvaluationOptions(
-            digits=10,
+            digits=8,
             guard_digits=24,
-            series_order=50,
-            workers=4,
+            series_order=70,
+            workers=1,
+            mass_mode="branch",
             recursion="auxiliary_mass",
-            cache_directory=str(Path.home() / ".cache/symbolica/kite/reductions"),
-            sample_cache_directory=str(Path.home() / ".cache/symbolica/kite/samples"),
+            cache_directory=str(flow_cache_root / "reductions"),
+            sample_cache_directory=str(flow_cache_root / "samples"),
         ),
     )
     prepared_flow = flow_evaluator.prepare(

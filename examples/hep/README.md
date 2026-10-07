@@ -39,6 +39,13 @@ FastSecDec notebooks are available here:
   `6 zeta(3)`, compare with quasi-Monte Carlo integration, and optionally compute
   an AMFlow boundary and transport it with DiffExp. The numerical comparison
   also requires NumPy, SciPy and Matplotlib.
+- [Massive or massless kite](massive_kite.py): generate the graph with the built-in
+  phi3 model, derive its integral family, and compare exact hyperlogarithmic
+  integration with an independent AMFlow boundary and DiffExp transport. Choose
+  equal or unequal masses, or set both masses to zero with the toggle. The
+  numerical calculation starts on request and uses one worker. This notebook
+  also requires NumPy, SciPy and Matplotlib. Both kite notebooks are included in
+  the community wheel under `examples/hep`.
 
 See the [local notebook guide](FASTSECDEC_SHOWCASE.md) for launch commands.
 The notebooks and showcase input/presentation helpers are copied from

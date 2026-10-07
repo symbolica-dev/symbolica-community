@@ -3635,7 +3635,7 @@ dependencies = [
 [[package]]
 name = "rustred-order"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#acc92b0dad27b11fd194a4c284765fb6a93cbc94"
+source = "git+https://github.com/alphal00p/rustred?branch=main#f5237ce1c8725b9cb0e18bade464806df607806f"
 
 [[package]]
 name = "rustred-python"
@@ -4187,7 +4187,7 @@ dependencies = [
 [[package]]
 name = "symbolica-amflow"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/RustFlow?rev=21edf80be9a15dadba4dc7eb258c551dd61850e5#21edf80be9a15dadba4dc7eb258c551dd61850e5"
+source = "git+https://github.com/alphal00p/RustFlow?rev=b3a4843e8327835d1ec3ada5a6f32f1841bab2c2#b3a4843e8327835d1ec3ada5a6f32f1841bab2c2"
 dependencies = [
  "ahash 0.8.12",
  "bincode",

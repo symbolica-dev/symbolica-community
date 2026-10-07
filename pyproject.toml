@@ -35,6 +35,10 @@ notebook-display = [
 features = ["pyo3/extension-module"]
 module-name = "symbolica.core"
 python-source = "python"
+include = [
+    "examples/hep/hep_two_loop_kite.py",
+    "examples/hep/massive_kite.py",
+]
 
 [project.urls]
 homepage = "https://symbolica.io"
