@@ -2,6 +2,7 @@
 
 import importlib
 import math
+import re
 import signal
 import subprocess
 import sys
@@ -356,14 +357,45 @@ def test_quadratic_dimension_coefficient_mixes_double_pole_into_finite_part():
     assert actual == pytest.approx([4 * double_pole, 0, 0], rel=1e-12, abs=1e-12)
 
 
-def test_coefficient_pole_requires_unavailable_higher_order_masters():
+def test_tadpole_coefficient_pole_uses_the_order_epsilon_master():
+    # LUDY's hep_oneloop_epsilon_depth.py: A0/(d-4) = -A0/(2*eps) needs A0[eps^1].
     family = scalar_family([E("2")], [])
     dimension = family.kinematics.dimension
     reduction = oneloop.reduce(family, [1], numerator=1 / (dimension - 4)).simplify()
-    # Exact symbolic reduction remains useful even when finite/pole evaluation
-    # would require the master's positive powers of epsilon.
     assert reduction.to_expression() == oneloop.A0(2, 1) / (dimension - 4)
-    with pytest.raises(ValueError, match="pole at d=4"):
+    coefficients = oneloop.reduction_coefficients(reduction)
+    assert coefficients == [-oneloop.A0(tag, 2, 1) / 2 for tag in (1, 0, -1)]
+    # A0 = m2*(1/eps + 1 - L + eps*(1 - L + L^2/2 + pi^2/6)), L = log(m2/mu2).
+    log = math.log(2)
+    epsilon = 2 * (1 - log + log**2 / 2 + math.pi**2 / 6)
+    expected = [-epsilon / 2, -(1 - log), -1]
+    assert evaluate_coefficients(reduction, [], []) == pytest.approx(expected, rel=1e-12)
+    # A raised tadpole mixes the Taylor coefficients of (d-2)/(2*m2*(d-4)).
+    raised = oneloop.reduce(family, [2], numerator=1 / (dimension - 4)).simplify()
+    expected = [(2 * (1 - log) - epsilon) / 4, (2 - 2 * (1 - log)) / 4, -1 / 2]
+    assert evaluate_coefficients(raised, [], []) == pytest.approx(expected, rel=1e-12)
+
+
+@pytest.mark.parametrize(
+    ("masses", "invariants", "powers", "order", "available"),
+    [
+        ([E("2")], [], [1], 2, "A0 provides them only through eps^1"),
+        ([E("2")] * 2, [E("-3")], [1, 1], 2, "B0 provides them only through eps^1"),
+        ([E("2")], [], [1], 32, "A0 provides them only through eps^1"),
+    ],
+)
+def test_coefficient_pole_requires_unavailable_higher_order_masters(
+    masses, invariants, powers, order, available
+):
+    family = scalar_family(masses, invariants)
+    dimension = family.kinematics.dimension
+    numerator = (dimension - 4) ** -order
+    reduction = oneloop.reduce(family, powers, numerator=numerator).simplify()
+    # Exact symbolic reduction remains useful even when finite/pole evaluation
+    # would require the master's unavailable positive powers of epsilon.
+    assert isinstance(reduction.to_expression(), Expression)
+    message = f"pole at d=4 of order {order}.*{re.escape(available)}"
+    with pytest.raises(ValueError, match=message):
         oneloop.reduction_coefficients(reduction)
 
 
@@ -557,3 +589,18 @@ def test_unsupported_loop_numerators_are_rejected(numerator_kind):
     }[numerator_kind]
     with pytest.raises(ValueError):
         oneloop.reduce(family, [1, 1], numerator=numerator)
+
+
+def test_bubble_coefficient_pole_uses_positive_epsilon_and_agrees_with_ir_triangle():
+    # The massless B0 has an all-orders gamma-function expression in this
+    # normalization: (-s/mu2)^(-eps)/(eps*(1-2*eps)).
+    family = scalar_family([E("0")] * 2, [E("-3")])
+    d = family.kinematics.dimension
+    reduction = oneloop.reduce(family, [1,1], numerator=1/(d-4))
+    L = math.log(3)
+    assert evaluate_coefficients(reduction, [], []) == pytest.approx(
+        [-(4-2*L+L*L/2)/2, -(2-L)/2, -0.5], rel=1e-12)
+    # C0(0,0,s) = -2*(d-3)/((d-4)*s) B0(s): compare two independent paths.
+    triangle_in_bubbles = oneloop.reduce(family, [1,1], numerator=-2*(d-3)/((d-4)*-3))
+    expected = [oneloop.C0(tag,0,0,-3,0,0,0,1).evaluate({}) for tag in [0,-1,-2]]
+    assert evaluate_coefficients(triangle_in_bubbles, [], []) == pytest.approx(expected,rel=1e-12,abs=1e-12)
