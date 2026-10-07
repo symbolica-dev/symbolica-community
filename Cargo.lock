@@ -2665,7 +2665,7 @@ checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 [[package]]
 name = "one-loop-reduce"
 version = "0.1.0"
-source = "git+https://github.com/lcnbr/one-loop-reduce?branch=main#b53a70776a43bd14c6562c52a03bc4909568e473"
+source = "git+https://github.com/lcnbr/one-loop-reduce?branch=main#87f9758a7a1c8ae233611af1ac7d698cd97958f1"
 dependencies = [
  "feynkit-graph",
  "feynkit-kinematics",
@@ -2677,7 +2677,7 @@ dependencies = [
 [[package]]
 name = "one-loop-reduce-python"
 version = "0.1.0"
-source = "git+https://github.com/lcnbr/one-loop-reduce?branch=main#b53a70776a43bd14c6562c52a03bc4909568e473"
+source = "git+https://github.com/lcnbr/one-loop-reduce?branch=main#87f9758a7a1c8ae233611af1ac7d698cd97958f1"
 dependencies = [
  "feynkit-py",
  "one-loop-reduce",
@@ -2689,7 +2689,7 @@ dependencies = [
 [[package]]
 name = "oneloop"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/oneloopmaster?branch=main#27c3723434b7d99cf70ce612b0b8041d3f5c0e78"
+source = "git+https://github.com/alphal00p/oneloopmaster?branch=main#6c9874dc5670ed655b9cce84702ec27d36098a9f"
 dependencies = [
  "bincode",
  "symbolica",
@@ -2699,7 +2699,7 @@ dependencies = [
 [[package]]
 name = "oneloop-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/oneloopmaster?branch=main#27c3723434b7d99cf70ce612b0b8041d3f5c0e78"
+source = "git+https://github.com/alphal00p/oneloopmaster?branch=main#6c9874dc5670ed655b9cce84702ec27d36098a9f"
 dependencies = [
  "oneloop",
  "pyo3",
@@ -3596,7 +3596,7 @@ dependencies = [
 [[package]]
 name = "rustred"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#acc92b0dad27b11fd194a4c284765fb6a93cbc94"
+source = "git+https://github.com/alphal00p/rustred?branch=main#ed31e782095876ad4c58eabc56acb037f1969e68"
 dependencies = [
  "bincode",
  "blake3",
@@ -3609,7 +3609,7 @@ dependencies = [
 [[package]]
 name = "rustred-app"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#acc92b0dad27b11fd194a4c284765fb6a93cbc94"
+source = "git+https://github.com/alphal00p/rustred?branch=main#ed31e782095876ad4c58eabc56acb037f1969e68"
 dependencies = [
  "bincode",
  "blake3",
@@ -3624,7 +3624,7 @@ dependencies = [
 [[package]]
 name = "rustred-feynkit"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#acc92b0dad27b11fd194a4c284765fb6a93cbc94"
+source = "git+https://github.com/alphal00p/rustred?branch=main#ed31e782095876ad4c58eabc56acb037f1969e68"
 dependencies = [
  "pyo3",
  "rustred",
@@ -3635,12 +3635,12 @@ dependencies = [
 [[package]]
 name = "rustred-order"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#f5237ce1c8725b9cb0e18bade464806df607806f"
+source = "git+https://github.com/alphal00p/rustred?branch=main#ed31e782095876ad4c58eabc56acb037f1969e68"
 
 [[package]]
 name = "rustred-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#acc92b0dad27b11fd194a4c284765fb6a93cbc94"
+source = "git+https://github.com/alphal00p/rustred?branch=main#ed31e782095876ad4c58eabc56acb037f1969e68"
 dependencies = [
  "pyo3",
  "rustred-app",

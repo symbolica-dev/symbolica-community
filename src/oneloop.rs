@@ -55,7 +55,9 @@ mod native {
     /// Expand a reduction about d=4-2*eps and combine its master coefficients.
     ///
     /// Returns [finite, simple_pole, double_pole] with native evaluation hooks.
-    /// Raises ValueError for coefficient poles at d=4 requiring unavailable
+    /// A coefficient pole of order k at d=4 uses the master's coefficients
+    /// through eps^k; A0 and B0 provide eps^1, with Laurent tag 1, in the C0/D0
+    /// normalization. Raises ValueError for poles requiring unavailable
     /// positive-order master coefficients, fractional Taylor powers, or
     /// dimension-dependent kinematics or scale.
     ///
@@ -112,12 +114,6 @@ mod native {
                 .map_err(|e| {
                     PyValueError::new_err(format!("cannot expand reduction coefficient: {e}"))
                 })?;
-            if series.get_trailing_exponent() < 0 {
-                return Err(PyValueError::new_err(format!(
-                    "reduction coefficient for {master} has a pole at d=4; \
-                     positive-order epsilon coefficients of the master are required"
-                )));
-            }
             if series
                 .terms()
                 .any(|(power, value)| !power.is_integer() && !value.is_zero())
@@ -126,12 +122,37 @@ mod native {
                     "reduction coefficients must have an integer-power Taylor expansion at d=4",
                 ));
             }
-            // The series is in (d-4), so multiply Taylor coefficients by (-2)^n.
-            let c0 = series.coefficient(0.into()).unwrap();
-            let c1 = series.coefficient(1.into()).unwrap() * Atom::num(-2);
-            let c2 = series.coefficient(2.into()).unwrap() * Atom::num(4);
             let (family, arguments) =
                 oneloop::master_arguments(&master).map_err(PyValueError::new_err)?;
+            // Check the required depth before converting exponents or forming
+            // (-2)^n: unsupported poles can have arbitrarily large powers.
+            let orders = family.laurent_orders();
+            let pole = -series
+                .terms()
+                .filter(|(_, value)| !value.is_zero())
+                .map(|(power, _)| power)
+                .min()
+                .unwrap_or_else(|| 0.into())
+                .min(0.into());
+            if pole > *orders.end() {
+                return Err(PyValueError::new_err(format!(
+                    "reduction coefficient for {master} has a pole at d=4 of order {pole}; \
+                     positive-order epsilon coefficients of the master through eps^{pole} \
+                     are required, but {} provides them only through eps^{}",
+                    family.name(),
+                    orders.end()
+                )));
+            }
+            // Accepted exponents lie between -1 and the expansion depth 2.
+            // The series is in (d-4) = -2*eps, so scale each coefficient by (-2)^n.
+            let taylor = series
+                .terms()
+                .filter(|(_, value)| !value.is_zero())
+                .map(|(power, value)| {
+                    let power = power.numerator().to_i64().unwrap() as i32;
+                    (power, value * Atom::num(-2).pow(Atom::num(power)))
+                })
+                .collect::<Vec<_>>();
             let head: Symbol = match family {
                 ScalarIntegral::A0 => oneloop::A0(),
                 ScalarIntegral::B0 => oneloop::B0(),
@@ -139,15 +160,18 @@ mod native {
                 ScalarIntegral::C0 => oneloop::C0(),
                 ScalarIntegral::D0 => oneloop::D0(),
             };
-            let [finite, pole, double_pole] = [0, -1, -2].map(|tag| {
-                let args = std::iter::once(Atom::num(tag))
-                    .chain(arguments.iter().cloned())
-                    .collect::<Vec<_>>();
-                head.call(args.as_slice())
-            });
-            result[0] += &c0 * &finite + &c1 * &pole + &c2 * &double_pole;
-            result[1] += &c0 * &pole + &c1 * &double_pole;
-            result[2] += &c0 * &double_pole;
+            // Every master accepts the tags -2 through its highest order.
+            for (power, coefficient) in &taylor {
+                for (order, total) in [0, -1, -2].into_iter().zip(&mut result) {
+                    let tag = order - power;
+                    if (-2..=*orders.end()).contains(&tag) {
+                        let args = std::iter::once(Atom::num(tag))
+                            .chain(arguments.iter().cloned())
+                            .collect::<Vec<_>>();
+                        *total += coefficient * head.call(args.as_slice());
+                    }
+                }
+            }
         }
         Ok(result.into_iter().map(Into::into).collect())
     }

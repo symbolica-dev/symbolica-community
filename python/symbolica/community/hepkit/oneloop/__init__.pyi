@@ -521,6 +521,7 @@ def reduction_coefficients(reduction: Reduction, mu_squared: Expression | None =
     Expand a reduction about d=4-2*eps and combine its master coefficients.
 
     Returns [finite, simple_pole, double_pole] with native evaluation hooks.
+    A0 and B0 supply the positive epsilon order needed by a simple coefficient pole.
     Raises ValueError for coefficient poles at d=4 requiring unavailable
     positive-order master coefficients, fractional Taylor powers, or
     dimension-dependent kinematics or scale.
