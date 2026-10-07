@@ -59,3 +59,53 @@ print("GGHH_SCALAR_REGRESSION", len(catalogue.diagrams), identity, snapshot.comp
         timeout=120,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_generation_observer_can_render_real_run_state():
+    pytest.importorskip("marimo", minversion="0.24.0")
+    root = Path(__file__).parents[1]
+    script = """
+import runpy
+import sys
+
+app = runpy.run_path(sys.argv[1], run_name="notebook_check")["app"]
+_, notebook = app.run()
+catalogue = notebook["gghh_catalogue"](progress=None)
+assert catalogue.default_diagram.loop_count == 1
+state = notebook["RunState"]()
+rendered = []
+
+def display():
+    # This executes synchronously inside the actual native step's observer.
+    # Reading generation_session.complete here re-borrows the mutably borrowed
+    # PyO3 owner and used to pause generation with "Already mutably borrowed".
+    view = notebook["generation_view"](notebook["mo"], state)
+    rendered.append((state.events[-1].stage if state.events else "preparing", view.text))
+
+state.start_generation(
+    lambda: notebook["gghh_prepare"](source=catalogue),
+    {"max_order": 0}, notebook["science_generation"], display=display)
+assert state.error is None, state.error
+for _ in range(100):
+    if not state.generation_active:
+        break
+    state.generation_last_display = -float("inf")
+    state.advance_generation()
+    assert state.error is None, state.error
+assert state.phase == "ready", (state.phase, state.message)
+assert state.generation_session.complete
+assert state.generated is not None and state.kernels is not None
+stages = {stage for stage, _ in rendered}
+assert "parametrization" in stages and "complete" in stages, stages
+assert all("Generation failed" not in html for _, html in rendered)
+assert all("not a zero integral" not in html for _, html in rendered)
+print("GGHH_CALLBACK_REGRESSION", len(rendered), sorted(stages))
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(root / "examples/hep/gghh_complete.py")],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

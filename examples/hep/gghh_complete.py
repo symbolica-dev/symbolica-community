@@ -518,10 +518,10 @@ def _(format_table):
         return [{"native phase": name, "seconds": getattr(event.timings, f"{name}_seconds")} for name in names]
 
     def generation_view(mo, state):
-        # The native session becomes complete only once kernels exist. A generated
-        # decomposition may already be retained when its compilation fails.
-        generation_complete = (state.generation_session.complete if state.generation_session is not None
-                               else state.kernels is not None)
+        # Progress observers run inside a mutable native session borrow. Read only
+        # the caller's cached owners here; even a session getter would re-enter it.
+        # A decomposition alone may precede a failed compilation.
+        generation_complete = state.kernels is not None
         generation_failed = state.phase == "failed" and not generation_complete
         if not state.events:
             if generation_failed:
