@@ -28,6 +28,22 @@ assert {c.id for c in get_citations()} == before
 x = S('citation_integral_x')
 assert api.integrate(1/(x+1)**2, [x]) == E('1')
 assert 'https://github.com/benruijl/hyperbolica' in {c.id for c in get_citations()}
+expected = {
+    'https://github.com/benruijl/hyperbolica',
+    'https://arxiv.org/abs/1403.3385',
+    'https://arxiv.org/abs/2604.20954',
+}
+citations = get_citations()
+assert expected <= {c.id for c in citations}
+for citation in citations:
+    if citation.id in expected:
+        assert citation.description
+        assert citation.reasons and all(citation.reasons)
+        assert citation.bibtex.startswith('@')
+assert api.integrate(1/(x+1)**2, [x]) == E('1')
+repeated = get_citations()
+for citation_id in expected:
+    assert sum(c.id == citation_id for c in repeated) == 1
 assert api.integrate.__module__ == 'symbolica.community.hepkit.integration'
 """
     result = subprocess.run([sys.executable, '-c', code], capture_output=True, text=True, timeout=120)

@@ -321,6 +321,16 @@ def integrate_over(expression: Expression, variables: typing.Sequence[Expression
         The normalized exact result.
     """
 
+def mzv_symbol() -> Expression:
+    r"""
+    Return the registered multiple-zeta-value function symbol.
+
+    Call the returned Symbolica expression with indices, e.g. `mzv_symbol()(3)`.
+    This is the same head used in exact integration results. It is a formal
+    symbol; for a depth-one numerical reference use Symbolica's built-in
+    `E("3").zeta().evaluate({}, decimal_digit_precision=40)`.
+    """
+
 def prepare(expression: Expression, variables: typing.Sequence[Expression], options: typing.Optional[IntegrationOptions] = None) -> PreparedIntegral:
     r"""
     Lower a Symbolica expression once for repeated integrations or option sweeps.

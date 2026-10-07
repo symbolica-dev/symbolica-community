@@ -78,7 +78,7 @@ python_stubgen = [
 
 [dependencies]
 fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "7f75c1588901a4564df74f0a57a58dedfe7f5925", default-features = false }
-hyperbolica = { optional = true, git = "https://github.com/benruijl/hyperbolica", rev = "6acf21500c4807ac1fbd67e1429efcad90791de1", default-features = false, features = ["python"] }
+hyperbolica = { optional = true, git = "https://github.com/benruijl/hyperbolica", rev = "31292085504b794dc444a006eba1d3013ed30944", default-features = false, features = ["python"] }
 one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
 spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
 # Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.
