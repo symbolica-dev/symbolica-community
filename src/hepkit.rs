@@ -27,6 +27,19 @@ impl SymbolicaCommunityModule for HepKitModule {
                 relevance: None,
             });
             citations.push(Citation {
+                id: "https://github.com/rnlg/LiteRed2".into(),
+                reference: "Roman N. Lee. LiteRed2.".into(),
+                bibtex: r#"@software{Lee:LiteRed2,
+  author = {Lee, Roman N.},
+  title = {{LiteRed2}: essential update of the {LiteRed} package},
+  url = {https://github.com/rnlg/LiteRed2}
+}"#
+                .into(),
+                reasons: vec!["Mathematical reference for RustRed's symbolic IBP rules and their applicability conditions.".into()],
+                description: "Symbolic integration-by-parts reduction of multiloop integrals.".into(),
+                relevance: None,
+            });
+            citations.push(Citation {
                 id: "arXiv:2604.25916".into(),
                 reference: "Christoph Dlapa, Gregor Kälin, Zhengwen Liu and Rafael A. Porto. Nonlocal-in-time tail effects in gravitational scattering to fifth post-Minkowskian and tenth self-force orders. Phys. Rev. D 114, 024029 (2026). doi:10.1103/wkp4-vy6g.".into(),
                 bibtex: r#"@article{Dlapa:2026oyq,

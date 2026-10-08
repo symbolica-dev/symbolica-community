@@ -109,22 +109,32 @@ def test_rustred_strategy_citation_is_usage_gated_and_unique():
             importlib.import_module("symbolica.community.hepkit.rustred")
             software_id = "https://github.com/alphal00p/rustred"
             paper_id = "arXiv:2604.25916"
+            litered_id = "https://github.com/rnlg/LiteRed2"
+            rustred_ids = {software_id, paper_id, litered_id}
 
             def citations_by_id():
                 citations = get_citations()
                 assert len(citations) == len({entry.id for entry in citations})
                 return {entry.id: entry for entry in citations}
 
-            assert not {software_id, paper_id} & citations_by_id().keys()
+            assert not rustred_ids & citations_by_id().keys()
             d, k = S("citation_rustred_d", "citation_rustred_k")
             kin = hep.Kinematics(d, momenta=[k])
             family = hep.IntegralFamily(
                 [k], [], [kin.scalar_product(k, k) + 1], kinematics=kin,
             )
-            assert not {software_id, paper_id} & citations_by_id().keys()
+            assert not rustred_ids & citations_by_id().keys()
             hep.IBPFamily(family)
             first = citations_by_id()
-            assert {software_id, paper_id} <= first.keys()
+            assert rustred_ids <= first.keys()
+            litered = first[litered_id]
+            assert "Roman N. Lee" in litered.reference and "LiteRed2" in litered.reference
+            assert litered.description and litered.reasons
+            assert "symbolic IBP rules" in " ".join(litered.reasons)
+            assert "applicability conditions" in " ".join(litered.reasons)
+            litered_bibtex = litered.to_bibtex()
+            assert litered_bibtex.startswith("@software{Lee:LiteRed2,")
+            assert litered_id in litered_bibtex
             paper = first[paper_id]
             assert paper.reference and paper.reasons
             assert "parametric IBP" in " ".join(paper.reasons)
@@ -136,6 +146,8 @@ def test_rustred_strategy_citation_is_usage_gated_and_unique():
             assert first.keys() == second.keys()
             assert second[paper_id].reasons == paper.reasons
             assert second[paper_id].to_bibtex() == bibtex
+            assert second[litered_id].reasons == litered.reasons
+            assert second[litered_id].to_bibtex() == litered_bibtex
         """),
         ],
         capture_output=True,
