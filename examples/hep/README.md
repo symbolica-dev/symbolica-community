@@ -21,6 +21,19 @@ Existing HEPKit class identities and the exception hierarchy are preserved;
 their Python `__module__` and bundled stubs name `symbolica.community.hepkit`.
 FastSecDec wrappers use `symbolica.community.hepkit.sector_decomposition`.
 
+[DOT editor](dot_editor.py) parses editable DOT text and previews the resulting
+Feynman graph. Its CodeMirror editor highlights DOT syntax and supports multiple
+cursors, bracket matching, and keyword/attribute completion. It requires
+`anywidget` and loads pinned CodeMirror modules from esm.sh. Select the scalar,
+QCD, or Standard Model, inspect momentum labels,
+and download the rendered SVG or normalized DOT. Minimal particle assignments
+are enough to instantiate the model's Feynman rules. Its editable calculation
+cells follow the four-loop notebook's momentum routing, coupling expansion,
+Lorentz-dimension conversion, two-gluon projection, simple contractions,
+minimal simplification, full dot-product reduction, and expanded term count.
+Invalid input appears inline; the notebook works in native
+Python and browser/WASM.
+
 FastSecDec notebooks are available here:
 
 - [Legacy copied scalar showcase](fastsecdec_showcase.py): the earlier massive
