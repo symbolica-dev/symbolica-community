@@ -67,9 +67,8 @@ def test_three_loop_api_cells_are_visible_and_do_not_require_native_capabilities
     cells = [node for node in tree.body if isinstance(node, ast.FunctionDef)]
     for method in ("family_candidates", "certify_candidates", "inspect_closing_artifact"):
         matching = [cell for cell in cells if any(
-            isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
-            and isinstance(node.func.value, ast.Name)
-            and node.func.value.id == "rustred" and node.func.attr == method
+            isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+            and node.func.id == method
             for node in ast.walk(cell))]
         assert len(matching) == 1, f"{method} must have one direct notebook call"
         assert not any(
@@ -83,9 +82,11 @@ def test_three_loop_api_cells_are_visible_and_do_not_require_native_capabilities
                                   "poll_events"})
     names = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)}
     assert "native_available" not in names and "ThreeLoopRun" not in names
+    assert names.isdisjoint({"execution_capabilities", "start_family_candidates",
+                             "poll_events"})
     calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
-             and isinstance(node.func, ast.Attribute)
-             and node.func.attr == "family_candidates"]
+             and isinstance(node.func, ast.Name)
+             and node.func.id == "family_candidates"]
     options = {keyword.arg: ast.literal_eval(keyword.value) for keyword in calls[0].keywords}
     assert options == {"input_format": "toml", "n_cores": 1,
                        "exact_backend": "sparse", "numerical_depth": 2}

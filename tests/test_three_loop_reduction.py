@@ -1,9 +1,7 @@
 """Exact closure, reduction and normalization gates for the three-loop notebook."""
 
-import importlib.util
 import json
 from collections import Counter
-from pathlib import Path
 import subprocess
 import sys
 
@@ -19,17 +17,31 @@ pytest.importorskip("marimo")
 from symbolica import E, S
 from symbolica.community import hepkit as hep
 
+from tests.three_loop_notebook import notebook_input
 
-SPEC = importlib.util.spec_from_file_location(
-    "three_loop_reduction_notebook",
-    Path(__file__).parents[1] / "examples/hep/three_loop_reduction.py",
-)
-support = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(support)
+
+def assert_source_matches_family(source, family):
+    """Check that the notebook input matches the routed scalar products exactly."""
+    definition = tomllib.loads(source)["family"]
+    assert definition["dimension"] == "d"
+    assert definition["loop_momenta"] == ["k1", "k2", "k3"]
+    assert definition["external_momenta"] == []
+    assert [item["expression"] for item in definition["denominators"]] == [
+        "k1^2-1", "k2^2-1", "k3^2-1", "(k1-k3)^2-1",
+        "(k1-k2)^2-1", "(k2-k3)^2-1",
+    ]
+    assert len(family.loop_momenta) == 3 and not family.external_momenta
+    assert family.is_complete and family.is_independent
+    k1, k2, k3 = family.loop_momenta
+    momenta = [k1, k2, k3, k1 - k3, k1 - k2, k2 - k3]
+    assert len(family.denominators) == len(momenta)
+    for denominator, momentum in zip(family.denominators, momenta):
+        expected = family.kinematics.scalar_product(momentum, momentum) - 1
+        assert (denominator - expected).expand() == 0
 
 
 def graph_family_and_source():
-    dot, source = support.graph_inputs()
+    dot, source = notebook_input("dot_input"), notebook_input("generation_source")
     model = hep.Model.phi_3_4()
     diagram = hep.FeynmanDiagram.from_dot(model, dot)
     routed = diagram.propagator_family(kinematics=hep.Kinematics(S("d")))
@@ -44,15 +56,15 @@ def graph_family_and_source():
 
 def test_graph_routing_matches_the_certified_source():
     family, source = graph_family_and_source()
-    support.assert_source_matches_family(source, family)
+    assert_source_matches_family(source, family)
     assert hep.IBPFamily(family, name="K6_graph_test").denominator_count == 6
     with pytest.raises(AssertionError):
-        support.assert_source_matches_family(source.replace("k1^2-1", "k1^2+1"), family)
+        assert_source_matches_family(source.replace("k1^2-1", "k1^2+1"), family)
 
 
 def test_native_terminal_normalization_identifies_five_integral_types():
     family, source = graph_family_and_source()
-    support.assert_source_matches_family(source, family)
+    assert_source_matches_family(source, family)
     ibp = hep.IBPFamily(family, name="K6_terminal_normalization_test")
     session = ibp.start_generation(n_cores=1)
     assert session.wait(timeout=30), "small K6 candidate generation timed out"
@@ -118,7 +130,7 @@ def test_native_terminal_normalization_identifies_five_integral_types():
 
 @pytest.fixture(scope="module")
 def closed_family(tmp_path_factory):
-    _, source = support.graph_inputs()
+    source = notebook_input("generation_source")
     candidate = hep.rustred.family_candidates(
         source, input_format="toml", n_cores=1,
         exact_backend="sparse", numerical_depth=2,

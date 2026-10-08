@@ -7,8 +7,11 @@ app = marimo.App(
 )
 
 with app.setup(hide_code=True):
-    from textwrap import dedent
     from time import perf_counter
+    from typing import Sequence, TypedDict, Union
+
+    from symbolica import Expression
+    from symbolica.community.hepkit.rustred import CandidateArtifact
 
     import marimo as mo
     try:
@@ -16,91 +19,49 @@ with app.setup(hide_code=True):
     except ModuleNotFoundError:
         import tomli as tomllib
 
-    def graph_inputs():
-        """The graph and generation input travel with this notebook."""
-        return dedent('''\
-            digraph Mercedes {
-                // Three loop-basis chords; edge IDs fix the denominator order.
-                B -> A [id=0, particle="phi", lmb_id=0];
-                A -> C [id=1, particle="phi", lmb_id=1];
-                C -> B [id=2, particle="phi", lmb_id=2];
-                D -> B [id=3, particle="phi"];
-                A -> D [id=4, particle="phi"];
-                C -> D [id=5, particle="phi"];
-            }
-            '''), dedent('''\
-            schema = "rustred.project.toml.v1"
+    class IntegralKey(TypedDict):
+        values: list[int]
+        symbolic: list[bool]
 
-            # The same ordered family as the graph, with common mass set to one.
-            # Family input: no reduction rules or hints.
-            [family]
-            name = "rustred_three_loop_unit_mass_vacuum_k6_v1"
-            loop_momenta = ["k1", "k2", "k3"]
-            external_momenta = []
-            dimension = "d"
+    class FixedPower(TypedDict):
+        axis: int
+        value: int
 
-            [[family.denominators]]
-            id = "D1"
-            expression = "k1^2-1"
+    class RuleCase(TypedDict, total=False):
+        fixed: list[FixedPower]
+        affine_equation_count: int
+        affine_zero_equations: list[int]
 
-            [[family.denominators]]
-            id = "D2"
-            expression = "k2^2-1"
+    class RuleTerm(TypedDict):
+        coefficient_id: int
+        integral: IntegralKey
 
-            [[family.denominators]]
-            id = "D3"
-            expression = "k3^2-1"
+    class Rule(TypedDict, total=False):
+        ordinal: int
+        target: IntegralKey
+        case: RuleCase
+        rhs: list[RuleTerm]
+        excluded_all_zero_conjunctions: list[list[int]]
 
-            [[family.denominators]]
-            id = "D4"
-            expression = "(k1-k3)^2-1"
+    class RuleExpressions(TypedDict):
+        target: Expression
+        rhs: Expression
+        affine: list[Expression]
+        excluded: list[list[Expression]]
 
-            [[family.denominators]]
-            id = "D5"
-            expression = "(k1-k2)^2-1"
-
-            [[family.denominators]]
-            id = "D6"
-            expression = "(k2-k3)^2-1"
-
-            [target]
-            powers = [1, 1, 1, 1, 1, 1]
-            numerator = "1"
-            ''')
-
-    def assert_source_matches_family(source, family):
-        """Check that the input matches the routed scalar products exactly."""
-        definition = tomllib.loads(source)["family"]
-        assert definition["dimension"] == "d"
-        assert definition["loop_momenta"] == ["k1", "k2", "k3"]
-        assert definition["external_momenta"] == []
-        assert [item["expression"] for item in definition["denominators"]] == [
-            "k1^2-1", "k2^2-1", "k3^2-1", "(k1-k3)^2-1",
-            "(k1-k2)^2-1", "(k2-k3)^2-1",
-        ]
-        assert len(family.loop_momenta) == 3 and not family.external_momenta
-        assert family.is_complete and family.is_independent
-        k1, k2, k3 = family.loop_momenta
-        momenta = [k1, k2, k3, k1 - k3, k1 - k2, k2 - k3]
-        assert len(family.denominators) == len(momenta)
-        for denominator, momentum in zip(family.denominators, momenta):
-            expected = family.kinematics.scalar_product(momentum, momentum) - 1
-            assert (denominator - expected).expand() == 0
-
-    def rule_expressions(artifact, rule, integral, parameter_bindings=()):
-        """Materialize the selected source-input rule for Symbolica display.
-
-        This conversion binds native n0, n1, ... and d to display symbols; it
-        does not apply or certify a reduction rule.
-        """
+    def rule_expressions(
+        artifact: CandidateArtifact, rule: Rule, integral: Expression,
+        parameter_bindings: Sequence[tuple[Expression, Expression]] = (),
+    ) -> RuleExpressions:
+        """Decode only the selected rule, binding its indices and dimension."""
         from symbolica import E, S
 
         indices = [S(f"n_{axis}") for axis in range(len(rule["target"]["values"]))]
         bindings = [(S(f"rustred::n{axis}"), index)
                     for axis, index in enumerate(indices)] + list(parameter_bindings)
-        coefficients = {}
+        coefficients: dict[int, Expression] = {}
 
-        def coefficient(cid):
+        def coefficient(cid: int) -> Expression:
             if cid not in coefficients:
                 detail = artifact.coefficient(cid, max_output_bytes=65536)
                 value = (E(detail["numerator"], default_namespace="rustred")
@@ -110,7 +71,7 @@ with app.setup(hide_code=True):
                 coefficients[cid] = value
             return coefficients[cid]
 
-        def key_expression(key):
+        def key_expression(key: IntegralKey) -> Expression:
             return integral(*(indices[axis] + value if symbolic else value
                               for axis, (value, symbolic) in enumerate(
                                   zip(key["values"], key["symbolic"]))))
@@ -124,7 +85,7 @@ with app.setup(hide_code=True):
                          for branch in rule["excluded_all_zero_conjunctions"]],
         }
 
-    def integral_notation(key):
+    def integral_notation(key: Union[IntegralKey, tuple[int, ...]]) -> str:
         """Format native integer structure without parsing coefficient text."""
         if isinstance(key, dict):
             values, symbolic = key["values"], key["symbolic"]
@@ -143,64 +104,41 @@ with app.setup(hide_code=True):
                 powers.append(f"n_{axis}{suffix}")
         return "I(" + ", ".join(powers) + ")"
 
-    def rule_fixed_conditions(rule):
+    def rule_fixed_conditions(rule: Rule) -> list[FixedPower]:
         """Only conditions not already displayed as literal target powers."""
         target = rule["target"]
         return [item for item in rule["case"]["fixed"]
                 if target["symbolic"][item["axis"]]
                 or target["values"][item["axis"]] != item["value"]]
 
-    def rule_case_summary(rule):
+    def rule_label(rule: Rule) -> str:
+        """Show the target and only the case conditions it does not encode."""
         case = rule["case"]
         parts = [f"n_{item['axis']} = {item['value']}"
                  for item in rule_fixed_conditions(rule)]
         affine = case.get("affine_equation_count", len(case.get("affine_zero_equations", [])))
         if affine:
             parts.append(f"{affine} affine {'condition' if affine == 1 else 'conditions'}")
-        return "; ".join(parts)
-
-    def rule_label(rule):
         label = f"{rule['ordinal']} · {integral_notation(rule['target'])}"
-        case = rule_case_summary(rule)
-        return f"{label} · Case: {case}" if case else label
+        return label + (" · Case: " + "; ".join(parts) if parts else "")
 
 
 @app.cell(hide_code=True)
-async def _():
-    import hashlib as _hashlib
-    import sys as _sys
-    from pathlib import Path as _Path
-
-    if _sys.platform == "emscripten":
-        import micropip as _micropip
-        from pyodide.http import pyfetch as _pyfetch
-
-        _base = mo.notebook_location()
-        _response = await _pyfetch(str(_base / "rustred-assets.json"))
-        if _response.status != 200:
-            raise RuntimeError("Export this notebook with scripts/export_rustred_wasm.py to include its WASM wheel.")
-        _manifest = await _response.json()
-        if _manifest["schema"] != "rustred-browser-assets-v1":
-            raise ValueError("Unsupported browser asset manifest")
-        _directory = _Path.cwd() / "rustred_notebook_wheel"
-        _wheel = _manifest["wheel"]
-        if _Path(_wheel).name != _wheel or not _wheel.endswith(".whl"):
-            raise ValueError("Invalid browser wheel path")
-        _response = await _pyfetch(str(_base / _wheel))
-        if _response.status != 200:
-            raise RuntimeError(f"Cannot load browser wheel {_wheel}: HTTP {_response.status}")
-        _payload = await _response.bytes()
-        if _hashlib.sha256(_payload).hexdigest() != _manifest["wheel_sha256"]:
-            raise ValueError(f"Browser wheel checksum mismatch: {_wheel}")
-        _directory.mkdir(parents=True, exist_ok=True)
-        (_directory / _wheel).write_bytes(_payload)
-        del _payload
-        await _micropip.install("emfs:" + str(_directory / _wheel))
-
+def _():
     from symbolica import E, S
-    from symbolica.community import hepkit as hep
-    from symbolica.community.hepkit import rustred
-    return E, S, hep, rustred
+    from symbolica.community.hepkit import FeynmanDiagram, IntegralFamily, Kinematics, Model
+    from symbolica.community.hepkit.ibp import IBPFamily
+    from symbolica.community.hepkit.rustred import (
+        certify_candidates,
+        family_candidates,
+        inspect_closing_artifact,
+        reduce_with_closing_artifact,
+    )
+    return (
+        E, S, FeynmanDiagram, IBPFamily, IntegralFamily, Kinematics, Model,
+        certify_candidates, family_candidates, inspect_closing_artifact,
+        reduce_with_closing_artifact,
+    )
 
 
 @app.cell(hide_code=True)
@@ -218,27 +156,9 @@ def _():
     raised propagators, pinches and numerator insertions. The recursive
     reducer uses the artifact generated and certified in this notebook.
 
-    The certificate retains **38 raw terminal keys**, not 38 independent
-    masters. Equivalent loop-momentum routings group them into **five named
-    topology types**, shown below. The reductions keep the original keys;
-    no numerical master values are needed, and this notebook does not prove
-    that a terminal basis is minimal or linearly independent.
-    This file includes its graph, generation source and small UI helpers;
-    the folded startup cells load Symbolica and HEPKit. This small three-loop
-    generation starts automatically.
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _():
-    mo.md("""
-    ## Setup and notebook helpers
-
-    The folded startup cells contain the graph, generation input, display
-    helpers, and Symbolica/HEPKit imports. Expand their code
-    to inspect them. No neighboring helper or data files are required. The
-    visible cells below route the graph, certify the rules and request reductions.
+    Generation runs automatically on one core in Python and WASM. The result
+    contains **38 raw terminal keys**, grouped into five topology types at the
+    end; no numerical master values or minimal-basis claim are needed here.
     """)
     return
 
@@ -259,26 +179,36 @@ def _():
 
 
 @app.cell
-def _(E, S, hep):
+def _(E, FeynmanDiagram, IBPFamily, IntegralFamily, Kinematics, Model, S):
     dimension, mass_squared, integral = S("d", "M", "I")
-    scalar_model = hep.Model.phi_3_4()
-    dot_input, generation_source = graph_inputs()
-    diagram = hep.FeynmanDiagram.from_dot(scalar_model, dot_input)
-    routed = diagram.integral_family(kinematics=hep.Kinematics(dimension))
+    scalar_model = Model.phi_3_4()
+    dot_input = """
+    digraph Mercedes {
+        // Three loop-basis chords; edge IDs fix the denominator order.
+        B -> A [id=0, particle="phi", lmb_id=0];
+        A -> C [id=1, particle="phi", lmb_id=1];
+        C -> B [id=2, particle="phi", lmb_id=2];
+        D -> B [id=3, particle="phi"];
+        A -> D [id=4, particle="phi"];
+        C -> D [id=5, particle="phi"];
+    }
+    """
+    diagram = FeynmanDiagram.from_dot(scalar_model, dot_input)
+    routed = diagram.integral_family(kinematics=Kinematics(dimension))
     model_mass = scalar_model.particle("phi").mass
-    family = hep.IntegralFamily(
+    family = IntegralFamily(
         routed.loop_momenta, routed.external_momenta,
         [den.replace(model_mass, E("1")) for den in routed.denominators],
         kinematics=routed.kinematics,
     )
-    assert_source_matches_family(generation_source, family)
+    # Validate the routed family with the IBP backend.
+    assert IBPFamily(family, name="Mercedes").denominator_count == 6
     # The source API preserves d; explicitly map its native symbol for display.
-    parameter_bindings = [(S("rustred::d"), dimension)]
+    parameter_bindings = ((S("rustred::d"), dimension),)
     mo.vstack([diagram, family])
     return (
         dimension,
         dot_input,
-        generation_source,
         integral,
         mass_squared,
         parameter_bindings,
@@ -286,29 +216,48 @@ def _(E, S, hep):
 
 
 @app.cell(hide_code=True)
-def _(dot_input, generation_source, parameter_bindings):
-    _plain = {"color_top_level_sum": False, "color_builtin_symbols": False,
-              "bracket_level_colors": None, "show_namespaces": True}
-    _bindings = [{"Artifact variable": internal.format(**_plain),
-                  "Original HEPKit expression": original.format(**_plain)}
-                 for internal, original in parameter_bindings]
-    mo.vstack([
-        mo.md("""
-        **Generation input.** The current closure verifier accepts the explicit
-        source below. HEPKit routes the DOT graph; the preceding assertion
-        checks that every source denominator equals its routed scalar
-        product, in the same order. The source contains the family definition
-        and an ordinary target, with no saved rules. Its dimension is `d`;
-        the table records the symbol used in reduction coefficients.
-        """),
-        mo.accordion({
-            "DOT graph": mo.md(f"```dot\n{dot_input}\n```"),
-            "Generation input": mo.md(f"```toml\n{generation_source}\n```"),
-            "Coefficient parameter legend": mo.ui.table(_bindings,
-                selection=None, show_column_summaries=False, show_download=False),
-        }),
-    ])
-    return
+def _():
+    # The closure API takes a source family in the graph's denominator order.
+    generation_source = """
+    schema = "rustred.project.toml.v1"
+
+    # The same ordered family as the graph, with common mass set to one.
+    # Family input: no reduction rules or hints.
+    [family]
+    name = "rustred_three_loop_unit_mass_vacuum_k6_v1"
+    loop_momenta = ["k1", "k2", "k3"]
+    external_momenta = []
+    dimension = "d"
+
+    [[family.denominators]]
+    id = "D1"
+    expression = "k1^2-1"
+
+    [[family.denominators]]
+    id = "D2"
+    expression = "k2^2-1"
+
+    [[family.denominators]]
+    id = "D3"
+    expression = "k3^2-1"
+
+    [[family.denominators]]
+    id = "D4"
+    expression = "(k1-k3)^2-1"
+
+    [[family.denominators]]
+    id = "D5"
+    expression = "(k1-k2)^2-1"
+
+    [[family.denominators]]
+    id = "D6"
+    expression = "(k2-k3)^2-1"
+
+    [target]
+    powers = [1, 1, 1, 1, 1, 1]
+    numerator = "1"
+    """
+    return (generation_source,)
 
 
 @app.cell(hide_code=True)
@@ -324,15 +273,14 @@ def _():
 
 
 @app.cell
-def _(generation_source, rustred):
+def _(family_candidates, generation_source):
     _started = perf_counter()
-    candidates = rustred.family_candidates(
+    candidates = family_candidates(
         generation_source, input_format="toml", n_cores=1,
         exact_backend="sparse", numerical_depth=2,
     )
     candidate_artifact = candidates.artifact()
     generation_seconds = perf_counter() - _started
-    mo.show_code()
     return candidate_artifact, candidates, generation_seconds
 
 
@@ -346,78 +294,16 @@ def _(candidate_artifact, generation_seconds):
 
 
 @app.cell
-def _(candidates, rustred):
-    certificate = rustred.certify_candidates(candidates.bundle)
+def _(candidates, certify_candidates, inspect_closing_artifact):
+    certificate = certify_candidates(candidates.bundle)
     closing_artifact = certificate.artifact
-    inspected = rustred.inspect_closing_artifact(closing_artifact)
+    inspected = inspect_closing_artifact(closing_artifact)
     inspection = tomllib.loads(inspected.to_toml())
     master_powers = {tuple(item["powers"]) for item in inspection["artifact"]["masters"]}
     assert certificate.status == "generated-durable" and inspected.status == "inspected"
     assert inspection["artifact"]["arity"] == 6 and master_powers
     reductions = {}
-    mo.show_code()
     return closing_artifact, inspection, master_powers, reductions
-
-
-@app.cell(hide_code=True)
-def _(candidates, closing_artifact, inspection, master_powers):
-    mo.vstack([
-        mo.md(f"The certified rules terminate in **{len(master_powers)} raw integral keys**, "
-              "grouped into the five topology types below."),
-        mo.accordion({
-            "Certificate details": mo.json(inspection),
-            "Download the generated rules": mo.hstack([
-                mo.download(candidates.bundle, filename="three-loop-candidates.rrbin",
-                            label="Candidate bundle"),
-                mo.download(closing_artifact, filename="three-loop-certified.rr",
-                            label="Certified closing artifact"),
-            ], justify="start"),
-        }),
-    ])
-    return
-
-
-@app.cell(hide_code=True)
-def _(master_powers):
-    _types = [
-        {"Type": "T3,1", "Name": "Three one-loop tadpoles", "Raw keys": 16,
-         "Representative": "I(1,1,1,0,0,0)"},
-        {"Type": "T4,1", "Name": "Two-loop sunset × one-loop tadpole", "Raw keys": 12,
-         "Representative": "I(1,1,1,1,0,0)"},
-        {"Type": "T4,2", "Name": "Three-loop basketball (four-line banana)", "Raw keys": 3,
-         "Representative": "I(0,1,1,1,1,0)"},
-        {"Type": "T5,1", "Name": "Connected five-line vacuum", "Raw keys": 6,
-         "Representative": "I(0,1,1,1,1,1)"},
-        {"Type": "T6,1", "Name": "Mercedes (tetrahedron / K4)", "Raw keys": 1,
-         "Representative": "I(1,1,1,1,1,1)"},
-    ]
-    _rows = [{"Raw terminal key": integral_notation(powers), "Total power": sum(powers)}
-             for powers in sorted(master_powers)]
-    mo.vstack([
-        mo.md(r"""
-        ### Five topology types, 38 raw terminal keys
-
-        For this equal-mass input, changes of loop-momentum variables identify
-        the raw keys in the following groups: $16+12+3+6+1=38$.
-        The labels follow [R. N. Lee, Figure 2](https://arxiv.org/pdf/1203.4868#page=5).
-        They name graph types, not a conversion to that paper's normalization.
-        Each representative uses this notebook's denominator order, not a
-        relabeling of the artifact. The first two types factorize into
-        lower-loop integrals; the last three are connected three-loop graphs.
-        """),
-        mo.ui.table(_types, selection=None, pagination=False,
-                    show_column_summaries=False, show_download=False),
-        mo.md("""
-        **The certified artifact is unchanged.** The following table and the
-        reductions retain all 38 raw keys: the display does not apply the
-        topology identifications, merge coefficients, or supply an additional
-        proof of master independence. Closure means reduction terminates in
-        these keys; independence and basis minimization are different questions.
-        """),
-        mo.ui.table(_rows, selection=None, pagination=True, page_size=10,
-                    show_column_summaries=False, show_download=False),
-    ])
-    return
 
 
 @app.cell(hide_code=True)
@@ -464,7 +350,6 @@ def _(candidate_artifact, rule_choice, sector_choice):
     rule_detail = candidate_artifact.rule(
         int(sector_choice.value), int(rule_choice.value), max_output_bytes=65536,
     )
-    mo.show_code()
     return (rule_detail,)
 
 
@@ -538,15 +423,14 @@ def _(closing_artifact):
 def _(
     closing_artifact,
     reductions,
-    rustred,
+    reduce_with_closing_artifact,
     target_choice,
 ):
     selected_powers = tuple(target_choice.value)
     if selected_powers not in reductions:
-        reductions[selected_powers] = rustred.reduce_with_closing_artifact(
+        reductions[selected_powers] = reduce_with_closing_artifact(
             closing_artifact, list(selected_powers))
     reduction = reductions[selected_powers]
-    mo.show_code()
     return reduction, selected_powers
 
 
@@ -567,49 +451,27 @@ def _(E, inspection, master_powers, parameter_bindings, reduction, selected_powe
     return (reduced_terms,)
 
 
-@app.cell(hide_code=True)
-def _(reduced_terms):
-    term_offset = mo.ui.number(start=0, stop=max(0, len(reduced_terms) - 1),
-        step=10, value=0, label="Reduction term offset")
-    term_offset
-    return (term_offset,)
-
-
-@app.cell(hide_code=True)
-def _(
-    integral,
-    mass_squared,
-    reduced_terms,
-    reduction,
-    selected_powers,
-    term_offset,
-):
-    _start = int(term_offset.value)
-    _page = reduced_terms[_start:_start + 10]
+@app.cell
+def _(E, integral, mass_squared, reduced_terms, selected_powers):
+    reduced_expression = sum(
+        (coefficient * mass_squared**power * integral(*master)
+         for master, coefficient, power in reduced_terms), E("0"),
+    )
     mo.vstack([
-        mo.hstack([integral(*selected_powers), mo.md(
-            f"**= sum of {len(reduced_terms)} raw terminal {'term' if len(reduced_terms) == 1 else 'terms'}**"
-            if reduced_terms else "**= 0**")],
-            justify="start"),
-        *[mo.hstack([coefficient * mass_squared**power, mo.md(r"$\times$"), integral(*master)],
-                    justify="start", wrap=True) for master, coefficient, power in _page],
-        mo.md(f"Showing {_start + 1 if _page else 0}–{_start + len(_page)} of "
-              f"{len(reduced_terms)} terms. Every displayed integral has common squared mass $M$."),
-        mo.accordion({"Reduction details": mo.vstack([
-            mo.json(tomllib.loads(reduction.to_toml())["statistics"]),
-            mo.download(reduction.to_toml(), filename="three-loop-reduction.toml",
-                        label="Download all exact terms"),
-        ])}),
+        mo.hstack([integral(*selected_powers), mo.md("**=**")], justify="start"),
+        reduced_expression.formatted(
+            max_terms=None, max_line_length=None, terms_on_new_line=True,
+        ),
     ])
-    return
+    return (reduced_expression,)
 
 
 @app.cell
-def _(E, closing_artifact, dimension, parameter_bindings, reductions, rustred):
+def _(E, closing_artifact, dimension, parameter_bindings, reduce_with_closing_artifact, reductions):
     # Independent factorized check: three one-loop tadpoles with two raised powers.
     _target = (2, 2, 1, 0, 0, 0)
     if _target not in reductions:
-        reductions[_target] = rustred.reduce_with_closing_artifact(closing_artifact, list(_target))
+        reductions[_target] = reduce_with_closing_artifact(closing_artifact, list(_target))
     _terms = reductions[_target].terms
     assert len(_terms) == 1 and _terms[0].master_powers == [1, 1, 1, 0, 0, 0]
     _coefficient = E(_terms[0].unit_mass_coefficient)
@@ -617,8 +479,61 @@ def _(E, closing_artifact, dimension, parameter_bindings, reductions, rustred):
         _coefficient = _coefficient.replace(_internal, _original)
     assert (_coefficient - ((dimension - 2) / 2)**2).together() == 0
     assert _terms[0].common_mass_squared_power == -2
+    tadpole_checked = True
     mo.callout(r"Independent check passed: the factorized tadpole ratio is "
                r"$I_M(2,2,1,0,0,0)=\frac{(d-2)^2}{4M^2}I_M(1,1,1,0,0,0)$.", kind="success")
+    return (tadpole_checked,)
+
+
+@app.cell(hide_code=True)
+def _(master_powers):
+    _types = [
+        {"Type": "T3,1", "Name": "Three one-loop tadpoles", "Raw keys": 16,
+         "Representative": "I(1,1,1,0,0,0)"},
+        {"Type": "T4,1", "Name": "Two-loop sunset × one-loop tadpole", "Raw keys": 12,
+         "Representative": "I(1,1,1,1,0,0)"},
+        {"Type": "T4,2", "Name": "Three-loop basketball (four-line banana)", "Raw keys": 3,
+         "Representative": "I(0,1,1,1,1,0)"},
+        {"Type": "T5,1", "Name": "Connected five-line vacuum", "Raw keys": 6,
+         "Representative": "I(0,1,1,1,1,1)"},
+        {"Type": "T6,1", "Name": "Mercedes (tetrahedron / K4)", "Raw keys": 1,
+         "Representative": "I(1,1,1,1,1,1)"},
+    ]
+    _rows = [{"Raw terminal key": integral_notation(powers), "Total power": sum(powers)}
+             for powers in sorted(master_powers)]
+    mo.vstack([
+        mo.md(r"""
+        ## 5. Terminal topologies
+
+        For this equal-mass input, changes of loop-momentum variables identify
+        the raw keys in the following groups: $16+12+3+6+1=38$.
+        The labels follow [R. N. Lee, Figure 2](https://arxiv.org/pdf/1203.4868#page=5).
+        They name graph types, not a conversion to that paper's normalization.
+        Each representative uses this notebook's denominator order, not a
+        relabeling of the artifact. The first two types factorize into
+        lower-loop integrals; the last three are connected three-loop graphs.
+        """),
+        mo.ui.table(_types, selection=None, pagination=False,
+                    show_column_summaries=False, show_download=False),
+        mo.md("""
+        **The certified artifact is unchanged.** The following table and the
+        reductions retain all 38 raw keys: the display does not apply the
+        topology identifications, merge coefficients, or supply an additional
+        proof of master independence. Closure means reduction terminates in
+        these keys; independence and basis minimization are different questions.
+        """),
+        mo.ui.table(_rows, selection=None, pagination=True, page_size=10,
+                    show_column_summaries=False, show_download=False),
+    ])
+    return
+
+
+@app.cell
+def _(reduction, tadpole_checked):
+    from symbolica import get_citations
+
+    _ = reduction, tadpole_checked  # Collect after the calculations register their citations.
+    get_citations()
     return
 
 

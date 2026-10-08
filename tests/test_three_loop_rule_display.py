@@ -1,8 +1,6 @@
 """Selected-rule display uses Symbolica, with no coefficient-ID placeholders."""
 
 import ast
-import importlib.util
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -11,11 +9,12 @@ pytest.importorskip("symbolica")
 pytest.importorskip("marimo")
 from symbolica import E, S
 
-HERE = Path(__file__).parents[1] / "examples/hep"
-SPEC = importlib.util.spec_from_file_location("three_loop_display_support",
-                                            HERE / "three_loop_reduction.py")
-support = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(support)
+from tests.three_loop_notebook import (
+    NOTEBOOK,
+    notebook_cell_producing,
+    notebook_input,
+    support,
+)
 
 
 class Coefficients:
@@ -83,7 +82,7 @@ def test_full_rhs_is_not_truncated_at_ten_or_one_hundred_terms():
 def test_real_generated_k6_rule_displays_all_terms():
     from symbolica.community import hepkit as hep
 
-    _, source = support.graph_inputs()
+    source = notebook_input("generation_source")
     artifact = hep.rustred.family_candidates(
         source, input_format="toml", n_cores=1,
         exact_backend="sparse", numerical_depth=2,
@@ -102,7 +101,7 @@ def test_real_generated_k6_rule_displays_all_terms():
 
 
 def test_notebook_has_sector_then_rule_dropdowns_with_no_offset_selector():
-    source = (HERE / "three_loop_reduction.py").read_text()
+    source = NOTEBOOK.read_text()
     tree = ast.parse(source)
     labels = []
     for node in ast.walk(tree):
@@ -112,21 +111,45 @@ def test_notebook_has_sector_then_rule_dropdowns_with_no_offset_selector():
                           if keyword.arg == "label" and isinstance(keyword.value, ast.Constant))
     assert "Sector" in labels and "Rule" in labels
     names = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)}
-    assert names.isdisjoint({"rule_offset", "rule_table", "rhs_offset"})
+    assert names.isdisjoint({"rule_offset", "rule_table", "rhs_offset", "term_offset"})
     assert "render_coefficient" not in source
     assert "terms_on_new_line=True" in source and "max_terms=None" in source
 
 
 def test_notebook_has_no_local_helper_or_graph_file_dependencies(tmp_path, monkeypatch):
-    source = (HERE / "three_loop_reduction.py").read_text()
+    source = NOTEBOOK.read_text()
     tree = ast.parse(source)
     imports = [node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)]
     assert "three_loop_reduction_support" not in imports
     assert "rustred_campaign_support" not in imports
     monkeypatch.chdir(tmp_path)
-    dot, family_source = support.graph_inputs()
+    dot, family_source = notebook_input("dot_input"), notebook_input("generation_source")
     assert "digraph Mercedes" in dot
     assert support.tomllib.loads(family_source)["target"]["powers"] == [1] * 6
+
+
+@pytest.mark.parametrize("term_count", [0, 105])
+def test_reduction_display_includes_every_term_and_its_restored_mass(term_count):
+    integral, mass_squared = S("I_reduction_display", "M_reduction_display")
+    terms = [((index, 1, 1, 0, 0, 0), E(str(index + 1)) / 2, index % 3 - 1)
+             for index in range(term_count)]
+    cell = notebook_cell_producing("reduced_expression")
+    displayed = []
+    cell.__globals__["mo"] = SimpleNamespace(
+        md=lambda text: text, hstack=lambda *args, **kwargs: None,
+        vstack=displayed.append,
+    )
+    expression, = cell(E=E, integral=integral, mass_squared=mass_squared,
+                       reduced_terms=terms, selected_powers=(2, 1, 1, 1, 1, 1))
+    output = str(displayed[0][1])
+    if not terms:
+        assert expression == 0 and output == "0"
+        return
+    assert len(output.splitlines()) == term_count
+    assert output.count("I_reduction_display(") == term_count
+    for master, coefficient, mass_power in terms:
+        shown_coefficient = expression.coefficient(integral(*master))
+        assert (shown_coefficient / mass_squared**mass_power - coefficient).together() == 0
 
 
 def summary(target, fixed=(), affine_count=0, ordinal=0):
@@ -138,28 +161,26 @@ def summary(target, fixed=(), affine_count=0, ordinal=0):
 
 def test_rule_label_omits_fixed_case_already_visible_in_target():
     selected = summary(key([0, 2], [True, False]), [{"axis": 1, "value": 2}], ordinal=7)
-    assert support.rule_case_summary(selected) == ""
     label = support.rule_label(selected)
     assert support.integral_notation(selected["target"]) in label
     assert "7" in label and "n_1 = 2" not in label
+    assert "Case:" not in label
 
 
 def test_rule_label_preserves_case_not_encoded_by_target():
     selected = summary(key([1, 2], [True, False]),
                        [{"axis": 0, "value": 1}, {"axis": 1, "value": 2}])
-    case = support.rule_case_summary(selected)
-    assert "n_0 = 1" in case and "n_1 = 2" not in case
-    assert case in support.rule_label(selected)
+    label = support.rule_label(selected)
+    assert "n_0 = 1" in label and "n_1 = 2" not in label
 
 
 def test_rule_case_keeps_affine_restrictions_even_with_fixed_target():
     selected = summary(key([1, 2], [False, False]),
                        [{"axis": 0, "value": 1}, {"axis": 1, "value": 2}],
                        affine_count=2)
-    case = support.rule_case_summary(selected)
-    assert "2" in case and "affine" in case.lower()
-    assert "n_0 = 1" not in case and "n_1 = 2" not in case
-    assert case in support.rule_label(selected)
+    label = support.rule_label(selected)
+    assert "2 affine conditions" in label
+    assert "n_0 = 1" not in label and "n_1 = 2" not in label
 
 
 def test_rule_ordinals_disambiguate_equal_targets():
@@ -172,23 +193,9 @@ def test_full_rule_case_keeps_affine_conditions_without_summary_count():
     selected = summary(key([0, 2], [True, False]), [{"axis": 1, "value": 2}])
     selected["case"].pop("affine_equation_count")
     selected["case"]["affine_zero_equations"] = [7]
-    case = support.rule_case_summary(selected)
-    assert "1" in case and "affine" in case.lower()
-    assert "n_1 = 2" not in case
-
-
-def notebook_cell_producing(name):
-    """Exercise a notebook cell without starting its other scientific work."""
-    tree = ast.parse((HERE / "three_loop_reduction.py").read_text())
-    cells = [cell for cell in tree.body if isinstance(cell, ast.FunctionDef) and any(
-        isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store) and node.id == name
-        for node in ast.walk(cell))]
-    assert len(cells) == 1
-    cell = cells[0]
-    cell.decorator_list = []
-    namespace = vars(support).copy()
-    exec(compile(ast.Module(body=[cell], type_ignores=[]), str(SPEC.origin), "exec"), namespace)
-    return namespace[cell.name]
+    label = support.rule_label(selected)
+    assert "1 affine condition" in label
+    assert "n_1 = 2" not in label
 
 
 def test_rule_dropdown_loads_all_summaries_but_only_selected_rhs():
