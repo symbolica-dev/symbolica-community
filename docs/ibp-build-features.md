@@ -65,3 +65,28 @@ not the routed walking/verification entry points; the linker already removes
 those unreferenced functions from the wheel. The archive audit verifies that
 these APIs no longer compile for all 16 arities, including for native CLI users.
 It must not be used to attribute their entire pre-link size to the wheel.
+
+### Remaining wheel growth
+
+A linked-function comparison of the 2026-10-03 20.51 MB wheel and the routed
+capacity build (27.27 MB, both ZIP zstd-22) found 50.75 MB more executable code
+and 7.15 MB more data before compression. The old wheel excluded IBP on WASM.
+Code emitted by the new consuming crates accounts for almost all the increase:
+RustRed and its bridges/campaign API, 24.1 MB; RustFlow, 14.2 MB; Hyperbolica,
+7.2 MB; and FastSecDec, 4.7 MB. These figures include the generic math routines
+instantiated in each crate. They describe linked, uncompressed code, so they
+must not be summed as compressed download sizes.
+
+About 22 MB of the code growth consists of Symbolica polynomial routines emitted
+in the new consumers. For example, integer-polynomial `heap_mul` appears in five
+objects in the old link and ten in the new link. Reducing IBP storage capacities
+does not remove copies instantiated by separate crates. Concrete shared math
+entry points are a separate way to reduce this duplication.
+
+RustFlow's embedded Higgs-plus-jet documents accounted for 6.07 MB of data,
+including a 5.47 MB coefficient document. A zstd-22 compression experiment that
+zeroed only these payloads reduced the compressed module by 0.64 MB. The new
+external-data loader removes their embedding: call
+`await load_higgs_jet_data(form_factors=True)` before constructing the published
+Higgs-plus-jet objects. Downloads use pinned URLs, BLAKE3 verification, and a
+content-hash cache. General IBP reduction and transport do not load them.

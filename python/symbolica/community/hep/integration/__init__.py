@@ -12,3 +12,7 @@ files live in the virtual filesystem and must be exported for durable storage.
 
 from symbolica.community.hep_integration_native import *
 from symbolica.community.hep_integration_native import __all__ as __all__
+
+from .data import load_higgs_jet_data
+
+__all__ = [*__all__, "load_higgs_jet_data"]

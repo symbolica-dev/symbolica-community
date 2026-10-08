@@ -354,6 +354,10 @@ def main():
     data = Path(__file__).parent / "data" / "gg_hg"
     attestation = runtime_attestation()
     anchor_evidence = verify_anchor_report(args.anchor_report, attestation) if args.anchor_report else None
+    from symbolica.community.hep.integration import load_higgs_jet_data
+    import asyncio
+    asyncio.run(load_higgs_jet_data(form_factors=True))
+
     session = CalculationSession(
         data / "native-model.json", args.directory,
         seed_digits=args.seed_digits, workers=args.workers, boundary_workers=args.boundary_workers,

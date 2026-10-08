@@ -4187,7 +4187,7 @@ dependencies = [
 [[package]]
 name = "symbolica-amflow"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/RustFlow?rev=c04ea606049007efb780683332a3440dc20317e7#c04ea606049007efb780683332a3440dc20317e7"
+source = "git+https://github.com/alphal00p/RustFlow?rev=995e531c71df4b9c4b1c32fef8df8e7e8d201e12#995e531c71df4b9c4b1c32fef8df8e7e8d201e12"
 dependencies = [
  "ahash 0.8.12",
  "bincode",

@@ -57,7 +57,10 @@ fn main() -> Result<()> {
             })?;
         write_package(
             "symbolica.community.hep.integration",
-            &numerical.to_string(),
+            &format!(
+                "{}\nfrom .data import load_higgs_jet_data as load_higgs_jet_data\n",
+                numerical
+            ),
         )?;
         let integration = stub
             .modules

@@ -96,7 +96,10 @@ async def _():
         HiggsJetAmplitude,
         HiggsJetFormFactorProjector,
         HiggsJetIntegralSystem,
+        load_higgs_jet_data,
     )
+
+    await load_higgs_jet_data(form_factors=True)
 
     from symbolica.community.hepkit import Model
 

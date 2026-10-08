@@ -91,7 +91,7 @@ feynkit-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", 
 rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", branch = "main", default-features = false, features = ["campaign-api"] }
 symbolica = { version = "3.0.1", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
-symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "c04ea606049007efb780683332a3440dc20317e7", default-features = false, features = ["python_api"] }
+symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "995e531c71df4b9c4b1c32fef8df8e7e8d201e12", default-features = false, features = ["python_api"] }
 # Tensor bindings split methods across impl blocks on both native and WASM.
 pyo3 = { version = "0.28", features = ["multiple-pymethods"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [

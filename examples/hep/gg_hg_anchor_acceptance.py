@@ -160,6 +160,10 @@ def run(args):
         HiggsJetIntegralSystem, IntegralEvaluator,
     )
 
+    from symbolica.community.hep.integration import load_higgs_jet_data
+    import asyncio
+    asyncio.run(load_higgs_jet_data())
+
     started = perf_counter_ns()
     args.directory.mkdir(parents=True, exist_ok=True)
     run_path = args.directory / "runs" / f"{time_ns()}-{os.getpid()}.json"
