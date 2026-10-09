@@ -1,9 +1,11 @@
 # IBP build features
 
-Default native and WASM builds retain exact arity dispatch for physical arities
-1–16. Two independent, opt-in Cargo features change the build policy:
+Native and WASM community builds enable shared solver storage by default while
+retaining physical arities 1–16. Two independent Cargo features control the build
+policy:
 
-- `ibp-capacity-dispatch` compiles shared storage capacities 4, 8 and 16.
+- `ibp-capacity-dispatch`, enabled by `community`, compiles shared storage
+  capacities 4, 8 and 16.
   All physical arities remain supported. Inactive storage coordinates stay
   fixed to zero and do not appear in public powers, cuts or coefficients.
   Generation, matching, routing, both walking policies, feedback, checkpoint
@@ -19,10 +21,10 @@ Default native and WASM builds retain exact arity dispatch for physical arities
   it is never enabled by default. Campaigns retain their existing maximum of
   16 coordinates and return a typed input error for an omitted arity.
 
-For example, a full WASM build with shared capacities:
+For example, a full WASM build uses shared capacities automatically:
 
 ```sh
-WASM_FEATURES=wasm,ibp-capacity-dispatch bash scripts/build_wasm_performance.sh dist/wasm-capacity
+WASM_FEATURES=wasm bash scripts/build_wasm_performance.sh dist/wasm-capacity
 python scripts/compress_wheel_zstd.py dist/wasm-capacity/*.whl
 ```
 

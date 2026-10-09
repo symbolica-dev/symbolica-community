@@ -10,7 +10,7 @@ readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.96"
 version = "3.0.2"
-exclude = ["dist"]
+exclude = ["dist", "reports/**"]
 
 # Keep this host independent when checked out inside another Rust workspace.
 [workspace]
@@ -50,13 +50,14 @@ codegen-units = 1
 strip = "symbols"
 
 [features]
-# Explicit solver-storage policy. Neither changes the default arity registry.
+# Shared solver storage is enabled by community builds without changing arities.
 ibp-capacity-dispatch = ["rustred-feynkit?/capacity-dispatch", "symbolica-amflow?/capacity-dispatch"]
 # Required before RUSTRED_RUNTIME_ARITIES may restrict/extend the registry.
 ibp-runtime-arity-selection = ["rustred-feynkit?/runtime-arity-selection", "symbolica-amflow?/runtime-arity-selection"]
 default = ["module", "native", "community"]
 module = ["pyo3/abi3-py39"] # incompatible with stub_gen
 community = [
+    "ibp-capacity-dispatch",
     "dep:spynso3", "dep:feynkit-py", "dep:one-loop-reduce-python",
     "dep:rustred-feynkit", "dep:oneloop-python", "dep:oneloop", "dep:vakint",
     "dep:hyperbolica", "dep:symbolica-amflow", "dep:fastsecdec-python",
