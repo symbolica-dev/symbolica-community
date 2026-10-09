@@ -31,6 +31,57 @@ opt-level = 2
 # Optimize across crates in native release builds with ThinLTO.
 [profile.release]
 lto = "thin"
+codegen-units = 1
+strip = "symbols"
+
+# Keep the numeric kernel at -O3; shrink bindings, reducers, rules and rendering.
+[profile.release.package.symbolica_community]
+opt-level = "s"
+
+[profile.release.package.rustred]
+opt-level = "s"
+
+[profile.release.package.rustred-app]
+opt-level = "s"
+
+[profile.release.package.rustred-feynkit]
+opt-level = "s"
+
+[profile.release.package.rustred-python]
+opt-level = "s"
+
+[profile.release.package.symbolica-integrate]
+opt-level = "s"
+
+[profile.release.package.typst]
+opt-level = "s"
+
+[profile.release.package.typst-eval]
+opt-level = "s"
+
+[profile.release.package.typst-html]
+opt-level = "s"
+
+[profile.release.package.typst-kit]
+opt-level = "s"
+
+[profile.release.package.typst-layout]
+opt-level = "s"
+
+[profile.release.package.typst-library]
+opt-level = "s"
+
+[profile.release.package.typst-realize]
+opt-level = "s"
+
+[profile.release.package.typst-renderer]
+opt-level = "s"
+
+[profile.release.package.typst-svg]
+opt-level = "s"
+
+[profile.release.package.typst-syntax]
+opt-level = "s"
 
 # Optimize browser downloads separately from native release performance.
 [profile.release-small]

@@ -278,6 +278,13 @@ The native build forwards the `pyo3/extension-module` feature selected by
 `pyproject.toml` so numerical-cache fingerprints describe the actual host
 dependency graph. Stub generation uses its separate feature selection.
 
+Release builds use ThinLTO, one code generation unit, and symbol stripping.
+Community bindings, RustRed, symbolic integration rules, and Typst rendering use Rust's size-oriented
+`opt-level = "s"` (`-Os`); the numerical kernel and other physics engines retain
+`-O3`. PyPI builds use Deflate level 9 and check that every uploaded distribution
+is smaller than 100,000,000 bytes. Check local artifacts with
+`python scripts/check_distribution_size.py dist/*.whl dist/*.tar.gz`.
+
 
 For a browser build, use `--no-default-features --features wasm` (the
 `scripts/build_wasm_performance.sh` default). The explicit `wasm-core` feature
