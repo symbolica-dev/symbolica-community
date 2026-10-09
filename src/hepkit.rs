@@ -14,6 +14,7 @@ impl SymbolicaCommunityModule for HepKitModule {
         if rustred_feynkit::was_used() {
             citations.push(Citation {
                 id: "https://github.com/alphal00p/rustred".into(),
+                url: "https://github.com/alphal00p/rustred".into(),
                 reference: "Gregor Kälin and Valentin Hirschi. RustRed (2026).".into(),
                 bibtex: r#"@software{rustred,
   author = {Kälin, Gregor and Hirschi, Valentin},
@@ -28,6 +29,7 @@ impl SymbolicaCommunityModule for HepKitModule {
             });
             citations.push(Citation {
                 id: "https://github.com/rnlg/LiteRed2".into(),
+                url: "https://github.com/rnlg/LiteRed2".into(),
                 reference: "Roman N. Lee. LiteRed2.".into(),
                 bibtex: r#"@software{Lee:LiteRed2,
   author = {Lee, Roman N.},
@@ -41,6 +43,7 @@ impl SymbolicaCommunityModule for HepKitModule {
             });
             citations.push(Citation {
                 id: "arXiv:2604.25916".into(),
+                url: "https://arxiv.org/abs/2604.25916".into(),
                 reference: "Christoph Dlapa, Gregor Kälin, Zhengwen Liu and Rafael A. Porto. Nonlocal-in-time tail effects in gravitational scattering to fifth post-Minkowskian and tenth self-force orders. Phys. Rev. D 114, 024029 (2026). doi:10.1103/wkp4-vy6g.".into(),
                 bibtex: r#"@article{Dlapa:2026oyq,
   author = {Dlapa, Christoph and K{\"a}lin, Gregor and Liu, Zhengwen and Porto, Rafael A.},

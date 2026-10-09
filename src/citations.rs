@@ -13,6 +13,7 @@ use symbolica::api::python::SymbolicaCommunityModule;
 pub fn get_citations() -> Vec<Citation> {
     let mut citations = vec![Citation {
         id: "doi:10.5281/zenodo.17054381".into(),
+        url: "https://zenodo.org/records/17054381".into(),
         reference: "Ben Ruijl. Symbolica (2025). doi:10.5281/zenodo.17054381.".into(),
         bibtex: r#"@software{ruijl_symbolica_2025,
   author = {Ruijl, Ben},
