@@ -126,6 +126,7 @@ fn integration_citations() -> Vec<Citation> {
     vec![
         Citation {
             id: "https://github.com/symbolica-dev/symbolica-integrate".into(),
+            url: "https://github.com/symbolica-dev/symbolica-integrate".into(),
             reference: "Ben Ruijl. Symbolica-integrate (2026).".into(),
             bibtex: r#"@software{symbolica_integrate,
   author = {Ruijl, Ben},
@@ -140,6 +141,7 @@ fn integration_citations() -> Vec<Citation> {
         },
         Citation {
             id: "https://rulebasedintegration.org".into(),
+            url: "https://rulebasedintegration.org".into(),
             reference: "Albert D. Rich, Patrick Scheibe and contributors. Rubi.".into(),
             bibtex: r#"@software{rubi,
   author = {Rich, Albert D. and Scheibe, Patrick and {Rubi contributors}},
