@@ -31,6 +31,9 @@ opt-level = 2
 # Optimize across crates in native release builds with ThinLTO.
 [profile.release]
 lto = "thin"
+opt-level = "s"
+codegen-units = 1
+strip = "symbols"
 
 # Optimize browser downloads separately from native release performance.
 [profile.release-small]

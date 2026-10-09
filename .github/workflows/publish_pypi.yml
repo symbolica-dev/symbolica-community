@@ -31,7 +31,7 @@ jobs:
           RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES: "0"
         with:
           target: ${{ matrix.runner[1] }}
-          args: --release --out dist --sdist
+          args: --release --compression-level 9 --out dist --sdist
           sccache: "true"
           manylinux: auto
       - name: Upload wheels
@@ -57,7 +57,7 @@ jobs:
           RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES: "0"
         with:
           target: ${{ matrix.runner[1] }}
-          args: --release --out dist
+          args: --release --compression-level 9 --out dist
           sccache: "true"
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -96,7 +96,7 @@ jobs:
           RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES: "0"
         run: |
           pip install maturin delvewheel
-          maturin build --release --out dist
+          maturin build --release --compression-level 9 --out dist
           delvewheel repair dist/*.whl --wheel-dir wheelhouse
 
       - name: Upload wheels
@@ -177,6 +177,9 @@ jobs:
       - name: Check core citation stub in source and wheels
         run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/*.whl
 
+      - name: Check distribution sizes
+        run: python scripts/check_distribution_size.py dist/*
+
       - name: Publish to PyPI
         uses: PyO3/maturin-action@v1
         env:
@@ -204,6 +207,9 @@ jobs:
 
       - name: Check core citation stub in source and wheels
         run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/*.whl
+
+      - name: Check distribution sizes
+        run: python scripts/check_distribution_size.py dist/*
 
       - name: Publish to PyPI
         uses: PyO3/maturin-action@v1
