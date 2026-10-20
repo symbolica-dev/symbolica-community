@@ -288,6 +288,72 @@ def test_product_rows_follow_rendered_width_and_zoom_preserves_layout(
         viewer.close()
 
 
+def test_native_index_product_rows_fit_after_mathml_table_spacing(mathml_browser_page):
+    from symbolica import Expression, S
+    from symbolica.community.hepkit import Model
+
+    Model.qcd()
+    # Reproduce the reduced four-loop numerator without a saved graph fixture.
+    # Its native labels contain MathML scripts whose table advance in WebKit
+    # exceeds the bounding width of the individual factors.
+    source = Expression.I * E("GC_10^8/D")
+    dot, mink, momentum = S("spenso::dot", "spenso::mink", "gammalooprs::Q")
+    dimension = mink(S("D"))
+    for left, right in ((2, 4), (3, 5), (6, 8), (9, 11)):
+        source *= dot(momentum(left, dimension), momentum(right, dimension))
+    source *= dot(
+        S("gammalooprs::ϵ")(0, dimension), S("gammalooprs::ϵbar")(1, dimension)
+    )
+    color, coad, hedge = S("spenso::f", "spenso::coad", "gammalooprs::hedge")
+    for owners in (
+        (0, 7, 9),
+        (1, 3, 5),
+        (3, 17, 19),
+        (5, 21, 23),
+        (7, 19, 21),
+        (9, 15, 23),
+        (11, 13, 15),
+        (11, 13, 17),
+    ):
+        source *= color(*(coad(8, hedge(owner, 1)) for owner in owners))
+    original = bytes(source.__getstate__())
+    viewer = source.mathml_viewer()
+    page = mathml_browser_page
+    widget, host = mount_viewer(page, viewer)
+    viewer._on_message(widget, page.evaluate("messages[0]"), [])
+    main = host.locator(".math-content")
+    try:
+        measurements = {}
+        for width in (1400, 350, 1400):
+            host.evaluate(
+                "(element, width) => element.style.width = `${width}px`", width
+            )
+            settle_layout(page)
+            product = product_geometry(main)
+            assert len(product["factors"]) == 15, product
+            assert max(factor["width"] for factor in product["factors"]) < (
+                product["availableWidth"] / 2
+            ), product
+            # Narrow leaves alone do not guarantee the emitted table rows fit.
+            assert max(product["rowWidths"]) <= product["availableWidth"] + 2, product
+            geometry = mathml_geometry(main)
+            assert_stacked_fractions(geometry)
+            assert geometry["scrollWidth"] <= geometry["availableWidth"] + 2, geometry
+            if width in measurements:
+                assert product == measurements[width]
+            measurements[width] = product
+        wide, narrow = measurements[1400], measurements[350]
+        assert wide["rows"] == 1 and narrow["rows"] > 1, (wide, narrow)
+        assert [(factor["html"], factor["paths"]) for factor in wide["factors"]] == [
+            (factor["html"], factor["paths"]) for factor in narrow["factors"]
+        ]
+        assert bytes(source.__getstate__()) == original
+    finally:
+        page.evaluate("dispose()")
+        viewer._on_message(widget, page.evaluate("messages.at(-1)"), [])
+        viewer.close()
+
+
 def test_expanded_product_uses_full_width_of_wrapping_sum(mathml_browser_page):
     source = E("a" * 36 + "+" + "*".join(f"b{index}" for index in range(18)))
     original = bytes(source.__getstate__())
