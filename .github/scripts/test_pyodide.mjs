@@ -95,6 +95,10 @@ large_expression = E("+".join(f"{i+1}*x^{i}" for i in range(160)))
 large_sine_html = large_expression.sin().format(mode=PrintMode.MathML)
 assert "<msup>" in large_sine_html and "<mo>(</mo>" in large_sine_html
 assert 'stretchy="false"' not in large_sine_html
+standalone_viewer = E("(1+x)^100").expand().mathml_viewer()
+assert standalone_viewer.page()["total"] == 101
+assert standalone_viewer.page()["end"] == 25
+standalone_viewer.close()
 for rendered_html in (E("sin(1/x)")._repr_html_(), E("sqrt(1+x^2)").formatted()._repr_html_()):
     math_open = rendered_html.split("<math", 1)[1].split(">", 1)[0]
     assert "overflow" not in math_open and "max-width" not in math_open
@@ -276,6 +280,8 @@ await pyodide.runPythonAsync(`
 import importlib.util
 import zipfile
 assert importlib.util.find_spec("symbolica.community") is None
+assert importlib.util.find_spec("anywidget") is None
+assert importlib.util.find_spec("marimo") is None
 assert not any(name.startswith("symbolica.community") for name in sys.modules)
 with zipfile.ZipFile(wheel_uri.removeprefix("emfs:")) as archive:
     assert not any(name.startswith("symbolica/community/") for name in archive.namelist())

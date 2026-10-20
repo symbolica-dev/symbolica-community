@@ -14,7 +14,7 @@ keywords = ["math", "algebra", "polynomial", "expression", "manipulation"]
 version = "3.0.2"
 readme = "Readme_pypi.md"
 requires-python = ">=3.9"
-dependencies = ["symbolica-fonts==3.0.2", "symbolica-vakint-data==3.0.2; sys_platform != 'emscripten' and sys_platform != 'wasi'", "anywidget>=0.9,<1; sys_platform == 'emscripten'"]
+dependencies = ["symbolica-fonts==3.0.2", "symbolica-vakint-data==3.0.2; sys_platform != 'emscripten' and sys_platform != 'wasi'"]
 license-files = ["LICENSE", "licenses/*"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -24,6 +24,7 @@ classifiers = [
 
 [project.optional-dependencies]
 numpy = ["numpy"]
+notebook = ["anywidget>=0.9,<1"]
 notebook-display = [
     "anywidget>=0.9,<1; python_version >= '3.9'",
     # Native tensor paging runs Typst in a worker with a hard rendering timeout.
