@@ -83,12 +83,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "anes"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b46cbb362ab8752921c97e041f5e366ee6297bd428a31275b9fcf1e380f7299"
-
-[[package]]
 name = "anstream"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -441,12 +435,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04"
 
 [[package]]
-name = "cast"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
-
-[[package]]
 name = "cc"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -725,6 +713,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
 
 [[package]]
+name = "convert_case"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "633458d4ef8c78b72454de2d54fd6ab2e60f9e02be22f3c6104cdc8a4e0fceb9"
+dependencies = [
+ "unicode-segmentation",
+]
+
+[[package]]
+name = "core-foundation"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2a6cd9ae233e7f62ba4e9353e81a88df7fc8a5987b8d445b4d90c879bd156f6"
+dependencies = [
+ "core-foundation-sys",
+ "libc",
+]
+
+[[package]]
 name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -780,42 +787,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "criterion"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2b12d017a929603d80db1831cd3a24082f8137ce19c69e6447f54f5fc8d692f"
-dependencies = [
- "anes",
- "cast",
- "ciborium",
- "clap",
- "criterion-plot",
- "is-terminal",
- "itertools 0.10.5",
- "num-traits",
- "once_cell",
- "oorandom",
- "plotters",
- "rayon",
- "regex",
- "serde",
- "serde_derive",
- "serde_json",
- "tinytemplate",
- "walkdir",
-]
-
-[[package]]
-name = "criterion-plot"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b50826342786a51a89e2da3a28f1c32b06e387201bc2d19791f622c673706b1"
-dependencies = [
- "cast",
- "itertools 0.10.5",
-]
-
-[[package]]
 name = "crossbeam-deque"
 version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -842,15 +813,17 @@ checksum = "a31eee39dddec8330830986fcd7625edb5a24ec90ea038215273bbc3adb08ac6"
 
 [[package]]
 name = "crossterm"
-version = "0.28.1"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "829d955a0bb380ef178a640b91779e3987da38c9aea133b20614cfed8cdea9c6"
+checksum = "d8b9f2e4c67f833b660cdb0a3523065869fb35570177239812ed4c905aeff87b"
 dependencies = [
  "bitflags 2.13.2",
  "crossterm_winapi",
+ "derive_more 2.1.1",
+ "document-features",
  "mio",
  "parking_lot",
- "rustix 0.38.44",
+ "rustix",
  "serde",
  "signal-hook",
  "signal-hook-mio",
@@ -1055,7 +1028,29 @@ version = "0.99.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6edb4b64a43d977b8e99788fe3a04d483834fba1215a7e02caa415b626497f7f"
 dependencies = [
- "convert_case",
+ "convert_case 0.4.0",
+ "proc-macro2",
+ "quote",
+ "rustc_version",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "derive_more"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d751e9e49156b02b44f9c1815bcb94b984cdcc4396ecc32521c739452808b134"
+dependencies = [
+ "derive_more-impl",
+]
+
+[[package]]
+name = "derive_more-impl"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "799a97264921d8623a957f6c3b9011f3b5492f557bbb7a5a19b7fa6d06ba8dcb"
+dependencies = [
+ "convert_case 0.10.0",
  "proc-macro2",
  "quote",
  "rustc_version",
@@ -1116,9 +1111,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "document-features"
+version = "0.2.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4b8a88685455ed29a21542a33abd9cb6510b6b129abadabdcef0f4c55bc8f61"
+dependencies = [
+ "litrs",
+]
+
+[[package]]
 name = "dot-parser"
 version = "0.5.1"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "either",
  "pest",
@@ -1291,7 +1295,7 @@ checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
 [[package]]
 name = "fastsecdec"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=4572d7a1d2e26e11b7ec213eda998efb7a5e8caa#4572d7a1d2e26e11b7ec213eda998efb7a5e8caa"
+source = "git+https://github.com/aethomsen/fastSecDec?rev=1aba4ba3ab9fcd09c0794a834b74e6aff5b18f64#1aba4ba3ab9fcd09c0794a834b74e6aff5b18f64"
 dependencies = [
  "bincode",
  "blake3",
@@ -1314,7 +1318,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=4572d7a1d2e26e11b7ec213eda998efb7a5e8caa#4572d7a1d2e26e11b7ec213eda998efb7a5e8caa"
+source = "git+https://github.com/aethomsen/fastSecDec?rev=1aba4ba3ab9fcd09c0794a834b74e6aff5b18f64#1aba4ba3ab9fcd09c0794a834b74e6aff5b18f64"
 dependencies = [
  "fastsecdec",
  "fastsecdec-sectors",
@@ -1323,13 +1327,14 @@ dependencies = [
  "pyo3-stub-gen",
  "serde",
  "serde_json",
+ "spynso3",
  "symbolica",
 ]
 
 [[package]]
 name = "fastsecdec-qmc"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=4572d7a1d2e26e11b7ec213eda998efb7a5e8caa#4572d7a1d2e26e11b7ec213eda998efb7a5e8caa"
+source = "git+https://github.com/aethomsen/fastSecDec?rev=1aba4ba3ab9fcd09c0794a834b74e6aff5b18f64#1aba4ba3ab9fcd09c0794a834b74e6aff5b18f64"
 dependencies = [
  "numerica",
  "rand 0.9.5",
@@ -1339,7 +1344,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-sectors"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=4572d7a1d2e26e11b7ec213eda998efb7a5e8caa#4572d7a1d2e26e11b7ec213eda998efb7a5e8caa"
+source = "git+https://github.com/aethomsen/fastSecDec?rev=1aba4ba3ab9fcd09c0794a834b74e6aff5b18f64#1aba4ba3ab9fcd09c0794a834b74e6aff5b18f64"
 dependencies = [
  "numerica",
  "thiserror 2.0.21",
@@ -1366,7 +1371,7 @@ dependencies = [
 [[package]]
 name = "feynkit-amplitude"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "feynkit-graph",
  "feynkit-model",
@@ -1380,7 +1385,7 @@ dependencies = [
 [[package]]
 name = "feynkit-cff"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "bincode",
  "feynkit-graph",
@@ -1396,7 +1401,7 @@ dependencies = [
 [[package]]
 name = "feynkit-generator"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -1416,10 +1421,11 @@ dependencies = [
 [[package]]
 name = "feynkit-graph"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "feynkit-kinematics",
  "feynkit-model",
+ "idenso",
  "itertools 0.14.0",
  "linnest",
  "linnet",
@@ -1435,7 +1441,7 @@ dependencies = [
 [[package]]
 name = "feynkit-kinematics"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "linnet",
  "numerica",
@@ -1448,7 +1454,7 @@ dependencies = [
 [[package]]
 name = "feynkit-model"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -1465,7 +1471,7 @@ dependencies = [
 [[package]]
 name = "feynkit-py"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "feynkit-amplitude",
  "feynkit-cff",
@@ -1475,6 +1481,7 @@ dependencies = [
  "feynkit-model",
  "feynkit-tensor",
  "feynkit-ufo",
+ "idenso",
  "linnest",
  "linnet",
  "linnet-py",
@@ -1483,6 +1490,7 @@ dependencies = [
  "pyo3-stub-gen",
  "pyo3-stub-gen-derive",
  "serde_json",
+ "spenso",
  "spenso-macros",
  "spynso3",
  "symbolica",
@@ -1492,7 +1500,7 @@ dependencies = [
 [[package]]
 name = "feynkit-tensor"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "feynkit-graph",
  "idenso",
@@ -1505,7 +1513,7 @@ dependencies = [
 [[package]]
 name = "feynkit-ufo"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "feynkit-model",
  "pyo3",
@@ -1523,6 +1531,16 @@ dependencies = [
  "serde",
  "uncased",
  "version_check",
+]
+
+[[package]]
+name = "filetime"
+version = "0.2.29"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c287a33c7f0a620c38e641e7f60827713987b3c0f26e8ddc9462cc69cf75759"
+dependencies = [
+ "cfg-if",
+ "libc",
 ]
 
 [[package]]
@@ -1596,6 +1614,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "foreign-types"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1"
+dependencies = [
+ "foreign-types-shared",
+]
+
+[[package]]
+name = "foreign-types-shared"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
+
+[[package]]
 name = "form_urlencoded"
 version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1637,7 +1670,7 @@ dependencies = [
 [[package]]
 name = "gammaloop-workspace-hack"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "ahash 0.8.12",
  "arrayvec",
@@ -1647,9 +1680,9 @@ dependencies = [
  "clap",
  "clap_builder",
  "console",
- "criterion",
  "crossterm",
  "either",
+ "hashbrown 0.17.1",
  "indenter",
  "indexmap",
  "libc",
@@ -1668,7 +1701,7 @@ dependencies = [
  "regex-automata",
  "regex-syntax",
  "rust-embed-utils",
- "rustix 1.1.5",
+ "rustix",
  "serde",
  "serde_core",
  "serde_json",
@@ -1789,7 +1822,7 @@ dependencies = [
 [[package]]
 name = "graphica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#c78cffc20f318df1fce50539a587cbe8ffc717c0"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#7bdf5a707243220a92fa4eb5ccab5c2c443fd965"
 dependencies = [
  "ahash 0.8.12",
  "dyn-clone",
@@ -1832,6 +1865,11 @@ name = "hashbrown"
 version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
+dependencies = [
+ "allocator-api2",
+ "equivalent",
+ "foldhash",
+]
 
 [[package]]
 name = "heck"
@@ -1844,12 +1882,6 @@ name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
-
-[[package]]
-name = "hermit-abi"
-version = "0.5.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e17592d60ebacc7d5e169f4663c5f84f9161cc90328abcfe8456f41e4dfcb284"
 
 [[package]]
 name = "hexf"
@@ -2079,7 +2111,7 @@ checksum = "ae293c039020f9ec10710af98d29ce6aa2051486638b49c9a6409f3b4a9e98ad"
 [[package]]
 name = "idenso"
 version = "0.3.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "ahash 0.8.12",
  "base64",
@@ -2191,17 +2223,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.119",
-]
-
-[[package]]
-name = "is-terminal"
-version = "0.4.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3640c1c38b8e4e43584d8df18be5fc6b0aa314ce6ebf51b53313d4306cca8e46"
-dependencies = [
- "hermit-abi",
- "libc",
- "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -2365,13 +2386,12 @@ dependencies = [
 [[package]]
 name = "kurvst"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "ciborium",
  "kurbo",
  "libm",
  "serde",
- "wasm-minimal-protocol",
 ]
 
 [[package]]
@@ -2420,7 +2440,7 @@ dependencies = [
 [[package]]
 name = "linnest"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "cgmath",
  "ciborium",
@@ -2444,7 +2464,7 @@ dependencies = [
 [[package]]
 name = "linnet"
 version = "0.17.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "ahash 0.8.12",
  "bincode",
@@ -2474,7 +2494,7 @@ dependencies = [
 [[package]]
 name = "linnet-py"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "ciborium",
  "dot-parser",
@@ -2492,7 +2512,7 @@ dependencies = [
 [[package]]
 name = "linnet-render-py"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "krilla",
  "krilla-svg",
@@ -2507,12 +2527,6 @@ dependencies = [
  "symbolica",
  "typst-renderer",
 ]
-
-[[package]]
-name = "linux-raw-sys"
-version = "0.4.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d26c52dbd32dccf2d10cac7725f8eae5296885fb5703b261f7d0a0739ec807ab"
 
 [[package]]
 name = "linux-raw-sys"
@@ -2538,6 +2552,12 @@ checksum = "47d9d19d1d6efa0109d2f65ff4c85cddd50bd572e5a00127ab10987290bcefae"
 dependencies = [
  "serde_core",
 ]
+
+[[package]]
+name = "litrs"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4744e383959f0db86ede514b809b1c53251889093803c05267acc7d4e7030d70"
 
 [[package]]
 name = "lock_api"
@@ -2689,6 +2709,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13d2233c9842d08cfe13f9eac96e207ca6a2ea10b80259ebe8ad0268be27d2af"
 
 [[package]]
+name = "native-tls"
+version = "0.2.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "465500e14ea162429d264d44189adc38b199b62b1c21eea9f69e4b73cb03bbf2"
+dependencies = [
+ "libc",
+ "log",
+ "openssl",
+ "openssl-probe",
+ "openssl-sys",
+ "schannel",
+ "security-framework",
+ "security-framework-sys",
+ "tempfile",
+]
+
+[[package]]
 name = "ndarray"
 version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2795,18 +2832,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "num_threads"
-version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c7398b9c8b70908f6371f47ed36737907c87c52af34c268fed0bf0ceb92ead9"
-dependencies = [
- "libc",
-]
-
-[[package]]
 name = "numerica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#c78cffc20f318df1fce50539a587cbe8ffc717c0"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#7bdf5a707243220a92fa4eb5ccab5c2c443fd965"
 dependencies = [
  "ahash 0.8.12",
  "astro-float",
@@ -2907,10 +2935,47 @@ dependencies = [
 ]
 
 [[package]]
-name = "oorandom"
-version = "11.1.5"
+name = "openssl"
+version = "0.10.81"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6790f58c7ff633d8771f42965289203411a5e5c68388703c06e14f24770b41e"
+checksum = "77823a27f0babb03091cb9ed9ef80af3b39dbc82f97e8fa530374b7dafd87a45"
+dependencies = [
+ "bitflags 2.13.2",
+ "cfg-if",
+ "foreign-types",
+ "libc",
+ "openssl-macros",
+ "openssl-sys",
+]
+
+[[package]]
+name = "openssl-macros"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "openssl-probe"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c87def4c32ab89d880effc9e097653c8da5d6ef28e6b539d313baaacfbafcbe"
+
+[[package]]
+name = "openssl-sys"
+version = "0.9.117"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b47e7e6bb2c38cd930d25a23b40fa52e068c10e85f3e03a7f5ba5aaca5713695"
+dependencies = [
+ "cc",
+ "libc",
+ "pkg-config",
+ "vcpkg",
+]
 
 [[package]]
 name = "option-ext"
@@ -3147,32 +3212,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 
 [[package]]
-name = "plotters"
-version = "0.3.7"
+name = "pkg-config"
+version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5aeb6f403d7a4911efb1e33402027fc44f29b5bf6def3effcc22d7bb75f2b747"
-dependencies = [
- "num-traits",
- "plotters-backend",
- "plotters-svg",
- "wasm-bindgen",
- "web-sys",
-]
-
-[[package]]
-name = "plotters-backend"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df42e13c12958a16b3f7f4386b9ab1f3e7933914ecea48da7139435263a4172a"
-
-[[package]]
-name = "plotters-svg"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51bae2ac328883f7acdfea3d66a7c35751187f870bc81f94563733a154d7a670"
-dependencies = [
- "plotters-backend",
-]
+checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 
 [[package]]
 name = "png"
@@ -3326,6 +3369,79 @@ name = "pxfm"
 version = "0.1.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d55d956fa96f5ec02be2e13af0e20391a5aa83d6a074e3ad368959d0fab299ea"
+
+[[package]]
+name = "pychete"
+version = "0.1.0"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
+dependencies = [
+ "pychete-core",
+ "pychete-functional",
+ "pychete-matching",
+ "pychete-models",
+ "pychete-simplify",
+]
+
+[[package]]
+name = "pychete-core"
+version = "0.1.0"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
+dependencies = [
+ "idenso",
+ "serde",
+ "serde_json",
+ "spenso",
+ "symbolica",
+ "thiserror 2.0.21",
+ "uuid",
+]
+
+[[package]]
+name = "pychete-functional"
+version = "0.1.0"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
+dependencies = [
+ "pychete-core",
+]
+
+[[package]]
+name = "pychete-matching"
+version = "0.1.0"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
+dependencies = [
+ "pychete-core",
+ "pychete-functional",
+ "pychete-simplify",
+]
+
+[[package]]
+name = "pychete-models"
+version = "0.1.0"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
+dependencies = [
+ "pychete-core",
+]
+
+[[package]]
+name = "pychete-python"
+version = "0.1.0"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
+dependencies = [
+ "pychete",
+ "pyo3",
+ "pyo3-stub-gen",
+ "pyo3-stub-gen-derive",
+ "symbolica",
+]
+
+[[package]]
+name = "pychete-simplify"
+version = "0.1.0"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
+dependencies = [
+ "pychete-core",
+ "pychete-functional",
+]
 
 [[package]]
 name = "pyo3"
@@ -3773,19 +3889,6 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.44"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdb5bc1ae2baa591800df16c9ca78619bf65c0488b41b96ccec5d11220d8c154"
-dependencies = [
- "bitflags 2.13.2",
- "errno",
- "libc",
- "linux-raw-sys 0.4.15",
- "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "rustix"
 version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d"
@@ -3793,7 +3896,7 @@ dependencies = [
  "bitflags 2.13.2",
  "errno",
  "libc",
- "linux-raw-sys 0.12.1",
+ "linux-raw-sys",
  "windows-sys 0.61.2",
 ]
 
@@ -3857,7 +3960,7 @@ dependencies = [
 [[package]]
 name = "rustred"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#89eecd455399a660f8654bdd44c4a258d3cf7a0c"
+source = "git+https://github.com/alphal00p/rustred?branch=main#a666e705a92b06ae640a0d9e69b2dfe5bbe748ef"
 dependencies = [
  "bincode",
  "blake3",
@@ -3870,7 +3973,7 @@ dependencies = [
 [[package]]
 name = "rustred-app"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#89eecd455399a660f8654bdd44c4a258d3cf7a0c"
+source = "git+https://github.com/alphal00p/rustred?branch=main#a666e705a92b06ae640a0d9e69b2dfe5bbe748ef"
 dependencies = [
  "bincode",
  "blake3",
@@ -3886,7 +3989,7 @@ dependencies = [
 [[package]]
 name = "rustred-feynkit"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#89eecd455399a660f8654bdd44c4a258d3cf7a0c"
+source = "git+https://github.com/alphal00p/rustred?branch=main#a666e705a92b06ae640a0d9e69b2dfe5bbe748ef"
 dependencies = [
  "pyo3",
  "rustred",
@@ -3897,12 +4000,12 @@ dependencies = [
 [[package]]
 name = "rustred-order"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#89eecd455399a660f8654bdd44c4a258d3cf7a0c"
+source = "git+https://github.com/alphal00p/rustred?branch=main#a666e705a92b06ae640a0d9e69b2dfe5bbe748ef"
 
 [[package]]
 name = "rustred-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#89eecd455399a660f8654bdd44c4a258d3cf7a0c"
+source = "git+https://github.com/alphal00p/rustred?branch=main#a666e705a92b06ae640a0d9e69b2dfe5bbe748ef"
 dependencies = [
  "pyo3",
  "rustred-app",
@@ -3977,6 +4080,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "schannel"
+version = "0.1.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9cb23c424d8ee841bb4d813677ca237e2a610067d594fec130f87d6093495ab5"
+dependencies = [
+ "windows-sys 0.61.2",
+]
+
+[[package]]
 name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3987,6 +4099,29 @@ name = "seahash"
 version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c107b6f4780854c8b126e228ea8869f4d7b71260f962fefb57b996b8959ba6b"
+
+[[package]]
+name = "security-framework"
+version = "3.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7f4bc775c73d9a02cde8bf7b2ec4c9d12743edf609006c7facc23998404cd1d"
+dependencies = [
+ "bitflags 2.13.2",
+ "core-foundation",
+ "core-foundation-sys",
+ "libc",
+ "security-framework-sys",
+]
+
+[[package]]
+name = "security-framework-sys"
+version = "2.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ce2691df843ecc5d231c0b14ece2acc3efb62c0a398c7e1d875f3983ce020e3"
+dependencies = [
+ "core-foundation-sys",
+ "libc",
+]
 
 [[package]]
 name = "self_cell"
@@ -4259,7 +4394,7 @@ checksum = "02ef091d4e8b981dbaa4cc17789d00b53d5d2c001ae689f14e6093f30c529036"
 [[package]]
 name = "spenso"
 version = "0.6.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "ahash 0.8.12",
  "append-only-vec",
@@ -4271,7 +4406,7 @@ dependencies = [
  "colored 3.1.1",
  "constcat",
  "delegate 0.12.0",
- "derive_more",
+ "derive_more 0.99.20",
  "duplicate 1.0.0",
  "dyn-clone",
  "enum-try-as-inner",
@@ -4307,7 +4442,7 @@ dependencies = [
 [[package]]
 name = "spenso-hep-lib"
 version = "0.1.7"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "ahash 0.8.12",
  "idenso",
@@ -4320,7 +4455,7 @@ dependencies = [
 [[package]]
 name = "spenso-macros"
 version = "0.3.2"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4330,7 +4465,7 @@ dependencies = [
 [[package]]
 name = "spynso3"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "ahash 0.8.12",
  "ciborium",
@@ -4454,7 +4589,7 @@ dependencies = [
 [[package]]
 name = "symbolica"
 version = "3.0.1"
-source = "git+https://github.com/ValentinHirschi/symbolica?branch=codex%2Fevaluator-composition#e227fe732dcd4164a3dca09e0a6e0e0b7f190d66"
+source = "git+https://github.com/aethomsen/symbolica?rev=74c5a5d23bc0dd064399aed344e5f10c3f536f48#74c5a5d23bc0dd064399aed344e5f10c3f536f48"
 dependencies = [
  "ahash 0.8.12",
  "append-only-vec",
@@ -4494,7 +4629,7 @@ dependencies = [
 [[package]]
 name = "symbolica-amflow"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/RustFlow?rev=ff39c89683bdf0ad7bac653ef549802a37ffa4a3#ff39c89683bdf0ad7bac653ef549802a37ffa4a3"
+source = "git+https://github.com/aethomsen/RustFlow?rev=31acb106e5453e0d0ec934ad96c2855edd68d4fd#31acb106e5453e0d0ec934ad96c2855edd68d4fd"
 dependencies = [
  "ahash 0.8.12",
  "bincode",
@@ -4523,7 +4658,7 @@ dependencies = [
 [[package]]
 name = "symbolica-data"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "serde",
  "serde_json",
@@ -4555,7 +4690,7 @@ dependencies = [
 [[package]]
 name = "symbolica-utils"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -4566,7 +4701,7 @@ dependencies = [
 
 [[package]]
 name = "symbolica_community"
-version = "3.0.2"
+version = "3.0.2+pychete.20261020.1"
 dependencies = [
  "fastsecdec-python",
  "feynkit-py",
@@ -4575,6 +4710,7 @@ dependencies = [
  "one-loop-reduce-python",
  "oneloop",
  "oneloop-python",
+ "pychete-python",
  "pyo3",
  "pyo3-stub-gen",
  "rustred-feynkit",
@@ -4689,6 +4825,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
+name = "tar"
+version = "0.4.46"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f6221d9a6003c78398e3b239969f352578258df48c8eb051caadae0015bc840"
+dependencies = [
+ "filetime",
+ "libc",
+ "xattr",
+]
+
+[[package]]
 name = "target-lexicon"
 version = "0.13.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4703,7 +4850,7 @@ dependencies = [
  "fastrand",
  "getrandom 0.4.3",
  "once_cell",
- "rustix 1.1.5",
+ "rustix",
  "windows-sys 0.61.2",
 ]
 
@@ -4713,7 +4860,7 @@ version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "230a1b821ccbd75b185820a1f1ff7b14d21da1e442e22c0863ea5f08771a8874"
 dependencies = [
- "rustix 1.1.5",
+ "rustix",
  "windows-sys 0.61.2",
 ]
 
@@ -4784,7 +4931,7 @@ dependencies = [
 [[package]]
 name = "three-dimensional-reps"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -4803,9 +4950,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdb87b95ec50ddfa440816d227a17b2ccbdda963a316a727fda0fc4334f7d134"
 dependencies = [
  "deranged",
- "libc",
  "num-conv",
- "num_threads",
  "powerfmt",
  "serde_core",
  "time-core",
@@ -4878,16 +5023,6 @@ dependencies = [
  "displaydoc",
  "serde_core",
  "zerovec",
-]
-
-[[package]]
-name = "tinytemplate"
-version = "1.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be4d6b5f19ff7664e8c98d03e2139cb510db9b0a60b55f8e8709b689d939b6bc"
-dependencies = [
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -5259,7 +5394,7 @@ dependencies = [
 [[package]]
 name = "typst-library"
 version = "0.15.1"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "arrayvec",
  "az",
@@ -5351,7 +5486,7 @@ dependencies = [
 [[package]]
 name = "typst-renderer"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "comemo",
  "serde_json",
@@ -5369,7 +5504,7 @@ dependencies = [
 [[package]]
 name = "typst-svg"
 version = "0.15.1"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#5acf8481fd08d68fb3071656b2e59f559906eaf9"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#588148851e3e989ecbb7478279db7d46727e23a8"
 dependencies = [
  "base64",
  "comemo",
@@ -5620,6 +5755,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6d49784317cd0d1ee7ec5c716dd598ec5b4483ea832a2dced265471cc0f690ae"
 
 [[package]]
+name = "ureq"
+version = "2.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "02d1a66277ed75f640d608235660df48c8e3c19f3b4edb6a263315626cc3c01d"
+dependencies = [
+ "base64",
+ "log",
+ "native-tls",
+ "once_cell",
+ "url",
+]
+
+[[package]]
 name = "url"
 version = "2.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5677,14 +5825,16 @@ version = "1.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7cc1186384beb7dd8eedea376413fd654937285ea6c9cfbb928dc3043ea4b606"
 dependencies = [
+ "getrandom 0.4.3",
  "js-sys",
+ "serde_core",
  "wasm-bindgen",
 ]
 
 [[package]]
 name = "vakint"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?rev=4b2324b900c3703bfec11297c8d73e3f00c25c5c#4b2324b900c3703bfec11297c8d73e3f00c25c5c"
+source = "git+https://github.com/aethomsen/gammaloop?rev=624bfd919313d09605c9654d8888db9d2831094e#624bfd919313d09605c9654d8888db9d2831094e"
 dependencies = [
  "ahash 0.8.12",
  "arrayvec",
@@ -5695,6 +5845,7 @@ dependencies = [
  "feynkit-py",
  "feynkit-tensor",
  "flate2",
+ "idenso",
  "log",
  "phf 0.13.1",
  "pyo3",
@@ -5702,14 +5853,20 @@ dependencies = [
  "pyo3-stub-gen-derive",
  "regex",
  "rug",
+ "rustix",
  "rustred",
  "rustred-app",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
  "spenso",
  "spenso-macros",
  "string-template-plus",
  "symbolica",
- "symbolica-data",
+ "tar",
+ "tempfile",
  "thiserror 2.0.21",
+ "ureq",
  "version-compare",
 ]
 
@@ -5718,6 +5875,12 @@ name = "valuable"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba73ea9cf16a25df0c8caa16c51acb937d5712a8429db78a3ee29d5dcacd3a65"
+
+[[package]]
+name = "vcpkg"
+version = "0.2.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 
 [[package]]
 name = "vectorize"
@@ -5847,16 +6010,6 @@ dependencies = [
  "cfg-if",
  "libc",
  "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "web-sys"
-version = "0.3.106"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88261b9deccee56594c11a3460c462c41f58d148598fe70ad77070126a68aba4"
-dependencies = [
- "js-sys",
- "wasm-bindgen",
 ]
 
 [[package]]
@@ -6136,6 +6289,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05f360fc0b24296329c78fda852a1e9ae82de9cf7b27dae4b7f62f118f77b9ed"
 dependencies = [
  "tap",
+]
+
+[[package]]
+name = "xattr"
+version = "1.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32e45ad4206f6d2479085147f02bc2ef834ac85886624a23575ae137c8aa8156"
+dependencies = [
+ "libc",
+ "rustix",
 ]
 
 [[package]]

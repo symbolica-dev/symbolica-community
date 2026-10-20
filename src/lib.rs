@@ -105,6 +105,8 @@ fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
         register_module!(m, linnet_render_py::GraphModule);
         register_module!(m, spynso3::SpensoModule);
         register_module!(m, hepkit::HepKitModule);
+        #[cfg(feature = "pychete")]
+        register_module!(m, pychete_python::PycheteModule);
         #[cfg(not(target_arch = "wasm32"))]
         register_module!(m, vakint::symbolica_community_module::VakintWrapper);
     }

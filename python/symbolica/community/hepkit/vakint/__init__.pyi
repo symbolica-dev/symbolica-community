@@ -290,7 +290,7 @@ class VakintEvaluationMethod:
         ```
         """
     @classmethod
-    def new_rustred_method(cls, substitute_masters: typing.Optional[builtins.bool] = None) -> VakintEvaluationMethod:
+    def new_rustred_method(cls, master_mode: builtins.str = 'numerical') -> VakintEvaluationMethod:
         r"""
         Create the opt-in FORM-independent RustRed scalar-integral evaluation method.
 
@@ -304,15 +304,15 @@ class VakintEvaluationMethod:
         ## Examples
         ```python
         rustred_method = VakintEvaluationMethod.new_rustred_method(
-            substitute_masters=True
+            master_mode="numerical"
         )
         ```
 
         Parameters
         ----------
 
-        substitute_masters : Optional[bool]
-           Whether to substitute Vakint's known master evaluations. Default is True.
+        master_mode : str
+           "retain", "symbolic", or "numerical" (default).
         """
     @classmethod
     def new_matad_method(cls, expand_masters: typing.Optional[builtins.bool] = None, susbstitute_masters: typing.Optional[builtins.bool] = None, substitute_hpls: typing.Optional[builtins.bool] = None, direct_numerical_substition: typing.Optional[builtins.bool] = None) -> VakintEvaluationMethod:

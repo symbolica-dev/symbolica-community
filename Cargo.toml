@@ -9,7 +9,7 @@ name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.96"
-version = "3.0.2"
+version = "3.0.2+pychete.20261020.1"
 exclude = ["dist", "reports/**"]
 
 # Keep this host independent when checked out inside another Rust workspace.
@@ -59,6 +59,7 @@ ibp-capacity-dispatch = ["rustred-feynkit?/capacity-dispatch", "symbolica-amflow
 ibp-runtime-arity-selection = ["rustred-feynkit?/runtime-arity-selection", "symbolica-amflow?/runtime-arity-selection"]
 default = ["module", "native", "community"]
 module = ["pyo3/abi3-py39"] # incompatible with stub_gen
+pychete = ["dep:pychete-python", "community"]
 community = [
     "ibp-capacity-dispatch",
     "dep:spynso3", "dep:linnet-render-py", "dep:feynkit-py", "dep:one-loop-reduce-python",
@@ -71,6 +72,7 @@ native = ["hyperbolica?/native", "symbolica/tracing_max_level_info", "symbolica/
 wasm-core = ["symbolica/wasm"]
 wasm = ["wasm-core", "community", "hyperbolica/wasm", "spynso3/wasm", "linnet-render-py/wasm", "feynkit-py/wasm", "rustred-feynkit/wasm", "one-loop-reduce-python/wasm", "symbolica-amflow/python_wasm", "fastsecdec-python?/portable"]
 python_stubgen = [
+    "pychete-python?/python_stubgen",
     "hyperbolica/python_stubgen",
     "native",
     "community",
@@ -86,9 +88,10 @@ python_stubgen = [
 ]
 
 [dependencies]
+pychete-python = { optional = true, git = "https://github.com/aethomsen/pychete", rev = "8f111664c3cc7f10748c221ad6ed4f4db4a74a2a" }
 symbolica-data = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
 serde_json = "1"
-fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "4572d7a1d2e26e11b7ec213eda998efb7a5e8caa", default-features = false }
+fastsecdec-python = { optional = true, git = "https://github.com/aethomsen/fastSecDec", rev = "1aba4ba3ab9fcd09c0794a834b74e6aff5b18f64", default-features = false }
 hyperbolica = { optional = true, git = "https://github.com/lcnbr/hyperbolica", rev = "2e6fe4ef9c715d70f937aca53211793727f819b9", default-features = false, features = ["python"] }
 one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
 spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
@@ -99,7 +102,7 @@ feynkit-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", 
 rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", branch = "main", default-features = false, features = ["campaign-api"] }
 symbolica = { version = "3.0.1", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
-symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "ff39c89683bdf0ad7bac653ef549802a37ffa4a3", default-features = false, features = ["python_api"] }
+symbolica-amflow = { optional = true, git = "https://github.com/aethomsen/RustFlow", rev = "31acb106e5453e0d0ec934ad96c2855edd68d4fd", default-features = false, features = ["python_api"] }
 # Tensor bindings split methods across impl blocks on both native and WASM.
 pyo3 = { version = "0.28", features = ["multiple-pymethods"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
@@ -112,15 +115,15 @@ oneloop-python = { optional = true, git = "https://github.com/alphal00p/oneloopm
 # Keep embedded SymJIT caches and generated native evaluators out of wheels.
 oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false }
 # RustRed-enabled Vakint is independently pinned; its assets use the host loader.
-vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "4b2324b900c3703bfec11297c8d73e3f00c25c5c", features = ["symbolica_community_module"] }
+vakint = { optional = true, git = "https://github.com/aethomsen/gammaloop", rev = "624bfd919313d09605c9654d8888db9d2831094e", features = ["symbolica_community_module"] }
 
 # All community modules share one Symbolica kernel and numeric owners.
 [patch.crates-io]
 # Lean notebook Typst compiler; keep these on the same source as the bindings.
 typst-library = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
 typst-svg = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
-# Native evaluator composition for numerical-dual sector generation (Symbolica PR #54).
-symbolica = { git = "https://github.com/ValentinHirschi/symbolica", branch = "codex/evaluator-composition" }
+# Shared evaluator composition and native sixth-root HPLs (Symbolica PRs #54, #95, and #101).
+symbolica = { git = "https://github.com/aethomsen/symbolica", rev = "74c5a5d23bc0dd064399aed344e5f10c3f536f48" }
 # Preserve the official negative-integer serialization fix and shared numeric types.
 numerica = { git = "https://github.com/symbolica-dev/symbolica", branch = "community" }
 graphica = { git = "https://github.com/symbolica-dev/symbolica", branch = "community" }
