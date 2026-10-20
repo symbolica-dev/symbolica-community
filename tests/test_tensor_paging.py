@@ -581,12 +581,27 @@ def test_dot_product_power_keeps_compact_tensor_notation():
     left = TensorName.vector("page_power::k")(rep)
     right = TensorName.vector("page_power::p")(rep)
     value = dot(left, right) ** 2
-    page = value.paged()._page()
+    original, structure = value.to_expression(), value.structure
+    viewer = value.paged()
+    try:
+        page = viewer.page()
+    finally:
+        viewer.close()
     assert_page(page)
     math = ET.fromstring(
         re.search(r"<math\b.*?</math>", page["html"], re.DOTALL).group()
     )
     # Dot operands are vector labels; the exponent applies to their contraction.
-    operators = [n.text for n in math.iter() if n.tag.rsplit("}", 1)[-1] == "mo"]
-    assert "(" not in operators and ")" not in operators
-    assert any(n.tag.rsplit("}", 1)[-1] == "msup" for n in math.iter())
+    for node in math.iter():
+        node.tag = node.tag.rsplit("}", 1)[-1]
+    powers = list(math.iter("msup"))
+    assert len(powers) == 1
+    base, exponent = powers[0]
+    assert "".join(exponent.itertext()).strip() == "2"
+    tokens = [
+        unicodedata.normalize("NFKC", node.text or "").strip() for node in base.iter()
+    ]
+    assert tokens.count("(") == tokens.count(")") == 1
+    assert sum(token in ("·", "⋅") for token in tokens) == 1
+    assert {"k", "p"} <= set(tokens)
+    assert value.to_expression() == original and value.structure == structure
