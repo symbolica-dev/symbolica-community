@@ -2,9 +2,12 @@
 
 import importlib
 import json
+import os
 import re
 import sys
+import unicodedata
 import xml.etree.ElementTree as ET
+from time import monotonic
 from unittest.mock import patch
 
 import pytest
@@ -14,21 +17,6 @@ from symbolica.community.tensor import Representation, TensorExpression, TensorN
 
 def polynomial(n=301):
     return E("+".join(f"{i + 1}*page_test::x^{i}" for i in range(n)))
-
-
-def formatted_viewer(expression):
-    """Capture the viewer created by the real native formatted-output factory."""
-    viewers = []
-
-    def create(*args, **kwargs):
-        viewer = MathMLViewer(*args, **kwargs)
-        viewers.append(viewer)
-        return viewer
-
-    with patch("_symbolica_paging.MathMLViewer", side_effect=create):
-        expression.formatted()._repr_mimebundle_(include=["text/html"])
-    assert len(viewers) == 1
-    return viewers[0]
 
 
 def assert_page(page):
@@ -75,6 +63,26 @@ def test_pages_are_contiguous_bounded_and_reversible():
     pager.close()
     with pytest.raises(RuntimeError, match="closed"):
         pager._page()
+
+
+def test_public_expression_viewers_work_without_notebook_packages():
+    expression = polynomial()
+    with patch.dict(sys.modules, {"anywidget": None, "marimo": None}):
+        viewer = expression.mathml_viewer()
+        formatted = expression.formatted().mathml_viewer()
+        assert type(viewer) is MathMLViewer and type(formatted) is MathMLViewer
+        try:
+            first = viewer.page()
+            assert_page(first)
+            assert first["html"] == formatted.page()["html"]
+            field, following = viewer.handle_message({"action": "next"})
+            assert field == "page" and following["start"] == first["end"]
+            assert_page(following)
+            assert isinstance(MathMLViewer.javascript(), str)
+            assert expression == polynomial()
+        finally:
+            viewer.close()
+            formatted.close()
 
 
 def test_nested_sums_keep_factors_and_subexpression_navigation():
@@ -191,6 +199,95 @@ def test_renderer_failure_does_not_fall_back_to_full_output(compiler):
     assert value.rank == 1
 
 
+def test_native_worker_preserves_notation_without_python_typst(
+    tmp_path, monkeypatch, compiler
+):
+    compiler._stop_worker()
+    # Fresh worker interpreters must succeed even when the external package is
+    # unavailable. The import guard is inherited through ordinary Python startup.
+    (tmp_path / "sitecustomize.py").write_text(
+        "import builtins\n"
+        "original_import = builtins.__import__\n"
+        "def import_without_typst(name, *args, **kwargs):\n"
+        "    if name.split('.')[0] == 'typst':\n"
+        "        raise AssertionError('external Python Typst must not be imported')\n"
+        "    return original_import(name, *args, **kwargs)\n"
+        "builtins.__import__ = import_without_typst\n"
+    )
+    monkeypatch.setenv(
+        "PYTHONPATH",
+        os.pathsep.join(filter(None, [str(tmp_path), os.environ.get("PYTHONPATH")])),
+    )
+    rep = Representation.mink(4)
+    value = TensorName("native_worker::T", print={"typst": "macron(T)"})(
+        rep("mu"), rep("nu")
+    ).permute_axes([1, 0])
+    original, structure = value.to_expression(), value.structure
+    viewer = value.paged()
+    other = None
+    try:
+        roots = assert_page(viewer._page())
+        assert any(
+            node.tag.rsplit("}", 1)[-1] == "mover"
+            for root in roots
+            for node in root.iter()
+        )
+        assert "mu" in "".join(roots[0].itertext())
+        assert "nu" in "".join(roots[0].itertext())
+        assert value.to_expression() == original and value.structure == structure
+        worker = compiler._worker
+        assert worker is not None and worker.poll() is None
+        other_value = TensorName("native_worker::U", print={"typst": "macron(U)"})(
+            rep("mu"), rep("nu")
+        ).permute_axes([1, 0])
+        other_original, other_structure = (
+            other_value.to_expression(),
+            other_value.structure,
+        )
+        other = other_value.paged()
+        other_roots = assert_page(other._page())
+        assert "U" in unicodedata.normalize("NFKC", "".join(other_roots[0].itertext()))
+        assert compiler._worker.pid == worker.pid and worker.poll() is None
+        assert other_value.to_expression() == other_original
+        assert other_value.structure == other_structure
+    finally:
+        viewer.close()
+        if other is not None:
+            other.close()
+        compiler._stop_worker()
+
+
+def test_native_worker_timeout_keeps_bounded_error_and_source(compiler):
+    compiler._stop_worker()
+    value = TensorName("native_timeout::T")(Representation.mink(4)("mu"))
+    original, structure = value.to_expression(), value.structure
+    viewer = value.paged()
+    workers, deadlines = [], []
+
+    def expired(deadline):
+        deadlines.append(deadline - monotonic())
+        workers.append(compiler._worker)
+        raise TimeoutError("embedded compiler timed out")
+
+    try:
+        with patch.object(compiler, "_read_reply", side_effect=expired) as wait:
+            page = viewer._page()
+        assert wait.called and deadlines
+        assert all(0 < remaining <= 10 for remaining in deadlines)
+        assert workers and all(
+            worker is not None and worker.poll() is not None for worker in workers
+        )
+        assert compiler._worker is None
+        assert "Page rendering failed" in page["html"] and "timed out" in page["html"]
+        assert len(page["html"].encode()) < 4096
+        assert value.to_expression() == original and value.structure == structure
+        viewer._clear_cache()
+        assert_page(viewer._page())
+    finally:
+        viewer.close()
+        compiler._stop_worker()
+
+
 def test_native_page_budget_bounds_work_and_rejects_invalid_navigation():
     value = TensorExpression(polynomial(1001))
     pager = value.paged(page_size=500)
@@ -274,7 +371,7 @@ def test_serialized_page_never_contains_undisplayed_terms(compiler):
 def test_scalar_tensor_and_expression_use_identical_responsive_layouts(source):
     value = TensorExpression(E(source))
     original, structure = value.to_expression(), value.structure
-    tensor_viewer, expression_viewer = value.paged(), formatted_viewer(original)
+    tensor_viewer, expression_viewer = value.paged(), original.mathml_viewer()
     try:
         for layout in range(8):
             tensor_page = tensor_viewer._render_page(layout)
@@ -434,7 +531,7 @@ def test_oversized_tensor_leaf_defers_to_bounded_structural_children(compiler):
     with patch.object(compiler, "compile_leaf", return_value=None) as render:
         page = pager._page()
     assert render.called
-    native = formatted_viewer(original)._page()
+    native = original.mathml_viewer().page()
     assert [ET.tostring(root) for root in assert_page(page)] == [
         ET.tostring(root) for root in assert_page(native)
     ]

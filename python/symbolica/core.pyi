@@ -2225,6 +2225,16 @@ class MathMLViewer:
     def close(self) -> None:
         """Release the retained source, widget and cached pages."""
         ...
+    def page(self) -> dict[str, Any]:
+        """Return a bounded page and responsive layouts without widget dependencies."""
+        ...
+    def handle_message(self, message: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+        """Process a frontend request; return (field, payload), or None."""
+        ...
+    @staticmethod
+    def javascript() -> str:
+        """Return the pager ES module with a dependency-free mount() export."""
+        ...
     def _repr_html_(self) -> str: ...
     def _repr_mimebundle_(self, include: list[str] | None = None,
                          exclude: list[str] | None = None) -> dict[str, Any]: ...
@@ -2245,6 +2255,9 @@ class FormattedOutput:
 
     def format_plain(self) -> str:
         """Convert the formatted output into plain text."""
+
+    def mathml_viewer(self) -> MathMLViewer | None:
+        """Return the underlying viewer without importing notebook packages."""
 
     def _display_(self) -> Any:
         """Return rich output for marimo notebooks."""
@@ -2947,6 +2960,9 @@ class Expression:
 
     def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> dict[str, Any]:
         """Return native MathML with optional live zoom and pagination."""
+
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a bounded viewer without importing notebook or widget packages."""
 
     def _repr_html_(self) -> str:
         """

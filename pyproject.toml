@@ -26,9 +26,6 @@ classifiers = [
 numpy = ["numpy"]
 notebook-display = [
     "anywidget>=0.9,<1; python_version >= '3.9'",
-    # Native tensor paging runs Typst in a worker with a hard rendering timeout.
-    # Browser paging uses the embedded compiler instead.
-    "typst>=0.15,<0.16; sys_platform != 'emscripten' and sys_platform != 'wasi'",
 ]
 
 [tool.maturin]
