@@ -4,8 +4,8 @@ import os
 import re
 
 import pytest
-from symbolica import E, MathMLViewer, data
-from symbolica.community.tensor import Representation, TensorName
+from symbolica import E, MathMLViewer, S, data
+from symbolica.community.tensor import Representation, TensorExpression, TensorName
 
 pw = pytest.importorskip("playwright.sync_api")
 
@@ -197,6 +197,120 @@ def product_geometry(main):
         return candidates.sort((a,b) => b.factors.length-a.factors.length)[0];
     }"""
     )
+
+
+@pytest.mark.parametrize("case", ("compact_contraction", "polynomial", "fragmented"))
+@pytest.mark.parametrize("provider", ("expression", "tensor"))
+def test_balanced_layout_preserves_context_and_readability(
+    mathml_browser_page, case, provider
+):
+    if case == "compact_contraction":
+        from symbolica.community.hepkit import Model
+
+        Model.qcd()
+        dimension = S("spenso::mink")(S("D"))
+        momentum = S("gammalooprs::Q")
+        contraction = S("spenso::dot")(momentum(2, dimension), momentum(4, dimension))
+        source = S("balanced_page::f")(S("balanced_page::g")(contraction))
+    elif case == "polynomial":
+        # Nine small outer factors make the sum a rendered column. Keeping all
+        # eighty terms is tall even when the complete expression fits in width.
+        source = E("A*B*" + "*".join(f"T{i}" for i in range(7))) * E(
+            "+".join(f"x{i:02}" for i in range(80))
+        )
+    else:
+        # Partly expanding every function creates many independent markers;
+        # retaining h with a coherent omitted sum is more useful context.
+        source = E("A*B") * S("balanced_page::h")(
+            sum(
+                S(f"balanced_page::f{i}")(*(E(f"x{j}") for j in range(24)))
+                for i in range(18)
+            )
+        )
+    original = bytes(source.__getstate__())
+    viewer = (
+        source.mathml_viewer()
+        if provider == "expression"
+        else TensorExpression(source).paged()
+    )
+    state = viewer.page()
+    page = mathml_browser_page
+    widget, host = mount_viewer(page, viewer)
+    viewer._on_message(widget, page.evaluate("messages[0]"), [])
+    main = host.locator(".math-content")
+    try:
+        host.evaluate("element => element.style.width = '1400px'")
+        # Measure the first width-fitting alternative on its own, matching the
+        # old width-first policy without scoring or local subtree restoration.
+        for candidate in (state, *state["layouts"]):
+            page.evaluate("setField", ["page", {**state, **candidate, "layouts": []}])
+            settle_layout(page)
+            detailed = mathml_geometry(main)
+            if detailed["scrollWidth"] <= detailed["availableWidth"] + 2:
+                break
+        else:
+            pytest.fail("No bounded alternative fits the detailed reference width")
+        page.evaluate("setField", ["page", state])
+        settle_layout(page)
+        requests = page.evaluate("messages.length")
+        measurements = {}
+        for width in (1400, 350, 1400):
+            host.evaluate(
+                "(element, width) => element.style.width = `${width}px`", width
+            )
+            settle_layout(page)
+            geometry = mathml_geometry(main)
+            assert geometry["scrollWidth"] <= geometry["availableWidth"] + 2, geometry
+            assert main.locator(":scope > math").count() == 1
+            tokens = main.locator("mi,mn,mo,mtext").evaluate_all(
+                "nodes => nodes.map(node => node.textContent.normalize('NFKC').trim())"
+            )
+            markers = main.locator("button.omission")
+            if case == "compact_contraction":
+                assert markers.count() == 0
+                assert {"f", "g", "q", "2", "4"} <= set(tokens), tokens
+                assert {"·", "⋅"}.intersection(tokens), tokens
+                assert not {"dot", "Q", "mink"}.intersection(tokens), tokens
+                assert geometry["math"]["height"] <= detailed["math"]["height"] + 2
+            else:
+                assert {"A", "B"} <= set(tokens), tokens
+                assert 1 <= markers.count() <= (1 if case == "polynomial" else 2)
+                assert main.get_by_role("button", name=re.compile(r"^Open sum")).count()
+                assert geometry["math"]["height"] < detailed["math"]["height"] / 2, (
+                    geometry,
+                    detailed,
+                )
+            snapshot = {
+                "html": main.inner_html(),
+                "paths": main.locator("[data-symbolica-path]").evaluate_all(
+                    "nodes => nodes.map(node => node.dataset.symbolicaPath)"
+                ),
+            }
+            if width in measurements:
+                assert snapshot == measurements[width]
+            measurements[width] = snapshot
+        assert page.evaluate("messages.length") == requests
+        if case != "compact_contraction":
+            # A marker restored from another layout must still target the
+            # original sum, including after the wide/narrow/wide round trip.
+            main.get_by_role("button", name=re.compile(r"^Open sum")).first.click()
+            request = page.evaluate("messages.at(-1)")
+            assert request["action"] == "preview" and request["popup"]
+            assert request["value"] and len(request["value"]) == (
+                1 if case == "polynomial" else 2
+            )
+            field, preview = viewer._message(request)
+            assert preview["kind"] == "Sum"
+            assert preview["total"] == (80 if case == "polynomial" else 18)
+            page.evaluate("setField", [field, preview])
+            dialog = host.get_by_role("dialog")
+            assert dialog.is_visible() and dialog.locator("math").count() == 1
+            assert "Page rendering failed" not in dialog.inner_text()
+        assert bytes(source.__getstate__()) == original
+    finally:
+        page.evaluate("dispose()")
+        viewer._on_message(widget, page.evaluate("messages.at(-1)"), [])
+        viewer.close()
 
 
 @pytest.mark.parametrize("kind", ("tensor", "expression"))

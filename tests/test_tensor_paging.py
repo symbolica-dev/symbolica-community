@@ -115,6 +115,30 @@ def test_nested_sums_keep_factors_and_subexpression_navigation():
     assert value.to_expression() == before
 
 
+def test_compact_native_contraction_survives_lower_detail_layout_depth():
+    from symbolica.community.hepkit import Model
+
+    Model.qcd()
+    dimension = S("spenso::mink")(S("D"))
+    momentum = S("gammalooprs::Q")
+    contraction = S("spenso::dot")(momentum(2, dimension), momentum(4, dimension))
+    source = S("compact_depth::f")(S("compact_depth::g")(contraction))
+    original = bytes(source.__getstate__())
+    viewer = source.mathml_viewer()
+    try:
+        state = viewer.page()
+        for candidate in (state, *state["layouts"]):
+            roots = assert_page(candidate)
+            text = unicodedata.normalize("NFKC", "".join(roots[0].itertext()))
+            # The native dot printer owns the entire leaf. Its long symbolic
+            # arguments are irrelevant to the space its compact notation uses.
+            assert "q" in text and "2" in text and "4" in text and "·" in text
+            assert not candidate["markers"]
+        assert bytes(source.__getstate__()) == original
+    finally:
+        viewer.close()
+
+
 def test_automatic_and_formatted_outputs_are_bounded():
     value = TensorExpression(polynomial(2001))
     assert value.paged()._page()["end"] == 25
