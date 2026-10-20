@@ -402,6 +402,98 @@ def test_product_rows_follow_rendered_width_and_zoom_preserves_layout(
         viewer.close()
 
 
+@pytest.mark.parametrize("provider", ("expression", "tensor"))
+def test_long_product_absorbs_its_tail_and_show_more_restores_factors(
+    mathml_browser_page, provider
+):
+    from symbolica.community.hepkit import Model
+
+    Model.qcd()
+    momentum, mink = S("gammalooprs::Q", "spenso::mink")
+    source = E("1")
+    for index in range(28):
+        source *= momentum(index, mink(4, S(f"product_tail::a{index:02}")))
+    original = bytes(source.__getstate__())
+    tensor = TensorExpression(source)
+    structure = tensor.structure
+    viewer = source.mathml_viewer() if provider == "expression" else tensor.paged()
+    state = viewer.page()
+    assert state["end"] == 25 and state["total"] == 28
+    assert state["markers"] == [([], "Inspect product [1]")]
+    page = mathml_browser_page
+    page.set_viewport_size({"width": 2600, "height": 1000})
+    widget, host = mount_viewer(page, viewer)
+    viewer._on_message(widget, page.evaluate("messages[0]"), [])
+    main = host.locator(".math-content")
+    try:
+        host.evaluate("element => element.style.width = '350px'")
+        page.evaluate("setField", ["page", {**state, "layouts": []}])
+        settle_layout(page)
+        detailed = mathml_geometry(main)
+        page.evaluate("setField", ["page", state])
+        settle_layout(page)
+        requests = page.evaluate("messages.length")
+        measurements = {}
+        for width in (2400, 350, 2400, 350):
+            host.evaluate(
+                "(element, width) => element.style.width = `${width}px`", width
+            )
+            settle_layout(page)
+            geometry = mathml_geometry(main)
+            product = product_geometry(main)
+            assert geometry["scrollWidth"] <= geometry["availableWidth"] + 2
+            assert main.locator("button.omission").count() == 1
+            snapshot = [
+                (factor["text"], factor["paths"]) for factor in product["factors"]
+            ]
+            if width in measurements:
+                assert (snapshot, geometry["math"]["height"]) == measurements[width]
+            measurements[width] = (snapshot, geometry["math"]["height"])
+        wide, narrow = measurements[2400][0], measurements[350][0]
+        assert len(wide) == state["end"]
+        assert 0 < len(narrow) < len(wide)
+        assert narrow == wide[: len(narrow)]
+        assert measurements[350][1] < detailed["math"]["height"]
+        assert page.evaluate("messages.length") == requests
+
+        marker = main.get_by_role("button", name=re.compile(r"^Open product"))
+        marker.hover()
+        page.wait_for_function("messages.at(-1)?.action === 'preview'")
+        request = page.evaluate("messages.at(-1)")
+        assert request["value"] == [] and not request["popup"]
+        field, tail = viewer._message(request)
+        assert tail["kind"] == "Product" and tail["total"] == 28
+        assert tail["start"] == len(narrow)
+        page.evaluate("setField", [field, tail])
+        marker.click()
+        request = page.evaluate("messages.at(-1)")
+        assert request["action"] == "preview" and request["popup"]
+        assert request["value"] == []
+        field, popup = viewer._message(request)
+        assert popup["kind"] == "Product" and popup["total"] == 28
+        assert popup["start"] == 0
+        page.evaluate("setField", [field, popup])
+        dialog = host.get_by_role("dialog")
+        assert dialog.is_visible()
+        dialog.get_by_role("button", name="Show more here").click()
+        request = page.evaluate("messages.at(-1)")
+        assert request["action"] == "expand" and request["value"] == []
+        page.evaluate("setField", viewer._message(request))
+        settle_layout(page)
+        revealed = product_geometry(main)["factors"]
+        assert len(revealed) > len(narrow)
+        assert [
+            (factor["text"], factor["paths"]) for factor in revealed[: len(wide)]
+        ] == wide[: len(revealed)]
+        assert bytes(source.__getstate__()) == original
+        assert bytes(tensor.to_expression().__getstate__()) == original
+        assert tensor.structure == structure
+    finally:
+        page.evaluate("dispose()")
+        viewer._on_message(widget, page.evaluate("messages.at(-1)"), [])
+        viewer.close()
+
+
 def test_native_index_product_rows_fit_after_mathml_table_spacing(mathml_browser_page):
     from symbolica import Expression, S
     from symbolica.community.hepkit import Model

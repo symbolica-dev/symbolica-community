@@ -139,6 +139,162 @@ def test_compact_native_contraction_survives_lower_detail_layout_depth():
         viewer.close()
 
 
+@pytest.mark.parametrize("provider", ("expression", "tensor"))
+def test_product_tail_expansion_preserves_paging_sizes_and_nested_factors(provider):
+    from symbolica.community.hepkit import Model
+
+    Model.qcd()
+    momentum, mink = S("gammalooprs::Q", "spenso::mink")
+    source = E("1")
+    for index in range(40):
+        source *= momentum(index, mink(4, S(f"product_protocol::a{index:02}")))
+    original = bytes(source.__getstate__())
+    tensor = TensorExpression(source)
+    structure = tensor.structure
+    viewer = source.mathml_viewer() if provider == "expression" else tensor.paged()
+    try:
+        state = viewer.page()
+        assert state["start"] == 0 and state["end"] == 25
+        assert state["total"] == 40 and state["page_size"] == 25
+        compact = min(state["layouts"], key=lambda page: page["end"])
+        assert 0 < compact["end"] < state["end"]
+        for candidate in (state, *state["layouts"]):
+            assert_page(candidate)
+            assert candidate["markers"] == [([], "Inspect product [1]")]
+            assert candidate["marker_starts"] == [candidate["end"]]
+        field, tail = viewer._message(
+            {"action": "preview", "value": [], "layout": compact["layout"]}
+        )
+        assert field == "preview" and tail["kind"] == "Product"
+        assert tail["start"] == compact["end"] and tail["total"] == 40
+        assert_page(tail)
+        expanded = viewer._action(
+            {"action": "expand", "value": [], "layout": compact["layout"]}
+        )
+        for candidate in (expanded, *expanded["layouts"]):
+            assert_page(candidate)
+            assert candidate["end"] > compact["end"]
+
+        small = viewer._action({"action": "size", "value": 3})
+        assert small["page_size"] == 3 and small["end"] == 3
+        for candidate in (small, *small["layouts"]):
+            assert_page(candidate)
+            assert 0 <= candidate["start"] < candidate["end"] <= 3
+        following = viewer._action({"action": "next"})
+        assert following["start"] == 3 and following["end"] == 6
+        assert_page(following)
+        assert viewer._action({"action": "previous"})["html"] == small["html"]
+        child = viewer._action({"action": "open", "value": [], "size": 3})
+        assert child["back"] and child["total"] == 40 and child["end"] == 3
+        assert_page(child)
+        assert viewer._action({"action": "back"})["html"] == small["html"]
+        large = viewer._action({"action": "size", "value": 100})
+        assert large["page_size"] == 100 and large["end"] > 3
+        for candidate in (large, *large["layouts"]):
+            assert_page(candidate)
+            assert 0 <= candidate["start"] < candidate["end"] <= 40
+        if large["next"] is not None:
+            following = viewer._action({"action": "next"})
+            assert following["start"] == large["end"]
+            assert_page(following)
+            assert viewer._action({"action": "previous"})["html"] == large["html"]
+        small = viewer._action({"action": "size", "value": 3})
+        assert small["page_size"] == 3 and small["end"] == 3
+        assert bytes(source.__getstate__()) == original
+        assert bytes(tensor.to_expression().__getstate__()) == original
+        assert tensor.structure == structure
+    finally:
+        viewer.close()
+
+    viewer = (
+        source.mathml_viewer(page_size=500)
+        if provider == "expression"
+        else tensor.paged(page_size=500)
+    )
+    try:
+        state = viewer.page()
+        assert state["page_size"] == 500
+        compact = min(state["layouts"], key=lambda page: page["end"])
+        assert compact["end"] < state["end"] <= 500
+        _, preview = viewer._message(
+            {"action": "preview", "value": [], "layout": compact["layout"]}
+        )
+        assert preview["can_expand"]
+        expanded = viewer._action(
+            {"action": "expand", "value": [], "layout": compact["layout"]}
+        )
+        assert expanded["page_size"] == 500
+        for candidate in (expanded, *expanded["layouts"]):
+            assert_page(candidate)
+            assert compact["end"] < candidate["end"] <= 500
+        if expanded["markers"]:
+            # A remaining byte/node budget limit cannot reveal more root detail.
+            _, preview = viewer._message({"action": "preview", "value": []})
+            assert not preview["can_expand"]
+        assert bytes(source.__getstate__()) == original
+    finally:
+        viewer.close()
+
+    # Expand a nested fractional product while retaining its enclosing factor.
+    nested = S("product_protocol::A") * S("product_protocol::F")(
+        source / S("product_protocol::D")
+    )
+    original = bytes(nested.__getstate__())
+    viewer = (
+        nested.mathml_viewer()
+        if provider == "expression"
+        else TensorExpression(nested).paged()
+    )
+    try:
+        candidates = [viewer._render_page(layout) for layout in range(8)]
+        compact = min(
+            (
+                page
+                for page in candidates
+                if len(page["markers"]) == 1
+                and page["markers"][0][0]
+                and page["marker_starts"][0] > 1
+                and "<mfrac>" in page["html"]
+            ),
+            key=lambda page: page["marker_starts"][0],
+        )
+        target = compact["markers"][0][0]
+        viewer._action(
+            {
+                "action": "expand",
+                "value": target,
+                "layout": compact["layout"],
+                "size": 5,
+            }
+        )
+        revealed = viewer._render_page(compact["layout"])
+        assert revealed["end"] == revealed["total"] == 2
+        assert revealed["marker_starts"][0] > compact["marker_starts"][0]
+        for page in (compact, revealed):
+            roots = assert_page(page)
+            tokens = {
+                unicodedata.normalize("NFKC", node.text or "").strip()
+                for root in roots
+                for node in root.iter()
+            }
+            assert {"A", "F", "D", "q"} <= tokens
+            fractions = [
+                node
+                for root in roots
+                for node in root.iter()
+                if node.tag.rsplit("}", 1)[-1] == "mfrac"
+            ]
+            assert fractions
+            assert not any(
+                "data-symbolica-marker" in node.attrib
+                for fraction in fractions
+                for node in fraction.iter()
+            )
+        assert bytes(nested.__getstate__()) == original
+    finally:
+        viewer.close()
+
+
 def test_automatic_and_formatted_outputs_are_bounded():
     value = TensorExpression(polynomial(2001))
     assert value.paged()._page()["end"] == 25

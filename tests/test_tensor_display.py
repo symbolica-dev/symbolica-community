@@ -458,6 +458,192 @@ def test_native_color_generator_keeps_upper_and_dual_indices():
     assert expression.__getstate__() == original
 
 
+@pytest.mark.parametrize(
+    ("source", "lower", "upper", "squared"),
+    [
+        ("spenso::g(spenso::coad(8,a),spenso::coad(8,b))", [], ["a", "b"], False),
+        (
+            "spenso::g(spenso::dind(spenso::cof(3,i)),spenso::dind(spenso::cof(3,j)))",
+            ["i", "j"],
+            [],
+            False,
+        ),
+        (
+            "spenso::g(spenso::cof(3,i),spenso::dind(spenso::cof(3,j)))",
+            ["j"],
+            ["i"],
+            False,
+        ),
+        (
+            "7*spenso::g(spenso::coad(8,a),spenso::coad(8,b))^2",
+            [],
+            ["a", "b"],
+            True,
+        ),
+    ],
+)
+def test_native_metric_matches_typed_indices_and_groups_powers(
+    source, lower, upper, squared
+):
+    Model.qcd()
+    expression = E(source)
+    original = expression.__getstate__()
+    tensor = TensorExpression(expression)
+    structure = tensor.structure
+    native_viewer, tensor_viewer = expression.mathml_viewer(), tensor.paged()
+    try:
+        outputs = (
+            (True, f"<math>{expression.format(mode=PrintMode.MathML)}</math>"),
+            (True, native_viewer.page()["html"]),
+            (False, tensor.to_html()),
+            (False, tensor_viewer.page()["html"]),
+        )
+    finally:
+        native_viewer.close()
+        tensor_viewer.close()
+    for native, html in outputs:
+        start = html.index("<math")
+        end = html.index("</math>", start) + len("</math>")
+        math = ET.fromstring(html[start:end])
+        for node in math.iter():
+            node.tag = node.tag.rsplit("}", 1)[-1]
+        for node in math.iter():
+            for child in list(node):
+                if child.tag == "mphantom":
+                    node.remove(child)
+        metrics = [
+            node
+            for node in math.iter()
+            if node.tag in ("mmultiscripts", "msubsup")
+            and unicodedata.normalize("NFKC", "".join(node[0].itertext())).strip()
+            == "g"
+        ]
+        assert len(metrics) == 1
+        metric = metrics[0]
+        if metric.tag == "mmultiscripts":
+            rows = (list(metric)[1::2], list(metric)[2::2])
+        else:
+            rows = ([metric[1]], [metric[2]])
+        for row, expected in zip(rows, (lower, upper)):
+            indices = [
+                unicodedata.normalize("NFKC", "".join(node.itertext())).strip()
+                for node in row
+            ]
+            assert "".join("".join(indices).split()) == "".join(expected)
+        tokens = {
+            unicodedata.normalize("NFKC", node.text or "").strip()
+            for node in math.iter()
+        }
+        assert not tokens.intersection({"coad", "cof", "dind", "δ", "η"})
+        if squared:
+            square = next(
+                node
+                for node in math.iter("msup")
+                if "".join(node[1].itertext()).strip() == "2"
+            )
+            assert metric in square[0].iter()
+            assert "7" in tokens
+            assert not tokens.intersection({"·", "⋅", "×", "*"})
+            if native:
+                operators = [node.text for node in square[0].iter("mo")]
+                assert operators == ["(", ")"]
+    assert type(expression) is Expression
+    assert expression.__getstate__() == original
+    assert tensor.to_expression().__getstate__() == original
+    assert tensor.structure == structure
+
+
+@pytest.mark.parametrize(
+    ("source", "family", "dimension", "index", "dual"),
+    [
+        ("spenso::coad(8)", "coad", "8", None, False),
+        ("spenso::mink(D)", "mink", "D", None, False),
+        ("spenso::mink(4,mu)", "mink", "4", "mu", False),
+        ("spenso::dind(spenso::cof(3,i))", "cof", "3", "i", True),
+    ],
+)
+def test_native_standalone_representation_keeps_family_dimension_and_variance(
+    source, family, dimension, index, dual
+):
+    Model.qcd()
+    expression = E(source)
+    original = expression.__getstate__()
+    viewer = expression.mathml_viewer()
+    try:
+        outputs = (
+            f"<math>{expression.format(mode=PrintMode.MathML)}</math>",
+            viewer.page()["html"],
+        )
+    finally:
+        viewer.close()
+    for html in outputs:
+        start = html.index("<math")
+        end = html.index("</math>", start) + len("</math>")
+        math = ET.fromstring(html[start:end])
+        for node in math.iter():
+            node.tag = node.tag.rsplit("}", 1)[-1]
+        spaces = [
+            node
+            for node in math.iter("msub")
+            if "".join(node[0].itertext()).strip() == family
+        ]
+        assert len(spaces) == 1
+        assert "".join(spaces[0][1].itertext()).strip() == dimension
+        assert "dind" not in "".join(math.itertext())
+        assert not any(node.text in ("(", ")") for node in math.iter("mo"))
+        dual_markers = [node for node in math.iter("msup") if node[1].text == "*"]
+        assert len(dual_markers) == int(dual)
+        slots = list(math.iter("mmultiscripts"))
+        assert len(slots) == int(index is not None)
+        if index is not None:
+            lower, upper = slots[0][1:]
+            assert "".join((lower if dual else upper).itertext()).strip() == index
+            assert (upper if dual else lower).tag == "none"
+    assert type(expression) is Expression
+    assert expression.__getstate__() == original
+
+
+@pytest.mark.parametrize(
+    ("source", "arguments"),
+    [
+        (
+            "spenso::g(spenso::coad(8,a),spenso::coad(7,b))",
+            {"coad", "8", "7", "a", "b"},
+        ),
+        (
+            "spenso::g(spenso::coad(8,a,b),metric_display_control::coad(8,c))",
+            {"coad", "8", "a", "b", "c"},
+        ),
+    ],
+)
+def test_native_metric_defers_incompatible_or_malformed_slots(source, arguments):
+    Model.qcd()
+    expression = E(source)
+    original = expression.__getstate__()
+    viewer = expression.mathml_viewer()
+    try:
+        outputs = (
+            f"<math>{expression.format(mode=PrintMode.MathML)}</math>",
+            viewer.page()["html"],
+        )
+    finally:
+        viewer.close()
+    for html in outputs:
+        start = html.index("<math")
+        end = html.index("</math>", start) + len("</math>")
+        math = ET.fromstring(html[start:end])
+        for node in math.iter():
+            node.tag = node.tag.rsplit("}", 1)[-1]
+        tokens = {(node.text or "").strip() for node in math.iter()}
+        assert {"g", "(", ")", ","} | arguments <= tokens
+        assert not any(
+            "".join(node[0].itertext()).strip() == "g"
+            for node in math.iter("mmultiscripts")
+        )
+    assert type(expression) is Expression
+    assert expression.__getstate__() == original
+
+
 def test_native_color_index_prints_its_stored_expression_without_renaming():
     Model.qcd()
     payload = E("gammalooprs::hedge(17,2)")
