@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Callable, Iterator, Literal, Sequence, overload
+from typing import Any, Callable, Iterator, Literal, Protocol, Sequence, overload
 
 import typing
 
@@ -2113,6 +2113,8 @@ class PrintMode(Enum):
     """Print using Sympy notation."""
     Typst = 5
     """Print using Typst notation."""
+    MathML = 6
+    """Print a bounded MathML fragment; custom printers return MathML fragments."""
 
 class RootLocation(Enum):
     """Proven location of an isolated root relative to the coordinate axes."""
@@ -2182,6 +2184,51 @@ class Citation:
         """Display an HTML report, with description and reasons as escaped text."""
     def _repr_pretty_(self, pretty: Any, cycle: bool) -> None: ...
 
+class MathMLMarker:
+    """An omission with an absolute source path and first omitted item offset."""
+    path: Sequence[int]
+    label: str
+    start: int
+    def __init__(self, path: Sequence[int], label: str, start: int = 0) -> None: ...
+    @staticmethod
+    def marker(index: int) -> str:
+        """Return MathML for the numbered marker at this index in page.markers."""
+        ...
+
+class MathMLPage:
+    """Bounded MathML and metadata for the half-open range [start, end)."""
+    html: str
+    start: int
+    end: int
+    total: int
+    kind: str
+    unit: str
+    markers: Sequence[MathMLMarker]
+    def __init__(self, html: str, start: int, end: int, total: int,
+                 kind: str = "Expression", unit: str = "items",
+                 markers: Sequence[MathMLMarker] | None = None) -> None: ...
+
+class MathMLPageSource(Protocol):
+    def page(self, path: list[int], start: int, size: int, layout: int = 0,
+             expansions: Sequence[tuple[list[int], int]] = ()) -> MathMLPage:
+        """Render one bounded page. Paths are absolute; expansion paths are relative to path."""
+        ...
+
+class MathMLViewer:
+    """Shared streaming MathML viewer for Python and PyO3 expression providers.
+
+    Reuses popup pagination, inspection/back, keyboard zoom and notebook display.
+    Responsive layouts and in-place expansion are optional source capabilities.
+    """
+    def __init__(self, source: MathMLPageSource, page_size: int = 25, *,
+                 layout_count: int = 1, supports_expansion: bool = False) -> None: ...
+    def close(self) -> None:
+        """Release the retained source, widget and cached pages."""
+        ...
+    def _repr_html_(self) -> str: ...
+    def _repr_mimebundle_(self, include: list[str] | None = None,
+                         exclude: list[str] | None = None) -> dict[str, Any]: ...
+
 class FormattedOutput:
     """A formatted string with rich notebook display representations."""
 
@@ -2198,6 +2245,12 @@ class FormattedOutput:
 
     def format_plain(self) -> str:
         """Convert the formatted output into plain text."""
+
+    def _display_(self) -> Any:
+        """Return rich output for marimo notebooks."""
+
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> dict[str, Any]:
+        """Return rich notebook output, including a widget when paginated."""
 
     def _repr_html_(self) -> str | None:
         """Convert the formatted output into an HTML representation."""
@@ -2889,6 +2942,12 @@ class Expression:
         Get the number of bytes that this expression takes up in memory.
         """
 
+    def _display_(self) -> Any:
+        """Return rich output for marimo notebooks."""
+
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> dict[str, Any]:
+        """Return native MathML with optional live zoom and pagination."""
+
     def _repr_html_(self) -> str:
         """
         Convert the expression into an HTML representation.
@@ -2936,7 +2995,7 @@ class Expression:
         symmetric_representation_for_finite_field: bool = False,
         explicit_rational_polynomial: bool = False,
         number_thousands_separator: str | None = None,
-        multiplication_operator: str = "*",
+        multiplication_operator: str = "·",
         double_star_for_exponentiation: bool = False,
         function_brackets: tuple[str, str] = ("(", ")"),
         num_exp_as_superscript: bool = True,
@@ -2964,6 +3023,9 @@ class Expression:
         >>> print(E('x^2 + f(x)').format(PrintMode.Mathematica))
 
         yields `x^2 + f[x]`
+
+        mode=PrintMode.MathML returns a bounded fragment for embedding inside
+        <math>. Use formatted(mode=PrintMode.MathML) for notebook display.
 
         Parameters
         ----------
@@ -3045,7 +3107,7 @@ class Expression:
         symmetric_representation_for_finite_field: bool = False,
         explicit_rational_polynomial: bool = False,
         number_thousands_separator: str | None = None,
-        multiplication_operator: str = "*",
+        multiplication_operator: str = "·",
         double_star_for_exponentiation: bool = False,
         function_brackets: tuple[str, str] = ("(", ")"),
         num_exp_as_superscript: bool = True,
@@ -3054,9 +3116,20 @@ class Expression:
         hide_namespace: str | None = None,
         include_attributes: bool = False,
         custom_print_mode: dict[str, int | str | dict[str | int, Any]] | None = None,
+        *,
+        mathml: bool = True,
+        page_size: int = 25,
     ) -> FormattedOutput:
         """
-        Convert the expression into a rich display object, with tunable settings.
+        Display native MathML with bounded pagination. Use mathml=False for the
+        highlighted text view. Install symbolica[notebook] for zoom and live navigation.
+        page_size (1–500) sets the initial preview and popup page size. Nested detail adapts
+        to the available width. Paged output uses a short text
+        summary; max_terms controls the legacy text view and small expressions.
+        Custom printers receive PrintMode.MathML and return bounded MathML fragments,
+        or None for the standard renderer. Fragments are atomic for paging;
+        callback implementations must bound their own work. Text-layout options
+        apply to the text view. Explicit mode=PrintMode.MathML also selects MathML.
 
         Parameters
         ----------

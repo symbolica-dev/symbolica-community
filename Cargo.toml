@@ -119,8 +119,8 @@ vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev 
 # Lean notebook Typst compiler; keep these on the same source as the bindings.
 typst-library = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
 typst-svg = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
-# Native evaluator composition for numerical-dual sector generation (Symbolica PR #54).
-symbolica = { git = "https://github.com/ValentinHirschi/symbolica", branch = "codex/evaluator-composition" }
+# Latest community kernel plus evaluator composition (Symbolica PR #99).
+symbolica = { git = "https://github.com/symbolica-dev/symbolica", branch = "codex/community-evaluator-composition" }
 # Preserve the official negative-integer serialization fix and shared numeric types.
 numerica = { git = "https://github.com/symbolica-dev/symbolica", branch = "community" }
 graphica = { git = "https://github.com/symbolica-dev/symbolica", branch = "community" }

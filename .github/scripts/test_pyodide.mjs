@@ -83,6 +83,9 @@ if os.environ.get("SYMBOLICA_LICENSE_KEY"):
 assert E("(x+1)^2").expand() == E("x^2+2*x+1")
 assert E(str(2**256)) + E("1/3") + E("2/3") == E(str(2**256 + 1))
 assert E("sin(0)") == E("0")
+from symbolica import PrintMode
+assert "<msup>" in E("x^2").format(mode=PrintMode.MathML)
+assert "<math" in E("x^2+1")._repr_html_()
 assert E("x^2").integrate(S("x")) == E("x^3/3")
 expression = E("1/(1+x^2)")
 result, overview, steps = expression.integrate_with_steps(S("x"))
