@@ -154,6 +154,183 @@ def assert_stacked_fractions(geometry):
         ), fraction
 
 
+def settle_layout(page):
+    page.evaluate(
+        """async () => {
+        await document.fonts.ready;
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+    }"""
+    )
+
+
+def product_geometry(main):
+    """Measure the largest product, preserving each semantic factor's identity."""
+    return main.evaluate(
+        """element => {
+        const products = [...element.querySelectorAll('[data-symbolica-product]')];
+        const candidates = products.map(product => {
+            const factors = [...product.querySelectorAll('[data-symbolica-factor]')]
+                .filter(factor => factor.closest('[data-symbolica-product]') === product);
+            const rows = [...product.children];
+            const factorRows = new Set(factors.map(factor => {
+                let row = factor;
+                while (row.parentElement !== product) row = row.parentElement;
+                return row;
+            }));
+            return {rows:factorRows.size, totalRows:rows.length,
+                factors:factors.map(factor => ({
+                html:factor.outerHTML,
+                text:factor.textContent,
+                width:factor.getBoundingClientRect().width,
+                paths:[...factor.querySelectorAll('[data-symbolica-path]')]
+                    .map(node => node.getAttribute('data-symbolica-path'))
+            })), width:product.getBoundingClientRect().width,
+                rowWidths:rows.map(row => row.getBoundingClientRect().width),
+                availableWidth:element.parentElement.clientWidth,
+                // Include the actual multiplication glyphs, not a character estimate.
+                separatorWidths:[...product.querySelectorAll('mo')]
+                    .filter(node => node.closest('[data-symbolica-product]') === product
+                        && !node.closest('[data-symbolica-factor]'))
+                    .map(node => node.getBoundingClientRect().width)};
+        });
+        return candidates.sort((a,b) => b.factors.length-a.factors.length)[0];
+    }"""
+    )
+
+
+@pytest.mark.parametrize("kind", ("tensor", "expression"))
+def test_product_rows_follow_rendered_width_and_zoom_preserves_layout(
+    mathml_browser_page, kind
+):
+    rep = Representation.mink(4)
+    value = TensorName("product_fit::T0")(rep("mu"))
+    for index in range(1, 10):
+        value *= TensorName(f"product_fit::T{index}")(rep(f"index{index}"))
+    value /= 8
+    original, structure = value.to_expression(), value.structure
+    # Both providers use the same renderer, while only the tensor provider
+    # replaces the long symbolic leaf with compact tensor notation.
+    viewer = value.paged() if kind == "tensor" else original.mathml_viewer()
+    page = mathml_browser_page
+    widget, host = mount_viewer(page, viewer)
+    viewer._on_message(widget, page.evaluate("messages[0]"), [])
+    main = host.locator(".math-content")
+    try:
+        measurements = {}
+        for width in (1400, 350, 1400):
+            host.evaluate(
+                "(element, width) => element.style.width = `${width}px`", width
+            )
+            settle_layout(page)
+            geometry = mathml_geometry(main)
+            assert_stacked_fractions(geometry)
+            product = product_geometry(main)
+            assert len(product["factors"]) == 10, product
+            assert geometry["scrollWidth"] <= geometry["availableWidth"] + 2, geometry
+            if width in measurements:
+                assert product == measurements[width]
+            measurements[width] = product
+        wide, narrow = measurements[1400], measurements[350]
+        # These final emitted factors demonstrably fit in the wide host.
+        # Their row packing must change when the available width changes.
+        measured_width = sum(factor["width"] for factor in wide["factors"]) + sum(
+            wide["separatorWidths"]
+        )
+        assert measured_width < wide["availableWidth"] - 40, wide
+        assert wide["rows"] == 1, wide
+        assert narrow["rows"] > wide["rows"], (wide, narrow)
+        assert [(factor["html"], factor["paths"]) for factor in wide["factors"]] == [
+            (factor["html"], factor["paths"]) for factor in narrow["factors"]
+        ]
+        assert wide["width"] > narrow["width"] + 20, (wide, narrow)
+
+        # Upstream zoom deliberately magnifies the chosen layout without
+        # regrouping it. Overflow must remain reachable and reset reversible.
+        host.evaluate(
+            "(element, width) => element.style.width = `${width}px`",
+            measured_width + 80,
+        )
+        settle_layout(page)
+        unzoomed = product_geometry(main)
+        assert unzoomed["rows"] == 1, unzoomed
+        message_count = page.evaluate("messages.length")
+        region = host.get_by_role("region", name="Expression", exact=True)
+        region.focus()
+        for _ in range(2):
+            region.press("=")
+        settle_layout(page)
+        zoomed = product_geometry(main)
+        assert zoomed["rows"] == unzoomed["rows"], (unzoomed, zoomed)
+        assert [factor["text"] for factor in zoomed["factors"]] == [
+            factor["text"] for factor in unzoomed["factors"]
+        ]
+        assert page.evaluate("messages.length") == message_count
+        assert_stacked_fractions(mathml_geometry(main))
+        scrolling = main.evaluate(
+            """element => {
+            const container = element.parentElement;
+            container.scrollLeft = container.scrollWidth;
+            const result = {left:container.scrollLeft,
+                overflowing:container.scrollWidth > container.clientWidth};
+            container.scrollLeft = 0;
+            return result;
+        }"""
+        )
+        assert scrolling["overflowing"] and scrolling["left"] > 0, scrolling
+        region.press("0")
+        settle_layout(page)
+        assert product_geometry(main) == unzoomed
+        assert value.to_expression() == original and value.structure == structure
+    finally:
+        page.evaluate("dispose()")
+        viewer._on_message(widget, page.evaluate("messages.at(-1)"), [])
+        viewer.close()
+
+
+def test_expanded_product_uses_full_width_of_wrapping_sum(mathml_browser_page):
+    source = E("a" * 36 + "+" + "*".join(f"b{index}" for index in range(18)))
+    original = bytes(source.__getstate__())
+    viewer = source.mathml_viewer()
+    compact = viewer.page()["layouts"][-1]
+    path = next(
+        path for path, label in compact["markers"] if "product" in label.lower()
+    )
+    viewer.handle_message(
+        {"action": "expand", "value": path, "layout": compact["layout"], "size": 25}
+    )
+    page = mathml_browser_page
+    widget, host = mount_viewer(page, viewer)
+    viewer._on_message(widget, page.evaluate("messages[0]"), [])
+    main = host.locator(".math-content")
+    try:
+        measurements = {}
+        for width in (800, 350, 800):
+            host.evaluate(
+                "(element, width) => element.style.width = `${width}px`", width
+            )
+            settle_layout(page)
+            product = product_geometry(main)
+            assert len(product["factors"]) == 18, product
+            assert main.locator('mrow[style*="flex-wrap:wrap"]').count()
+            if width in measurements:
+                assert product == measurements[width]
+            measurements[width] = product
+        wide, narrow = measurements[800], measurements[350]
+        # The other sum term may wrap onto its own line. Its width must not be
+        # subtracted from every row of the product.
+        assert sum(factor["width"] for factor in wide["factors"]) < 750, wide
+        assert wide["rows"] == 1 and narrow["rows"] > 1, (wide, narrow)
+        assert [factor["html"] for factor in wide["factors"]] == [
+            factor["html"] for factor in narrow["factors"]
+        ]
+        assert bytes(source.__getstate__()) == original
+    finally:
+        page.evaluate("dispose()")
+        viewer._on_message(widget, page.evaluate("messages.at(-1)"), [])
+        viewer.close()
+
+
 @pytest.mark.parametrize("kind", ("tensor", "expression"))
 def test_fraction_geometry_and_product_height(mathml_browser_page, kind):
     rep = Representation.mink(4)
