@@ -86,6 +86,15 @@ assert E("sin(0)") == E("0")
 from symbolica import PrintMode
 assert "<msup>" in E("x^2").format(mode=PrintMode.MathML)
 assert "<math" in E("x^2+1")._repr_html_()
+fraction_html = E("(x+y)/(1+z^2)").format(mode=PrintMode.MathML)
+assert "<mfrac>" in fraction_html and ">(</mo>" not in fraction_html
+assert E("x/((a+b)*(c+d))").format(mode=PrintMode.MathML).count(">(</mo>") == 2
+assert '<mo stretchy="false">(</mo>' in E("sin(alpha)^2").format(mode=PrintMode.MathML)
+assert "<mo>(</mo>" in E("f(1/(1+x^2))").format(mode=PrintMode.MathML)
+large_expression = E("+".join(f"{i+1}*x^{i}" for i in range(160)))
+large_sine_html = large_expression.sin().format(mode=PrintMode.MathML)
+assert "<msup>" in large_sine_html and "<mo>(</mo>" in large_sine_html
+assert 'stretchy="false"' not in large_sine_html
 assert E("x^2").integrate(S("x")) == E("x^3/3")
 expression = E("1/(1+x^2)")
 result, overview, steps = expression.integrate_with_steps(S("x"))
