@@ -4,7 +4,7 @@ import os
 import re
 
 import pytest
-from symbolica import E, MathMLViewer
+from symbolica import E, MathMLViewer, data
 from symbolica.community.tensor import Representation, TensorName
 
 pw = pytest.importorskip("playwright.sync_api")
@@ -29,8 +29,37 @@ def browser_page():
             browser.close()
 
 
+@pytest.fixture(params=("chromium", "webkit"))
+def mathml_browser_page(request):
+    """Exercise native MathML geometry in both independent browser engines."""
+    with pw.sync_playwright() as playwright:
+        engine = request.param
+        executable = os.environ.get(f"{engine.upper()}_EXECUTABLE")
+        try:
+            browser = getattr(playwright, engine).launch(
+                **({"executable_path": executable} if executable else {})
+            )
+        except pw.Error as error:
+            pytest.skip(f"{engine} unavailable: {error}")
+        try:
+            yield browser.new_page(viewport={"width": 1600, "height": 1000})
+        finally:
+            browser.close()
+
+
 def mount_viewer(page, viewer):
     widget = viewer._get_widget()
+    # Use the exact verified resource shipped with the extension. Network or
+    # system-font fallback can otherwise hide geometry and glyph regressions.
+    font = data.read("render/fonts/STIXTwoMath-Regular.woff2")
+    page.route(
+        "**/STIXTwoMath-Regular.woff2",
+        lambda route: route.fulfill(
+            body=font,
+            content_type="font/woff2",
+            headers={"Access-Control-Allow-Origin": "*"},
+        ),
+    )
     page.set_content('<div id="viewer"></div>')
     page.evaluate(
         """async ({esm, page}) => {
@@ -58,8 +87,117 @@ def mount_viewer(page, viewer):
     }""",
         {"esm": widget._esm, "page": viewer._page()},
     )
-    page.evaluate("async () => { await document.fonts.ready; }")
+    loaded = page.evaluate(
+        """async () => {
+        const faces = await Promise.race([
+            (async () => {
+                const loaded = await document.fonts.load('21px "STIX Two Math"', '𝑖𝑘μν');
+                await document.fonts.ready;
+                return loaded;
+            })(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Math font did not load')), 10000))
+        ]);
+        return faces.length > 0 && document.fonts.check('21px "STIX Two Math"', '𝑖𝑘μν');
+    }"""
+    )
+    assert loaded
+    font_faces = page.evaluate(
+        """() => [...document.fonts]
+            .filter(face => face.family.replaceAll('"', '') === 'STIX Two Math')
+            .map(face => face.status)"""
+    )
+    # The upstream widget registers the font once in the document. Tensor page
+    # styles must not create extra shadow-root faces when the layout changes.
+    assert font_faces == ["loaded"]
     return widget, page.locator("#viewer")
+
+
+def mathml_geometry(main):
+    """Measure fraction children, including table children that WebKit mislays."""
+    return main.evaluate(
+        """element => {
+        const box = node => {
+            const r = node.getBoundingClientRect();
+            return {left:r.left, right:r.right, top:r.top, bottom:r.bottom,
+                width:r.width, height:r.height, centerX:(r.left+r.right)/2};
+        };
+        const visible = node => {
+            for (let p=node; p && p!==element; p=p.parentElement) {
+                if (p.localName === 'mphantom' || getComputedStyle(p).display === 'none') return false;
+            }
+            return node.getClientRects().length > 0;
+        };
+        const math = element.querySelector(':scope > math');
+        return {
+            math:box(math),
+            fontSize:Number.parseFloat(getComputedStyle(math).fontSize),
+            availableWidth:element.parentElement.clientWidth,
+            scrollWidth:element.scrollWidth,
+            fractions:[...math.querySelectorAll('mfrac')]
+                .filter(node => visible(node) && node.getAttribute('bevelled') !== 'true')
+                .map(node => ({fraction:box(node),
+                    numerator:box(node.children[0]), denominator:box(node.children[1]),
+                    children:[...node.children].map(child => child.localName)}))
+        };
+    }"""
+    )
+
+
+def assert_stacked_fractions(geometry):
+    assert geometry["fractions"], geometry
+    for fraction in geometry["fractions"]:
+        numerator, denominator = fraction["numerator"], fraction["denominator"]
+        assert numerator["bottom"] <= denominator["top"] + 2, fraction
+        assert abs(numerator["centerX"] - denominator["centerX"]) <= 2, fraction
+        assert fraction["fraction"]["width"] + 2 >= max(
+            numerator["width"], denominator["width"]
+        ), fraction
+
+
+@pytest.mark.parametrize("kind", ("tensor", "expression"))
+def test_fraction_geometry_and_product_height(mathml_browser_page, kind):
+    rep = Representation.mink(4)
+    labels = ["mu", "nu", *(f"i{i}" for i in range(8))]
+    value = TensorName("fraction_page::T0")(rep(labels[0]))
+    for index, label in enumerate(labels[1:], 1):
+        value *= TensorName(f"fraction_page::T{index}")(rep(label))
+    value /= 8
+    original, structure = value.to_expression(), value.structure
+    viewer = value.paged() if kind == "tensor" else original.mathml_viewer()
+    state = viewer.page()
+    for candidate in (state, *state["layouts"]):
+        assert "@font-face" not in candidate["html"]
+    page = mathml_browser_page
+    widget, host = mount_viewer(page, viewer)
+    viewer._on_message(widget, page.evaluate("messages[0]"), [])
+    main = host.locator(".math-content")
+    try:
+        for width in (1400, 350):
+            host.evaluate(
+                "(element, width) => element.style.width = `${width}px`", width
+            )
+            page.evaluate(
+                """async () => {
+                await new Promise(requestAnimationFrame);
+                await new Promise(requestAnimationFrame);
+            }"""
+            )
+            geometry = mathml_geometry(main)
+            assert_stacked_fractions(geometry)
+            assert geometry["scrollWidth"] <= geometry["availableWidth"] + 2, geometry
+            if width == 1400 and kind == "tensor":
+                # Ten distinct semantic leaves have fresh free indices. Their
+                # short tensor notation fits together in the wide host; pretty
+                # MathML whitespace must not turn it into a ten-line column.
+                assert geometry["math"]["height"] <= 6 * geometry["fontSize"], geometry
+            if kind == "tensor":
+                assert "mu" in main.inner_text() and "nu" in main.inner_text()
+            assert main.locator(":scope > math").count() == 1
+        assert value.to_expression() == original and value.structure == structure
+    finally:
+        page.evaluate("dispose()")
+        viewer._on_message(widget, page.evaluate("messages.at(-1)"), [])
+        viewer.close()
 
 
 def test_shared_widget_hover_paging_stale_previews_zoom_and_disposal(browser_page):
