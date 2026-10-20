@@ -95,6 +95,10 @@ large_expression = E("+".join(f"{i+1}*x^{i}" for i in range(160)))
 large_sine_html = large_expression.sin().format(mode=PrintMode.MathML)
 assert "<msup>" in large_sine_html and "<mo>(</mo>" in large_sine_html
 assert 'stretchy="false"' not in large_sine_html
+for rendered_html in (E("sin(1/x)")._repr_html_(), E("sqrt(1+x^2)").formatted()._repr_html_()):
+    math_open = rendered_html.split("<math", 1)[1].split(">", 1)[0]
+    assert "overflow" not in math_open and "max-width" not in math_open
+    assert "overflow-x:auto" in rendered_html
 assert E("x^2").integrate(S("x")) == E("x^3/3")
 expression = E("1/(1+x^2)")
 result, overview, steps = expression.integrate_with_steps(S("x"))
