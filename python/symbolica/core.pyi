@@ -7364,6 +7364,12 @@ class Series:
         Convert the series into an HTML representation.
         """
 
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a native pager without importing notebook or widget packages."""
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+    def _display_(self) -> Any:
+        """Display native MathML with paging in marimo."""
     def _repr_latex_(self) -> str:
         """
         Convert the series into a LaTeX representation.
@@ -7513,6 +7519,9 @@ class Series:
         hide_namespace: str | None = None,
         include_attributes: bool = False,
         custom_print_mode: dict[str, int | str | dict[str | int, Any]] | None = None,
+        *,
+        mathml: bool = True,
+        page_size: int = 25,
     ) -> FormattedOutput:
         """
         Convert the series into a rich display object, with tunable settings.
@@ -7992,6 +8001,12 @@ class Polynomial:
         Convert the polynomial into an HTML representation.
         """
 
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a native pager without importing notebook or widget packages."""
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+    def _display_(self) -> Any:
+        """Display native MathML with paging in marimo."""
     def _repr_latex_(self) -> str:
         """
         Convert the polynomial into a LaTeX representation.
@@ -8131,6 +8146,9 @@ class Polynomial:
         hide_namespace: str | None = None,
         include_attributes: bool = False,
         custom_print_mode: dict[str, int | str | dict[str | int, Any]] | None = None,
+        *,
+        mathml: bool = True,
+        page_size: int = 25,
     ) -> FormattedOutput:
         """
         Convert the polynomial into a rich display object, with tunable settings.
@@ -8923,6 +8941,12 @@ class NumberFieldPolynomial:
         Convert the polynomial into an HTML representation.
         """
 
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a native pager without importing notebook or widget packages."""
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+    def _display_(self) -> Any:
+        """Display native MathML with paging in marimo."""
     def _repr_latex_(self) -> str:
         """
         Convert the polynomial into a LaTeX representation.
@@ -9588,6 +9612,12 @@ class FiniteFieldPolynomial:
         Convert the polynomial into an HTML representation.
         """
 
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a native pager without importing notebook or widget packages."""
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+    def _display_(self) -> Any:
+        """Display native MathML with paging in marimo."""
     def _repr_latex_(self) -> str:
         """
         Convert the polynomial into a LaTeX representation.
@@ -10276,6 +10306,12 @@ class RationalPolynomial:
         Convert the rational polynomial into an HTML representation.
         """
 
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a native pager without importing notebook or widget packages."""
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+    def _display_(self) -> Any:
+        """Display native MathML with paging in marimo."""
     def _repr_latex_(self) -> str:
         """
         Convert the rational polynomial into a LaTeX representation.
@@ -10586,6 +10622,12 @@ class FiniteFieldRationalPolynomial:
         Convert the rational polynomial into an HTML representation.
         """
 
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a native pager without importing notebook or widget packages."""
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+    def _display_(self) -> Any:
+        """Display native MathML with paging in marimo."""
     def _repr_latex_(self) -> str:
         """
         Convert the rational polynomial into a LaTeX representation.
