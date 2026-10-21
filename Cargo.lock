@@ -4454,7 +4454,7 @@ dependencies = [
 [[package]]
 name = "symbolica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=codex%2Fcommunity-evaluator-composition#9db4a7d8e1f87ad4ee8ddd82b42e61730e5516c4"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=codex%2Fcommunity-evaluator-composition#7d1ce898d66a5e27258f96649e226a2987acd883"
 dependencies = [
  "ahash 0.8.12",
  "append-only-vec",
