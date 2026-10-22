@@ -1,13 +1,18 @@
 """Automatic MathML paging must bound work and preserve the source expression."""
 
+import importlib
+import json
+import os
 import re
 import sys
+import unicodedata
 import xml.etree.ElementTree as ET
+from time import monotonic
 from unittest.mock import patch
 
 import pytest
-from symbolica import E, S
-from symbolica.community.tensor import TensorExpression
+from symbolica import E, MathMLViewer, S
+from symbolica.community.tensor import Representation, TensorExpression, TensorName
 
 
 def polynomial(n=301):
@@ -19,13 +24,28 @@ def assert_page(page):
     assert len(page["html"].encode()) <= 256 * 1024
     math = re.findall(r"<math\b.*?</math>", page["html"], re.DOTALL)
     assert math
-    assert sum(sum(1 for _ in ET.fromstring(m).iter()) for m in math) <= 10_000
+    roots = [ET.fromstring(m) for m in math]
+    assert sum(sum(1 for _ in root.iter()) for root in roots) <= 10_000
+    assert len(json.dumps(page).encode()) <= 512 * 1024
+    assert "tree" not in page and "notation" not in page
+    for root in roots:
+        # The tensor root adds notation CSS ownership, without changing layout.
+        root.attrib.pop("data-spenso-math", None)
+    return roots
+
+
+@pytest.fixture
+def compiler():
+    # The native provider loads its compiler lazily, on the first page request.
+    TensorName("page_test::compiler")(Representation.mink(4)("mu")).paged()._page()
+    return importlib.import_module("_spenso_paging")
 
 
 def test_pages_are_contiguous_bounded_and_reversible():
     value = TensorExpression(polynomial())
     original = value.to_expression()
     pager = value.paged(page_size=100)
+    assert type(pager) is MathMLViewer
     pages = []
     while True:
         page = pager._page()
@@ -36,13 +56,33 @@ def test_pages_are_contiguous_bounded_and_reversible():
         pager._action({"action": "next"})
     assert pages[0][0] == 0 and pages[-1][1] == 301
     assert all(a[1] == b[0] for a, b in zip(pages, pages[1:]))
-    assert len(pager._cache) <= 3
     for start, end in reversed(pages[:-1]):
         page = pager._action({"action": "previous"})
         assert (page["start"], page["end"]) == (start, end)
     assert value.to_expression() == original
     pager.close()
-    assert not pager._cache and pager._source is None
+    with pytest.raises(RuntimeError, match="closed"):
+        pager._page()
+
+
+def test_public_expression_viewers_work_without_notebook_packages():
+    expression = polynomial()
+    with patch.dict(sys.modules, {"anywidget": None, "marimo": None}):
+        viewer = expression.mathml_viewer()
+        formatted = expression.formatted().mathml_viewer()
+        assert type(viewer) is MathMLViewer and type(formatted) is MathMLViewer
+        try:
+            first = viewer.page()
+            assert_page(first)
+            assert first["html"] == formatted.page()["html"]
+            field, following = viewer.handle_message({"action": "next"})
+            assert field == "page" and following["start"] == first["end"]
+            assert_page(following)
+            assert isinstance(MathMLViewer.javascript(), str)
+            assert expression == polynomial()
+        finally:
+            viewer.close()
+            formatted.close()
 
 
 def test_nested_sums_keep_factors_and_subexpression_navigation():
@@ -55,18 +95,204 @@ def test_nested_sums_keep_factors_and_subexpression_navigation():
     pager = value.paged()
     page = pager._page()
     assert_page(page)
-    assert page["total"] in (201, 203)
+    assert page["kind"] == "Product" and page["total"] == 3
     assert "<mn>7</mn>" in page["html"]
-    assert "⋯" in page["html"]
-    target = next(t for t, _ in page["holes"] if t != 0)
-    child = pager._action({"action": "open", "value": target})
+    assert "data-symbolica-marker" in page["html"]
+    compact = page["layouts"][-1]
+    assert_page(compact)
+    target = next(path for path, label in compact["markers"] if "sum" in label)
+    assert len(target) == 1 and target[0] < page["total"]
+    child = pager._action(
+        {"action": "open", "value": target, "layout": compact["layout"]}
+    )
     assert_page(child)
-    assert child["breadcrumbs"]
+    assert child["back"]
+    assert child["kind"] == "Sum" and child["total"] in (201, 203)
     pager._action({"action": "size", "value": 100})
     parent = pager._action({"action": "back"})
     assert parent["page_size"] == 25
     assert parent["html"] == page["html"]
     assert value.to_expression() == before
+
+
+def test_compact_native_contraction_survives_lower_detail_layout_depth():
+    from symbolica.community.hepkit import Model
+
+    Model.qcd()
+    dimension = S("spenso::mink")(S("D"))
+    momentum = S("gammalooprs::Q")
+    contraction = S("spenso::dot")(momentum(2, dimension), momentum(4, dimension))
+    source = S("compact_depth::f")(S("compact_depth::g")(contraction))
+    original = bytes(source.__getstate__())
+    viewer = source.mathml_viewer()
+    try:
+        state = viewer.page()
+        for candidate in (state, *state["layouts"]):
+            roots = assert_page(candidate)
+            text = unicodedata.normalize("NFKC", "".join(roots[0].itertext()))
+            # The native dot printer owns the entire leaf. Its long symbolic
+            # arguments are irrelevant to the space its compact notation uses.
+            assert "q" in text and "2" in text and "4" in text and "·" in text
+            assert not candidate["markers"]
+        assert bytes(source.__getstate__()) == original
+    finally:
+        viewer.close()
+
+
+@pytest.mark.parametrize("provider", ("expression", "tensor"))
+def test_product_tail_expansion_preserves_paging_sizes_and_nested_factors(provider):
+    from symbolica.community.hepkit import Model
+
+    Model.qcd()
+    momentum, mink = S("gammalooprs::Q", "spenso::mink")
+    source = E("1")
+    for index in range(40):
+        source *= momentum(index, mink(4, S(f"product_protocol::a{index:02}")))
+    original = bytes(source.__getstate__())
+    tensor = TensorExpression(source)
+    structure = tensor.structure
+    viewer = source.mathml_viewer() if provider == "expression" else tensor.paged()
+    try:
+        state = viewer.page()
+        assert state["start"] == 0 and state["end"] == 25
+        assert state["total"] == 40 and state["page_size"] == 25
+        compact = min(state["layouts"], key=lambda page: page["end"])
+        assert 0 < compact["end"] < state["end"]
+        for candidate in (state, *state["layouts"]):
+            assert_page(candidate)
+            assert candidate["markers"] == [([], "Inspect product [1]")]
+            assert candidate["marker_starts"] == [candidate["end"]]
+        field, tail = viewer._message(
+            {"action": "preview", "value": [], "layout": compact["layout"]}
+        )
+        assert field == "preview" and tail["kind"] == "Product"
+        assert tail["start"] == compact["end"] and tail["total"] == 40
+        assert_page(tail)
+        expanded = viewer._action(
+            {"action": "expand", "value": [], "layout": compact["layout"]}
+        )
+        for candidate in (expanded, *expanded["layouts"]):
+            assert_page(candidate)
+            assert candidate["end"] > compact["end"]
+
+        small = viewer._action({"action": "size", "value": 3})
+        assert small["page_size"] == 3 and small["end"] == 3
+        for candidate in (small, *small["layouts"]):
+            assert_page(candidate)
+            assert 0 <= candidate["start"] < candidate["end"] <= 3
+        following = viewer._action({"action": "next"})
+        assert following["start"] == 3 and following["end"] == 6
+        assert_page(following)
+        assert viewer._action({"action": "previous"})["html"] == small["html"]
+        child = viewer._action({"action": "open", "value": [], "size": 3})
+        assert child["back"] and child["total"] == 40 and child["end"] == 3
+        assert_page(child)
+        assert viewer._action({"action": "back"})["html"] == small["html"]
+        large = viewer._action({"action": "size", "value": 100})
+        assert large["page_size"] == 100 and large["end"] > 3
+        for candidate in (large, *large["layouts"]):
+            assert_page(candidate)
+            assert 0 <= candidate["start"] < candidate["end"] <= 40
+        if large["next"] is not None:
+            following = viewer._action({"action": "next"})
+            assert following["start"] == large["end"]
+            assert_page(following)
+            assert viewer._action({"action": "previous"})["html"] == large["html"]
+        small = viewer._action({"action": "size", "value": 3})
+        assert small["page_size"] == 3 and small["end"] == 3
+        assert bytes(source.__getstate__()) == original
+        assert bytes(tensor.to_expression().__getstate__()) == original
+        assert tensor.structure == structure
+    finally:
+        viewer.close()
+
+    viewer = (
+        source.mathml_viewer(page_size=500)
+        if provider == "expression"
+        else tensor.paged(page_size=500)
+    )
+    try:
+        state = viewer.page()
+        assert state["page_size"] == 500
+        compact = min(state["layouts"], key=lambda page: page["end"])
+        assert compact["end"] < state["end"] <= 500
+        _, preview = viewer._message(
+            {"action": "preview", "value": [], "layout": compact["layout"]}
+        )
+        assert preview["can_expand"]
+        expanded = viewer._action(
+            {"action": "expand", "value": [], "layout": compact["layout"]}
+        )
+        assert expanded["page_size"] == 500
+        for candidate in (expanded, *expanded["layouts"]):
+            assert_page(candidate)
+            assert compact["end"] < candidate["end"] <= 500
+        if expanded["markers"]:
+            # A remaining byte/node budget limit cannot reveal more root detail.
+            _, preview = viewer._message({"action": "preview", "value": []})
+            assert not preview["can_expand"]
+        assert bytes(source.__getstate__()) == original
+    finally:
+        viewer.close()
+
+    # Expand a nested fractional product while retaining its enclosing factor.
+    nested = S("product_protocol::A") * S("product_protocol::F")(
+        source / S("product_protocol::D")
+    )
+    original = bytes(nested.__getstate__())
+    viewer = (
+        nested.mathml_viewer()
+        if provider == "expression"
+        else TensorExpression(nested).paged()
+    )
+    try:
+        candidates = [viewer._render_page(layout) for layout in range(8)]
+        compact = min(
+            (
+                page
+                for page in candidates
+                if len(page["markers"]) == 1
+                and page["markers"][0][0]
+                and page["marker_starts"][0] > 1
+                and "<mfrac>" in page["html"]
+            ),
+            key=lambda page: page["marker_starts"][0],
+        )
+        target = compact["markers"][0][0]
+        viewer._action(
+            {
+                "action": "expand",
+                "value": target,
+                "layout": compact["layout"],
+                "size": 5,
+            }
+        )
+        revealed = viewer._render_page(compact["layout"])
+        assert revealed["end"] == revealed["total"] == 2
+        assert revealed["marker_starts"][0] > compact["marker_starts"][0]
+        for page in (compact, revealed):
+            roots = assert_page(page)
+            tokens = {
+                unicodedata.normalize("NFKC", node.text or "").strip()
+                for root in roots
+                for node in root.iter()
+            }
+            assert {"A", "F", "D", "q"} <= tokens
+            fractions = [
+                node
+                for root in roots
+                for node in root.iter()
+                if node.tag.rsplit("}", 1)[-1] == "mfrac"
+            ]
+            assert fractions
+            assert not any(
+                "data-symbolica-marker" in node.attrib
+                for fraction in fractions
+                for node in fraction.iter()
+            )
+        assert bytes(nested.__getstate__()) == original
+    finally:
+        viewer.close()
 
 
 def test_automatic_and_formatted_outputs_are_bounded():
@@ -77,23 +303,55 @@ def test_automatic_and_formatted_outputs_are_bounded():
         html = output._repr_html_()
         assert len(html.encode()) < 270_000
         assert "Navigation requires a live notebook" in html
-        assert "Terms 1–25 of 2001" in html
+        assert "items 1–25 of 2001" in html
         bundle = output._repr_mimebundle_(include=["text/plain", "text/html"])
         assert set(bundle) == {"text/plain", "text/html"}
         assert len(bundle["text/plain"]) < 200
     assert value.to_expression() == polynomial(2001)
 
 
-def test_export_and_small_output_keep_existing_behavior():
+def test_hover_previews_only_the_omitted_tail_and_keeps_main_navigation():
+    value = TensorExpression(polynomial(301))
+    original, structure = value.to_expression(), value.structure
+    viewer = value.paged()
+    first = viewer._page()
+    target = next(
+        path
+        for (path, _), start in zip(first["markers"], first["marker_starts"])
+        if start == first["end"]
+    )
+    field, hover = viewer._message(
+        {"action": "preview", "value": target, "request": "hover"}
+    )
+    assert field == "preview" and hover["request"] == "hover"
+    assert_page(hover)
+    assert hover["start"] == first["end"]
+    assert 0 < hover["end"] - hover["start"] <= 5
+    assert hover["can_expand"] and first["supports_expansion"]
+    assert viewer._page() == first
+
+    _, popup = viewer._message(
+        {"action": "preview", "value": target, "popup": True, "size": 100}
+    )
+    assert_page(popup)
+    assert popup["start"] == 0 and popup["end"] <= 100
+    assert popup["total"] == 301
+    assert viewer._page() == first
+    assert value.to_expression() == original and value.structure == structure
+
+
+def test_small_notebook_output_uses_shared_viewer_and_export_stays_complete():
     small = TensorExpression(E("a+b"))
-    assert small._repr_html_() == small.to_html()
-    assert "omitted" not in small._repr_html_()
+    assert type(small.paged()) is MathMLViewer
+    assert "<math" in small._repr_html_()
+    assert "Navigation requires" not in small._repr_html_()
+    assert not small.paged()._page()["markers"]
     large = TensorExpression(polynomial(101))
     assert "Navigation requires" not in large.to_html()
     assert len(large.to_html()) > 1000
 
 
-def test_missing_widget_dependency_static_preview_and_disposal():
+def test_missing_widget_dependency_static_preview_and_disposal(compiler):
     pager = TensorExpression(polynomial()).paged()
     with patch.dict(sys.modules, {"anywidget": None}):
         bundle = pager._repr_mimebundle_()
@@ -101,41 +359,128 @@ def test_missing_widget_dependency_static_preview_and_disposal():
     widget = pager._get_widget()
     assert len(widget.page["html"].encode()) <= 256 * 1024
     pager._on_message(widget, {"action": "attach", "view": "test"}, [])
+    first = pager._page()
     pager._on_message(widget, {"action": "dispose", "view": "test"}, [])
-    assert pager._widget is None and not pager._cache
+    assert pager._widget is None
+    assert pager._page() == first
+    recreated = pager._get_widget()
+    assert recreated is not widget
+    assert recreated.page == first
+    pager.close()
 
 
-def test_renderer_failure_does_not_fall_back_to_full_output():
-    pager = TensorExpression(polynomial()).paged()
-    import _spenso_paging
-
-    with patch.object(
-        _spenso_paging, "compile_page", side_effect=TimeoutError("deadline")
-    ):
+def test_renderer_failure_does_not_fall_back_to_full_output(compiler):
+    value = TensorName("page_failure::T")(Representation.mink(4)("mu"))
+    pager = value.paged()
+    with patch.object(compiler, "compile_leaf", side_effect=TimeoutError("deadline")):
         page = pager._page()
     assert "Page rendering failed" in page["html"]
-    assert len(page["html"]) < 300
+    assert len(page["html"]) < 1000
+    assert value.rank == 1
 
 
-def test_page_budget_shrinks_and_cache_is_limited():
-    pager = TensorExpression(polynomial(1001)).paged(page_size=500)
-    import _spenso_paging
+def test_native_worker_preserves_notation_without_python_typst(
+    tmp_path, monkeypatch, compiler
+):
+    compiler._stop_worker()
+    # Fresh worker interpreters must succeed even when the external package is
+    # unavailable. The import guard is inherited through ordinary Python startup.
+    (tmp_path / "sitecustomize.py").write_text(
+        "import builtins\n"
+        "original_import = builtins.__import__\n"
+        "def import_without_typst(name, *args, **kwargs):\n"
+        "    if name.split('.')[0] == 'typst':\n"
+        "        raise AssertionError('external Python Typst must not be imported')\n"
+        "    return original_import(name, *args, **kwargs)\n"
+        "builtins.__import__ = import_without_typst\n"
+    )
+    monkeypatch.setenv(
+        "PYTHONPATH",
+        os.pathsep.join(filter(None, [str(tmp_path), os.environ.get("PYTHONPATH")])),
+    )
+    rep = Representation.mink(4)
+    value = TensorName("native_worker::T", print={"typst": "macron(T)"})(
+        rep("mu"), rep("nu")
+    ).permute_axes([1, 0])
+    original, structure = value.to_expression(), value.structure
+    viewer = value.paged()
+    other = None
+    try:
+        roots = assert_page(viewer._page())
+        assert any(
+            node.tag.rsplit("}", 1)[-1] == "mover"
+            for root in roots
+            for node in root.iter()
+        )
+        assert "mu" in "".join(roots[0].itertext())
+        assert "nu" in "".join(roots[0].itertext())
+        assert value.to_expression() == original and value.structure == structure
+        worker = compiler._worker
+        assert worker is not None and worker.poll() is None
+        other_value = TensorName("native_worker::U", print={"typst": "macron(U)"})(
+            rep("mu"), rep("nu")
+        ).permute_axes([1, 0])
+        other_original, other_structure = (
+            other_value.to_expression(),
+            other_value.structure,
+        )
+        other = other_value.paged()
+        other_roots = assert_page(other._page())
+        assert "U" in unicodedata.normalize("NFKC", "".join(other_roots[0].itertext()))
+        assert compiler._worker.pid == worker.pid and worker.poll() is None
+        assert other_value.to_expression() == other_original
+        assert other_value.structure == other_structure
+    finally:
+        viewer.close()
+        if other is not None:
+            other.close()
+        compiler._stop_worker()
 
-    real = _spenso_paging.compile_page
-    seen = []
 
-    def limited(payload):
-        seen.append(payload["end"] - payload["start"])
-        return None if seen[-1] > 25 else real(payload)
+def test_native_worker_timeout_keeps_bounded_error_and_source(compiler):
+    compiler._stop_worker()
+    value = TensorName("native_timeout::T")(Representation.mink(4)("mu"))
+    original, structure = value.to_expression(), value.structure
+    viewer = value.paged()
+    workers, deadlines = [], []
 
-    with patch.object(_spenso_paging, "compile_page", side_effect=limited):
-        page = pager._page()
-    assert_page(page)
-    assert len(seen) > 1 and page["end"] <= 25
+    def expired(deadline):
+        deadlines.append(deadline - monotonic())
+        workers.append(compiler._worker)
+        raise TimeoutError("embedded compiler timed out")
+
+    try:
+        with patch.object(compiler, "_read_reply", side_effect=expired) as wait:
+            page = viewer._page()
+        assert wait.called and deadlines
+        assert all(0 < remaining <= 10 for remaining in deadlines)
+        assert workers and all(
+            worker is not None and worker.poll() is not None for worker in workers
+        )
+        assert compiler._worker is None
+        assert "Page rendering failed" in page["html"] and "timed out" in page["html"]
+        assert len(page["html"].encode()) < 4096
+        assert value.to_expression() == original and value.structure == structure
+        viewer._clear_cache()
+        assert_page(viewer._page())
+    finally:
+        viewer.close()
+        compiler._stop_worker()
+
+
+def test_native_page_budget_bounds_work_and_rejects_invalid_navigation():
+    value = TensorExpression(polynomial(1001))
+    pager = value.paged(page_size=500)
+    for layout in range(8):
+        page = pager._render_page(layout)
+        assert_page(page)
+        assert 0 < page["end"] <= 500
+        assert page["total"] == 1001
+    assert pager._render_page(0)["end"] < 500
     with pytest.raises(ValueError):
         pager._action({"action": "size", "value": 1000000})
     with pytest.raises(ValueError):
-        pager._action({"action": "open", "value": 123456789})
+        pager._action({"action": "open", "value": [123456789, 0]})
 
 
 def test_oversized_function_has_bounded_argument_navigation():
@@ -147,7 +492,7 @@ def test_oversized_function_has_bounded_argument_navigation():
     pager = value.paged(page_size=100)
     page = pager._page()
     assert_page(page)
-    assert page["unit"] == "Arguments" and page["total"] == 3000
+    assert page["unit"] == "arguments" and page["total"] == 3000
     assert page["end"] <= 100
     assert value.to_expression() == before
     page = pager._action({"action": "next"})
@@ -180,13 +525,57 @@ def test_signs_and_tensor_ports_survive_pages():
     assert pager._action({"action": "previous"})["html"] == first["html"]
 
 
-def test_serialized_page_never_contains_undisplayed_terms():
+def test_serialized_page_never_contains_undisplayed_terms(compiler):
     pager = TensorExpression(polynomial(6001)).paged(page_size=25)
-    payload = pager._source.page(0, None, 25)
-    assert payload["end"] == 25 and payload["total"] == 6001
-    assert len(payload["tree"]) < 64 * 1024
-    # The render tree has no copies of the other 5,976 terms.
-    assert payload["tree"].count(b"kind") < 200
+    # Scalar arithmetic belongs entirely to the shared native renderer.
+    with patch.object(compiler, "compile_leaf", wraps=compiler.compile_leaf) as render:
+        page = pager._page()
+    assert_page(page)
+    assert page["end"] == 25 and page["total"] == 6001
+    assert not render.called
+    assert len(page["html"].encode()) < 64 * 1024
+    assert "6001" not in page["html"]
+    assert "5999" not in page["html"]
+    assert page["markers"] and page["marker_starts"] == [25]
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "(a+b*c^2)*(d+e+f+g+h)/(j+k)",
+        "f(a+b+c+d+e,g(h+i),j^2)",
+        "+".join(f"parity::x{i}^2" for i in range(301)),
+        "(" + "+".join(f"parity::x{i}" for i in range(41)) + ")*(a+b+c)",
+    ],
+)
+def test_scalar_tensor_and_expression_use_identical_responsive_layouts(source):
+    value = TensorExpression(E(source))
+    original, structure = value.to_expression(), value.structure
+    tensor_viewer, expression_viewer = value.paged(), original.mathml_viewer()
+    try:
+        for layout in range(8):
+            tensor_page = tensor_viewer._render_page(layout)
+            expression_page = expression_viewer._render_page(layout)
+            assert [ET.tostring(root) for root in assert_page(tensor_page)] == [
+                ET.tostring(root) for root in assert_page(expression_page)
+            ]
+            for field in (
+                "start",
+                "end",
+                "total",
+                "kind",
+                "unit",
+                "markers",
+                "marker_ids",
+                "marker_starts",
+                "layout",
+            ):
+                assert tensor_page[field] == expression_page[field], (layout, field)
+        assert tensor_viewer._page()["supports_expansion"]
+        assert value.to_expression() == original and value.structure == structure
+    finally:
+        tensor_viewer.close()
+        expression_viewer.close()
 
 
 def test_jupyter_bundle_contains_live_widget_and_bounded_fallbacks():
@@ -259,6 +648,23 @@ def test_three_rung_ladder_pages_keep_factorization_and_budgets():
     )
     original = value.to_expression()
     pager = value.paged()
+    outline = pager._page()
+    target = None
+    for candidate in reversed([outline, *outline["layouts"]]):
+        for path, label in candidate["markers"]:
+            if "sum" not in label:
+                continue
+            _, preview = pager._message(
+                {"action": "preview", "value": path, "layout": candidate["layout"]}
+            )
+            assert_page(preview)
+            if preview["total"] == 6001:
+                target = path, candidate["layout"]
+                break
+        if target is not None:
+            break
+    assert target is not None, "The factorized ladder retains its 6,001-term sum"
+    pager._action({"action": "open", "value": target[0], "layout": target[1]})
     end = 0
     for _ in range(8):
         page = pager._page()
@@ -266,7 +672,6 @@ def test_three_rung_ladder_pages_keep_factorization_and_budgets():
         assert page["total"] == 6001
         assert page["start"] == end
         assert 0 < page["end"] - page["start"] <= 25
-        assert len(pager._cache) <= 3
         end = page["end"]
         pager._action({"action": "next"})
     assert value.to_expression() == original
@@ -289,45 +694,64 @@ def test_generated_index_names_survive_cache_eviction():
     pager = value.paged(page_size=25)
     first = pager._page()["html"]
     for _ in range(4):
-        pager._action({"action": "next"})
-    assert len(pager._cache) == 3
+        assert_page(pager._action({"action": "next"}))
+        for layout in (7, 0):
+            assert_page(pager._render_page(layout))
     for _ in range(4):
-        pager._action({"action": "previous"})
+        assert_page(pager._action({"action": "previous"}))
     assert pager._page()["html"] == first
     assert value.to_expression() == original
 
 
-def test_one_render_oversized_term_becomes_an_inspectable_placeholder():
-    pager = TensorExpression(E("page_test::f(a+b+c)")).paged()
-    import _spenso_paging
-
-    with patch.object(_spenso_paging, "compile_page", return_value=None):
+def test_oversized_tensor_leaf_defers_to_bounded_structural_children(compiler):
+    rep = Representation.mink(4)
+    value = TensorName("page_oversized::T")(rep("mu"), rep("nu"))
+    original = value.to_expression()
+    pager = value.paged()
+    with patch.object(compiler, "compile_leaf", return_value=None) as render:
         page = pager._page()
-    assert "exceeds the display budget" in page["html"]
-    assert page["holes"]
-    child = pager._action({"action": "open", "value": page["holes"][0][0]})
-    assert_page(child)
+    assert render.called
+    native = original.mathml_viewer().page()
+    assert [ET.tostring(root) for root in assert_page(page)] == [
+        ET.tostring(root) for root in assert_page(native)
+    ]
+    assert page["kind"] == "Function" and page["unit"] == "arguments"
+    assert value.to_expression() == original
 
 
-def test_two_expanded_binomials_have_a_compact_outline_and_separate_sum():
+def test_two_expanded_binomials_share_responsive_layout_and_inline_expansion():
     value = TensorExpression((E("x+1") ** 100).expand() * (E("y+1") ** 100).expand())
     original = value.to_expression()
     viewer = value.paged()
-    for size in (100, 250):
-        page = viewer._action({"action": "size", "value": size})
+    page = viewer._page()
+    assert page["kind"] == "Product" and page["total"] == 2
+    assert page["supports_expansion"]
+    assert "Expression structure" not in page["html"]
+    for layout in range(8):
+        page = viewer._render_page(layout)
         assert_page(page)
-        assert page["selection"] == "Sum [1]"
-        assert page["total"] == 101
-        assert len(page["holes"]) == 2
+        assert page["total"] == 2
         math = re.findall(r"<math\b.*?</math>", page["html"], re.DOTALL)
-        assert len(math) == 2
-        # The context keeps both factors; only its tiny markers are fenced.
-        context = ET.fromstring(math[0])
-        assert [n.text for n in context.iter("mo")].count("(") == 2
-        assert "[1]" in math[0] and "[2]" in math[0]
-        assert "(" not in [n.text for n in ET.fromstring(math[1]).iter("mo")]
-        assert "Expression structure" in page["html"]
+        assert len(math) == 1
+        assert "data-symbolica-path" in math[0]
         assert value.to_expression() == original
+    compact = viewer._page()["layouts"][-1]
+    target = next(path for path, label in compact["markers"] if "sum" in label)
+    expanded = viewer._action(
+        {
+            "action": "expand",
+            "value": target,
+            "layout": compact["layout"],
+            "size": 25,
+        }
+    )
+    assert_page(expanded)
+    assert not expanded["back"]
+    expanded_compact = viewer._render_page(compact["layout"])
+    assert sum(len(list(root.iter())) for root in assert_page(expanded_compact)) > sum(
+        len(list(root.iter())) for root in assert_page(compact)
+    )
+    assert value.to_expression() == original
 
 
 def test_dot_product_power_keeps_compact_tensor_notation():
@@ -337,12 +761,27 @@ def test_dot_product_power_keeps_compact_tensor_notation():
     left = TensorName.vector("page_power::k")(rep)
     right = TensorName.vector("page_power::p")(rep)
     value = dot(left, right) ** 2
-    page = value.paged()._page()
+    original, structure = value.to_expression(), value.structure
+    viewer = value.paged()
+    try:
+        page = viewer.page()
+    finally:
+        viewer.close()
     assert_page(page)
     math = ET.fromstring(
         re.search(r"<math\b.*?</math>", page["html"], re.DOTALL).group()
     )
     # Dot operands are vector labels; the exponent applies to their contraction.
-    assert "(" not in [n.text for n in math.iter("mo")]
-    assert ")" not in [n.text for n in math.iter("mo")]
-    assert any(n.tag == "msup" for n in math.iter())
+    for node in math.iter():
+        node.tag = node.tag.rsplit("}", 1)[-1]
+    powers = list(math.iter("msup"))
+    assert len(powers) == 1
+    base, exponent = powers[0]
+    assert "".join(exponent.itertext()).strip() == "2"
+    tokens = [
+        unicodedata.normalize("NFKC", node.text or "").strip() for node in base.iter()
+    ]
+    assert tokens.count("(") == tokens.count(")") == 1
+    assert sum(token in ("·", "⋅") for token in tokens) == 1
+    assert {"k", "p"} <= set(tokens)
+    assert value.to_expression() == original and value.structure == structure

@@ -1789,7 +1789,7 @@ dependencies = [
 [[package]]
 name = "graphica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#c78cffc20f318df1fce50539a587cbe8ffc717c0"
+source = "git+https://github.com/symbolica-dev/symbolica?rev=7fa5270a3b4fa55d1ee505525e3bb29ff3c66227#7fa5270a3b4fa55d1ee505525e3bb29ff3c66227"
 dependencies = [
  "ahash 0.8.12",
  "dyn-clone",
@@ -2806,7 +2806,7 @@ dependencies = [
 [[package]]
 name = "numerica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#c78cffc20f318df1fce50539a587cbe8ffc717c0"
+source = "git+https://github.com/symbolica-dev/symbolica?rev=7fa5270a3b4fa55d1ee505525e3bb29ff3c66227#7fa5270a3b4fa55d1ee505525e3bb29ff3c66227"
 dependencies = [
  "ahash 0.8.12",
  "astro-float",
@@ -4454,7 +4454,7 @@ dependencies = [
 [[package]]
 name = "symbolica"
 version = "3.0.1"
-source = "git+https://github.com/ValentinHirschi/symbolica?branch=codex%2Fevaluator-composition#e227fe732dcd4164a3dca09e0a6e0e0b7f190d66"
+source = "git+https://github.com/symbolica-dev/symbolica?rev=7fa5270a3b4fa55d1ee505525e3bb29ff3c66227#7fa5270a3b4fa55d1ee505525e3bb29ff3c66227"
 dependencies = [
  "ahash 0.8.12",
  "append-only-vec",
@@ -4489,6 +4489,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "wide 1.7.1",
+ "xmlparser",
 ]
 
 [[package]]
@@ -6137,6 +6138,12 @@ checksum = "05f360fc0b24296329c78fda852a1e9ae82de9cf7b27dae4b7f62f118f77b9ed"
 dependencies = [
  "tap",
 ]
+
+[[package]]
+name = "xmlparser"
+version = "0.13.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "66fee0b777b0f5ac1c69bb06d361268faafa61cd4682ae064a171c16c433e9e4"
 
 [[package]]
 name = "xmlwriter"
