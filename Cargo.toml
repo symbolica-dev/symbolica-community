@@ -119,7 +119,7 @@ vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev 
 # Lean notebook Typst compiler; keep these on the same source as the bindings.
 typst-library = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
 typst-svg = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
-symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "ea20d66a13ec1fc6e0a37fa101c7fa7539e46cc4" }
-numerica = { git = "https://github.com/symbolica-dev/symbolica", rev = "ea20d66a13ec1fc6e0a37fa101c7fa7539e46cc4" }
-graphica = { git = "https://github.com/symbolica-dev/symbolica", rev = "ea20d66a13ec1fc6e0a37fa101c7fa7539e46cc4" }
+symbolica = { git = "https://github.com/symbolica-dev/symbolica", rev = "7fa5270a3b4fa55d1ee505525e3bb29ff3c66227" }
+numerica = { git = "https://github.com/symbolica-dev/symbolica", rev = "7fa5270a3b4fa55d1ee505525e3bb29ff3c66227" }
+graphica = { git = "https://github.com/symbolica-dev/symbolica", rev = "7fa5270a3b4fa55d1ee505525e3bb29ff3c66227" }
 symbolica-typst-plugin = { git = "https://github.com/symbolica-dev/symbolica-typst-plugin", rev = "57b7455b37c30f4f87353c0073e49f5225e937ab" }
