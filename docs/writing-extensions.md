@@ -40,7 +40,7 @@ Use that same library in two builds:
 | Build | Native host | Python imports |
 | --- | --- | --- |
 | Standalone development | Your repository builds one extension containing your bindings and the upstream components they need. | `from my_extension import *` |
-| Community integration | Community links your library and the other components into its existing `symbolica.core` extension. | Imports from `symbolica`, `symbolica.community.hepkit`, and your Community module. |
+| Community integration | Community links your library and the other components into its existing `symbolica.core` extension. | Imports from `symbolica`, `symbolica.community.hepkit`, and `symbolica.community.hepkit.diagram_tools`. |
 
 Both builds must use the **same upstream Rust/PyO3 types** in arguments and return
 values. A hepkit diagram should remain a hepkit diagram when it passes through
@@ -243,7 +243,10 @@ stub metadata. Re-exporting upstream types must preserve their original
 path exist; the host supplies the packages and module registration.
 Here `hepkit_diagram_tools` is the internal native registration name; the public
 facade is `symbolica.community.hepkit.diagram_tools`. The standalone package
-can still be called `my_extension`.
+can still be called `my_extension`. Community's current registration macro uses
+the internal name to expose `symbolica.community.hepkit_diagram_tools_native`;
+the Python facade supplies the nested public namespace. `get_name()` does not
+automatically create nested Python packages.
 
 `register_module` adds only your classes and functions. It must not initialize
 Symbolica symbols or recreate dependency modules. Put symbol registration and
@@ -251,6 +254,146 @@ other runtime setup in the trait's `initialize(py)` hook; make repeated
 initialization safe. Implement `get_citations()` when your methods require
 scientific attribution. Return meaningful Python exceptions for invalid input,
 and document whether outputs alias, copy, or mutate their inputs.
+
+## Register optional implementations through Rust
+
+Use Symbolica's reusable `ExtensionPoint<T>` and `ExtensionImplementation<T>`
+when an existing class needs functionality supplied by a downstream crate. The
+owning component declares a public point with a typed Rust function pointer or
+a small function table. The implementation crate declares one `static`
+descriptor and registers it during initialization. This preserves the dependency
+direction: the owner does not import or depend on the implementation crate.
+Contribute a missing point or class method through a PR to its owning repository.
+For a Python method, the class owner adds the `#[pymethods]` forwarder, its
+documentation, and its `.pyi` declaration. Registration only supplies the
+implementation behind that forwarder; it neither adds a method to another
+crate's class nor generates a Python stub.
+
+For example, the following is a **proposed** owner-side interface for the earlier
+`FeynmanDiagram.tensor_reduce()` design, not an existing Feynkit method or point:
+
+```rust
+use crate::PyFeynmanDiagram;
+use pyo3::prelude::*;
+use spynso3::expression::TensorExpression;
+use symbolica::api::python::ExtensionPoint;
+
+pub type DiagramReducer =
+    for<'py> fn(Python<'py>, &PyFeynmanDiagram) -> PyResult<Py<TensorExpression>>;
+pub static TENSOR_REDUCE: ExtensionPoint<DiagramReducer> =
+    ExtensionPoint::new("hepkit.FeynmanDiagram.tensor_reduce");
+
+#[cfg_attr(feature = "python_stubgen", pyo3_stub_gen::derive::gen_stub_pymethods)]
+#[pymethods]
+impl PyFeynmanDiagram {
+    /// Reduce this diagram using the registered tensor-reduction implementation.
+    fn tensor_reduce(&self, py: Python<'_>) -> PyResult<Py<TensorExpression>> {
+        TENSOR_REDUCE.get()?(py, self)
+    }
+}
+```
+
+The provider would register a `static ExtensionImplementation<DiagramReducer>`
+whose value calls the existing reduction implementation. The owner keeps the
+method available even when no provider is registered; calling it then raises the
+extension point's missing-implementation error. Adapt the typed signature to the
+actual operation's arguments, outputs, and error semantics. Here the provider
+returns `Py<TensorExpression>` using the tensor component's public constructors,
+which initialize both `TensorExpression` and its `Expression` base class.
+
+Use the owning repository's stub-generation machinery to produce and check the
+matching declaration in `symbolica/community/hepkit/__init__.pyi`, for example:
+
+```python
+from symbolica.community.tensor import TensorExpression
+
+class FeynmanDiagram:
+    def tensor_reduce(self) -> TensorExpression:
+        """Reduce this diagram using the registered tensor-reduction implementation."""
+        ...
+```
+
+Keep method documentation and typed signatures in sync with the implementation,
+including keyword arguments, defaults, and return types. An owner method that
+forwards opaque `**kwargs` still needs a discoverable typed `.pyi` signature;
+Feynkit's existing `sector_decompose` methods supply this through manual stub
+inventory entries. Imports in `.pyi` files describe types and are not runtime
+Python imports from Rust bindings.
+
+Symbolic integration uses a function table so its ordinary and explained
+operations are installed together. Community's existing `integrate` and
+`integrate_with_steps` Rust adapters can be registered as follows:
+
+```rust
+use pyo3::prelude::*;
+use symbolica::api::python::{
+    ExtensionImplementation, PYTHON_INTEGRATION, PythonIntegrationFunctions,
+};
+
+static INTEGRATION: ExtensionImplementation<PythonIntegrationFunctions> =
+    ExtensionImplementation::new(
+        "symbolica-integrate",
+        PythonIntegrationFunctions { integrate, integrate_with_steps },
+    );
+
+fn initialize_integration() -> PyResult<()> {
+    PYTHON_INTEGRATION.register(&INTEGRATION)?;
+    Ok(())
+}
+```
+
+Here `integrate` and `integrate_with_steps` are the host's existing adapters,
+including its result conversion and citation tracking. Install their descriptor
+before creating the core Python module. Other providers should install their
+descriptors in `SymbolicaCommunityModule::initialize`; call that hook in both
+standalone and Community hosts before using the operations.
+
+For an existing variadic PyO3 operation, use `PythonExtensionFunction` to preserve
+the backend's argument parser, validation, and defaults. Feynkit's
+`SECTOR_DECOMPOSE` point uses this interface. A provider can adapt its own
+`#[pyfunction]` named `sector_decompose` without importing a Python module:
+
+```rust
+use feynkit_py::SECTOR_DECOMPOSE;
+use pyo3::{prelude::*, types::{PyDict, PyTuple}, wrap_pyfunction};
+use symbolica::api::python::{ExtensionImplementation, PythonExtensionFunction};
+
+fn dispatch_sector_decompose(
+    args: &Bound<'_, PyTuple>,
+    kwargs: Option<&Bound<'_, PyDict>>,
+) -> PyResult<Py<PyAny>> {
+    Ok(wrap_pyfunction!(sector_decompose, args.py())?.call(args, kwargs)?.unbind())
+}
+
+static SECTOR_IMPLEMENTATION: ExtensionImplementation<PythonExtensionFunction> =
+    ExtensionImplementation::new("sector-decomposition-provider", dispatch_sector_decompose);
+
+fn initialize_sector_decomposition() -> PyResult<()> {
+    SECTOR_DECOMPOSE.register(&SECTOR_IMPLEMENTATION)?;
+    Ok(())
+}
+```
+
+The owner dispatches through `SECTOR_DECOMPOSE.call(py, (slf,), kwargs)`, passing
+the existing Python instance and keywords. The point stores a Rust function
+pointer; the adapter constructs the PyO3 callable locally.
+It does not retain a Python object globally or look up a function by module name.
+Use a typed Rust function directly when the existing operation permits it.
+
+Declare both points and implementation descriptors as actual `static` values,
+not `const` values or temporaries. Re-registering the same descriptor is safe;
+a different descriptor conflicts even if its provider name is identical. Names
+identify operations and providers in diagnostics, not entries in a string-based
+registry. `get()` returns `Result<&'static T, ExtensionError>`; registration and
+lookup errors convert to `PyErr`, so bindings can propagate them with `?`. A
+missing provider fails explicitly. Registration has no replace or unregister
+operation. Test missing, repeated, and conflicting registration in isolated
+processes, and keep every participant in the same native library.
+
+Resolve these APIs from reviewed upstream revisions before release. Do not pin
+a published extension or Community integration to a draft branch to bypass an
+owner's PR. Check the exact dependency sources and feature gates; the manifest
+outline above alone does not guarantee these newer registration APIs are present.
 
 ## Build a standalone host and re-export its inputs
 
@@ -434,8 +577,9 @@ Once ready, submit a Community PR containing the integration work:
 3. Add the Python facade, for example
    `python/symbolica/community/hepkit/diagram_tools/__init__.py`, following the
    existing facades: import from
-   `symbolica.community.hepkit_diagram_tools_native`, call `initialize_module()`, and remove
-   that helper from the public namespace. Wire in stub generation and docs.
+   `symbolica.community.hepkit_diagram_tools_native`, call `initialize_module()`,
+   and remove that helper from the public namespace. Wire in stub generation and
+   docs.
 4. Build the complete Community extension in a private environment. Run your
    unchanged behavioral tests with the Community imports, relevant existing
    tests, and stub/type checks. Verify a packaged wheel, not only a source-tree
