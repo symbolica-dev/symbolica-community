@@ -1,14 +1,12 @@
 use pyo3::{
-    Bound, PyResult,
-    exceptions::PyRuntimeError,
-    pymodule,
+    Bound, PyResult, pymodule,
     types::{PyModule, PyModuleMethods},
     wrap_pyfunction,
 };
 use symbolica::{
     api::python::{
-        Citation, PythonIntegrationFunctions, PythonIntegrationStep, create_symbolica_module,
-        set_python_integration_functions,
+        Citation, ExtensionImplementation, PYTHON_INTEGRATION, PythonIntegrationFunctions,
+        PythonIntegrationStep, create_symbolica_module,
     },
     atom::{Atom, Symbol},
 };
@@ -87,13 +85,19 @@ fn integrate_with_steps(
     (explanation.result, overview, steps)
 }
 
+// Both integration operations are installed together, preserving one provider.
+static INTEGRATION: ExtensionImplementation<PythonIntegrationFunctions> =
+    ExtensionImplementation::new(
+        "symbolica-integrate",
+        PythonIntegrationFunctions {
+            integrate,
+            integrate_with_steps,
+        },
+    );
+
 #[pymodule]
 fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    set_python_integration_functions(PythonIntegrationFunctions {
-        integrate,
-        integrate_with_steps,
-    })
-    .map_err(PyRuntimeError::new_err)?;
+    PYTHON_INTEGRATION.register(&INTEGRATION)?;
     create_symbolica_module(m)?;
     m.add_function(wrap_pyfunction!(data::_set_data_directories, m)?)?;
     m.add_function(wrap_pyfunction!(data::_data_manifest, m)?)?;
@@ -159,4 +163,57 @@ fn integration_citations() -> Vec<Citation> {
             relevance: None,
         },
     ]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pyo3::{
+        Python,
+        types::{PyDict, PyDictMethods},
+    };
+    use std::ffi::CString;
+
+    #[test]
+    fn integration_extension_point_works_in_a_standalone_host() {
+        Python::initialize();
+        Python::attach(|py| -> PyResult<()> {
+            let module = PyModule::new(py, "standalone_core")?;
+            core(&module)?;
+            PYTHON_INTEGRATION.register(&INTEGRATION)?;
+            let locals = PyDict::new(py);
+            locals.set_item("core", module)?;
+            let source = CString::new(
+                r#"
+import builtins
+original_import = builtins.__import__
+def reject_symbolica(name, *args, **kwargs):
+    if name == "symbolica" or name.startswith("symbolica."):
+        raise AssertionError("integration imported " + name)
+    return original_import(name, *args, **kwargs)
+builtins.__import__ = reject_symbolica
+try:
+    x = core.S("extension_integration_x")
+    expression = x**2
+    result = expression.integrate(x)
+    assert isinstance(result, core.Expression)
+    assert result.derivative(x) == expression
+    explained, overview, steps = expression.integrate_with_steps(x)
+    assert isinstance(explained, core.Expression)
+    assert explained.derivative(x) == expression
+    assert isinstance(overview, str) and overview
+    assert steps
+    assert all(isinstance(step, core.IntegrationStep) for step in steps)
+    assert "https://github.com/symbolica-dev/symbolica-integrate" in {
+        citation.id for citation in core.get_citations()
+    }
+finally:
+    builtins.__import__ = original_import
+"#,
+            )
+            .unwrap();
+            py.run(&source, Some(&locals), Some(&locals))
+        })
+        .unwrap();
+    }
 }
