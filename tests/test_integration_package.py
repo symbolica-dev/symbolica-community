@@ -54,7 +54,7 @@ def test_wasm_graph_retains_host_build_dependencies_and_filters_inactive_names(m
 
 def browser_graph():
     algebra = CHECK.algebra_sources()
-    hepkit = "git+https://github.com/alphal00p/gammaloop?branch=feynkit-vakint-integration"
+    hepkit = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces"
     packages = [package(name, algebra[name] + "#" + algebra[name].rsplit("=", 1)[1]) for name in CHECK.ALGEBRA]
     packages += [package(name, hepkit + "#" + "b" * 40) for name in CHECK.HEPKIT]
     rustred = "git+https://github.com/alphal00p/rustred?branch=main"

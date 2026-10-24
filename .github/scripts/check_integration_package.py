@@ -160,7 +160,7 @@ def check_graph(label, packages, nodes, root, *, community, native):
         feynkit_source = singleton(packages, "feynkit-py")["source"]
         if feynkit_source is not None:
             assert re.fullmatch(
-                r"git\+https://github.com/alphal00p/gammaloop\?branch=feynkit-vakint-integration#[0-9a-f]{40}",
+                r"git\+https://github.com/alphal00p/gammaloop\?branch=preserve-canonical-numerator-interfaces#[0-9a-f]{40}",
                 feynkit_source,
             ), (label, "expected upstream FeynKit branch", feynkit_source)
             assert feynkit_source.startswith(declared_source(root, "feynkit-py") + "#"), (
