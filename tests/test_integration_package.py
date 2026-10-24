@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pytest
 
-
 SPEC = importlib.util.spec_from_file_location(
     "integration_package_check",
     Path(__file__).parents[1] / ".github/scripts/check_integration_package.py",
@@ -55,8 +54,8 @@ def test_wasm_graph_retains_host_build_dependencies_and_filters_inactive_names(m
 
 def browser_graph():
     algebra = CHECK.algebra_sources()
-    hepkit = "git+https://github.com/alphal00p/gammaloop?branch=feynkit"
-    packages = [package(name, algebra[name] + "#" + "a" * 40) for name in CHECK.ALGEBRA]
+    hepkit = "git+https://github.com/alphal00p/gammaloop?branch=feynkit-vakint-integration"
+    packages = [package(name, algebra[name] + "#" + algebra[name].rsplit("=", 1)[1]) for name in CHECK.ALGEBRA]
     packages += [package(name, hepkit + "#" + "b" * 40) for name in CHECK.HEPKIT]
     rustred = "git+https://github.com/alphal00p/rustred?branch=main"
     packages += [package(name, rustred + "#" + "c" * 40) for name in CHECK.RUSTRED]
@@ -148,4 +147,24 @@ def test_duplicate_and_mixed_owners_still_fail():
     packages.pop()
     next(p for p in packages if p["name"] == "feynkit-model")["source"] = "git+foreign"
     with pytest.raises(AssertionError, match="mixed HEPKit owners"):
+        CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
+
+
+def test_full_graph_requires_the_same_native_owner():
+    packages, nodes, root = browser_graph()
+    CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
+    graph = next(p for p in packages if p["name"] == "linnet-py")
+    graph["source"] = "git+foreign#" + "d" * 40
+    with pytest.raises(AssertionError, match="mixed HEPKit owners"):
+        CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
+    packages.remove(graph)
+    with pytest.raises(AssertionError, match="linnet-py"):
+        CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
+
+
+def test_kernel_requires_the_same_immutable_numeric_revision():
+    packages, nodes, root = browser_graph()
+    symbolica = next(p for p in packages if p["name"] == "symbolica")
+    symbolica["source"] = CHECK.algebra_sources()["symbolica"] + "#" + "d" * 40
+    with pytest.raises(AssertionError, match="kernel and numeric revisions differ"):
         CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)

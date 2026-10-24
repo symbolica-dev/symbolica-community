@@ -20,7 +20,7 @@ print("Integral:", result)
 print("\\n" + overview)
 print("\\nNumber of steps:", len(steps))` },
   { name: "Tensors", subtitle: "Explore Spenso", description: "Build a symbolic matrix and evaluate it numerically.", code: `from symbolica import E, S
-from symbolica.community.spenso import Representation, Tensor, TensorName
+from symbolica.community.tensor import Representation, Tensor, TensorName
 
 rep = Representation.euc(2)
 matrix = Tensor.dense(
@@ -33,7 +33,7 @@ print("Matrix at x = 5:")
 print(values[:2])
 print(values[2:])` },
   { name: "Indices", subtitle: "Simplify with Idenso", description: "Contract a metric and take its trace.", code: `from symbolica import E
-from symbolica.community.spenso import TensorExpression
+from symbolica.community.tensor import TensorExpression
 
 metric_trace = TensorExpression(E("g(bis(4,1), bis(4,1))", default_namespace="spenso"))
 print("Metric trace:", metric_trace)

@@ -1,0 +1,3694 @@
+{
+  "schema": 1,
+  "scope": "raw-data-compatibility",
+  "compatibility_only": true,
+  "source": "git+https://github.com/alphal00p/gammaloop?rev=4b2324b900c3703bfec11297c8d73e3f00c25c5c#vakint@0.1.2",
+  "remote_base_url": "https://raw.githubusercontent.com/alphal00p/gammaloop/4b2324b900c3703bfec11297c8d73e3f00c25c5c/crates/vakint/",
+  "description": "Explicit raw-data reads only. These historical bytes are not current RustRed programs or prepared caches and are never loaded by native reductions.",
+  "assets": [
+    {
+      "name": "vakint/form_src/alphaloop/integrateduv.frm",
+      "description": "Vakint FORM source or execution template: integrateduv.frm",
+      "sha256": "d9a9464577fe23e33134760ca0129e5234f1a603e556c98f6a236c700e2781dc",
+      "size": 87103,
+      "source_path": "form_src/alphaloop/integrateduv.frm"
+    },
+    {
+      "name": "vakint/form_src/alphaloop/pvtab10.h",
+      "description": "Vakint FORM source or execution template: pvtab10.h",
+      "sha256": "2c6386c41c189607c0cdbe5119e3c248a7b40a2ddfb29cd973639c5cb0e6020c",
+      "size": 47590,
+      "source_path": "form_src/alphaloop/pvtab10.h"
+    },
+    {
+      "name": "vakint/form_src/alphaloop/tensorreduce.frm",
+      "description": "Vakint FORM source or execution template: tensorreduce.frm",
+      "sha256": "c2e792cd997bd70522a4dbff4985fc1810d109ad1fc0a4b604666d8e097b2f42",
+      "size": 14703,
+      "source_path": "form_src/alphaloop/tensorreduce.frm"
+    },
+    {
+      "name": "vakint/form_src/fmft/fmft.frm",
+      "description": "Vakint FORM source or execution template: fmft.frm",
+      "sha256": "55039de6197cfa7c1e7f7091abf084f85eb3a3f5a11eb18091d6a6999527be66",
+      "size": 744966,
+      "source_path": "form_src/fmft/fmft.frm"
+    },
+    {
+      "name": "vakint/form_src/matad/matad-ng.hh",
+      "description": "Vakint FORM source or execution template: matad-ng.hh",
+      "sha256": "a0b564329d26e9816f9755bca66562cb09dd153cc43d0362a26a88648e821cf6",
+      "size": 403592,
+      "source_path": "form_src/matad/matad-ng.hh"
+    },
+    {
+      "name": "vakint/numerics/alphaloop_numerics/0000.txt",
+      "description": "alphaloop_numerics: exact source expression 0, original precision retained",
+      "sha256": "d94ed14cc9ed094ec2e9e2e0dcc05d1be7641f3950be603ab7d905b91c500173",
+      "size": 20018,
+      "source_path": "data/numerics/alphaloop_numerics/0000.txt"
+    },
+    {
+      "name": "vakint/numerics/alphaloop_numerics/0001.txt",
+      "description": "alphaloop_numerics: exact source expression 1, original precision retained",
+      "sha256": "90938c10609cdf19d402cf0d5afb5b7dfd724a753a09aeade7a538872f812562",
+      "size": 20018,
+      "source_path": "data/numerics/alphaloop_numerics/0001.txt"
+    },
+    {
+      "name": "vakint/numerics/alphaloop_numerics/0002.txt",
+      "description": "alphaloop_numerics: exact source expression 2, original precision retained",
+      "sha256": "d062e4498d7b2f6ee5151c80849e842ad4f877473916c28e06c65080932dfa1c",
+      "size": 20017,
+      "source_path": "data/numerics/alphaloop_numerics/0002.txt"
+    },
+    {
+      "name": "vakint/numerics/alphaloop_numerics/0003.txt",
+      "description": "alphaloop_numerics: exact source expression 3, original precision retained",
+      "sha256": "2a334f46cdc350221d5e30b55dd8d02f74e17d95fb92b6d6e98b2cee683235cd",
+      "size": 20018,
+      "source_path": "data/numerics/alphaloop_numerics/0003.txt"
+    },
+    {
+      "name": "vakint/numerics/alphaloop_numerics/0004.txt",
+      "description": "alphaloop_numerics: exact source expression 4, original precision retained",
+      "sha256": "c01d4bf3553be762cd95cd6c06875ec03ff419f4767cee88c0678169e2d1c34f",
+      "size": 20019,
+      "source_path": "data/numerics/alphaloop_numerics/0004.txt"
+    },
+    {
+      "name": "vakint/numerics/alphaloop_numerics/0005.txt",
+      "description": "alphaloop_numerics: exact source expression 5, original precision retained",
+      "sha256": "37be0d22fd470b3a2badcbd4b601d4e13fda8f9c4786edf8e350cb8e44cf9aca",
+      "size": 20018,
+      "source_path": "data/numerics/alphaloop_numerics/0005.txt"
+    },
+    {
+      "name": "vakint/numerics/alphaloop_numerics/0006.txt",
+      "description": "alphaloop_numerics: exact source expression 6, original precision retained",
+      "sha256": "73bbefda478df9cde647ce2ccfa65ac0438b584f22f608cb6e5b489fce79cee1",
+      "size": 20018,
+      "source_path": "data/numerics/alphaloop_numerics/0006.txt"
+    },
+    {
+      "name": "vakint/numerics/alphaloop_numerics/0007.txt",
+      "description": "alphaloop_numerics: exact source expression 7, original precision retained",
+      "sha256": "68d92e0293ce566bf906c963591c79394c5e1d450f624dfb91f953175a067753",
+      "size": 20018,
+      "source_path": "data/numerics/alphaloop_numerics/0007.txt"
+    },
+    {
+      "name": "vakint/numerics/fmft_numerics/0000.txt",
+      "description": "fmft_numerics: exact source expression 0, original precision retained",
+      "sha256": "285c8b2878a01a0dcde2868f548eb79deacad7541e2502f830dd9ae502d22b6b",
+      "size": 1571,
+      "source_path": "data/numerics/fmft_numerics/0000.txt"
+    },
+    {
+      "name": "vakint/numerics/fmft_numerics/0001.txt",
+      "description": "fmft_numerics: exact source expression 1, original precision retained",
+      "sha256": "285c8b2878a01a0dcde2868f548eb79deacad7541e2502f830dd9ae502d22b6b",
+      "size": 1571,
+      "source_path": "data/numerics/fmft_numerics/0001.txt"
+    },
+    {
+      "name": "vakint/numerics/fmft_numerics/0002.txt",
+      "description": "fmft_numerics: exact source expression 2, original precision retained",
+      "sha256": "c6c1bb3ab64a58a4e8a39a7c3c9279271bbb0cfbed8acc9238d847b81716aa27",
+      "size": 20122,
+      "source_path": "data/numerics/fmft_numerics/0002.txt"
+    },
+    {
+      "name": "vakint/numerics/fmft_numerics/0003.txt",
+      "description": "fmft_numerics: exact source expression 3, original precision retained",
+      "sha256": "37bb0ad404618dbce53e601623be819431e11802d989d0d457297aab543ff97f",
+      "size": 20122,
+      "source_path": "data/numerics/fmft_numerics/0003.txt"
+    },
+    {
+      "name": "vakint/numerics/fmft_numerics/0004.txt",
+      "description": "fmft_numerics: exact source expression 4, original precision retained",
+      "sha256": "428ba234995ed78a7ed4315eea32d0bd7fdbb070bf0d3bb90c240cff07ccca9d",
+      "size": 20122,
+      "source_path": "data/numerics/fmft_numerics/0004.txt"
+    },
+    {
+      "name": "vakint/numerics/fmft_numerics/0005.txt",
+      "description": "fmft_numerics: exact source expression 5, original precision retained",
+      "sha256": "445e211dcdf5e4230abc83c22a254aa8ef4b861d25aee4b504fc5b1dba23aca2",
+      "size": 20122,
+      "source_path": "data/numerics/fmft_numerics/0005.txt"
+    },
+    {
+      "name": "vakint/numerics/fmft_numerics/0006.txt",
+      "description": "fmft_numerics: exact source expression 6, original precision retained",
+      "sha256": "203dd4cf4f88d0e486b30e8aac39cb5a8f07892fb12f031e92bb12906cab0db0",
+      "size": 20123,
+      "source_path": "data/numerics/fmft_numerics/0006.txt"
+    },
+    {
+      "name": "vakint/numerics/fmft_numerics/0007.txt",
+      "description": "fmft_numerics: exact source expression 7, original precision retained",
+      "sha256": "dc919cae31c7eb72298170165179a28dcd1fb2b47d17771a61757eac466ba08d",
+      "size": 20124,
+      "source_path": "data/numerics/fmft_numerics/0007.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0000.txt",
+      "description": "matad_numerics: exact source expression 0, original precision retained",
+      "sha256": "01581179e4b3510499284d6a83c47e94b2aca43d0a933bef3c5d2a61271ba56f",
+      "size": 80564,
+      "source_path": "data/numerics/matad_numerics/0000.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0001.txt",
+      "description": "matad_numerics: exact source expression 1, original precision retained",
+      "sha256": "039168f02fe426c1d2c7f2ad46478c92466ebee94a7b71a935ccec8deee1213e",
+      "size": 100745,
+      "source_path": "data/numerics/matad_numerics/0001.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0002.txt",
+      "description": "matad_numerics: exact source expression 2, original precision retained",
+      "sha256": "832c934ce1c39ca8b3e0e644dff4accb06afecc862af91a78af92b29627b00ae",
+      "size": 80565,
+      "source_path": "data/numerics/matad_numerics/0002.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0003.txt",
+      "description": "matad_numerics: exact source expression 3, original precision retained",
+      "sha256": "d98e8336c9c4d28cf2eb2045cb066cfae7f7e7a0da21eabc199f8c739d6e5b7b",
+      "size": 140991,
+      "source_path": "data/numerics/matad_numerics/0003.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0004.txt",
+      "description": "matad_numerics: exact source expression 4, original precision retained",
+      "sha256": "6910f7ad54c95c2b5060702b443ee97d4488622a7cf63a69304d5f1e5cf87178",
+      "size": 80563,
+      "source_path": "data/numerics/matad_numerics/0004.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0005.txt",
+      "description": "matad_numerics: exact source expression 5, original precision retained",
+      "sha256": "f48a868b79344ce4069694d1dab7c39bac6bc18b293efb86d8037fb0433215bb",
+      "size": 80562,
+      "source_path": "data/numerics/matad_numerics/0005.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0006.txt",
+      "description": "matad_numerics: exact source expression 6, original precision retained",
+      "sha256": "95b0af7040e38d545ed0d488d0c07e88fb80465ae1233c60f881c31c10b9dc87",
+      "size": 80563,
+      "source_path": "data/numerics/matad_numerics/0006.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0007.txt",
+      "description": "matad_numerics: exact source expression 7, original precision retained",
+      "sha256": "27aa090920579b74d16abcfb656be71c121751711a2c8db45d32ca92470fc656",
+      "size": 80562,
+      "source_path": "data/numerics/matad_numerics/0007.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0008.txt",
+      "description": "matad_numerics: exact source expression 8, original precision retained",
+      "sha256": "187e3f4e88bd63eb674942122a9e0f0252ea08c5ed65871e76018080d3fba5d9",
+      "size": 140960,
+      "source_path": "data/numerics/matad_numerics/0008.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0009.txt",
+      "description": "matad_numerics: exact source expression 9, original precision retained",
+      "sha256": "81fcf229d6b7dad03dc46f0949f30b544ee35c177fd87b944de3b57ccc3963d1",
+      "size": 120873,
+      "source_path": "data/numerics/matad_numerics/0009.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0010.txt",
+      "description": "matad_numerics: exact source expression 10, original precision retained",
+      "sha256": "285c8b2878a01a0dcde2868f548eb79deacad7541e2502f830dd9ae502d22b6b",
+      "size": 1571,
+      "source_path": "data/numerics/matad_numerics/0010.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0011.txt",
+      "description": "matad_numerics: exact source expression 11, original precision retained",
+      "sha256": "c6c1bb3ab64a58a4e8a39a7c3c9279271bbb0cfbed8acc9238d847b81716aa27",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0011.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0012.txt",
+      "description": "matad_numerics: exact source expression 12, original precision retained",
+      "sha256": "37bb0ad404618dbce53e601623be819431e11802d989d0d457297aab543ff97f",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0012.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0013.txt",
+      "description": "matad_numerics: exact source expression 13, original precision retained",
+      "sha256": "203dd4cf4f88d0e486b30e8aac39cb5a8f07892fb12f031e92bb12906cab0db0",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0013.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0014.txt",
+      "description": "matad_numerics: exact source expression 14, original precision retained",
+      "sha256": "dc919cae31c7eb72298170165179a28dcd1fb2b47d17771a61757eac466ba08d",
+      "size": 20124,
+      "source_path": "data/numerics/matad_numerics/0014.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0015.txt",
+      "description": "matad_numerics: exact source expression 15, original precision retained",
+      "sha256": "250e6028cf7a49cefb1943b28ef95fa96329391bb1ccb984c582475674838549",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0015.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0016.txt",
+      "description": "matad_numerics: exact source expression 16, original precision retained",
+      "sha256": "ff034c1bcbdb90cbf4e703333e7ae3eb9e658ed5593e824429ce7ec92b4cd1a2",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0016.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0017.txt",
+      "description": "matad_numerics: exact source expression 17, original precision retained",
+      "sha256": "2275f176dbf520245a87395107e3b6b9b6eb567b3abe382ab16452ba7ab8cddf",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0017.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0018.txt",
+      "description": "matad_numerics: exact source expression 18, original precision retained",
+      "sha256": "201bb4ebddce5d9c0faf8464467bbedf40c7c1b6534a4ce82fe9d420acca7837",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0018.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0019.txt",
+      "description": "matad_numerics: exact source expression 19, original precision retained",
+      "sha256": "6a17d093b6ed979b52f5e9732e2dfbd063c267a0f5127321ba6a84425ef8b55c",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0019.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0020.txt",
+      "description": "matad_numerics: exact source expression 20, original precision retained",
+      "sha256": "51f7403c8ffe3793e07252fdf0794485c12c7745d2ddac75692a93375f215d4c",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0020.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0021.txt",
+      "description": "matad_numerics: exact source expression 21, original precision retained",
+      "sha256": "c1dcced4aae0e436418deef014ac3e25aeb811389c1803d24e89d5da07464bce",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0021.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0022.txt",
+      "description": "matad_numerics: exact source expression 22, original precision retained",
+      "sha256": "79f7c4748f9fa0eb2081f2726f41051942ccec510dabd6952839c52b82496a43",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0022.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0023.txt",
+      "description": "matad_numerics: exact source expression 23, original precision retained",
+      "sha256": "0f409ff3708d1d0863d4836d3894abb43c1c7a4d514d359d52566eaaa25b7f5f",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0023.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0024.txt",
+      "description": "matad_numerics: exact source expression 24, original precision retained",
+      "sha256": "67eed6125689b51dafe5a873d0c42cabe382606d89dc25e7dbcc2a457622eefd",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0024.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0025.txt",
+      "description": "matad_numerics: exact source expression 25, original precision retained",
+      "sha256": "7c48fe645e11617d6bef5c44df73ca91e66a74e85b989f5877ffbc70462c812a",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0025.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0026.txt",
+      "description": "matad_numerics: exact source expression 26, original precision retained",
+      "sha256": "8a952b07a83a87661edde83b17508c411b801a020de4f1a8e2c7e646cdd0bbe1",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0026.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0027.txt",
+      "description": "matad_numerics: exact source expression 27, original precision retained",
+      "sha256": "d6e901a730135dce17b890167ac959b7679dbc437a778ce65fee706340ecffd2",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0027.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0028.txt",
+      "description": "matad_numerics: exact source expression 28, original precision retained",
+      "sha256": "f863459ac9227c756f2667cbf1a8126ac48b4ec9880a0e7d8b5898bd7097fd34",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0028.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0029.txt",
+      "description": "matad_numerics: exact source expression 29, original precision retained",
+      "sha256": "036baac8489e0c881414205cf7dee31adc68df27d9b6c08ebb4f5237c876a96a",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0029.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0030.txt",
+      "description": "matad_numerics: exact source expression 30, original precision retained",
+      "sha256": "273dc4ca89a53ab046468864b6b8770e35e0b611e77bc71ec2a6c9350ce4b495",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0030.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0031.txt",
+      "description": "matad_numerics: exact source expression 31, original precision retained",
+      "sha256": "576bbd4e3ff09f7587054d0ee5f487b4bc358a1d2ffe668df85a2b11d7b2cbf3",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0031.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0032.txt",
+      "description": "matad_numerics: exact source expression 32, original precision retained",
+      "sha256": "86cc06d7eeb0719d14b4bba7cf684d2714dc56cac81733b8505798a2aadfa6ae",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0032.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0033.txt",
+      "description": "matad_numerics: exact source expression 33, original precision retained",
+      "sha256": "d48e70fbd9e88dade7cb70818d65e170ee405f2da2f1d2709de4bdff90172fe6",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0033.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0034.txt",
+      "description": "matad_numerics: exact source expression 34, original precision retained",
+      "sha256": "9c6dcf5eefa252d887d3372257b247d3abc954a7b7630507de80a603b32112d1",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0034.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0035.txt",
+      "description": "matad_numerics: exact source expression 35, original precision retained",
+      "sha256": "3e58f016a85fe0c8c3ae238f66efaa18fe2adeb72f3bb28dcf2fd4c9edbb665f",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0035.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0036.txt",
+      "description": "matad_numerics: exact source expression 36, original precision retained",
+      "sha256": "92a9ee59ce0035a5b2d5285c7f23bd633697fdd4fbe87934524406e96a5fda61",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0036.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0037.txt",
+      "description": "matad_numerics: exact source expression 37, original precision retained",
+      "sha256": "83afec4b866c0a0473dbd24b331aeb5bd253b20bf162e51c4750f19daed69b64",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0037.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0038.txt",
+      "description": "matad_numerics: exact source expression 38, original precision retained",
+      "sha256": "339d0a1fb2bd25243d4061e4c79c3db98a008d46248af21c9cb1eb13ef1cf12e",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0038.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0039.txt",
+      "description": "matad_numerics: exact source expression 39, original precision retained",
+      "sha256": "2b3a0e4ef8406b2d2c929d352b889875bed74b32b8ec5b11a1e104cc801f0ba5",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0039.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0040.txt",
+      "description": "matad_numerics: exact source expression 40, original precision retained",
+      "sha256": "eb5735365cfb2a23125e9b6c299540e9a4460f5b15ad10b5a5165046391bbc5f",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0040.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0041.txt",
+      "description": "matad_numerics: exact source expression 41, original precision retained",
+      "sha256": "6928af2d030be3b0711fcdaccbea08e84e4557f43e0f82d1d0c3e071aa3dd295",
+      "size": 20131,
+      "source_path": "data/numerics/matad_numerics/0041.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0042.txt",
+      "description": "matad_numerics: exact source expression 42, original precision retained",
+      "sha256": "9ab796ee53b69ae7d672ad046f0c069c627d73c769a5fcd1dde50e7ad5baa59e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0042.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0043.txt",
+      "description": "matad_numerics: exact source expression 43, original precision retained",
+      "sha256": "9867e02bd21fb13d4a5a2c64fb684e71ea9bcb7e7392c7b3f3a750552beb6901",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0043.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0044.txt",
+      "description": "matad_numerics: exact source expression 44, original precision retained",
+      "sha256": "3a5828f118e82a95c1aed30d7c3bbf3abf7bbf8068783cf43ab6b2f3f93d3ac7",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0044.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0045.txt",
+      "description": "matad_numerics: exact source expression 45, original precision retained",
+      "sha256": "212cc9f1b1444b7652fee58e7d1d51a688e66c8a82f0c7249cfd6320fcaa7da6",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0045.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0046.txt",
+      "description": "matad_numerics: exact source expression 46, original precision retained",
+      "sha256": "9c931bf91ea9caccec99b995f03156ad9818b27d15d7b446d75fd666826fc495",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0046.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0047.txt",
+      "description": "matad_numerics: exact source expression 47, original precision retained",
+      "sha256": "9a64f3f1353c8cfdfbe04c277331094e62237607a02df0c29769c25b0b1ad7eb",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0047.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0048.txt",
+      "description": "matad_numerics: exact source expression 48, original precision retained",
+      "sha256": "79e0fed933420fe8b93e014dea9a3773a8fdc21799f50541f207ea215e890fb1",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0048.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0049.txt",
+      "description": "matad_numerics: exact source expression 49, original precision retained",
+      "sha256": "add555b56994a2962d0049fd1d7d7e05281d97478a1e4a69555e2ba6d04a3e7b",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0049.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0050.txt",
+      "description": "matad_numerics: exact source expression 50, original precision retained",
+      "sha256": "fc4779b3e6eff566c1924ef423ea080a5da355a34400db347d4e81176eba2633",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0050.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0051.txt",
+      "description": "matad_numerics: exact source expression 51, original precision retained",
+      "sha256": "3344bee417ef79e7de762c128d4419bb7fe5717b9720d79251900211cbbe8d60",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0051.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0052.txt",
+      "description": "matad_numerics: exact source expression 52, original precision retained",
+      "sha256": "51ca604697cab3b7d70d069bfc3668dd280204434ee423ba5d883cbbed9b1964",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0052.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0053.txt",
+      "description": "matad_numerics: exact source expression 53, original precision retained",
+      "sha256": "757a9461d18b64cdc292ad57b82e2a3f956f17b595c13513bbff77c11f190606",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0053.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0054.txt",
+      "description": "matad_numerics: exact source expression 54, original precision retained",
+      "sha256": "85664f8b44c42722a2861a1f36806b041ec7a4e0032081514a0714290f8297f6",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0054.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0055.txt",
+      "description": "matad_numerics: exact source expression 55, original precision retained",
+      "sha256": "268b12b575f83efbb47acdbc422cc5f64e534e909771e1341e030f4e833a1c9a",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0055.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0056.txt",
+      "description": "matad_numerics: exact source expression 56, original precision retained",
+      "sha256": "4c538da1b3236de1c62a5e199fb33ad5eacaed6ba15815bc1e82382b8586b12c",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0056.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0057.txt",
+      "description": "matad_numerics: exact source expression 57, original precision retained",
+      "sha256": "c216b8c65657fee79505e93cfc42141fa9958404d20ad748a1362f57f3fbdda2",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0057.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0058.txt",
+      "description": "matad_numerics: exact source expression 58, original precision retained",
+      "sha256": "cdd9d7fafa962dad0f66b86c84358498f12a76a8d52c50927c0329013af8f23b",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0058.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0059.txt",
+      "description": "matad_numerics: exact source expression 59, original precision retained",
+      "sha256": "a3dc55e141ffafd521ea57252f1f50167afa48f6b2b9ce1026596a5f2e28ba8b",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0059.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0060.txt",
+      "description": "matad_numerics: exact source expression 60, original precision retained",
+      "sha256": "6831f14b3717bc3499b894534de20aae92cb7b3dfec62b7fc34778b168223ec2",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0060.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0061.txt",
+      "description": "matad_numerics: exact source expression 61, original precision retained",
+      "sha256": "d9ff1516851d26315f554d9d583380daa21972d814e5b501648721bfe289f342",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0061.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0062.txt",
+      "description": "matad_numerics: exact source expression 62, original precision retained",
+      "sha256": "12a08047fdac4a364647010ca9ebace66a24ff171ad22e667615eaab9bc76d91",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0062.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0063.txt",
+      "description": "matad_numerics: exact source expression 63, original precision retained",
+      "sha256": "8902970447876c6275b83e5fac0a7e204df77b3a6159905fcb1df64d0b4044b8",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0063.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0064.txt",
+      "description": "matad_numerics: exact source expression 64, original precision retained",
+      "sha256": "ddea6ed7a143818b24d67af963e36ab5429ddc352920207be18f3ac322c2a30e",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0064.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0065.txt",
+      "description": "matad_numerics: exact source expression 65, original precision retained",
+      "sha256": "22a90038524b84a79b1344a89f96306904ef3952173c2e5f7e0233db40e8ba64",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0065.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0066.txt",
+      "description": "matad_numerics: exact source expression 66, original precision retained",
+      "sha256": "ce978b1674f574c6781c7d7fc4ece969492e22bf5e51eee146dd2a3c2f934e4e",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0066.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0067.txt",
+      "description": "matad_numerics: exact source expression 67, original precision retained",
+      "sha256": "80bdf93328556e34202bdd5634b66b00cb3a45432043f4d0e06a50fab3af48e0",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0067.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0068.txt",
+      "description": "matad_numerics: exact source expression 68, original precision retained",
+      "sha256": "7126517ce54799cfdbe14f5dbdd95812888b4da63f7a6b2a8e751ca1ad28e848",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0068.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0069.txt",
+      "description": "matad_numerics: exact source expression 69, original precision retained",
+      "sha256": "19c717af677df825faf073a3b4ee4d4a708e0d6a46e52c71fbf7e145e48c4ef3",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0069.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0070.txt",
+      "description": "matad_numerics: exact source expression 70, original precision retained",
+      "sha256": "ee6dee1f9a811a25b99b7385d648f3a24177a8881ebe3d7167be18907b70a458",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0070.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0071.txt",
+      "description": "matad_numerics: exact source expression 71, original precision retained",
+      "sha256": "a66b72679c4431aaed59f6b3a5549f347a932c07b57a06f26341d5bdd881a115",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0071.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0072.txt",
+      "description": "matad_numerics: exact source expression 72, original precision retained",
+      "sha256": "9e766a5aa2b6ed19faf719d3c821a444dfa5c0564a14b04b4f9e348608c4ff7d",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0072.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0073.txt",
+      "description": "matad_numerics: exact source expression 73, original precision retained",
+      "sha256": "afc67b58d4eae012811e8b39be35f25e77a614f12f0f76bf7bdf68506628a1f9",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0073.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0074.txt",
+      "description": "matad_numerics: exact source expression 74, original precision retained",
+      "sha256": "faca15e353ade348f6be4acf5af132d7dc05a084812a9180b7e0c8de65faab90",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0074.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0075.txt",
+      "description": "matad_numerics: exact source expression 75, original precision retained",
+      "sha256": "e80ca815ccba66fdf27a5f23da60a0b9840e317b6843f78ca2f7506a5b5dc04b",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0075.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0076.txt",
+      "description": "matad_numerics: exact source expression 76, original precision retained",
+      "sha256": "38ea6880419c2b9512cefcd2723f88eb8a26e6b7fe03d79f159ed6747e3f20f9",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0076.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0077.txt",
+      "description": "matad_numerics: exact source expression 77, original precision retained",
+      "sha256": "ded13122974b7dde4e9b3d825d56cb07183238f678d177496d4038bdcf62b6df",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0077.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0078.txt",
+      "description": "matad_numerics: exact source expression 78, original precision retained",
+      "sha256": "70c19b7181356ab6d94c9de2b3bac9b67748ae44587dfbac6ca4a627f50454cc",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0078.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0079.txt",
+      "description": "matad_numerics: exact source expression 79, original precision retained",
+      "sha256": "95f6e58275dfcebaf35e5036f343e0128f69b5ac6c95773718bf30ac40218f9d",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0079.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0080.txt",
+      "description": "matad_numerics: exact source expression 80, original precision retained",
+      "sha256": "31dc4690735124cf31167e7770c852e73100d24cec49893e16092d502b2ed6c4",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0080.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0081.txt",
+      "description": "matad_numerics: exact source expression 81, original precision retained",
+      "sha256": "8603ea171805ea83d615b6a5a1eb6f925c9a52e50179598d9dfee76f7789d19d",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0081.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0082.txt",
+      "description": "matad_numerics: exact source expression 82, original precision retained",
+      "sha256": "1b425622627873b38c964bb1682d44b561248c9836f8e261e52ca3f620ff2cf4",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0082.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0083.txt",
+      "description": "matad_numerics: exact source expression 83, original precision retained",
+      "sha256": "1e8b3b3b8e99f56e4df66d479339c0c9f17274ce927f14e54c594d90b999cdfb",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0083.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0084.txt",
+      "description": "matad_numerics: exact source expression 84, original precision retained",
+      "sha256": "99a399e8f3fd05ac86154ff8ee98e7c116e8e513d8e5def0f70ed5a76002a050",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0084.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0085.txt",
+      "description": "matad_numerics: exact source expression 85, original precision retained",
+      "sha256": "5aa7175c92a5f4885d987019ecfc0334584b87f4da2d3bb976ed5cee8440514e",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0085.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0086.txt",
+      "description": "matad_numerics: exact source expression 86, original precision retained",
+      "sha256": "d0ad592bd87f8a3e3e4467db78234f915ad2f30cb3be27c31c8f3797309fec3a",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0086.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0087.txt",
+      "description": "matad_numerics: exact source expression 87, original precision retained",
+      "sha256": "77a928df8484d215642eb67862979af5ba8a5aafbb6f384eefa1bf655be6fffd",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0087.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0088.txt",
+      "description": "matad_numerics: exact source expression 88, original precision retained",
+      "sha256": "af55cefd7f27123dfa9daf996516ac7701e42b1e3e8168b5823690b74b343fd3",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0088.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0089.txt",
+      "description": "matad_numerics: exact source expression 89, original precision retained",
+      "sha256": "dc441c25e10e8bff116b36ab937314ff09114205ac920b576799dac8c1d124ac",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0089.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0090.txt",
+      "description": "matad_numerics: exact source expression 90, original precision retained",
+      "sha256": "c6ef530ad44423463378867a10dfb538024449397d6f23efc2b0aad847d1b1e8",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0090.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0091.txt",
+      "description": "matad_numerics: exact source expression 91, original precision retained",
+      "sha256": "a6f29088e05da9b7c844fa3e0268e8d26df712e2bf276d1aaa220bea6298fea6",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0091.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0092.txt",
+      "description": "matad_numerics: exact source expression 92, original precision retained",
+      "sha256": "d92515f7409ceb74a4713a3957657f7960d363cb16a4666fde520a16a2761e5e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0092.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0093.txt",
+      "description": "matad_numerics: exact source expression 93, original precision retained",
+      "sha256": "fd7eac1b18c2bc18856791ef491d5639ec7fa218f98d20cd6a414956b9bde624",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0093.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0094.txt",
+      "description": "matad_numerics: exact source expression 94, original precision retained",
+      "sha256": "d0f1c979fdcb3e2963ef6caa54056fda891951d1d282fad110b7fed7d75f892b",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0094.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0095.txt",
+      "description": "matad_numerics: exact source expression 95, original precision retained",
+      "sha256": "85cfdf7822c3ea1f8263419d503e9711bb10809e1c7403951ff92c2e78a75df1",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0095.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0096.txt",
+      "description": "matad_numerics: exact source expression 96, original precision retained",
+      "sha256": "8da9727cfbf84fa1d15637304a96dd5941c86146ec5e7fc8967cc862a8effbe8",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0096.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0097.txt",
+      "description": "matad_numerics: exact source expression 97, original precision retained",
+      "sha256": "70ee21bd2c19f20a9b0c32bd8d55221f594b81c1b04786e3d05a6400590aba7d",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0097.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0098.txt",
+      "description": "matad_numerics: exact source expression 98, original precision retained",
+      "sha256": "4b7d59bb3454931bb5f30a9b3484514853394b498990848729e699e9b54734de",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0098.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0099.txt",
+      "description": "matad_numerics: exact source expression 99, original precision retained",
+      "sha256": "454ca0117fc44776e8f31594d7a263b5bad7c4e141e42d16f4d66ad1d34d573e",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0099.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0100.txt",
+      "description": "matad_numerics: exact source expression 100, original precision retained",
+      "sha256": "d23f9962e3470e30473c7109b31f0c53eaacda3c7bd1a049adfb6d66a82b2878",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0100.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0101.txt",
+      "description": "matad_numerics: exact source expression 101, original precision retained",
+      "sha256": "f28235d90b99948f49e590b9bb0bf41de74a64a8cd2eb10dcdcce5ea404b0c82",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0101.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0102.txt",
+      "description": "matad_numerics: exact source expression 102, original precision retained",
+      "sha256": "6369e48a1ba553027b7bbf36c7b2c8cf53eb3533fc9bbc36a603140fd175409f",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0102.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0103.txt",
+      "description": "matad_numerics: exact source expression 103, original precision retained",
+      "sha256": "0688988bdda5c5ebe2951bf0d5585f54476ff66e316f5d271f033cab1bf21106",
+      "size": 20143,
+      "source_path": "data/numerics/matad_numerics/0103.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0104.txt",
+      "description": "matad_numerics: exact source expression 104, original precision retained",
+      "sha256": "699ea67f014a706240a95b359b6cc9c0fa71c212db171f39d2ea7461f76e9614",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0104.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0105.txt",
+      "description": "matad_numerics: exact source expression 105, original precision retained",
+      "sha256": "715549197750eb64c92b954ed72a4b77fb93515d54201e8faaf50f402846066d",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0105.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0106.txt",
+      "description": "matad_numerics: exact source expression 106, original precision retained",
+      "sha256": "935c9cd06612dcbe2e97fd74c5cfa642120d07173867cc41c42df71287f31b24",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0106.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0107.txt",
+      "description": "matad_numerics: exact source expression 107, original precision retained",
+      "sha256": "3bb79b1e3a3a55707cb282193f0f756a8feb6eb3a2a244e2dafcd9e0ce938334",
+      "size": 20121,
+      "source_path": "data/numerics/matad_numerics/0107.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0108.txt",
+      "description": "matad_numerics: exact source expression 108, original precision retained",
+      "sha256": "6966c36dc3a8ac6e4ff907136fd37f766a72ee06d2cbe90816e203f6e582e175",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0108.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0109.txt",
+      "description": "matad_numerics: exact source expression 109, original precision retained",
+      "sha256": "d3b09a61153a2462e3e9bb872b61c8eebee2e81a4187a05668f62c50ee1163e7",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0109.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0110.txt",
+      "description": "matad_numerics: exact source expression 110, original precision retained",
+      "sha256": "c02344bff8ebd3d5bbb8a79a6ad9615160350ba521d6ad06c3e3209e6fe6bde7",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0110.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0111.txt",
+      "description": "matad_numerics: exact source expression 111, original precision retained",
+      "sha256": "56c31a2bb7087520294f591a62eed8198c4825dd1997ad387bc393cee00d1e27",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0111.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0112.txt",
+      "description": "matad_numerics: exact source expression 112, original precision retained",
+      "sha256": "4805f83a660885595f5f529b24888e535c1542180305d9b2d19a9639c1d1e9c7",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0112.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0113.txt",
+      "description": "matad_numerics: exact source expression 113, original precision retained",
+      "sha256": "5cdec644661069192bb8f50668ea868e5d99b3565983d1bcb4f0e1606af16a34",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0113.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0114.txt",
+      "description": "matad_numerics: exact source expression 114, original precision retained",
+      "sha256": "71fde75f3de2d437c2246d052e3a30a846583024dde317a866da3ccf716baebc",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0114.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0115.txt",
+      "description": "matad_numerics: exact source expression 115, original precision retained",
+      "sha256": "48faaa255858fece282ba69db039cdd7f4c2feb05dcdefecdf5508ecbe6f3170",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0115.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0116.txt",
+      "description": "matad_numerics: exact source expression 116, original precision retained",
+      "sha256": "a760c05ee22090048c010c7198452507f15e91553a192730a8a157be6a15ea09",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0116.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0117.txt",
+      "description": "matad_numerics: exact source expression 117, original precision retained",
+      "sha256": "286ae8945edaa5fb6745f0fb69dd11266ddd93b347486d5142759c1e036a71e3",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0117.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0118.txt",
+      "description": "matad_numerics: exact source expression 118, original precision retained",
+      "sha256": "4c897c82eb39fe7318d2901624b0597c73443391cae72ca5cadae50c5efad4e0",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0118.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0119.txt",
+      "description": "matad_numerics: exact source expression 119, original precision retained",
+      "sha256": "966d6ec25b5a4a737b9793d83e7864bcce7d3a2b5d6f137161580645ca1dc461",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0119.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0120.txt",
+      "description": "matad_numerics: exact source expression 120, original precision retained",
+      "sha256": "bac83fd0f94276acd58691e8424c51258746f3e857d5d49d112a55d0d297c0c8",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0120.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0121.txt",
+      "description": "matad_numerics: exact source expression 121, original precision retained",
+      "sha256": "c71adb224ae69ee1d3e3636d83ab7ef4a016996566f1ed4ef7c4a721c0e2b486",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0121.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0122.txt",
+      "description": "matad_numerics: exact source expression 122, original precision retained",
+      "sha256": "c2e0e48f2b5a0285d34ab43282bf52a241dcef6cfb66bcce8f8725675dc021c2",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0122.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0123.txt",
+      "description": "matad_numerics: exact source expression 123, original precision retained",
+      "sha256": "944966b793de5f9b648533d89b52adc806332752440890fb4e908b18b3164897",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0123.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0124.txt",
+      "description": "matad_numerics: exact source expression 124, original precision retained",
+      "sha256": "9be03835878e2b95b05f572e8fd7adc3d6722fb8efec73235cde98b0c9dc7b66",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0124.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0125.txt",
+      "description": "matad_numerics: exact source expression 125, original precision retained",
+      "sha256": "f55b69dc35276f58c35aec0341322d543de8ae7a5000ecbd8647aa132a99a58c",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0125.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0126.txt",
+      "description": "matad_numerics: exact source expression 126, original precision retained",
+      "sha256": "f2bd0192386401dbc6213daf6425287c389e7b77356fc14cf0fb4c15d6d4820e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0126.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0127.txt",
+      "description": "matad_numerics: exact source expression 127, original precision retained",
+      "sha256": "b36b3eb6aca43b9e5a149cd46ffebb057dc6d7b667ab481847a41beafd96336b",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0127.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0128.txt",
+      "description": "matad_numerics: exact source expression 128, original precision retained",
+      "sha256": "867fc1310efa84349ef50070757cdf35d4d19dc4078b9720ef7fff39d76f9d78",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0128.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0129.txt",
+      "description": "matad_numerics: exact source expression 129, original precision retained",
+      "sha256": "e749f382832f21837958599d79b0540839dfa9095947da88e2f8abd68e8a1fba",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0129.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0130.txt",
+      "description": "matad_numerics: exact source expression 130, original precision retained",
+      "sha256": "ef57b59786f7ec9fa04a7cff4381f5b6f10f12ca59155f7c3354fabb4ec3e111",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0130.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0131.txt",
+      "description": "matad_numerics: exact source expression 131, original precision retained",
+      "sha256": "aa9b7716dd6ab6bd6a44777344e32475be5c8948c5a78fc27ccc90b51f391809",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0131.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0132.txt",
+      "description": "matad_numerics: exact source expression 132, original precision retained",
+      "sha256": "426a9c80854efaf4a1caaa6045718e150cafe545d990660b075f7b2bf1dc9cf7",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0132.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0133.txt",
+      "description": "matad_numerics: exact source expression 133, original precision retained",
+      "sha256": "da4effc4357c604d65261dbc5ad9421248d51c179d4adb8a6c6a260c1d164659",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0133.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0134.txt",
+      "description": "matad_numerics: exact source expression 134, original precision retained",
+      "sha256": "80bfb700c176f3630f0d0cfbcca92d8d22c698bd3e9965c195453332f1d3756d",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0134.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0135.txt",
+      "description": "matad_numerics: exact source expression 135, original precision retained",
+      "sha256": "5f374ab758f91ab9828f6009df9b1d41d45dd542980fcb038e184b3d2891fca1",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0135.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0136.txt",
+      "description": "matad_numerics: exact source expression 136, original precision retained",
+      "sha256": "be8646979f31eea8202d65914d78b2ff7aa0f449bbfde67dd7e492ae4bf4a269",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0136.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0137.txt",
+      "description": "matad_numerics: exact source expression 137, original precision retained",
+      "sha256": "ba8c671d154ad7cc907857adee42a86d7ff57d207286143d1ee8fa77815a5c48",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0137.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0138.txt",
+      "description": "matad_numerics: exact source expression 138, original precision retained",
+      "sha256": "32b31c8f1c4f447010c9d35f93028b874b6008681366e14191857b5b33f48536",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0138.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0139.txt",
+      "description": "matad_numerics: exact source expression 139, original precision retained",
+      "sha256": "9fcca5fd903569bf815fd0caeee9582e0becc088ceebf8d499604f753110e3d0",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0139.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0140.txt",
+      "description": "matad_numerics: exact source expression 140, original precision retained",
+      "sha256": "8fc0857275deeb46fc3e9aed821235112fc4cc3966c380cd313fe4f952e0abac",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0140.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0141.txt",
+      "description": "matad_numerics: exact source expression 141, original precision retained",
+      "sha256": "665955f7f129ff73ffba5b1e4b945cc33d688ad5d0e0d1b389e7b0a7dcafac12",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0141.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0142.txt",
+      "description": "matad_numerics: exact source expression 142, original precision retained",
+      "sha256": "8e98d96d00c2e2cdff0cca9599217def5bb1882626a6fa13a6e44b177d953d5d",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0142.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0143.txt",
+      "description": "matad_numerics: exact source expression 143, original precision retained",
+      "sha256": "319c0d521280cad5dd336d97ff880389bd5a93a04171e7cb2af8c08f406d60f0",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0143.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0144.txt",
+      "description": "matad_numerics: exact source expression 144, original precision retained",
+      "sha256": "d5b52609a49161331ce800fef86fdb6483f0dc02cd223c939660db868902101e",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0144.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0145.txt",
+      "description": "matad_numerics: exact source expression 145, original precision retained",
+      "sha256": "d05bc4638101ad9abdd97daa4d7e93e58ff6b1f906c137ed27c27b62367e935a",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0145.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0146.txt",
+      "description": "matad_numerics: exact source expression 146, original precision retained",
+      "sha256": "bf121738edee6586b759c31b447e77645a9525a03e5c1e936ebc3aa79f09a1d1",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0146.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0147.txt",
+      "description": "matad_numerics: exact source expression 147, original precision retained",
+      "sha256": "4b72748d706f0fbe3e288a4727e91552c2fd8b7e4e0bcb0c0d3b952be9b27830",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0147.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0148.txt",
+      "description": "matad_numerics: exact source expression 148, original precision retained",
+      "sha256": "a29960f86720ee7dca4360d88b6905d087159009ff208e9c1a4590122bba175e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0148.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0149.txt",
+      "description": "matad_numerics: exact source expression 149, original precision retained",
+      "sha256": "3c029059f0462adef3b3195746bc02732cb1d7ef0a0dc608052051293ad9a884",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0149.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0150.txt",
+      "description": "matad_numerics: exact source expression 150, original precision retained",
+      "sha256": "04fe534ae83d6460b38b46837db5bf7d5e5347039e8485652fdcec70b0abb1dd",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0150.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0151.txt",
+      "description": "matad_numerics: exact source expression 151, original precision retained",
+      "sha256": "751cae14715dcbfbb86857ae200403222c81ad57d51933ef4ab3b28b6032254e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0151.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0152.txt",
+      "description": "matad_numerics: exact source expression 152, original precision retained",
+      "sha256": "62ba7232bd92e389479adc75de4d880d546cc26ca329d2a0b4a4def4ed5c4aa4",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0152.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0153.txt",
+      "description": "matad_numerics: exact source expression 153, original precision retained",
+      "sha256": "2853a5a48a7fd3068c88621c0341a6d3e3a50c67b5e007c6937e1a46d4d50f16",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0153.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0154.txt",
+      "description": "matad_numerics: exact source expression 154, original precision retained",
+      "sha256": "8727a3a88b6f5b70c55c61a164d554d23bd37d0662328a1ce61e75e5c7f7637b",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0154.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0155.txt",
+      "description": "matad_numerics: exact source expression 155, original precision retained",
+      "sha256": "b4becdc6711335f474eeae3b39e355110fd1b99fa28a9312401adbafb60d42fc",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0155.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0156.txt",
+      "description": "matad_numerics: exact source expression 156, original precision retained",
+      "sha256": "1621d4d28f943903f31871c9ce54348bd8e9ea8361a160868fd6c1ea83836ef3",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0156.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0157.txt",
+      "description": "matad_numerics: exact source expression 157, original precision retained",
+      "sha256": "039cd233af11912e82bd97213b695952a6b8020f33f9ba6b7c6155650291f1f8",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0157.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0158.txt",
+      "description": "matad_numerics: exact source expression 158, original precision retained",
+      "sha256": "a139eaabd958757cce4cff42026b0d31c5b1713673e1f48a71001de4bf66b120",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0158.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0159.txt",
+      "description": "matad_numerics: exact source expression 159, original precision retained",
+      "sha256": "682841c748eb79717ea7b1275e776d9d2158f7e67d5bc5aad59d1507734431c9",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0159.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0160.txt",
+      "description": "matad_numerics: exact source expression 160, original precision retained",
+      "sha256": "fbe37917081ca5a0942a639e891f7ca4fed36634fcd9342ccaaebf8fbdf81421",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0160.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0161.txt",
+      "description": "matad_numerics: exact source expression 161, original precision retained",
+      "sha256": "0168c834dddb17d980bfbf219b26f6afe713e7d4a6d535528ab01601998dc1e8",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0161.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0162.txt",
+      "description": "matad_numerics: exact source expression 162, original precision retained",
+      "sha256": "b1a159c8d757ccad01d43651976daf5c4ac3416463e72847119ba3f93c2854bd",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0162.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0163.txt",
+      "description": "matad_numerics: exact source expression 163, original precision retained",
+      "sha256": "b7e59de49f06cc7863d5dc20e292a69ec07cc686281c95df5db7743c6db29b99",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0163.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0164.txt",
+      "description": "matad_numerics: exact source expression 164, original precision retained",
+      "sha256": "4f5fa362ba8c9b84df4b1e9ff14ddbae2c72e6aab9c277ab81adbd1374518063",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0164.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0165.txt",
+      "description": "matad_numerics: exact source expression 165, original precision retained",
+      "sha256": "e0484e217a1af99004a450f98431ee5ebd65b22fd47473ab52cf90ca9290e74d",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0165.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0166.txt",
+      "description": "matad_numerics: exact source expression 166, original precision retained",
+      "sha256": "9263e00d6ab06b79357db9363320866dae42a0ba6c805f26b12113eef035de1f",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0166.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0167.txt",
+      "description": "matad_numerics: exact source expression 167, original precision retained",
+      "sha256": "189546248df884fbe799669e18cbb575fbb634c070f6492c2818b7a1343ad1bd",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0167.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0168.txt",
+      "description": "matad_numerics: exact source expression 168, original precision retained",
+      "sha256": "489546eba1605b0ca9a07c726d572be26fe8aaff3c4021904f64dc31dd966b23",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0168.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0169.txt",
+      "description": "matad_numerics: exact source expression 169, original precision retained",
+      "sha256": "c98af01aff2bca3e2e293db28e611ec0f6b7170b5963726c5416bcd0b9f27293",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0169.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0170.txt",
+      "description": "matad_numerics: exact source expression 170, original precision retained",
+      "sha256": "cc3942e23a20e507cb5be31d4c076930c0a8b04ebc711cd19ba0d112974e42c7",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0170.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0171.txt",
+      "description": "matad_numerics: exact source expression 171, original precision retained",
+      "sha256": "f76b40a57f6b2ff39d99c3890a7a0b4c86f5bed842e5e62ed024383d811e82d3",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0171.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0172.txt",
+      "description": "matad_numerics: exact source expression 172, original precision retained",
+      "sha256": "d28559f6a2fd3e9dc66d4a5298b2823df89e8f8153e22ca50b69af1c535fc4ce",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0172.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0173.txt",
+      "description": "matad_numerics: exact source expression 173, original precision retained",
+      "sha256": "45f8aa11f830e3a005806d47a5fe8bfb2b83841cbc31a20c52dbde9998b872d0",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0173.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0174.txt",
+      "description": "matad_numerics: exact source expression 174, original precision retained",
+      "sha256": "32b66baad082db7e9d7b8036029a738ed9ef79e159dd6b8320e3b32831b8f464",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0174.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0175.txt",
+      "description": "matad_numerics: exact source expression 175, original precision retained",
+      "sha256": "a09a4ac4cfc45cfc0be93bc68f61c91eb64c080a1c690e416b9675684e99871d",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0175.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0176.txt",
+      "description": "matad_numerics: exact source expression 176, original precision retained",
+      "sha256": "01611410488d68d5094bddaa0ffa927ed7f78219caaf7c9a51b93c94005ab729",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0176.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0177.txt",
+      "description": "matad_numerics: exact source expression 177, original precision retained",
+      "sha256": "61b30ef41b87e179ee6aa7c29ea71acd19a7e79462153cae9da04028634be59f",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0177.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0178.txt",
+      "description": "matad_numerics: exact source expression 178, original precision retained",
+      "sha256": "f915e60a2f561b0b54582795512309da9f96660bb3217e816901bc9a44babb4c",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0178.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0179.txt",
+      "description": "matad_numerics: exact source expression 179, original precision retained",
+      "sha256": "a40abc9c388edbeaed488fefe2005e53bd827b1b63d2c2012116de89990fedb0",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0179.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0180.txt",
+      "description": "matad_numerics: exact source expression 180, original precision retained",
+      "sha256": "1f8de2ae856d2183aa7d15b1d43734298da2a3d498ed5b358ce19311b7cfbfee",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0180.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0181.txt",
+      "description": "matad_numerics: exact source expression 181, original precision retained",
+      "sha256": "b8d02310b0bedf7aef68794fad843a86454f6415f7167724aec402f79dc49fc8",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0181.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0182.txt",
+      "description": "matad_numerics: exact source expression 182, original precision retained",
+      "sha256": "c312716f9e623288a8d75a7b9037c72121b94425d2124df8ac36de460af9c1f8",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0182.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0183.txt",
+      "description": "matad_numerics: exact source expression 183, original precision retained",
+      "sha256": "f6b02a5612c353f92501b95d3e0465ef6c67950affd2b2d7bba9dfaadde86845",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0183.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0184.txt",
+      "description": "matad_numerics: exact source expression 184, original precision retained",
+      "sha256": "8196acb1f8d8ccbffa077eb26abbaf19af5e2619cffd3b5d580f70be89952400",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0184.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0185.txt",
+      "description": "matad_numerics: exact source expression 185, original precision retained",
+      "sha256": "3bf7672f4cf39a1d1741ef1f990f362748d59e7b697977fe3653340aadf00ba6",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0185.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0186.txt",
+      "description": "matad_numerics: exact source expression 186, original precision retained",
+      "sha256": "bb2bcec2d8e41930480010f70e76455e3807b93f2b12e129fc2631316337929d",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0186.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0187.txt",
+      "description": "matad_numerics: exact source expression 187, original precision retained",
+      "sha256": "5413b3b797293de46a0c54b6de3706f3232048dc713cbe92b1e909b2bb83fd80",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0187.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0188.txt",
+      "description": "matad_numerics: exact source expression 188, original precision retained",
+      "sha256": "b5b6861643f69c4650870f961af3ea4519de9367536e73c227631f29eea2c494",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0188.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0189.txt",
+      "description": "matad_numerics: exact source expression 189, original precision retained",
+      "sha256": "d47d2b44eeda0bdf4de7b7d05fac461866715fc6d609e9a379170cb948e184b6",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0189.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0190.txt",
+      "description": "matad_numerics: exact source expression 190, original precision retained",
+      "sha256": "ec1ce92c4a20dc80748f59cf8222bdd50f5eba0f0c8875cde246ac04ac67a8e3",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0190.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0191.txt",
+      "description": "matad_numerics: exact source expression 191, original precision retained",
+      "sha256": "730f930c6fe0ce90673b35fa475cc60df069fa9262883cec4b2654ba1a5fc1ef",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0191.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0192.txt",
+      "description": "matad_numerics: exact source expression 192, original precision retained",
+      "sha256": "5bacda130c7aa610994126c8fbd213c7ca086c009ff40635413e7b446150bf6c",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0192.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0193.txt",
+      "description": "matad_numerics: exact source expression 193, original precision retained",
+      "sha256": "0b218007c279224127876d11f54ab0153820c4d716cc9518b8d09f68f70b63fe",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0193.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0194.txt",
+      "description": "matad_numerics: exact source expression 194, original precision retained",
+      "sha256": "6cb625517eef4a3aa59992711d4eac743cb49c8f1a0de9577a70411a898768fb",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0194.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0195.txt",
+      "description": "matad_numerics: exact source expression 195, original precision retained",
+      "sha256": "973e0eae904cc709be0f0ce692b916b68fc564a4acfed4fd7251af36118c6c70",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0195.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0196.txt",
+      "description": "matad_numerics: exact source expression 196, original precision retained",
+      "sha256": "c5b64a1a8f6c806d067c32476032f9dab2c9943d13ac65e3b8c2d44af73880ae",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0196.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0197.txt",
+      "description": "matad_numerics: exact source expression 197, original precision retained",
+      "sha256": "7b51092c14ace651c01dd74d2fe5a8a03c228fb26a631459414b94311e7d2824",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0197.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0198.txt",
+      "description": "matad_numerics: exact source expression 198, original precision retained",
+      "sha256": "949b789ad58e1314fcf8999fb8a13d07c6bbe40779e8a081f57e099e10aa8969",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0198.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0199.txt",
+      "description": "matad_numerics: exact source expression 199, original precision retained",
+      "sha256": "4548853016408364af860eee9f713eac63a7539f6244957a6955b259985ad54c",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0199.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0200.txt",
+      "description": "matad_numerics: exact source expression 200, original precision retained",
+      "sha256": "46f9bf8b283fe68f203e21b13f47958a83478e8bad1276aa8d23326fda8a0f12",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0200.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0201.txt",
+      "description": "matad_numerics: exact source expression 201, original precision retained",
+      "sha256": "80cf668db9aab76f8138333e09eaab3643a9d112e91d3806265203bb954d782d",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0201.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0202.txt",
+      "description": "matad_numerics: exact source expression 202, original precision retained",
+      "sha256": "d46fc32919ce5a82a778a238b1d1dd1ba78aadf244f5dc06b815914bf4f9872e",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0202.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0203.txt",
+      "description": "matad_numerics: exact source expression 203, original precision retained",
+      "sha256": "c34d8683a198f0d45e562910cdfab31d334bb89b0f343d78a85f26ba0badbe87",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0203.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0204.txt",
+      "description": "matad_numerics: exact source expression 204, original precision retained",
+      "sha256": "2b9778f45ee2d225896065ee13c9af1da9bfcc9c6e1671c9dd092123aa66b05c",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0204.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0205.txt",
+      "description": "matad_numerics: exact source expression 205, original precision retained",
+      "sha256": "496f4dc85775c0652f2135446e2973159541e738eb6b5cecb71e3e0359adc0eb",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0205.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0206.txt",
+      "description": "matad_numerics: exact source expression 206, original precision retained",
+      "sha256": "3da7d300bfd8203148ade15c25913eade3f8f2774aebe9c80727cbd6d10d6348",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0206.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0207.txt",
+      "description": "matad_numerics: exact source expression 207, original precision retained",
+      "sha256": "1e66a5792a216d4c30a68ef8e60a73e21ec333309fa5dbc161748604fdab6403",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0207.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0208.txt",
+      "description": "matad_numerics: exact source expression 208, original precision retained",
+      "sha256": "f904a528a7fd93d53d5d2e23492017d534d7a0f2ccc549f3fa9913574682aaa6",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0208.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0209.txt",
+      "description": "matad_numerics: exact source expression 209, original precision retained",
+      "sha256": "a2a2e915b09bcf510f14535a513adba4d111dddb2593989746f7d505d80a3fd8",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0209.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0210.txt",
+      "description": "matad_numerics: exact source expression 210, original precision retained",
+      "sha256": "74639e6648de052b1d404daf25c4482c869b87e3140c18ce114dd9e7c1d27f86",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0210.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0211.txt",
+      "description": "matad_numerics: exact source expression 211, original precision retained",
+      "sha256": "9d5991dd45d543fb021ed180fa72ee1950395df2fe39991b6704953eda577620",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0211.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0212.txt",
+      "description": "matad_numerics: exact source expression 212, original precision retained",
+      "sha256": "1b7580ae9e91214cdc480dca6bf1d48350dc212dbdbf6d1ad8f345d03edd0a72",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0212.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0213.txt",
+      "description": "matad_numerics: exact source expression 213, original precision retained",
+      "sha256": "c17bbdbd67ae11d14ee8a02c257930798ab8a6450fb4b388174075324a545ff7",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0213.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0214.txt",
+      "description": "matad_numerics: exact source expression 214, original precision retained",
+      "sha256": "036a8a085e8bc649251f25c1e01e9a831346a3ef413568989084efb29df3230a",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0214.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0215.txt",
+      "description": "matad_numerics: exact source expression 215, original precision retained",
+      "sha256": "2df20771070bb1f1aa5a5aafc4f5e9b94f8eeaacd3ca00a0f98a7026c3deb2fc",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0215.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0216.txt",
+      "description": "matad_numerics: exact source expression 216, original precision retained",
+      "sha256": "44559468b0ee5f25c4f70abc5c313f56348cd45bf34a8ee4e76e5c0391415b55",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0216.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0217.txt",
+      "description": "matad_numerics: exact source expression 217, original precision retained",
+      "sha256": "8dab1b6f11e55ae95e4aa95b0e7f50e3a4620dc977273279427d1f4fa46028a3",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0217.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0218.txt",
+      "description": "matad_numerics: exact source expression 218, original precision retained",
+      "sha256": "7694688fa28a609870c71e59c9e705820a6ae8cf7c5fc22defb749a3980f5088",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0218.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0219.txt",
+      "description": "matad_numerics: exact source expression 219, original precision retained",
+      "sha256": "196de62645bb5d1fd0a695bcfb90cd1d3a8695e84e609760ca513470697c445a",
+      "size": 20131,
+      "source_path": "data/numerics/matad_numerics/0219.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0220.txt",
+      "description": "matad_numerics: exact source expression 220, original precision retained",
+      "sha256": "9bc6186a9f60de69c98dfa66d0d9e81e56ae19397ca4275d33543bb8b001274a",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0220.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0221.txt",
+      "description": "matad_numerics: exact source expression 221, original precision retained",
+      "sha256": "c674aecfbd60eaa6d958ba29f5f409d06bb318272ddd74fbde2c84a6208698af",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0221.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0222.txt",
+      "description": "matad_numerics: exact source expression 222, original precision retained",
+      "sha256": "ef1b2644a64f6816b618ab4fe8d865950e62b2319d8c0a0b0c9ce4077f26b27d",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0222.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0223.txt",
+      "description": "matad_numerics: exact source expression 223, original precision retained",
+      "sha256": "599722cd39acf2904fa93879f702d67364e9ff7a4e80643b826af705d93482cf",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0223.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0224.txt",
+      "description": "matad_numerics: exact source expression 224, original precision retained",
+      "sha256": "7397fd5d483fef8e535f9290c50afc41a279a9788bed36370d7b9696271ecf2b",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0224.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0225.txt",
+      "description": "matad_numerics: exact source expression 225, original precision retained",
+      "sha256": "4ad5a3ed03454859b8b69d53261d40318897bc6f20192c9b66734ca23e56d4e5",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0225.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0226.txt",
+      "description": "matad_numerics: exact source expression 226, original precision retained",
+      "sha256": "73bfdea2f80d5e29d6cd4afe3523c25d13b1ed0b05303fc3bcca49fd00998fd6",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0226.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0227.txt",
+      "description": "matad_numerics: exact source expression 227, original precision retained",
+      "sha256": "9f6df980a8904fa98eb480e601437a5f04c475a8751b602f44f5732cd6f07328",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0227.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0228.txt",
+      "description": "matad_numerics: exact source expression 228, original precision retained",
+      "sha256": "b49e5e05ee5602ecf2dd26b3fae2a300b8af226a88cdf64612f9035e16abf3f6",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0228.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0229.txt",
+      "description": "matad_numerics: exact source expression 229, original precision retained",
+      "sha256": "27dd6c420da3fb75d7770adb8af8cbd1b08f2adb40d26155f0218e89782399da",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0229.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0230.txt",
+      "description": "matad_numerics: exact source expression 230, original precision retained",
+      "sha256": "bf1984393b8a14b3fb072aad425ffd9bdab6f79f4b47c81f03ec0bf35c0ae090",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0230.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0231.txt",
+      "description": "matad_numerics: exact source expression 231, original precision retained",
+      "sha256": "c919b1dbababbf218ab1bf7ec6f59594e4b489b4daaa339dd1cc7bfbcdff0a44",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0231.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0232.txt",
+      "description": "matad_numerics: exact source expression 232, original precision retained",
+      "sha256": "9f991d66dfce8a8e35377dedfdb3fe02a2a81cf1a8b1dfd5e4040b17f0125d12",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0232.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0233.txt",
+      "description": "matad_numerics: exact source expression 233, original precision retained",
+      "sha256": "3296ef553ca659a3f95b910fbff326108e76ada016f9ae4f1bfac1cc3ed05af5",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0233.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0234.txt",
+      "description": "matad_numerics: exact source expression 234, original precision retained",
+      "sha256": "6607527c6efcd7a7d76d5026f8ec582eacd25d9c5074e62985fb0288cdd75229",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0234.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0235.txt",
+      "description": "matad_numerics: exact source expression 235, original precision retained",
+      "sha256": "be62b47a71c6fbc1aa56f81c345a465bb6076154db3e69b38cc74d9b53d6988d",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0235.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0236.txt",
+      "description": "matad_numerics: exact source expression 236, original precision retained",
+      "sha256": "1d2c376eb04869a9b9de39932699bf3122f61f505ebf3bc69f18b1832ee53952",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0236.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0237.txt",
+      "description": "matad_numerics: exact source expression 237, original precision retained",
+      "sha256": "3817c9f3469a6150547076f851dfd04668c8b56c2f1a2e4412d2dfed205e5d1e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0237.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0238.txt",
+      "description": "matad_numerics: exact source expression 238, original precision retained",
+      "sha256": "8d148ad2f41d30c2ea53c1bb2293a4f238a8aa01dcc17001c7d909b4824a6ee7",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0238.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0239.txt",
+      "description": "matad_numerics: exact source expression 239, original precision retained",
+      "sha256": "fcbc100da6414864ea6ebb8512946009b9197afc50ac2ec8a7d58009450fdf3f",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0239.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0240.txt",
+      "description": "matad_numerics: exact source expression 240, original precision retained",
+      "sha256": "86615ed2b018c3042b6efbfb51a35ff99fa1a5ca78faf691afdfa730f2884988",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0240.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0241.txt",
+      "description": "matad_numerics: exact source expression 241, original precision retained",
+      "sha256": "20bc18b24e8edca7fe7ae6352084a1e0c59ae8c7a7be4344bf15564847e8a013",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0241.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0242.txt",
+      "description": "matad_numerics: exact source expression 242, original precision retained",
+      "sha256": "52dc1eb4e02606a3a7528af6706969b310c8d09e3e7ce9afc95c65bdfc921dbc",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0242.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0243.txt",
+      "description": "matad_numerics: exact source expression 243, original precision retained",
+      "sha256": "0f4305d0745f9213d39a21c34997e484b78b9ee9e6db0b90b5c24e384bb1b1e3",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0243.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0244.txt",
+      "description": "matad_numerics: exact source expression 244, original precision retained",
+      "sha256": "479817e7f2736c1ba4c52a243708ee958dd7c4b218013cb01a294eed09826582",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0244.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0245.txt",
+      "description": "matad_numerics: exact source expression 245, original precision retained",
+      "sha256": "e992ab9381bb6c723e236581989c8138e05d27f9399b870a573df3128ed02988",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0245.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0246.txt",
+      "description": "matad_numerics: exact source expression 246, original precision retained",
+      "sha256": "8aa9b449968ad3aaba7f935865857434fe97be242f693f19f39d522a19dbd4f9",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0246.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0247.txt",
+      "description": "matad_numerics: exact source expression 247, original precision retained",
+      "sha256": "e8b8c42223eca24ef983f49041fc91f59563b6d9acc8fab9f5afc2ac7a93f263",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0247.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0248.txt",
+      "description": "matad_numerics: exact source expression 248, original precision retained",
+      "sha256": "95627202835ccb3c354a48c5d75ae981e5508daffab49329cb60017693eebc9f",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0248.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0249.txt",
+      "description": "matad_numerics: exact source expression 249, original precision retained",
+      "sha256": "cf3ffc4815ce057d39809a3bc995c7a55e691c11d3c82d9eadccae89a81064be",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0249.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0250.txt",
+      "description": "matad_numerics: exact source expression 250, original precision retained",
+      "sha256": "ef2d1f4fc19f38c77d007412f7e8bdc9249ae61054f622173687cae69ec052ce",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0250.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0251.txt",
+      "description": "matad_numerics: exact source expression 251, original precision retained",
+      "sha256": "f89f51c99a2f7f3267eb63e065126427f78d4e651049bcc4565cffd496899043",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0251.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0252.txt",
+      "description": "matad_numerics: exact source expression 252, original precision retained",
+      "sha256": "6096a644375c1c4359a518ce5b04aada8d070248c01185906404f8a153d6f1c3",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0252.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0253.txt",
+      "description": "matad_numerics: exact source expression 253, original precision retained",
+      "sha256": "df8ba74d01e290a265a7241fc327a04fa3be26239163d52c2862f27ba196abb3",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0253.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0254.txt",
+      "description": "matad_numerics: exact source expression 254, original precision retained",
+      "sha256": "46aede229c2239a0cb72d8a6e69d748471d50e95ac85346eb97d64621067de79",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0254.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0255.txt",
+      "description": "matad_numerics: exact source expression 255, original precision retained",
+      "sha256": "ebc1b5b9b93cbe99b2765fe4ab195a0fdd440cb4fcf3c0ceddf163dd879cf646",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0255.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0256.txt",
+      "description": "matad_numerics: exact source expression 256, original precision retained",
+      "sha256": "b4f4b352869333c45003a532fc5ccd99f08cab860b086f676a9d3f0ba81ab296",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0256.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0257.txt",
+      "description": "matad_numerics: exact source expression 257, original precision retained",
+      "sha256": "55756bb2fae9ae6e28018afeb95f3ad63e2c8557eede89752132a4e9a79333f6",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0257.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0258.txt",
+      "description": "matad_numerics: exact source expression 258, original precision retained",
+      "sha256": "a5e68f68eb7c6e1643ecaf0533542bc0970e638fbc65226eefcd80249a643c31",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0258.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0259.txt",
+      "description": "matad_numerics: exact source expression 259, original precision retained",
+      "sha256": "8f581097688cfbaa3c040ecc98d89ea1dc0fc367fdf3312ee787d6ae179b94ec",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0259.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0260.txt",
+      "description": "matad_numerics: exact source expression 260, original precision retained",
+      "sha256": "70b3ed68cef20db5b344cf9512929c4fe568db0ef95dfdd4d588ee4b8a1004cf",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0260.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0261.txt",
+      "description": "matad_numerics: exact source expression 261, original precision retained",
+      "sha256": "09a160f5d88d0258d43e361d67d136c011bb2c307c202c32496f418d430e4817",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0261.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0262.txt",
+      "description": "matad_numerics: exact source expression 262, original precision retained",
+      "sha256": "403518a3b2a0d8db0e6f0ae102d7789aab7ea0671ef7147d51f35e0e6711baeb",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0262.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0263.txt",
+      "description": "matad_numerics: exact source expression 263, original precision retained",
+      "sha256": "660145679426fae0a3a0e1c8a375c8431b70d82b218517b28dee664c1b4ae27b",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0263.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0264.txt",
+      "description": "matad_numerics: exact source expression 264, original precision retained",
+      "sha256": "938b856e0d7ce14fa395d3cab75b4bbd0f511b0ea95f03ce272b172fe3667407",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0264.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0265.txt",
+      "description": "matad_numerics: exact source expression 265, original precision retained",
+      "sha256": "fb36cef61b04ecd0c9b4ea387c64185dc9fab6624a9a0dcdcfa604fb2fe2a111",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0265.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0266.txt",
+      "description": "matad_numerics: exact source expression 266, original precision retained",
+      "sha256": "1b2b235f2357d4417824b39f37739bfe0b4e87e0c06112e9e6c3cb77bae516b2",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0266.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0267.txt",
+      "description": "matad_numerics: exact source expression 267, original precision retained",
+      "sha256": "894b6b70a0baa49af333a61f96efec7c02a95132f2b420bbefc2a755a9b8ed94",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0267.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0268.txt",
+      "description": "matad_numerics: exact source expression 268, original precision retained",
+      "sha256": "6e7269f8a304eed1256fd216a02399ff7921bfdd03605ce47d02c666caa5681b",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0268.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0269.txt",
+      "description": "matad_numerics: exact source expression 269, original precision retained",
+      "sha256": "9b2b0df6dd78172e579154320f63f6f30dcb02343171076a4b53d2d4b97adcdf",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0269.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0270.txt",
+      "description": "matad_numerics: exact source expression 270, original precision retained",
+      "sha256": "7f1c330cf7994ac3a3119c8c9f1d87a30369f03ff178309c710deaf2487b9abf",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0270.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0271.txt",
+      "description": "matad_numerics: exact source expression 271, original precision retained",
+      "sha256": "8d9e84e2ca94537dbb8a6a4668fb91ddeae91308b36408acdb750eedb5192647",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0271.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0272.txt",
+      "description": "matad_numerics: exact source expression 272, original precision retained",
+      "sha256": "68d91f395a953a7896fc53c8a19155a5a16ebe729c0b0d521253686c26443515",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0272.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0273.txt",
+      "description": "matad_numerics: exact source expression 273, original precision retained",
+      "sha256": "0fd8c0eef2b94411ec0954f4a6472f0a8b7b4d4ab20a0a6bbc2c640e84cd546a",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0273.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0274.txt",
+      "description": "matad_numerics: exact source expression 274, original precision retained",
+      "sha256": "115cfef8192926721b75bfac92a4f700450442a79bb83734d52696332f006f33",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0274.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0275.txt",
+      "description": "matad_numerics: exact source expression 275, original precision retained",
+      "sha256": "7eb9575b4a6328f456e0ece8a04a05ef1447cc227b069bf9d141250a6872dcfe",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0275.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0276.txt",
+      "description": "matad_numerics: exact source expression 276, original precision retained",
+      "sha256": "e830e52caf3c8ea8c2edd5311a609c0d024b43cd02ad6c4179a7f426d32ab67d",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0276.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0277.txt",
+      "description": "matad_numerics: exact source expression 277, original precision retained",
+      "sha256": "0b8dd7beca99e1463b8c53a2b438e440625d4dbafed6080d798f686d8d028eee",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0277.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0278.txt",
+      "description": "matad_numerics: exact source expression 278, original precision retained",
+      "sha256": "468bd02296dfc99805acf264200d64bacf2c4c189bad57304692f5dec3888665",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0278.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0279.txt",
+      "description": "matad_numerics: exact source expression 279, original precision retained",
+      "sha256": "7a7b5b94bad854b88e63e7e42367b6f4af7c4a1ca1b6692d078d51ae23ee974b",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0279.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0280.txt",
+      "description": "matad_numerics: exact source expression 280, original precision retained",
+      "sha256": "7246408e2c4b9644acc49f48f1bbe7a06328c7f0b622e1bfb64879cc94a8dea6",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0280.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0281.txt",
+      "description": "matad_numerics: exact source expression 281, original precision retained",
+      "sha256": "3a80072b254b63f1a28a33283d3cccb9dfab99c1b58ff9621878ab72a8cd382e",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0281.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0282.txt",
+      "description": "matad_numerics: exact source expression 282, original precision retained",
+      "sha256": "74de259616dc2dd548100657508f6a349d28601f979d06d8eef526b288d6ce57",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0282.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0283.txt",
+      "description": "matad_numerics: exact source expression 283, original precision retained",
+      "sha256": "0acda420952285810217ce28cd40ede5d7a2eca94acaf9046a34c7d571ff086b",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0283.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0284.txt",
+      "description": "matad_numerics: exact source expression 284, original precision retained",
+      "sha256": "7b8feb260ba015f12d6ae085add8bfbb354ad2a98ef93b92148bb897142f0736",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0284.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0285.txt",
+      "description": "matad_numerics: exact source expression 285, original precision retained",
+      "sha256": "652249a80f277b6cd4a11436cdc567d6a4fcd420a65a0d9fb9c6d842df92a54d",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0285.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0286.txt",
+      "description": "matad_numerics: exact source expression 286, original precision retained",
+      "sha256": "29615f8246c56cea513bad65708bbd5d18cad4acac7e318a9bc6ce1112246e4b",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0286.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0287.txt",
+      "description": "matad_numerics: exact source expression 287, original precision retained",
+      "sha256": "5ce89f708279d9450cdd45f4163dfaff49206a040a2b65c3897d6c2e1db9e685",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0287.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0288.txt",
+      "description": "matad_numerics: exact source expression 288, original precision retained",
+      "sha256": "b6564721f3a145d7f4b7b65c91a5145c63e3255435cb1f2326c1909373f58c3c",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0288.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0289.txt",
+      "description": "matad_numerics: exact source expression 289, original precision retained",
+      "sha256": "57f68cbe254f6df68f77952d5cf6e2a33457b81301235553bf017e83aee0dac5",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0289.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0290.txt",
+      "description": "matad_numerics: exact source expression 290, original precision retained",
+      "sha256": "5216eae37540d7a0863378f6d8016a5aabc3fb7fb15ef8a5742af939ff52d7aa",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0290.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0291.txt",
+      "description": "matad_numerics: exact source expression 291, original precision retained",
+      "sha256": "56b6ae806b9ea5adef69c80cc99422c06af7f2e1400fdaffe4ae8762988ec1a0",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0291.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0292.txt",
+      "description": "matad_numerics: exact source expression 292, original precision retained",
+      "sha256": "5f11c8e61bacd9080b6d35a2ed31d840600790ef8314e022359ae18811768d01",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0292.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0293.txt",
+      "description": "matad_numerics: exact source expression 293, original precision retained",
+      "sha256": "2f8a8d77c45936eb404dc4c383ba4a0e3d43a40093045a280808fa7b7370a368",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0293.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0294.txt",
+      "description": "matad_numerics: exact source expression 294, original precision retained",
+      "sha256": "41d113684824b54b0f38327eb65606fafe2361c7220787c846a4ab1c5b25ee39",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0294.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0295.txt",
+      "description": "matad_numerics: exact source expression 295, original precision retained",
+      "sha256": "287fea7f46e6c3752342eadaa364bad1aa5f6570da5759dd1bc1c082c5713a08",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0295.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0296.txt",
+      "description": "matad_numerics: exact source expression 296, original precision retained",
+      "sha256": "f405292f2d2f367317af89a0c68985b4d75ce74587e807f783d9117f34e5253e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0296.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0297.txt",
+      "description": "matad_numerics: exact source expression 297, original precision retained",
+      "sha256": "2afe46957e3c25aedd821b1a02bfe82ed672868b47f7b0cc246fda6473dcad9e",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0297.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0298.txt",
+      "description": "matad_numerics: exact source expression 298, original precision retained",
+      "sha256": "a51a1d63bf0bc2edeee7137095ee5ff180e329abe1ba155bd375a4ab8668f75c",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0298.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0299.txt",
+      "description": "matad_numerics: exact source expression 299, original precision retained",
+      "sha256": "c9769bdc43b9a0fe8bb1d3b9da0aef94985907bd398106ade0b82da715abe799",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0299.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0300.txt",
+      "description": "matad_numerics: exact source expression 300, original precision retained",
+      "sha256": "3f4be51e6360d200b2f50432a8b698053f230e759046fd016756a4d45a84531b",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0300.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0301.txt",
+      "description": "matad_numerics: exact source expression 301, original precision retained",
+      "sha256": "5588292d587e4fbfe3c1b9e720a1b0299754422732728b25efe7106ceae789ad",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0301.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0302.txt",
+      "description": "matad_numerics: exact source expression 302, original precision retained",
+      "sha256": "6db9dd6edf9b1f42bc31c35286be5c4e0f8c43cad01f2c62322f3009770ec09a",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0302.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0303.txt",
+      "description": "matad_numerics: exact source expression 303, original precision retained",
+      "sha256": "8dff202b8891ae61bbf2e48ae26bf7216e40f1ac75f6cd15269791dd865a760f",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0303.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0304.txt",
+      "description": "matad_numerics: exact source expression 304, original precision retained",
+      "sha256": "63c56cd7a0f5d07ce5c30df7e9118596b433260e3a1ba0c592d25bb883be9541",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0304.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0305.txt",
+      "description": "matad_numerics: exact source expression 305, original precision retained",
+      "sha256": "294ca2bb7704043fc67d0d16e4f6facda9116c62f5aae2fcda844c0d09bde2b9",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0305.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0306.txt",
+      "description": "matad_numerics: exact source expression 306, original precision retained",
+      "sha256": "e8f1352d784da79684a56009ff5718eefbafb259da2c5575a9c3a804078c8e54",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0306.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0307.txt",
+      "description": "matad_numerics: exact source expression 307, original precision retained",
+      "sha256": "b98fc13a8a208d0143a0f86f54e3e681b15c4c053658596af076565babbc061e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0307.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0308.txt",
+      "description": "matad_numerics: exact source expression 308, original precision retained",
+      "sha256": "de2342083f9c8ee3deaf894b995c7606dae55e95496854d99118ad19e49f8cc8",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0308.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0309.txt",
+      "description": "matad_numerics: exact source expression 309, original precision retained",
+      "sha256": "0f3a6c4b5a2a2ce9592fdfcc00454a4011fcf89c6c06b9d0861df5366af672cd",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0309.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0310.txt",
+      "description": "matad_numerics: exact source expression 310, original precision retained",
+      "sha256": "1b928a86e5bdffe046fbe02948c3933d7cdedfbf4cde897c6b6dcbe4b233fb76",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0310.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0311.txt",
+      "description": "matad_numerics: exact source expression 311, original precision retained",
+      "sha256": "f76364ffe1983cc45ef3a99fe100d67f33a293760fc8ce84be098770c2235fa8",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0311.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0312.txt",
+      "description": "matad_numerics: exact source expression 312, original precision retained",
+      "sha256": "0fa4b108aa7de0dd9ef8988bb0f375950e8e8efa94e89dea74ad709c8617f67a",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0312.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0313.txt",
+      "description": "matad_numerics: exact source expression 313, original precision retained",
+      "sha256": "e1993e8431f965a3577018c30fd5990f0d787267ebc2338211f6927c907112eb",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0313.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0314.txt",
+      "description": "matad_numerics: exact source expression 314, original precision retained",
+      "sha256": "076aef02759100840277c66bb4a9566716612a3cd09390394d97927ebe757e4b",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0314.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0315.txt",
+      "description": "matad_numerics: exact source expression 315, original precision retained",
+      "sha256": "91f7d038f22a5f2af3dc820dc976c6c392eaaf81e72b32b3d12233d49ea9769c",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0315.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0316.txt",
+      "description": "matad_numerics: exact source expression 316, original precision retained",
+      "sha256": "b563ff25350331e115976e1159a103cda5f29af3fe5b3903348151110c8f53ae",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0316.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0317.txt",
+      "description": "matad_numerics: exact source expression 317, original precision retained",
+      "sha256": "861aa050a2803443a80709d06e22e504e296c80c7fcef1a177ad93a46d0f0e9e",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0317.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0318.txt",
+      "description": "matad_numerics: exact source expression 318, original precision retained",
+      "sha256": "11df7e4ccb7d48416583d08f4f26f9e803f8bcebdc160e650474d2b7aa5fb286",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0318.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0319.txt",
+      "description": "matad_numerics: exact source expression 319, original precision retained",
+      "sha256": "b5ce96b5a485eeda0720f8f19011e5a4d2cdfb644e3520d76b89df4fe1c5da2c",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0319.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0320.txt",
+      "description": "matad_numerics: exact source expression 320, original precision retained",
+      "sha256": "a2683d8b3b4705edde4893dc734719c7bd78a19057a5001dbb7e14e03cb59400",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0320.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0321.txt",
+      "description": "matad_numerics: exact source expression 321, original precision retained",
+      "sha256": "02992f675a31c117a4a20b09989251e0cc1bb5521dfc84c67d801f5337d1c51c",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0321.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0322.txt",
+      "description": "matad_numerics: exact source expression 322, original precision retained",
+      "sha256": "c46c36d7169a625e290b65f4dae659ec555bc8fe781aff65a73b95236299865b",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0322.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0323.txt",
+      "description": "matad_numerics: exact source expression 323, original precision retained",
+      "sha256": "367922d9d2c539b369b98a52b04fe20094c776b02eb00ed5ea6d50c54fdf1656",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0323.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0324.txt",
+      "description": "matad_numerics: exact source expression 324, original precision retained",
+      "sha256": "5c2e70861d3967e770eeba74c407ad23a4f95d69971be84c50e494a89253140b",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0324.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0325.txt",
+      "description": "matad_numerics: exact source expression 325, original precision retained",
+      "sha256": "a461340c2f143332b3f27529ac724f03e51324af1164f7d85c8117404c836b6b",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0325.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0326.txt",
+      "description": "matad_numerics: exact source expression 326, original precision retained",
+      "sha256": "059ce26fb8c52f32622f0dc1cbc670fd944d6de6c9e6e071a208b8d2da9b5154",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0326.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0327.txt",
+      "description": "matad_numerics: exact source expression 327, original precision retained",
+      "sha256": "b326b61ed7519bd1e0b836dfa82f804cc7264325fd295769e9d30e65e2590969",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0327.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0328.txt",
+      "description": "matad_numerics: exact source expression 328, original precision retained",
+      "sha256": "f9b7ab2541791efe1589ecd46b681f54ebf9d50be7a9eb7d567396976a294054",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0328.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0329.txt",
+      "description": "matad_numerics: exact source expression 329, original precision retained",
+      "sha256": "70c3269dbcfe452b49e7980b4a190518bbf967ad43874531cd9157a4a3fe292c",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0329.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0330.txt",
+      "description": "matad_numerics: exact source expression 330, original precision retained",
+      "sha256": "f9b7f0eb26233975227d727102abc8c344c63fcbe3713ede7e2fdc2284b71146",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0330.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0331.txt",
+      "description": "matad_numerics: exact source expression 331, original precision retained",
+      "sha256": "a07b123c766231f05ac92ea073fcd5fe0fd8cf17c2e03b5e83e7a98f25c0761e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0331.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0332.txt",
+      "description": "matad_numerics: exact source expression 332, original precision retained",
+      "sha256": "d62ec4dfe81c5d0aa4500aab3060a331c2e617866e98a6b76eb2889e5321d107",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0332.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0333.txt",
+      "description": "matad_numerics: exact source expression 333, original precision retained",
+      "sha256": "49dd8840d5117c16f791669cea31acdc542f4f4ab09a7d77fd6a14cf183696f8",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0333.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0334.txt",
+      "description": "matad_numerics: exact source expression 334, original precision retained",
+      "sha256": "180ac19cd1a72f82c3a9a18c84aa53e75f54b19b34bb1430a19a48f557966e89",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0334.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0335.txt",
+      "description": "matad_numerics: exact source expression 335, original precision retained",
+      "sha256": "49d702e0c73890d2b6f9edc48569854741441c53893f6444ef5aa6656e5c9ff1",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0335.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0336.txt",
+      "description": "matad_numerics: exact source expression 336, original precision retained",
+      "sha256": "67f5baee12703d1427c410bb76c4820b1897e744c4a4141a35139b0dc6cc4311",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0336.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0337.txt",
+      "description": "matad_numerics: exact source expression 337, original precision retained",
+      "sha256": "50d6863191103ad8e7e67d0ad80a61a958882a0b9a6f06402da22a7e615afdfb",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0337.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0338.txt",
+      "description": "matad_numerics: exact source expression 338, original precision retained",
+      "sha256": "39f51b6243df1e36ff4fe422800d97ad31ad677fd09fbce1701dc856fa8e9fb1",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0338.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0339.txt",
+      "description": "matad_numerics: exact source expression 339, original precision retained",
+      "sha256": "64149c6219b4f8f4169e847d4403d3504a1bd9fa3fcdade3fb7ea5658209421f",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0339.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0340.txt",
+      "description": "matad_numerics: exact source expression 340, original precision retained",
+      "sha256": "89a922d522a8c9c2b848454d743693af525932ed08a1010d54b4a483e1962594",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0340.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0341.txt",
+      "description": "matad_numerics: exact source expression 341, original precision retained",
+      "sha256": "e39ef88bfe18a64fde0b1c9a80f6e2370844db7f67b2a0bfaeffb958f700560e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0341.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0342.txt",
+      "description": "matad_numerics: exact source expression 342, original precision retained",
+      "sha256": "8261f1780f6b2b1bc479821fe66ddab9199eff241571465e51476916f558e3a7",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0342.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0343.txt",
+      "description": "matad_numerics: exact source expression 343, original precision retained",
+      "sha256": "f2b41a3cf73e3ec945b5d39c1e9d66ad9028be252776b622b8c330cda265dc74",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0343.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0344.txt",
+      "description": "matad_numerics: exact source expression 344, original precision retained",
+      "sha256": "9df26b6fc2d271a5ff24dd32bd0823b9ef9839c58a8400bf930437e720824efb",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0344.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0345.txt",
+      "description": "matad_numerics: exact source expression 345, original precision retained",
+      "sha256": "12f6c321ace07e7b3303a158cb874f98c99641871b5438ad91c9492dbc2d570e",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0345.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0346.txt",
+      "description": "matad_numerics: exact source expression 346, original precision retained",
+      "sha256": "6987c5e7c289e9193fc0d4d5c51691aff5c0754209c3cc69d6d084f78ac99841",
+      "size": 20143,
+      "source_path": "data/numerics/matad_numerics/0346.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0347.txt",
+      "description": "matad_numerics: exact source expression 347, original precision retained",
+      "sha256": "365b375df3a121c1429ad82e00593d9d0f601d6f2472e6971f1f822fa8ea9136",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0347.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0348.txt",
+      "description": "matad_numerics: exact source expression 348, original precision retained",
+      "sha256": "36dc9f134cfafdda5876cc16d583c601407640a87e5dfbe341ec65268132750a",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0348.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0349.txt",
+      "description": "matad_numerics: exact source expression 349, original precision retained",
+      "sha256": "28ecf19af64b91408e26bd6f41e126bc3020090c68ed2ae7a3e01ef10d23fcfd",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0349.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0350.txt",
+      "description": "matad_numerics: exact source expression 350, original precision retained",
+      "sha256": "7b0aa89a4620de8da17ea1f5f94925002ac69f5db1b1966b1c149c3e3ca47981",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0350.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0351.txt",
+      "description": "matad_numerics: exact source expression 351, original precision retained",
+      "sha256": "1722fbf2f5fe15d50cec944e71ac0fc7f60b843cdd19ea200269b86aa736cf7a",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0351.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0352.txt",
+      "description": "matad_numerics: exact source expression 352, original precision retained",
+      "sha256": "b353fdafee5abfe202d6c37cc332f0f1094dad8e5f65c1a60473d67eb9e5bfcc",
+      "size": 20142,
+      "source_path": "data/numerics/matad_numerics/0352.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0353.txt",
+      "description": "matad_numerics: exact source expression 353, original precision retained",
+      "sha256": "209ce8090bd2f9e46a2d647735af5c0119f75a799d2568c8aae48ac7949873b2",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0353.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0354.txt",
+      "description": "matad_numerics: exact source expression 354, original precision retained",
+      "sha256": "1595926faa585b716d570f2ec74ddb30185982c495224637591d9905bcb30441",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0354.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0355.txt",
+      "description": "matad_numerics: exact source expression 355, original precision retained",
+      "sha256": "99b54230f6c125687507b824508accf77358ae26264957e40e68de17102c1ee5",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0355.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0356.txt",
+      "description": "matad_numerics: exact source expression 356, original precision retained",
+      "sha256": "e43a3dfc2807a410434652e87037692984289d5c421e6d5e950324825366514d",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0356.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0357.txt",
+      "description": "matad_numerics: exact source expression 357, original precision retained",
+      "sha256": "f97eb4befdc1366148dbba84ee7de36724918ea246abdbd15f6c46e443b9b9f8",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0357.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0358.txt",
+      "description": "matad_numerics: exact source expression 358, original precision retained",
+      "sha256": "7e83aa540e5080a865ca147722d36590b35f47d8f7a6965bccb70c13d933c00d",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0358.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0359.txt",
+      "description": "matad_numerics: exact source expression 359, original precision retained",
+      "sha256": "b69892c4e52ed6507ecdf441268914991b5204d71401b1885d29406fec0e8153",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0359.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0360.txt",
+      "description": "matad_numerics: exact source expression 360, original precision retained",
+      "sha256": "677682527373f36b683593a252d07abe5381b9ed874d252c7ee352cccf0830a8",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0360.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0361.txt",
+      "description": "matad_numerics: exact source expression 361, original precision retained",
+      "sha256": "e082c44a17bc2fd499ccb0ac2499c942f492ebfef290525d232a82869cfe367b",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0361.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0362.txt",
+      "description": "matad_numerics: exact source expression 362, original precision retained",
+      "sha256": "3b08bcbfbba96de6d1e2203878a6922c6702b2ecd74d3649ac1696f288e38ca8",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0362.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0363.txt",
+      "description": "matad_numerics: exact source expression 363, original precision retained",
+      "sha256": "f4023db97c1b354c56882666e773472d6f61251b2623f71dab864b7a183d21ad",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0363.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0364.txt",
+      "description": "matad_numerics: exact source expression 364, original precision retained",
+      "sha256": "05b5f14ef828962fabe21609b2687415b9cdf51263342287ebe722e5e956d5b8",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0364.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0365.txt",
+      "description": "matad_numerics: exact source expression 365, original precision retained",
+      "sha256": "5b44b8f3fba62649212e552cc578f22dfb4a9a0cdbb9feb20fdfe939ad88d29e",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0365.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0366.txt",
+      "description": "matad_numerics: exact source expression 366, original precision retained",
+      "sha256": "43b2c20fcadfce337002aec4e6dd22809abe7fcdb2c3ebdc9e9035324772cf75",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0366.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0367.txt",
+      "description": "matad_numerics: exact source expression 367, original precision retained",
+      "sha256": "066b45f5347731bbc30dcdf8aa5ecc92bf8ebd6913e5d0aaf28f7581d9690d16",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0367.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0368.txt",
+      "description": "matad_numerics: exact source expression 368, original precision retained",
+      "sha256": "e45405e06d1c05ea8f5ca8dd5605f74437ec803ae324d295101017ad9e3b6d1d",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0368.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0369.txt",
+      "description": "matad_numerics: exact source expression 369, original precision retained",
+      "sha256": "009f800a30512b601384d4415bfcb80a4253a91242e3c43e5b3f2c0cd2a689ed",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0369.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0370.txt",
+      "description": "matad_numerics: exact source expression 370, original precision retained",
+      "sha256": "bb994094a51a5c3af5ebeaf076dbcf0336b9ec594bc12cabdf93744b368496e0",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0370.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0371.txt",
+      "description": "matad_numerics: exact source expression 371, original precision retained",
+      "sha256": "cf0b3c2acc6935ea7e899461f9d15be715b56c4faf887c9f154d1a545cb9c0cf",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0371.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0372.txt",
+      "description": "matad_numerics: exact source expression 372, original precision retained",
+      "sha256": "1cf63115c3a109a95b51fa06bc96f631ef7d0494db86875dd31f90d20ca89190",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0372.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0373.txt",
+      "description": "matad_numerics: exact source expression 373, original precision retained",
+      "sha256": "f22271f0558df2424ee45909d007d6a4aa01a93c8fc9cdbc31e2272dd0431c04",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0373.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0374.txt",
+      "description": "matad_numerics: exact source expression 374, original precision retained",
+      "sha256": "eea6cf72b607a771d902b43c2a8818aca0c8b1626aedc38fdcb3578413847902",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0374.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0375.txt",
+      "description": "matad_numerics: exact source expression 375, original precision retained",
+      "sha256": "5a28d627e1dd3a45aa07f8ab5218d5af96f4a2b8c5b93d95a1af5f008044ece6",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0375.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0376.txt",
+      "description": "matad_numerics: exact source expression 376, original precision retained",
+      "sha256": "a6e526febf5d5d3708b568098c79c2cb132a793804951132b025187ee9946069",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0376.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0377.txt",
+      "description": "matad_numerics: exact source expression 377, original precision retained",
+      "sha256": "b00543a8d9e3ea0105f61752711e753bfaaf1f519af3f4087e653b10036fa469",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0377.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0378.txt",
+      "description": "matad_numerics: exact source expression 378, original precision retained",
+      "sha256": "8407962950ae5f99c424023740aaf6f0c0409321a478acb029d95c097cd8efb1",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0378.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0379.txt",
+      "description": "matad_numerics: exact source expression 379, original precision retained",
+      "sha256": "0ced8c3917a723a2b3978d830bdd583b7d68b210c86e224b7d304d711225df72",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0379.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0380.txt",
+      "description": "matad_numerics: exact source expression 380, original precision retained",
+      "sha256": "f59dbab789edf2ec9144af724cba79c328adbdb893d3e1d84aa4b3c2472249e0",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0380.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0381.txt",
+      "description": "matad_numerics: exact source expression 381, original precision retained",
+      "sha256": "843c0c27e5018765e13d662518709e5b583210a44633b4e133a2cd6f0e89e3ea",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0381.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0382.txt",
+      "description": "matad_numerics: exact source expression 382, original precision retained",
+      "sha256": "86eb3d089a4261916d7ab66f06459502adcf3316eaca13f6c1f139cce631d990",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0382.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0383.txt",
+      "description": "matad_numerics: exact source expression 383, original precision retained",
+      "sha256": "fe2cbd7c94ae4a484f920ca8ea9910da9c337fed5f9a3901c6aacd03903cf825",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0383.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0384.txt",
+      "description": "matad_numerics: exact source expression 384, original precision retained",
+      "sha256": "5634ff96fd6790003225df34d334e78b877415f12eb7f4fb04ebbac122c6a99a",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0384.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0385.txt",
+      "description": "matad_numerics: exact source expression 385, original precision retained",
+      "sha256": "7308ee15a2c28547d3ae101700552a6c628ca3b4dc35f2de4d69fc2e9dc4dbf1",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0385.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0386.txt",
+      "description": "matad_numerics: exact source expression 386, original precision retained",
+      "sha256": "ac140e3ff28b70b33f5569c4890e80c0d93da07d1967bd619c5717ef04c8009d",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0386.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0387.txt",
+      "description": "matad_numerics: exact source expression 387, original precision retained",
+      "sha256": "9648b09f937b553a6d9979132ad2f7ba1d8fbda94f1a7bf323d3081bb01561d5",
+      "size": 20123,
+      "source_path": "data/numerics/matad_numerics/0387.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0388.txt",
+      "description": "matad_numerics: exact source expression 388, original precision retained",
+      "sha256": "d3a20da56bd8c67f0655884834c5294ea456d60031937246c12729115f561707",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0388.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0389.txt",
+      "description": "matad_numerics: exact source expression 389, original precision retained",
+      "sha256": "81c5210a48cfbd7276fcc1b2dfe34e6285b0fb4442e7b121a700ebf02b3d41a9",
+      "size": 20122,
+      "source_path": "data/numerics/matad_numerics/0389.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0390.txt",
+      "description": "matad_numerics: exact source expression 390, original precision retained",
+      "sha256": "3618ca4cc9139ecf56413ffdef8d394c01766e0faca318381b7360205e824abd",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0390.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0391.txt",
+      "description": "matad_numerics: exact source expression 391, original precision retained",
+      "sha256": "b7598e500d78c77bb46eb814561b06475366aa4b0f27f087f10114c0a5930aa0",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0391.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0392.txt",
+      "description": "matad_numerics: exact source expression 392, original precision retained",
+      "sha256": "52145d1d4951c1b24e6902c06009f663782be977cf2ed7263e3eaa2508fd53b4",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0392.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0393.txt",
+      "description": "matad_numerics: exact source expression 393, original precision retained",
+      "sha256": "6e4c9eba9761d3cb2d9d40c1a1f2137e00bcb6de3c2bc8030b6d8442977f5f01",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0393.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0394.txt",
+      "description": "matad_numerics: exact source expression 394, original precision retained",
+      "sha256": "c19c8e537796c41df54bb8ac7afab6c2cb7c40ceabc06b388690cc74d905691a",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0394.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0395.txt",
+      "description": "matad_numerics: exact source expression 395, original precision retained",
+      "sha256": "674a72c6a889a58ec42e4f171d954828d696a421d59a77b94544cbcc6790be8b",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0395.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0396.txt",
+      "description": "matad_numerics: exact source expression 396, original precision retained",
+      "sha256": "0bfd654980a6a372eb0ad0a10436d91492bcd93806ebd69a1f672090e9417817",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0396.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0397.txt",
+      "description": "matad_numerics: exact source expression 397, original precision retained",
+      "sha256": "97745c92eeb42d9226fcc85132275ef39452624a167e4e966e5c32bf0cc8f1be",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0397.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0398.txt",
+      "description": "matad_numerics: exact source expression 398, original precision retained",
+      "sha256": "c32ff3fccfe87475f00177b1875e3a8c559f4c8a59d667a65fa3b5c751db5f4b",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0398.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0399.txt",
+      "description": "matad_numerics: exact source expression 399, original precision retained",
+      "sha256": "749ec8d99abfcf64a1572a26fdf891347604101f37a10540ee27e52a38451428",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0399.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0400.txt",
+      "description": "matad_numerics: exact source expression 400, original precision retained",
+      "sha256": "878163721285f12c13c67401394be02e129db161cbb55da8f1193bf85bf7549f",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0400.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0401.txt",
+      "description": "matad_numerics: exact source expression 401, original precision retained",
+      "sha256": "3de0a1a2e5a8fe272db687ad5d071f04a7db0de23daa749e99ec1f56da351f24",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0401.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0402.txt",
+      "description": "matad_numerics: exact source expression 402, original precision retained",
+      "sha256": "f61308ddfd6152d78271b1d6a7c5ae178d5d4fa5412ef8afbf86902e0641e311",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0402.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0403.txt",
+      "description": "matad_numerics: exact source expression 403, original precision retained",
+      "sha256": "9ba620f655f00c747fe27f3b2e7b6077a92e3aa6a06bfeb732935e084c61b794",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0403.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0404.txt",
+      "description": "matad_numerics: exact source expression 404, original precision retained",
+      "sha256": "4f6a8fbe82541a1c24113a9d96f159a39aafaf3d41772f7a28892be0c913f1c5",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0404.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0405.txt",
+      "description": "matad_numerics: exact source expression 405, original precision retained",
+      "sha256": "1e94288c57f7fe80300544e2d6d50ae699e46bb4a35008a9aaf75d932a662d2d",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0405.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0406.txt",
+      "description": "matad_numerics: exact source expression 406, original precision retained",
+      "sha256": "acf072906bdb13c8b67da54e1c4626c5054deddd80cc47eccf189b7fd15f0581",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0406.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0407.txt",
+      "description": "matad_numerics: exact source expression 407, original precision retained",
+      "sha256": "4940a3e314cc31e2dae6d08e81a8b1054ad9e8150a47571b31cd6dc007830871",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0407.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0408.txt",
+      "description": "matad_numerics: exact source expression 408, original precision retained",
+      "sha256": "8416a8fa2d296e0f1d4911d653556cc1ccae91fcf3a61a66dee1bbac198605d3",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0408.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0409.txt",
+      "description": "matad_numerics: exact source expression 409, original precision retained",
+      "sha256": "b553ad03a5329476ef8d650da5346489a4bbed783db669d629212563d023450a",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0409.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0410.txt",
+      "description": "matad_numerics: exact source expression 410, original precision retained",
+      "sha256": "c7f474557faf9a10a29252fcfebab0b07c4d1cad0af989b963bbefcbb3d3a6db",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0410.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0411.txt",
+      "description": "matad_numerics: exact source expression 411, original precision retained",
+      "sha256": "23c0b9bca2bac2aa64ccf4ca150562e35376222e605171dd7879398233cc6897",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0411.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0412.txt",
+      "description": "matad_numerics: exact source expression 412, original precision retained",
+      "sha256": "d183fc45c1e9e470e0a9e7a26f350ef2948ce50222395e44404595ea71b70bee",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0412.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0413.txt",
+      "description": "matad_numerics: exact source expression 413, original precision retained",
+      "sha256": "5ad118db607a62847273c09a82cc961d12103d2842b0258160e064bf078a7845",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0413.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0414.txt",
+      "description": "matad_numerics: exact source expression 414, original precision retained",
+      "sha256": "cca2fef518799550d31e3816a01f24ae9ca9a2a1d2f359e454ad4dbf9cc24141",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0414.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0415.txt",
+      "description": "matad_numerics: exact source expression 415, original precision retained",
+      "sha256": "42e9ac0f356db0f6e92928e5157decc15f83aef4ce825af716752ceb2f0bcb31",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0415.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0416.txt",
+      "description": "matad_numerics: exact source expression 416, original precision retained",
+      "sha256": "4e69fc295a5c8c4bb4374490db160023a94f9656305d32766fb2b6f7866e9f7e",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0416.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0417.txt",
+      "description": "matad_numerics: exact source expression 417, original precision retained",
+      "sha256": "81316e7943daa3a80ebc43e3b96795143fc30df3cd63608f8a6569a085e6d84e",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0417.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0418.txt",
+      "description": "matad_numerics: exact source expression 418, original precision retained",
+      "sha256": "baa85d177166f15396bee5288ed248893027ac1aa2098d8f9cb3cf2badeb69b0",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0418.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0419.txt",
+      "description": "matad_numerics: exact source expression 419, original precision retained",
+      "sha256": "46c32d77d7761d623b05e7a305d896bc366c0c20ee24acd9f399c8594ed3c90a",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0419.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0420.txt",
+      "description": "matad_numerics: exact source expression 420, original precision retained",
+      "sha256": "5f5dcd4825ea0cf6a27120abe2c99c162b220cbb18180c02da23550928721fe9",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0420.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0421.txt",
+      "description": "matad_numerics: exact source expression 421, original precision retained",
+      "sha256": "08226fb564d917e15059a6a3736a68e9e11ebfba398fa8a4ab46f9a25ecd6a2e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0421.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0422.txt",
+      "description": "matad_numerics: exact source expression 422, original precision retained",
+      "sha256": "67185586d8a42ff5cfe9dafcd16532b3da73eb7b254a5d6ecf4c8ec618ed7ad3",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0422.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0423.txt",
+      "description": "matad_numerics: exact source expression 423, original precision retained",
+      "sha256": "acd7d19180b424da461b59828eb4cc4753301c5dc53664a4b1b058ac155b1acf",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0423.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0424.txt",
+      "description": "matad_numerics: exact source expression 424, original precision retained",
+      "sha256": "b405d0a0db2f346b8d5230f5f42a9090dc6bcc8238e2778a203b3eae5d233de7",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0424.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0425.txt",
+      "description": "matad_numerics: exact source expression 425, original precision retained",
+      "sha256": "adaead9739b32d1caa6fff4ce40d1931121c22511e233fff5c99f5cec415695c",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0425.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0426.txt",
+      "description": "matad_numerics: exact source expression 426, original precision retained",
+      "sha256": "44ed0201483466f90a47d558ee3deff9c78f39f96e8f765b2dceb2203606888b",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0426.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0427.txt",
+      "description": "matad_numerics: exact source expression 427, original precision retained",
+      "sha256": "149ae79d3c5d709d9a877dde562429e64db2e5a5d8f0ea1d86b97baf74a0b55e",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0427.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0428.txt",
+      "description": "matad_numerics: exact source expression 428, original precision retained",
+      "sha256": "14aa275123d69a783ab9ef3b11a064ecc6918fce587f40ee91f5fb1b648fbfcf",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0428.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0429.txt",
+      "description": "matad_numerics: exact source expression 429, original precision retained",
+      "sha256": "0ce9c7e7eeb45c4d69ef35ebe36bb28c3380138b5cbe09aba3b243b8fbfb293d",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0429.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0430.txt",
+      "description": "matad_numerics: exact source expression 430, original precision retained",
+      "sha256": "9ece5906255c06b7b0fc561280e300e9c6acad444ef554bced717d7e0681bca7",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0430.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0431.txt",
+      "description": "matad_numerics: exact source expression 431, original precision retained",
+      "sha256": "993727510a014df78e5ce89de641fb212fde29039dd745ce728101a79fa44d62",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0431.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0432.txt",
+      "description": "matad_numerics: exact source expression 432, original precision retained",
+      "sha256": "318886d6d9ed4b69d138de0e4688297ac7d38a7236b8fdfd3a75d5c728ba7a71",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0432.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0433.txt",
+      "description": "matad_numerics: exact source expression 433, original precision retained",
+      "sha256": "6fa8d003cf1506ca82c4ad2a120b304d08961557b17142991e81709ba347d05f",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0433.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0434.txt",
+      "description": "matad_numerics: exact source expression 434, original precision retained",
+      "sha256": "9a9d367410b957c85ec2061a2e108ed44294c17c1ad5f5a62bb8992f2c30326f",
+      "size": 20131,
+      "source_path": "data/numerics/matad_numerics/0434.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0435.txt",
+      "description": "matad_numerics: exact source expression 435, original precision retained",
+      "sha256": "58b53dae7997902cf9f7bfb76e38f91e2ba379ed52ba229fcc48910e4547e56a",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0435.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0436.txt",
+      "description": "matad_numerics: exact source expression 436, original precision retained",
+      "sha256": "abf84340e5656915b8c0901d4d5d829cccc52965ca42b0da43a567bfadb4a80e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0436.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0437.txt",
+      "description": "matad_numerics: exact source expression 437, original precision retained",
+      "sha256": "d14c15aa18c74c75f7795ac3801fb2396ee9b7996031042041d69ce366d360a8",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0437.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0438.txt",
+      "description": "matad_numerics: exact source expression 438, original precision retained",
+      "sha256": "65ce04e416e0ade707dec649c46a01b3097ac721a664af03bc43def40600e0c0",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0438.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0439.txt",
+      "description": "matad_numerics: exact source expression 439, original precision retained",
+      "sha256": "f9deeae8736c2f9a90c2391e7b7cafaba32601e5baf75d205a9b6aad6bc37a65",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0439.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0440.txt",
+      "description": "matad_numerics: exact source expression 440, original precision retained",
+      "sha256": "66fc4e9295a7e85fffebfbcfc0900fbac4e3d3f947e59a31136c6e69940e76ba",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0440.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0441.txt",
+      "description": "matad_numerics: exact source expression 441, original precision retained",
+      "sha256": "057ce3776e94ee3d707477e3bb1bdf5492b844df4ec61d9ef9b3b1c8270016f2",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0441.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0442.txt",
+      "description": "matad_numerics: exact source expression 442, original precision retained",
+      "sha256": "fcd732e73356aeb9da040c33610ae9081e6d3d89509a7843512c44edc02f818b",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0442.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0443.txt",
+      "description": "matad_numerics: exact source expression 443, original precision retained",
+      "sha256": "b09e943a406744ead347dca5c569f29e63fb1865482726b775d748f6d6296d13",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0443.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0444.txt",
+      "description": "matad_numerics: exact source expression 444, original precision retained",
+      "sha256": "e92596bac314993d2060cbd02b75388e73e48fdc65b44a1dfb2b73c58dfb5187",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0444.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0445.txt",
+      "description": "matad_numerics: exact source expression 445, original precision retained",
+      "sha256": "fb4641d9e37ee82b1fd0d18e8e3c36bdb7a1d0d0ba6e582efae3a661341006db",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0445.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0446.txt",
+      "description": "matad_numerics: exact source expression 446, original precision retained",
+      "sha256": "09e3c7fece7b82dd0a4934e8cf92e9f8297d733b71277688c86635f7123447d2",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0446.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0447.txt",
+      "description": "matad_numerics: exact source expression 447, original precision retained",
+      "sha256": "9532b08a4233baa57bc4a59c71f336de1dd13dea1d1b3f78fd90ce021adc6ea6",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0447.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0448.txt",
+      "description": "matad_numerics: exact source expression 448, original precision retained",
+      "sha256": "7aeb437b697bc4eb95b9c7c1409c4c41da9bf5c8642ceca56341600579172960",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0448.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0449.txt",
+      "description": "matad_numerics: exact source expression 449, original precision retained",
+      "sha256": "dad3989aca4931e6d73bca60638fdb256738ef23b4024f990b411d2cc4df6c23",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0449.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0450.txt",
+      "description": "matad_numerics: exact source expression 450, original precision retained",
+      "sha256": "c76a3cb62f497a8e3604fd9afd8179d8b3869c1a41a0844b40c79d64ade40f57",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0450.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0451.txt",
+      "description": "matad_numerics: exact source expression 451, original precision retained",
+      "sha256": "c614d046a492bd4b564c32ab8abbcde235c7ad0b28232d566856ae34780a03eb",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0451.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0452.txt",
+      "description": "matad_numerics: exact source expression 452, original precision retained",
+      "sha256": "2d77924da59d0860f4566059c97af7533fa82d7d3a3f96a8d30493d8e08f4f9b",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0452.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0453.txt",
+      "description": "matad_numerics: exact source expression 453, original precision retained",
+      "sha256": "18acbf3fe46158721b316de653294872d584b67d192dc4204f36c0d2620c170c",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0453.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0454.txt",
+      "description": "matad_numerics: exact source expression 454, original precision retained",
+      "sha256": "d70e0702f50d6726f3ade9a6188a28f68cf12d3bcf895a586571c85f3adc34ff",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0454.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0455.txt",
+      "description": "matad_numerics: exact source expression 455, original precision retained",
+      "sha256": "15f9e04dcc727d863b7c9b9b047458431b39d35d46cc63865e737945df83f016",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0455.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0456.txt",
+      "description": "matad_numerics: exact source expression 456, original precision retained",
+      "sha256": "102c7b4942e883dde4074b16b2c00f062d51043cbbc6caa78b9ba50e7cd5c72f",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0456.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0457.txt",
+      "description": "matad_numerics: exact source expression 457, original precision retained",
+      "sha256": "909d62392fa3c1a9367a5fd51a035531a02e8f117506df188902d72ef51ce351",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0457.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0458.txt",
+      "description": "matad_numerics: exact source expression 458, original precision retained",
+      "sha256": "ebf44ab6bf788305ebb9202d633b380618c3adba3db9774fdf9c100289b9fb35",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0458.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0459.txt",
+      "description": "matad_numerics: exact source expression 459, original precision retained",
+      "sha256": "71973247fecf9b869a2f5772ecb36b5ae0840b27cd289e94850f249f9a9f8165",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0459.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0460.txt",
+      "description": "matad_numerics: exact source expression 460, original precision retained",
+      "sha256": "c987b71c550c2893c9bcb5404c8972b780a172175bb1c4b85e956c564b89ad0b",
+      "size": 20135,
+      "source_path": "data/numerics/matad_numerics/0460.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0461.txt",
+      "description": "matad_numerics: exact source expression 461, original precision retained",
+      "sha256": "c36238bc0315b2ed57c507313d4fce648195fd2a31cead474f276ab548a51ac4",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0461.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0462.txt",
+      "description": "matad_numerics: exact source expression 462, original precision retained",
+      "sha256": "9a95da1f3a1bde83d7c8b959380784f7c6ee944873fd276875e217824d261c38",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0462.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0463.txt",
+      "description": "matad_numerics: exact source expression 463, original precision retained",
+      "sha256": "126a059293e0b7b53ce59db4f6646cb871a166e25c95c84ea9f7229eaac1fdb5",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0463.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0464.txt",
+      "description": "matad_numerics: exact source expression 464, original precision retained",
+      "sha256": "d4189315360b06a52f58f45c35c2db1bfa866cb5d0a31d94bda691cc17770716",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0464.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0465.txt",
+      "description": "matad_numerics: exact source expression 465, original precision retained",
+      "sha256": "b33a2b3d259f8926cfdd30ea0965d6b977a1c9a5862856d2c5d3231594ae34bb",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0465.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0466.txt",
+      "description": "matad_numerics: exact source expression 466, original precision retained",
+      "sha256": "7f8c90904431f52bec5715ef643812fc6cf48ed13965b442a1b173ed5794bb73",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0466.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0467.txt",
+      "description": "matad_numerics: exact source expression 467, original precision retained",
+      "sha256": "c303246d40ea85286ada2048d5d40dfecce8c764ffa65eb22a3769327afdc212",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0467.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0468.txt",
+      "description": "matad_numerics: exact source expression 468, original precision retained",
+      "sha256": "3333e99a8409e7730b6531f97dc81554696023624387315f1b01c04b9d630550",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0468.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0469.txt",
+      "description": "matad_numerics: exact source expression 469, original precision retained",
+      "sha256": "5e05e2d91cb9c7a07c92c78d037f6e924bdd2a12e573aa16b60a2453219873eb",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0469.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0470.txt",
+      "description": "matad_numerics: exact source expression 470, original precision retained",
+      "sha256": "547d67240b3a3d48538ed4c45897f5a9a242687ba35061aba5de0beaaf1a398e",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0470.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0471.txt",
+      "description": "matad_numerics: exact source expression 471, original precision retained",
+      "sha256": "de97af1634f0030341294bc45e565033e12b22eee18ad1a7affc27a1ecc6fcd2",
+      "size": 20132,
+      "source_path": "data/numerics/matad_numerics/0471.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0472.txt",
+      "description": "matad_numerics: exact source expression 472, original precision retained",
+      "sha256": "417faeaa23083c2a48911d0ded55e9e8f101b48efd366c76d02a17f95923b000",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0472.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0473.txt",
+      "description": "matad_numerics: exact source expression 473, original precision retained",
+      "sha256": "279731a9b1937ad51a28e91be42c71a1212a7a228912c80d17fdbc39343d45eb",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0473.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0474.txt",
+      "description": "matad_numerics: exact source expression 474, original precision retained",
+      "sha256": "6fcaecf0732d267e41788bed0e59cb34329c5a46164121d1072eb1feb1d31635",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0474.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0475.txt",
+      "description": "matad_numerics: exact source expression 475, original precision retained",
+      "sha256": "688ff8bbb16a2a93ba563a39e74b9b93ca593612ec2071fe2eacd9ef23b135fd",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0475.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0476.txt",
+      "description": "matad_numerics: exact source expression 476, original precision retained",
+      "sha256": "687dfa5a503a77ed883729e14bf26b915f3b163d050342c2e125846f5e6e7b0c",
+      "size": 20133,
+      "source_path": "data/numerics/matad_numerics/0476.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0477.txt",
+      "description": "matad_numerics: exact source expression 477, original precision retained",
+      "sha256": "2fceef9b5e609fb6ee69e7f73a7d4a9cb2bff2e9037806d6b2904884662dc67a",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0477.txt"
+    },
+    {
+      "name": "vakint/numerics/matad_numerics/0478.txt",
+      "description": "matad_numerics: exact source expression 478, original precision retained",
+      "sha256": "0eb19c3f1ae72a96c65b149045d3575668f0c7067a05d260fdb9224e203d8da8",
+      "size": 20134,
+      "source_path": "data/numerics/matad_numerics/0478.txt"
+    },
+    {
+      "name": "vakint/rustred/four_loop/bmw.candidates.rrbin.gz",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: bmw.candidates.rrbin.gz",
+      "sha256": "96cdadf960adc3726a3eb984ab70f0fe0e514e47eb1aa7ccc8fc8b1192c1aca2",
+      "size": 3606624,
+      "source_path": "data/rustred/four_loop/bmw.candidates.rrbin.gz",
+      "compression": "gzip",
+      "expanded_size": 50065170
+    },
+    {
+      "name": "vakint/rustred/four_loop/bmw.csv",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: bmw.csv",
+      "sha256": "a10b917df78d353031f85df83ba9a8debfa571de0cf890e35324fcfd83c561f6",
+      "size": 205,
+      "source_path": "data/rustred/four_loop/bmw.csv"
+    },
+    {
+      "name": "vakint/rustred/four_loop/bmw.rrcat.bin.gz",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: bmw.rrcat.bin.gz",
+      "sha256": "43c5dc43e608e0a92d8fffa143e9ad174a8d7841c4603ad4889bdaffa1d63a70",
+      "size": 704,
+      "source_path": "data/rustred/four_loop/bmw.rrcat.bin.gz",
+      "compression": "gzip",
+      "expanded_size": 4320
+    },
+    {
+      "name": "vakint/rustred/four_loop/bmw.rrnorm.bin",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: bmw.rrnorm.bin",
+      "sha256": "2e7bf7c72f1db4cb1ba62e827ce133422901f5ab1322b23c5d3c5bcb0db9d4e0",
+      "size": 6291,
+      "source_path": "data/rustred/four_loop/bmw.rrnorm.bin"
+    },
+    {
+      "name": "vakint/rustred/four_loop/fg.candidates.rrbin.gz",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: fg.candidates.rrbin.gz",
+      "sha256": "758875729ac5e8b73b3427451f3159b3a36b1c57264ad1829941b17051a996f1",
+      "size": 1938863,
+      "source_path": "data/rustred/four_loop/fg.candidates.rrbin.gz",
+      "compression": "gzip",
+      "expanded_size": 21996303
+    },
+    {
+      "name": "vakint/rustred/four_loop/fg.csv",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: fg.csv",
+      "sha256": "451d36f075a0fb19119675123bda1908e8db10ecfe45fa85ae65623066c583e7",
+      "size": 204,
+      "source_path": "data/rustred/four_loop/fg.csv"
+    },
+    {
+      "name": "vakint/rustred/four_loop/fg.rrcat.bin.gz",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: fg.rrcat.bin.gz",
+      "sha256": "f4684aa6cd59203cc554863e324b0f5d9464099526043b0fee81c0b85d6ce58d",
+      "size": 667,
+      "source_path": "data/rustred/four_loop/fg.rrcat.bin.gz",
+      "compression": "gzip",
+      "expanded_size": 4062
+    },
+    {
+      "name": "vakint/rustred/four_loop/fg.rrnorm.bin",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: fg.rrnorm.bin",
+      "sha256": "5c99b4814c8f22ac0e8b1288196fa7721f43739f2d94a36cc83e47c7c33fdf0e",
+      "size": 5759,
+      "source_path": "data/rustred/four_loop/fg.rrnorm.bin"
+    },
+    {
+      "name": "vakint/rustred/four_loop/h.candidates.rrbin.gz",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: h.candidates.rrbin.gz",
+      "sha256": "06e68b685bef4449980b67995fc30e68dbc765cd8356eb21e7fadc9dcdbdaab8",
+      "size": 4657362,
+      "source_path": "data/rustred/four_loop/h.candidates.rrbin.gz",
+      "compression": "gzip",
+      "expanded_size": 58025776
+    },
+    {
+      "name": "vakint/rustred/four_loop/h.csv",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: h.csv",
+      "sha256": "88384c963e304dd4896dcba719ce10a0b1d0e4a8764f5cc3b314b61d06887ab8",
+      "size": 307,
+      "source_path": "data/rustred/four_loop/h.csv"
+    },
+    {
+      "name": "vakint/rustred/four_loop/h.rrcat.bin.gz",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: h.rrcat.bin.gz",
+      "sha256": "c6a9486f2b4fcd37eb6fcc3b0550b652b016143e6c8bd546a596bbf3d2e42f4a",
+      "size": 770,
+      "source_path": "data/rustred/four_loop/h.rrcat.bin.gz",
+      "compression": "gzip",
+      "expanded_size": 4660
+    },
+    {
+      "name": "vakint/rustred/four_loop/h.rrnorm.bin",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: h.rrnorm.bin",
+      "sha256": "917c8ec7b4e229423ae6cbf9da2eb9aa80df68362669ee9012d852dff047b97a",
+      "size": 8934,
+      "source_path": "data/rustred/four_loop/h.rrnorm.bin"
+    },
+    {
+      "name": "vakint/rustred/four_loop/x.candidates.rrbin.gz",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: x.candidates.rrbin.gz",
+      "sha256": "bff541dd563d9902a5fcdbef727ea8732647856f2b90772e30d5f4ac0e6395c5",
+      "size": 10175690,
+      "source_path": "data/rustred/four_loop/x.candidates.rrbin.gz",
+      "compression": "gzip",
+      "expanded_size": 149404677
+    },
+    {
+      "name": "vakint/rustred/four_loop/x.csv",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: x.csv",
+      "sha256": "74ccfe948e0ff747945cf742544eea7729722662fc0b96a42d1a22c128fd9dd6",
+      "size": 198,
+      "source_path": "data/rustred/four_loop/x.csv"
+    },
+    {
+      "name": "vakint/rustred/four_loop/x.rrcat.bin.gz",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: x.rrcat.bin.gz",
+      "sha256": "f028c6015af4eb0ea2912b73f8fe69b5c2caebf97ec68ad0c86c64a65d9d5bb2",
+      "size": 739,
+      "source_path": "data/rustred/four_loop/x.rrcat.bin.gz",
+      "compression": "gzip",
+      "expanded_size": 4492
+    },
+    {
+      "name": "vakint/rustred/four_loop/x.rrnorm.bin",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: x.rrnorm.bin",
+      "sha256": "14c8b6f27cc6c9a0147c815ef367a4dca4915a757cbc388e3a71603468866481",
+      "size": 9811,
+      "source_path": "data/rustred/four_loop/x.rrnorm.bin"
+    },
+    {
+      "name": "vakint/rustred/unit_mass_vacuum_k1.rrbin",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: unit_mass_vacuum_k1.rrbin",
+      "sha256": "f8a740e9707e4560b9c0ffdf7f2adba5220d3e21054c11ac0f0a4aab3031dc88",
+      "size": 2790,
+      "source_path": "data/rustred/unit_mass_vacuum_k1.rrbin"
+    },
+    {
+      "name": "vakint/rustred/unit_mass_vacuum_k3.rrbin",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: unit_mass_vacuum_k3.rrbin",
+      "sha256": "778ab2e6ef9f4934cf8fd4e6aa45486bac21f8c508c0b21d1a00fdec3b532ac5",
+      "size": 36692,
+      "source_path": "data/rustred/unit_mass_vacuum_k3.rrbin"
+    },
+    {
+      "name": "vakint/rustred/unit_mass_vacuum_k6.rrbin",
+      "description": "Vakint RustRed reduction program, catalog or normalization data: unit_mass_vacuum_k6.rrbin",
+      "sha256": "383b2ebbc1124bef251f88df9c1c0d80cb180a14fe12cb5d5928933d926b8006",
+      "size": 3731581,
+      "source_path": "data/rustred/unit_mass_vacuum_k6.rrbin"
+    },
+    {
+      "name": "vakint/templates/run_alphaloop_integral_evaluation.txt",
+      "description": "Vakint FORM source or execution template: run_alphaloop_integral_evaluation.txt",
+      "sha256": "c5050cfc89c3fe645cd99c12205b48f107d207051c4ce2ae20ecf5a372e78498",
+      "size": 417,
+      "source_path": "templates/run_alphaloop_integral_evaluation.txt"
+    },
+    {
+      "name": "vakint/templates/run_fmft.txt",
+      "description": "Vakint FORM source or execution template: run_fmft.txt",
+      "sha256": "35afc6455639b940a802f55b6828c5e9638215a2a9eba4f39c87239f8264026a",
+      "size": 302,
+      "source_path": "templates/run_fmft.txt"
+    },
+    {
+      "name": "vakint/templates/run_matad.txt",
+      "description": "Vakint FORM source or execution template: run_matad.txt",
+      "sha256": "446543fce5b1a4d89916a3ea2463721f202cba9419839eefbf3c3498aeeff571",
+      "size": 333,
+      "source_path": "templates/run_matad.txt"
+    },
+    {
+      "name": "vakint/templates/run_pySecDec_template.txt",
+      "description": "Vakint FORM source or execution template: run_pySecDec_template.txt",
+      "sha256": "8416e5d43c95005b2876e23d5d92150636fbe89b1135286c31c1f424cc9c7de1",
+      "size": 15537,
+      "source_path": "templates/run_pySecDec_template.txt"
+    },
+    {
+      "name": "vakint/templates/run_tensor_reduction.txt",
+      "description": "Vakint FORM source or execution template: run_tensor_reduction.txt",
+      "sha256": "e91a72c45d65545cbd48365fe3d9104565b744daaded7e9171e0342686939364",
+      "size": 462,
+      "source_path": "templates/run_tensor_reduction.txt"
+    }
+  ]
+}

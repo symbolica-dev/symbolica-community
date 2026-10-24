@@ -181,14 +181,14 @@ class EndpointConstraints:
     @property
     def provenance(self) -> builtins.str: ...
     @property
-    def max_dimension(self) -> builtins.int: ...
+    def max_dimension(self) -> typing.Optional[builtins.int]: ...
     @property
-    def max_order(self) -> builtins.int: ...
+    def max_order(self) -> typing.Optional[builtins.int]: ...
     @property
-    def max_coefficient_bits(self) -> builtins.int: ...
+    def max_coefficient_bits(self) -> typing.Optional[builtins.int]: ...
     @property
-    def max_scalar_cells(self) -> builtins.int: ...
-    def __new__(cls, relations: typing.Sequence[AsymptoticRelation], provenance: builtins.str, *, max_dimension: builtins.int = 64, max_order: builtins.int = 256, max_coefficient_bits: builtins.int = 65536, max_scalar_cells: builtins.int = 4000000) -> EndpointConstraints: ...
+    def max_scalar_cells(self) -> typing.Optional[builtins.int]: ...
+    def __new__(cls, relations: typing.Sequence[AsymptoticRelation], provenance: builtins.str, *, max_dimension: typing.Optional[builtins.int] = None, max_order: typing.Optional[builtins.int] = None, max_coefficient_bits: typing.Optional[builtins.int] = None, max_scalar_cells: typing.Optional[builtins.int] = None) -> EndpointConstraints: ...
 
 @typing.final
 class EndpointResult:
@@ -266,6 +266,35 @@ class EvaluationOptions:
     @property
     def series_order(self) -> builtins.int: ...
     @property
+    def max_steps(self) -> typing.Optional[builtins.int]:
+        r"""
+        Optional diagnostic proposal cap; None leaves the count unrestricted.
+        """
+    @property
+    def max_precision_attempts(self) -> typing.Optional[builtins.int]: ...
+    @property
+    def max_boundary_attempts(self) -> typing.Optional[builtins.int]: ...
+    @property
+    def max_recursion_depth(self) -> typing.Optional[builtins.int]:
+        r"""
+        Optional recursive-depth diagnostic; zero admits no recursive depth.
+        """
+    @property
+    def max_process_rss_bytes(self) -> typing.Optional[builtins.int]:
+        r"""
+        Whole-process RSS ceiling in bytes, shared by nested work.
+        """
+    @property
+    def max_elapsed_seconds(self) -> typing.Optional[builtins.float]:
+        r"""
+        Cooperative elapsed-time ceiling for one request, in seconds.
+        """
+    @property
+    def pade_max_work(self) -> typing.Optional[builtins.int]:
+        r"""
+        Optional diagnostic work cap for an explicitly selected Padé proposal.
+        """
+    @property
     def pade_degree(self) -> typing.Optional[builtins.int]:
         r"""
         Optional rational approximation degree; absent means Taylor transport.
@@ -294,7 +323,7 @@ class EvaluationOptions:
         r"""
         Zero-based physical denominator slots, never HEPKit edge IDs or ISP slots.
         """
-    def __new__(cls, *, digits: builtins.int = 20, guard_digits: builtins.int = 40, series_order: builtins.int = 80, max_steps: builtins.int = 1000, workers: builtins.int = 1, dimension: builtins.int = 4, recursion: builtins.str = 'auxiliary_mass', prescription: builtins.str = '+i0', mass_mode: typing.Optional[builtins.str] = None, deformed_propagator_slots: typing.Optional[typing.Sequence[builtins.int]] = None, refine_basis: builtins.bool = False, skip_reduction: builtins.bool = False, sampled_reduction: builtins.bool = True, max_precision_attempts: builtins.int = 3, max_boundary_attempts: builtins.int = 8, cache_directory: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, local_coordinate: builtins.str = 'identity', sample_cache_directory: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, reuse_samples: builtins.bool = True, pade_degree: typing.Optional[builtins.int] = None, residual_arithmetic: builtins.str = 'ball', boundary_error_strategy: builtins.str = 'automatic') -> EvaluationOptions: ...
+    def __new__(cls, *, digits: builtins.int = 20, guard_digits: builtins.int = 40, series_order: builtins.int = 80, max_steps: typing.Optional[builtins.int] = None, workers: builtins.int = 1, dimension: builtins.int = 4, recursion: builtins.str = 'auxiliary_mass', prescription: builtins.str = '+i0', mass_mode: typing.Optional[builtins.str] = None, deformed_propagator_slots: typing.Optional[typing.Sequence[builtins.int]] = None, refine_basis: builtins.bool = False, skip_reduction: builtins.bool = False, sampled_reduction: builtins.bool = True, max_precision_attempts: typing.Optional[builtins.int] = None, max_boundary_attempts: typing.Optional[builtins.int] = None, cache_directory: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, local_coordinate: builtins.str = 'identity', sample_cache_directory: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, reuse_samples: builtins.bool = True, pade_degree: typing.Optional[builtins.int] = None, residual_arithmetic: builtins.str = 'ball', boundary_error_strategy: builtins.str = 'automatic', max_process_rss_bytes: typing.Optional[builtins.int] = None, max_elapsed_seconds: typing.Optional[builtins.float] = None, pade_max_work: typing.Optional[builtins.int] = None, max_recursion_depth: typing.Optional[builtins.int] = None) -> EvaluationOptions: ...
     def __repr__(self) -> builtins.str: ...
 
 @typing.final
@@ -449,7 +478,7 @@ class IntegralEvaluator:
         Evaluate several exact linear combinations with shared sample values and reductions.
         Projection weights are multiplied before Laurent fitting.
         """
-    def __new__(cls, *, options: typing.Optional[EvaluationOptions] = None, reductions: typing.Optional[ReductionTables] = None, reduction_depth: builtins.int = 2, reduction_targets: builtins.int = 4096, reduction_batch_size: builtins.int = 32) -> IntegralEvaluator: ...
+    def __new__(cls, *, options: typing.Optional[EvaluationOptions] = None, reductions: typing.Optional[ReductionTables] = None, reduction_depth: builtins.int = 2, reduction_targets: typing.Optional[builtins.int] = None, reduction_batch_size: builtins.int = 32) -> IntegralEvaluator: ...
     def evaluate(self, family: IntegralFamily, powers: typing.Sequence[typing.Sequence[builtins.int]], point: typing.Mapping[Expression, Expression], epsilon: Expression, *, last: builtins.int = 0, physical_propagators: typing.Optional[builtins.int] = None, control: typing.Optional[ComputationControl] = None) -> builtins.list[LaurentExpansion]:
         r"""
         Denominator powers follow the native family's exact input order.
@@ -458,7 +487,7 @@ class IntegralEvaluator:
         r"""
         Evaluate prescribed exact nonzero epsilon samples with fresh recursive boundaries.
         """
-    def evaluate_diagram(self, diagram: FeynmanDiagram, kinematics: Kinematics, point: typing.Mapping[Expression, Expression], epsilon: Expression, *, last: builtins.int = 0, max_partial_fraction_states: builtins.int = 10000, control: typing.Optional[ComputationControl] = None) -> LaurentExpansion:
+    def evaluate_diagram(self, diagram: FeynmanDiagram, kinematics: Kinematics, point: typing.Mapping[Expression, Expression], epsilon: Expression, *, last: builtins.int = 0, max_partial_fraction_states: typing.Optional[builtins.int] = None, control: typing.Optional[ComputationControl] = None) -> LaurentExpansion:
         r"""
         Contract the native diagram numerator, decompose it, then integrate the exact weighted sum.
         """
@@ -505,7 +534,7 @@ class KinematicTransport:
         """
     @property
     def nonzero_conditions(self) -> builtins.list[Expression]: ...
-    def evaluate_endpoint(self, cache: BoundaryCache, route: EndpointRoute, leading: builtins.int, last: builtins.int, *, admit_matching_path: builtins.bool = False, admit_endpoint: builtins.bool = False, scales: typing.Optional[typing.Mapping[Expression, Expression]] = None, max_lift_dimension: builtins.int = 256, series_order: builtins.int = 64, constraints: typing.Optional[EndpointConstraints] = None, control: typing.Optional[ComputationControl] = None) -> EndpointResult:
+    def evaluate_endpoint(self, cache: BoundaryCache, route: EndpointRoute, leading: builtins.int, last: builtins.int, *, admit_matching_path: builtins.bool = False, admit_endpoint: builtins.bool = False, scales: typing.Optional[typing.Mapping[Expression, Expression]] = None, max_lift_dimension: typing.Optional[builtins.int] = None, series_order: builtins.int = 64, constraints: typing.Optional[EndpointConstraints] = None, control: typing.Optional[ComputationControl] = None) -> EndpointResult:
         r"""
         Evaluate finite epsilon coefficient limits in an exact endpoint chart.
         Admit the regular matching path and final endpoint approach separately.

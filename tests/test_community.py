@@ -21,12 +21,13 @@ def test_tensor_metric_trace():
     assert metric.contract().to_expression() == E("4")
 
 
-def test_spenso_import():
+def test_spenso_compatibility_imports_share_canonical_types():
+    from symbolica.community import tensor
     from symbolica.community.spenso import Representation, Tensor, TensorExpression
 
-    assert Representation is not None
-    assert Tensor is not None
-    assert TensorExpression is not None
+    assert Representation is tensor.Representation
+    assert Tensor is tensor.Tensor
+    assert TensorExpression is tensor.TensorExpression
 
 
 def test_vakint_import():

@@ -7,12 +7,25 @@ import json
 import os
 import sys
 import tempfile
+from functools import lru_cache
 from pathlib import Path
 from urllib.request import urlopen
 
 from . import core
 
 _directories: tuple[Path, ...] = ()
+
+@lru_cache(maxsize=1)
+def _compatibility_sources() -> dict:
+    """Historical raw aliases share the generated native integrity catalog."""
+    declaration = json.loads(
+        Path(__file__).with_name("data_compatibility.json").read_text()
+    )
+    return {
+        entry["name"]: declaration["remote_base_url"] + entry["source_path"]
+        for entry in declaration["assets"]
+    }
+
 
 
 def manifest() -> dict:
@@ -66,9 +79,12 @@ async def prepare(
     No download occurs during import or mathematical computation. Browser hosts
     may mount persistent storage at ``cache_dir``; the default browser cache is
     session-local. With no dataset arguments, prepare all resources supported
-    by this particular native/WASM engine.
+    by this particular native/WASM engine. Historical raw-data aliases require
+    an explicit dataset name; they are never prepared by default or used as
+    current RustRed reduction programs.
     """
     records = manifest()["assets"]
+    compatibility = _compatibility_sources()
     for dataset in datasets:
         if not any(
             record["name"] == dataset
@@ -80,6 +96,7 @@ async def prepare(
         record
         for record in records
         if not record["loaded"]
+        and (datasets or record["name"] not in compatibility)
         and (
             not datasets
             or any(
@@ -92,6 +109,7 @@ async def prepare(
     if not pending:
         return
     roots = _directories if source is None else (Path(source),)
+    explicit_source = source is not None
     source = "" if source is None else os.fspath(source)
     remote = source.startswith(("https://", "http://"))
     directory = (
@@ -116,8 +134,13 @@ async def prepare(
                 continue
             except ValueError:
                 cached.unlink()
-        if remote:
-            url = source.rstrip("/") + "/" + name
+        path = next((root / name for root in roots if (root / name).is_file()), None)
+        url = (
+            source.rstrip("/") + "/" + name if remote
+            else compatibility.get(name) if path is None and not explicit_source
+            else None
+        )
+        if url is not None:
             if sys.platform == "emscripten":
                 from pyodide.http import pyfetch
 
@@ -132,9 +155,6 @@ async def prepare(
 
                 payload = await asyncio.to_thread(download)
         else:
-            path = next(
-                (root / name for root in roots if (root / name).is_file()), None
-            )
             if path is None:
                 package = (
                     "symbolica-fonts" if name.startswith("render/fonts/")
