@@ -925,7 +925,7 @@ class Reduction:
         >>> summary = repr(reduction)
         """
 
-def reduce(family: IntegralFamily, powers: typing.Sequence[builtins.int], *, numerator: typing.Optional[Expression] = None) -> Reduction:
+def reduce(family: IntegralFamily, powers: typing.Sequence[builtins.int], *, numerator: typing.Optional[Expression] = None, diagnostic_max_total_index: typing.Optional[builtins.int] = None, max_process_rss_bytes: typing.Optional[builtins.int] = None, max_elapsed_seconds: typing.Optional[builtins.float] = None) -> Reduction:
     r"""
     Reduce a one-loop ``hep.IntegralFamily`` to scalar master integrals.
 
@@ -955,4 +955,10 @@ def reduce(family: IntegralFamily, powers: typing.Sequence[builtins.int], *, num
         One signed integer per denominator.
     numerator : Expression or None, optional
         Additional scalar numerator; None uses one.
+    diagnostic_max_total_index : int or None, optional
+        Explicit index-count diagnostic; None leaves this count unrestricted.
+    max_process_rss_bytes : int or None, optional
+        Cooperative whole-process RSS ceiling; None imposes no ceiling.
+    max_elapsed_seconds : float or None, optional
+        Cooperative deadline for native reduction; None imposes no deadline.
     """

@@ -17,7 +17,7 @@ ALGEBRA = ("symbolica", "numerica", "graphica")
 HEPKIT = (
     "feynkit-amplitude", "feynkit-cff", "feynkit-generator", "feynkit-graph",
     "feynkit-kinematics", "feynkit-model", "feynkit-py", "feynkit-tensor",
-    "feynkit-ufo", "linnet", "spenso", "spenso-macros", "spenso-hep-lib",
+    "feynkit-ufo", "linnet", "linnet-py", "spenso", "spenso-macros", "spenso-hep-lib",
     "idenso", "spynso3", "symbolica-utils",
 )
 OPTIONAL_HEPKIT = (
@@ -133,16 +133,18 @@ def check_graph(label, packages, nodes, root, *, community, native):
             label, "algebra source differs from the host declaration", name, source, declared,
         )
     assert algebra["numerica"] == algebra["graphica"], (label, "numeric revisions differ", algebra)
+    assert algebra["symbolica"] == algebra["numerica"], (
+        label, "kernel and numeric revisions differ", algebra,
+    )
     source = algebra["numerica"]
     assert source and re.fullmatch(
-        r"git\+https://github.com/symbolica-dev/symbolica\?branch=community#[0-9a-f]{40}",
+        r"git\+https://github.com/symbolica-dev/symbolica\?rev=(?P<revision>[0-9a-f]{40})#(?P=revision)",
         source,
-    ), (label, "expected official Symbolica community sources", source)
+    ), (label, "expected one immutable official Symbolica revision", source)
     singleton(packages, "pyo3")
     symbolica = singleton(packages, "symbolica")
     assert "faster_alloc" not in nodes[symbolica["id"]]["features"], "host allocator policy changed"
     names = {p["name"] for p in packages}
-    assert "linnet-py" not in names, (label, "generic Linnet Python API in host")
     if not community:
         forbidden = (*HEPKIT, *OPTIONAL_HEPKIT, "hyperbolica", "symbolica-amflow", *RUSTRED, *NATIVE_ONLY)
         assert not names.intersection(forbidden), (
@@ -158,7 +160,7 @@ def check_graph(label, packages, nodes, root, *, community, native):
         feynkit_source = singleton(packages, "feynkit-py")["source"]
         if feynkit_source is not None:
             assert re.fullmatch(
-                r"git\+https://github.com/alphal00p/gammaloop\?branch=feynkit#[0-9a-f]{40}",
+                r"git\+https://github.com/alphal00p/gammaloop\?branch=preserve-canonical-numerator-interfaces#[0-9a-f]{40}",
                 feynkit_source,
             ), (label, "expected upstream FeynKit branch", feynkit_source)
             assert feynkit_source.startswith(declared_source(root, "feynkit-py") + "#"), (

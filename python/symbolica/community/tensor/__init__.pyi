@@ -29,9 +29,8 @@ import numpy
 import numpy.typing
 import symbolica.core
 import typing
-from symbolica import ComplexFloat, Float
 from symbolica.community.graph import DiagramRender, RenderSettings
-from symbolica.core import Condition, Evaluator, Expression, FormattedOutput, FunctionDefinition, HeldExpression, PatternRestriction, Replacement, Transformer
+from symbolica.core import ComplexFloat, Condition, Evaluator, Expression, Float, FormattedOutput, FunctionDefinition, HeldExpression, PatternRestriction, Replacement, Transformer
 
 AUTO: _AutoIndex
 _: _AutoIndex
@@ -348,7 +347,10 @@ class CompiledTensorEvaluator:
         r"""
         Evaluate real or complex inputs, according to the compiled number type.
         """
-    def __repr__(self) -> builtins.str: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Describe the compiled output tensor layout and numeric domain.
+        """
 
 class CookingError(builtins.TypeError):
     r"""
@@ -722,8 +724,17 @@ class ExecutionMode:
     >>> network.execute(n_steps=1, mode=ExecutionMode.Single)
     """
     Single: typing.ClassVar[ExecutionMode]
+    r"""
+    Select one smallest-degree rewrite per step; without `n_steps`, continue until no work remains
+    """
     Scalar: typing.ClassVar[ExecutionMode]
+    r"""
+    Restrict each execution step to scalar work.
+    """
     All: typing.ClassVar[ExecutionMode]
+    r"""
+    Use the default contraction schedule.
+    """
     def __int__(self) -> builtins.int:
         r"""
         Return the underlying integer discriminant.
@@ -1220,7 +1231,10 @@ class FactorProjector(typing.Generic[_Projected]):
         >>> group = FactorProjector.cyclic(A, A)
         >>> result = trace(space, group)
         """
-    def __repr__(self) -> builtins.str: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Describe the permutation group and the number of retained factors.
+        """
     def _repr_html_(self) -> builtins.str:
         r"""
         Show the checked factor group using the tensor index printer.
@@ -2549,7 +2563,7 @@ class Tensor:
         >>> tensor[1, 0]
         3.0
         """
-    def evaluator(self, params: typing.Sequence[Expression], functions: typing.Sequence[FunctionDefinition] = [], iterations: builtins.int = 1, cpe_iterations: typing.Optional[builtins.int] = None, n_cores: builtins.int = 4, verbose: builtins.bool = False, jit_compile: builtins.bool = True, direct_translation: builtins.bool = True, jit_direct_translation: builtins.bool = False, jit_optimization_level: builtins.int = 3, jit_options: typing.Mapping[builtins.str, builtins.str] = {}, max_horner_scheme_variables: builtins.int = 500, max_common_pair_cache_entries: builtins.int = 1000000, max_common_pair_distance: builtins.int = 100) -> TensorEvaluator:
+    def evaluator(self, params: typing.Sequence[Expression], functions: typing.Sequence[FunctionDefinition] = [], iterations: builtins.int = 1, cpe_iterations: typing.Optional[builtins.int] = None, n_cores: builtins.int = 4, verbose: builtins.bool = False, jit_compile: builtins.bool = True, direct_translation: builtins.bool = True, jit_direct_translation: builtins.bool = False, jit_optimization_level: builtins.int = 3, jit_options: typing.Mapping[builtins.str, builtins.str] = {}, max_horner_scheme_variables: builtins.int = 500, max_common_pair_cache_entries: builtins.int = 1000000, max_common_pair_distance: builtins.int = 100, horner_use_cpe: builtins.bool = False) -> TensorEvaluator:
         r"""
         Optimise all components together using Symbolica's evaluator.
 
@@ -2557,6 +2571,9 @@ class Tensor:
         and JIT settings as Expression.evaluator. Fixed values can be substituted
         before construction. Evaluation returns one Tensor per input row, retaining
         the logical axes and data identity. JIT compilation occurs on first use.
+        Set `horner_use_cpe=True` to include common-pair elimination when scoring
+        Horner candidates. Final common-pair elimination remains enabled in both
+        modes and is bounded by `cpe_iterations`.
 
         >>> from symbolica import S
         >>> from symbolica.community.tensor import Tensor, TensorName, Representation
@@ -3593,6 +3610,7 @@ class Tensor:
         Notes
         -----
         Coordinates follow axes, the current component view; structure.axes is a canonical signature.
+        The canonical storage-axis order is not exposed by component indexing.
 
         Examples
         --------
@@ -3626,6 +3644,7 @@ class Tensor:
         Notes
         -----
         Coordinates follow axes, the current component view; structure.axes is a canonical signature.
+        The canonical storage-axis order is not exposed by component indexing.
 
         Examples
         --------
@@ -3659,6 +3678,7 @@ class Tensor:
         Notes
         -----
         Coordinates follow axes, the current component view; structure.axes is a canonical signature.
+        The canonical storage-axis order is not exposed by component indexing.
 
         Examples
         --------
@@ -3693,6 +3713,7 @@ class Tensor:
         Notes
         -----
         Coordinates follow axes, the current component view; structure.axes is a canonical signature.
+        The canonical storage-axis order is not exposed by component indexing.
 
         Examples
         --------
@@ -3742,7 +3763,10 @@ class TensorEvaluator:
         Use for arbitrary-precision evaluation, export, or instruction inspection.
         These operations return scalar components; they do not wrap tensor metadata.
         """
-    def __repr__(self) -> builtins.str: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Describe the output tensor layout and supported numeric domains.
+        """
     def evaluate(self, inputs: numpy.typing.ArrayLike) -> builtins.list[Tensor]:
         r"""
         Evaluate real inputs using Symbolica's ArrayLike input conventions.
@@ -5014,23 +5038,23 @@ class TensorExpression(Expression):
         contract : {"fully", "dots", "minimal", "selected", "none"}, default "fully"
             Structural work in addition to enabled identities and their prerequisites:
 
-            - "fully": contract compatible metrics/identities and vectors, collect
-              matrix chains, and close compatible chains into trace notation.
-            - "dots": the same work, plus canonical dot notation for scalar products.
-            - "minimal": perform structural contractions that do not multiply out
-              independent sum alternatives. Boundary substitutions through existing
-              sums and contractions within their branches are allowed. Products of
-              sums stay factored when contracting them would require distribution.
-            - "selected": the same structural operations, restricted to connections
-              in representations. This does not restrict identity prerequisites.
-            - "none": no additional structural pass. Enabled identities still get
-              their prerequisite contractions; this does not disable all contraction.
+        - "fully": contract compatible metrics/identities and vectors, collect
+          matrix chains, and close compatible chains into trace notation.
+        - "dots": the same work, plus canonical dot notation for scalar products.
+        - "minimal": perform structural contractions that do not multiply out
+          independent sum alternatives. Boundary substitutions through existing
+          sums and contractions within their branches are allowed. Products of
+          sums stay factored when contracting them would require distribution.
+        - "selected": the same structural operations, restricted to connections
+          in representations. This does not restrict identity prerequisites.
+        - "none": no additional structural pass. Enabled identities still get
+          their prerequisite contractions; this does not disable all contraction.
 
-            These modes do not enable identity families. In particular, collecting
-            a trace does not evaluate it, and contracting a color delta does not
-            apply a generator or Fierz identity. "minimal" restricts additional
-            structural work; enabled algebra identities retain their prerequisites
-            and can still introduce sums. It is not a global ban on expansion.
+        These modes do not enable identity families. In particular, collecting
+        a trace does not evaluate it, and contracting a color delta does not
+        apply a generator or Fierz identity. "minimal" restricts additional
+        structural work; enabled algebra identities retain their prerequisites
+        and can still introduce sums. It is not a global ban on expansion.
         representations : sequence of Representation or RepresentationName, optional
             Required with contract="selected" and rejected with the other modes.
             Select connecting representation families, including their duals, rather

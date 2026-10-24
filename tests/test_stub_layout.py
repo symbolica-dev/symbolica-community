@@ -115,34 +115,85 @@ def test_tensor_evaluator_stub_matches_loaded_signature():
     assert declared == list(inspect.signature(tensor.Tensor.evaluator).parameters)
 
 
-def test_graph_package_is_display_only():
+@pytest.mark.parametrize("name", ["evaluator", "evaluator_multiple"])
+def test_kernel_evaluator_stub_matches_loaded_signature(name):
+    core = importlib.import_module("symbolica.core")
+    stub = Path(core.__file__).parent / "core.pyi"
+    declarations = ast.parse(stub.read_text(), feature_version=9)
+    expression = next(
+        node
+        for node in declarations.body
+        if isinstance(node, ast.ClassDef) and node.name == "Expression"
+    )
+    method = next(
+        node
+        for node in expression.body
+        if isinstance(node, ast.FunctionDef) and node.name == name
+    )
+    declared = [arg.arg for arg in method.args.posonlyargs + method.args.args]
+    if declared[0] == "_cls":
+        declared.pop(0)
+    signature = inspect.signature(getattr(core.Expression, name))
+    assert declared == list(signature.parameters)
+    assert declared[-1] == "horner_use_cpe"
+    assert signature.parameters["horner_use_cpe"].default is False
+    assert isinstance(method.args.defaults[-1], ast.Constant)
+    assert method.args.defaults[-1].value is False
+
+
+def test_graph_package_exposes_generic_graph_and_rendering_api():
     from symbolica.community import graph
 
     generic_api = {
-        "Graph",
-        "Node",
-        "Edge",
-        "HalfEdge",
-        "Subgraph",
+        "CutPartition",
         "Cycle",
-        "OrientedCut",
-        "TraversalTree",
+        "DirectionBasis",
         "DotCodec",
+        "DotEdgeData",
+        "DotHalfEdgeData",
+        "DotVertexData",
+        "Edge",
+        "EdgeSignature",
+        "EdgeSpec",
+        "EdgeValue",
+        "Flow",
+        "GlobalData",
+        "Graph",
+        "HalfEdge",
+        "HalfEdgeSpec",
+        "HalfEdgeValue",
+        "LayoutFrame",
         "LayoutStream",
+        "Node",
+        "NodeSpec",
+        "NodeStore",
+        "NodeValue",
+        "Orientation",
+        "OrientedCut",
+        "Subgraph",
+        "TraversalTree",
         "build",
-        "node",
         "edge",
-        "source",
+        "node",
         "sink",
+        "source",
     }
-    assert not generic_api.intersection(vars(graph))
+    rendering_api = {"DiagramRender", "LayoutSettings", "Stroke", "RenderSettings"}
+    expected_exports = generic_api | rendering_api
+    assert expected_exports <= vars(graph).keys()
+    native = importlib.import_module("symbolica.community.graph_native")
+    for name in expected_exports:
+        exported = getattr(graph, name)
+        assert exported is getattr(native, name)
+        if inspect.isclass(exported):
+            assert exported.__module__ == "symbolica.community.graph"
     declarations = ast.parse(Path(graph.__file__).with_suffix(".pyi").read_text())
     stub_exports = {
         node.name
         for node in declarations.body
         if isinstance(node, (ast.ClassDef, ast.FunctionDef))
     }
-    assert not generic_api.intersection(stub_exports)
+    assert expected_exports <= stub_exports
 
 
 def test_graph_presentation_types_are_shared_by_both_renderers():

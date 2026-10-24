@@ -14,7 +14,7 @@ keywords = ["math", "algebra", "polynomial", "expression", "manipulation"]
 version = "3.0.2"
 readme = "Readme_pypi.md"
 requires-python = ">=3.9"
-dependencies = ["symbolica-fonts==3.0.2", "symbolica-vakint-data==3.0.2; sys_platform != 'emscripten' and sys_platform != 'wasi'", "anywidget>=0.9,<1; sys_platform == 'emscripten'"]
+dependencies = ["symbolica-fonts==3.0.2", "anywidget>=0.9,<1; sys_platform == 'emscripten'"]
 license-files = ["LICENSE", "licenses/*"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",

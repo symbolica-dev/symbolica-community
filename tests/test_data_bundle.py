@@ -16,7 +16,14 @@ def test_resource_distributions_have_no_file_collisions():
         ("symbolica-fonts", "fonts"),
         ("symbolica-vakint-data", "vakint-data"),
     ):
-        distribution = importlib.metadata.distribution(name)
+        try:
+            distribution = importlib.metadata.distribution(name)
+        except importlib.metadata.PackageNotFoundError:
+            if name != "symbolica-vakint-data":
+                raise
+            # The optional historical pure-data distribution remains supported;
+            # current installs need only fonts and explicit raw-data requests.
+            continue
         assert "Root-Is-Purelib: false" in distribution.read_text("WHEEL")
         files = {str(path) for path in distribution.files}
         assert not owned.intersection(files), (name, owned.intersection(files))
@@ -36,7 +43,9 @@ def test_installed_data_matches_the_compiled_consumer_catalog():
             assert len(payload) == asset["size"]
             assert hashlib.sha256(payload).hexdigest() == asset["sha256"]
     # Numerical data remains text, including the original precision markers.
-    expression = data.read("vakint/numerics/matad_numerics/0000.txt").decode()
+    name = "vakint/numerics/matad_numerics/0000.txt"
+    asyncio.run(data.prepare(name))
+    expression = data.read(name).decode()
     assert len(expression) > 80_000
     assert "`20096." in expression
 
@@ -78,3 +87,24 @@ assert data.read(name) == payload
         ],
         check=True,
     )
+
+
+def test_default_preparation_never_fetches_historical_reduction_packs(monkeypatch, tmp_path):
+    before = {
+        asset["name"]: asset["loaded"]
+        for asset in data.manifest()["assets"]
+        if asset["name"].startswith("vakint/")
+    }
+    assert before
+
+    def no_implicit_download(*args, **kwargs):
+        raise AssertionError("default preparation fetched compatibility data")
+
+    monkeypatch.setattr(data, "urlopen", no_implicit_download)
+    asyncio.run(data.prepare(cache_dir=tmp_path))
+    after = {
+        asset["name"]: asset["loaded"]
+        for asset in data.manifest()["assets"]
+        if asset["name"].startswith("vakint/")
+    }
+    assert after == before

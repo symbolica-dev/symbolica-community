@@ -30,7 +30,6 @@ jobs:
           name: wheels-data
           path: |
             dist/symbolica_fonts-*.whl
-            dist/symbolica_vakint_data-*.whl
   linux:
     runs-on: ${{ matrix.runner[0] }}
     strategy:

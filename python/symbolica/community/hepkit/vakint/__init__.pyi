@@ -2,21 +2,343 @@
 # ruff: noqa: E501, F401
 
 import builtins
+import os
+import pathlib
+import symbolica
 import typing
-from symbolica.core import Expression, FormattedOutput
 from symbolica.community.hepkit import FeynmanDiagram, IntegralFamily
+from symbolica.core import ComplexFloat, Expression, Float
 
-def integral_from_diagram(diagram: FeynmanDiagram, family: IntegralFamily, numerator: Expression, *, powers: typing.Optional[typing.Sequence[int]] = None, parameter_substitutions: typing.Optional[typing.Mapping[Expression, Expression]] = None, external_momenta: typing.Sequence[Expression] = ()) -> VakintExpression:
-    """Checked scalar-vacuum ingress from the graph's stored routing; no text parsing."""
+@typing.final
+class AvailablePrecision:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    ArbitraryPrecision: AvailablePrecision
+    @property
+    def kind(self) -> builtins.str: ...
+    @property
+    def max_decimal_precision(self) -> typing.Optional[builtins.int]: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+    def __eq__(self, other: AvailablePrecision) -> builtins.bool: ...
+    def __hash__(self) -> builtins.int: ...
+    @staticmethod
+    def FixedPrecision(max_decimal_precision: builtins.int) -> AvailablePrecision: ...
+
+@typing.final
+class CoefficientPrecision:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    @property
+    def real(self) -> ComponentPrecision: ...
+    @property
+    def imaginary(self) -> ComponentPrecision: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+
+@typing.final
+class ComponentPrecision:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    @property
+    def significant_digits(self) -> typing.Optional[builtins.int]:
+        r"""
+        Estimated significant decimal digits, or None when no relative accuracy is available.
+        """
+    @property
+    def significant_bits(self) -> typing.Optional[builtins.int]: ...
+    @property
+    def absolute_error(self) -> Float:
+        r"""
+        Absolute error radius as a native arbitrary-precision Symbolica Float.
+        """
+    @property
+    def exact_zero(self) -> builtins.bool: ...
+    @property
+    def quality(self) -> ErrorQuality: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+
+@typing.final
+class ConstantSymbol:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    @property
+    def expression(self) -> Expression: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+    def __eq__(self, other: ConstantSymbol) -> builtins.bool: ...
+    def __hash__(self) -> builtins.int: ...
+    def __new__(cls, symbol: symbolica.Expression | str) -> ConstantSymbol: ...
+
+@typing.final
+class DataProvenance:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    @property
+    def version(self) -> builtins.str: ...
+    @property
+    def source_sha256(self) -> builtins.str: ...
+    @property
+    def master_id(self) -> typing.Optional[builtins.str]: ...
+    @property
+    def epsilon_power(self) -> typing.Optional[builtins.int]: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+
+@typing.final
+class ErrorQuality:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    Bounded: ErrorQuality
+    Estimated: ErrorQuality
+    @property
+    def name(self) -> builtins.str: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+    def __eq__(self, other: ErrorQuality) -> builtins.bool: ...
+    def __hash__(self) -> builtins.int: ...
+
+@typing.final
+class MasterCoefficient:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    @property
+    def requested_decimal_precision(self) -> builtins.int: ...
+    @property
+    def symbol(self) -> Expression: ...
+    @property
+    def epsilon_power(self) -> builtins.int: ...
+    @property
+    def available_precision(self) -> AvailablePrecision: ...
+    @property
+    def numerical_value(self) -> Float: ...
+    @property
+    def precision(self) -> CoefficientPrecision: ...
+    @property
+    def warnings(self) -> builtins.list[PrecisionWarning]: ...
+    @property
+    def provenance(self) -> DataProvenance: ...
+    @property
+    def symbolic_expression(self) -> MasterSymbolicExpression: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+    def to_expression(self) -> Expression:
+        r"""
+        Encode achieved precision in a native expression; rejects uncertain zeros.
+        """
+
+@typing.final
+class MasterSymbol:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    @property
+    def expression(self) -> Expression: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+    def __eq__(self, other: MasterSymbol) -> builtins.bool: ...
+    def __hash__(self) -> builtins.int: ...
+    def __new__(cls, symbol: symbolica.Expression | str) -> MasterSymbol: ...
+
+@typing.final
+class MasterSymbolicExpression:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    @property
+    def kind(self) -> builtins.str: ...
+    @property
+    def expression(self) -> typing.Optional[Expression]: ...
+    @property
+    def max_decimal_precision(self) -> typing.Optional[builtins.int]: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+
+@typing.final
+class NumericalCoefficient:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    @property
+    def numerical_value(self) -> ComplexFloat:
+        r"""
+        Raw central value. Inspect precision before interpreting its digits.
+        """
+    @property
+    def precision(self) -> CoefficientPrecision: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+    def to_expression(self) -> Expression:
+        r"""
+        Encode independently achieved component precision; rejects uncertain zeros.
+        """
+
+@typing.final
+class PrecisionSource:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    @property
+    def identity(self) -> builtins.str: ...
+    @property
+    def master_id(self) -> typing.Optional[builtins.str]: ...
+    @property
+    def epsilon_power(self) -> typing.Optional[builtins.int]: ...
+    @property
+    def available_decimal_precision(self) -> typing.Optional[builtins.int]: ...
+    @property
+    def source_sha256(self) -> builtins.str: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+
+@typing.final
+class PrecisionWarning:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    @property
+    def epsilon_power(self) -> typing.Optional[builtins.int]: ...
+    @property
+    def requested_decimal_precision(self) -> builtins.int: ...
+    @property
+    def achieved_decimal_precision(self) -> typing.Optional[builtins.int]: ...
+    @property
+    def sources(self) -> builtins.list[PrecisionSource]: ...
+    @property
+    def data_version(self) -> builtins.str: ...
+    @property
+    def message(self) -> builtins.str: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
 
 @typing.final
 class Vakint:
     r"""
     Vakint engine and settings used for matching, reduction, and evaluation.
 
-    Construct one instance and reuse it: initialization processes the complete topology library.
+    Construct one instance and reuse it. Initialization prepares lower-loop data;
+    the five-loop catalogue is attached only after successful artifact loading.
     """
-    def __new__(cls, run_time_decimal_precision: typing.Optional[builtins.int] = None, evaluation_order: typing.Optional[typing.Sequence[VakintEvaluationMethod]] = None, tensor_reduction_method: typing.Optional[builtins.str] = None, epsilon_symbol: typing.Optional[Expression] = None, mu_r_sq_symbol: typing.Optional[Expression] = None, form_exe_path: typing.Optional[builtins.str] = None, python_exe_path: typing.Optional[builtins.str] = None, verify_numerator_identification: typing.Optional[builtins.bool] = None, integral_normalization_factor: typing.Optional[builtins.str] = None, allow_unknown_integrals: typing.Optional[builtins.bool] = None, clean_tmp_dir: typing.Optional[builtins.bool] = None, number_of_terms_in_epsilon_expansion: typing.Optional[builtins.int] = None, use_dot_product_notation: typing.Optional[builtins.bool] = None, temporary_directory: typing.Optional[builtins.str] = None) -> Vakint:
+    def load_external_data(self, path: builtins.str | os.PathLike | pathlib.Path, max_loop_count: builtins.int) -> None:
+        r"""
+        Load a local external-data checkout without network access.
+        """
+    def load_rustred_artifacts(self, loop_count: builtins.int, path: builtins.str | os.PathLike | pathlib.Path) -> None:
+        r"""
+        Load a local loop pack, or a sealed lower-loop native rules file.
+        """
+    def load_official_external_data(self, max_loop_count: builtins.int, version: builtins.str = 'latest', local_artifacts_path: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, refresh: builtins.bool = False, *, load_prepared_caches: builtins.bool = True) -> dict:
+        r"""
+        Install all official loop packs through the requested maximum, or load a
+        supplied checkout directly. Existing validated installations work offline.
+        Prepared native caches load by default. Set `load_prepared_caches=False`
+        to activate the same validated loop packs without importing their caches.
+        """
+    def __new__(cls, run_time_decimal_precision: typing.Optional[builtins.int] = None, evaluation_order: typing.Optional[typing.Sequence[VakintEvaluationMethod]] = None, tensor_reduction_method: typing.Optional[builtins.str] = None, epsilon_symbol: typing.Optional[Expression] = None, mu_r_sq_symbol: typing.Optional[Expression] = None, form_exe_path: typing.Optional[builtins.str] = None, python_exe_path: typing.Optional[builtins.str] = None, verify_numerator_identification: typing.Optional[builtins.bool] = None, integral_normalization_factor: typing.Optional[builtins.str] = None, allow_unknown_integrals: typing.Optional[builtins.bool] = None, clean_tmp_dir: typing.Optional[builtins.bool] = None, number_of_terms_in_epsilon_expansion: typing.Optional[builtins.int] = None, use_dot_product_notation: typing.Optional[builtins.bool] = None, temporary_directory: typing.Optional[builtins.str] = None, rustred_artifact_path: typing.Optional[builtins.str] = None, rustred_cache_bytes: typing.Optional[builtins.int] = None, rustred_cache_terms: typing.Optional[builtins.int] = None, rustred_product_cache_bytes: typing.Optional[builtins.int] = None, rustred_product_cache_terms: typing.Optional[builtins.int] = None, rustred_cache_policy: builtins.str = 'evict-lru', rustred_scalar_max_work: typing.Optional[builtins.int] = None, max_process_rss_bytes: typing.Optional[builtins.int] = None, max_elapsed_seconds: typing.Optional[builtins.float] = None) -> Vakint:
         r"""
         Create a new Vakint instance, specifying details of the evaluation stack. Note that the same instance can be recycled across multiple evaluations.
         Note that the creation of a Vakint instance involves the processing and creation of the library of all known topologies, which can be time consuming.
@@ -82,6 +404,141 @@ class Vakint:
             Whether to use dot product notation for scalar products. Default is False.
         temporary_directory : Optional[str]
             The path to the temporary directory to be used. Default is None, in which case a system temporary directory will be used.
+        rustred_artifact_path : Optional[str]
+            Saved application package for exact symbolic five-loop RustRed reduction.
+            Use master_mode="retain" for reduction without coefficient evaluation.
+        rustred_cache_bytes : Optional[int]
+            Saved-application coefficient-cache payload-byte allowance. None
+            imposes no payload-byte ceiling and does not enable count diagnostics.
+        rustred_cache_terms : Optional[int]
+            Optional diagnostic aggregate coefficient-term ceiling. Supplying a
+            count ceiling explicitly enables the corresponding native diagnostic profile.
+        rustred_product_cache_bytes : Optional[int]
+            Separate lower-factor cache budget; not an aggregate with the saved
+            application cache. None imposes no payload-byte ceiling.
+        rustred_product_cache_terms : Optional[int]
+            Optional lower-factor aggregate-term diagnostic. None leaves count
+            diagnostics disabled; a byte override alone does not enable them.
+        rustred_cache_policy : str
+            "evict-lru" (default) evicts inactive completed saved-rule results;
+            "fail-on-limit" preserves them and reports a cache-limit error.
+            A protected working set that cannot fit still errors under LRU.
+        rustred_scalar_max_work : Optional[int]
+            Optional scalar-work diagnostic per five-loop caller-numerator lowering.
+            None disables count diagnostics. This does not change campaign domains.
+        max_process_rss_bytes : Optional[int]
+            Cooperative whole-process resident-memory ceiling for each request.
+            None imposes no RSS ceiling; cache payload budgets remain separate.
+        max_elapsed_seconds : Optional[float]
+            Cooperative elapsed-time ceiling per public operation, including data
+            loading and lookup. None disables it. Native kernels are checked at
+            boundaries, so an external supervisor is needed for a hard deadline.
+        """
+    def load_rustred_application(self, path: builtins.str) -> None:
+        r"""
+        Explicitly load a local five-loop application package once.
+        Also selects this package in the engine settings.
+        """
+    def rustred_application_cache_statistics(self) -> builtins.dict[builtins.str, builtins.int]:
+        r"""
+        Saved-rule cache occupancy and cumulative work counters. Byte counts
+        describe charged coefficient payloads, not total process RSS.
+        `recomputed_nodes` counts repeated cache misses within a single request;
+        no unbounded cross-request history is retained.
+        """
+    def clear_rustred_application_cache(self) -> None:
+        r"""
+        Clear saved-rule and lower-factor memoization without changing the
+        admitted scope. Cumulative work/eviction counters are not reset.
+        """
+    def prepare_cache(self, n_loops: builtins.int, output_path: builtins.str, *, ram_bytes: typing.Optional[builtins.int] = None, disk_bytes: typing.Optional[builtins.int] = None, cache_policy: builtins.str = 'evict-lru', cache_terms: typing.Optional[builtins.int] = None, cache_integrals: typing.Optional[builtins.int] = None, max_rule_applications: typing.Optional[builtins.int] = None, time_limit_seconds: typing.Optional[builtins.int] = None, checkpoint_interval_seconds: typing.Optional[builtins.int] = None, max_roots: typing.Optional[builtins.int] = None, batch_records: typing.Optional[builtins.int] = None, extra_dots: typing.Optional[builtins.int] = None, numerator_rank: typing.Optional[builtins.int] = None, workload: typing.Optional[typing.Sequence[tuple[builtins.int, typing.Sequence[builtins.int]]]] = None, checkpoint_path: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None, resume: builtins.bool = True, progress: typing.Optional[typing.Any] = None, cancel: typing.Optional[typing.Any] = None, progress_interval_seconds: builtins.float = 1.0) -> dict:
+        r"""
+        Explicitly prepare a finite native cache for one through five loops.
+        No cache attaches automatically and no numerical masters are computed.
+        Inspect the returned status: resource/time/cancellation stops are partial.
+        `workload` is a sequence of `(namespace, complete_integer_powers)` pairs;
+        otherwise the native all-pinch relative-dot/rank primer is used for 1L–4L.
+        Five-loop preparation requires an explicit selected workload and writes
+        one compressed cache file. `checkpoint_path` selects its resumable work
+        directory; it is only valid for 5L and never changes the final file format.
+
+        The GIL is released during native work. `progress(report)` runs between
+        roots (throttled) and may return False to cancel; `cancel()` is a polled
+        predicate. Python signals and callback errors stop cooperatively after
+        the current native operation, checkpoint completed roots, then re-raise
+        with `cache_report` attached when possible. No hard deadline is promised.
+        Count overrides (`cache_terms`, `cache_integrals`, `max_rule_applications`
+        and `max_roots`) explicitly enable their native diagnostic profiles;
+        omission leaves count stops disabled. `batch_records` selects the flush
+        layout, while `extra_dots` and `numerator_rank` select a workload.
+        """
+    def load_cache(self, n_loops: builtins.int, path: builtins.str, *, ram_bytes: typing.Optional[builtins.int] = None, disk_bytes: typing.Optional[builtins.int] = None, cache_policy: typing.Optional[builtins.str] = None, lookup_budget_policy: typing.Optional[builtins.str] = None, cache_terms: typing.Optional[builtins.int] = None, cache_integrals: typing.Optional[builtins.int] = None, max_rule_applications: typing.Optional[builtins.int] = None) -> None:
+        r"""
+        Attach an exact read-only native cache bundle. Omitted settings preserve
+        the active RAM, work, eviction and lookup policies. A new attachment
+        uses native defaults, not preparation's larger RAM default.
+        """
+    def save_cache(self, n_loops: builtins.int, output_path: builtins.str, *, mode: builtins.str, disk_bytes: typing.Optional[builtins.int] = None, resume: builtins.bool = False) -> dict:
+        r"""
+        Explicitly save `resident-roots` or a portable `full-snapshot`.
+        The latter copies captured bases without coefficient decoding, then
+        writes the resident overlay and requires a new destination. Partial
+        reports distinguish base-copy success from overlay completion.
+        """
+    def import_cache(self, n_loops: builtins.int, archive_path: builtins.str, output_path: builtins.str, *, sha256: builtins.str, max_archive_bytes: typing.Optional[builtins.int] = None, max_extracted_bytes: typing.Optional[builtins.int] = None, max_entries: typing.Optional[builtins.int] = None, max_temporary_bytes: typing.Optional[builtins.int] = None, disk_bytes: typing.Optional[builtins.int] = None) -> dict:
+        r"""
+        Import a trusted SHA-256 checked USTAR gzip archive into a new native
+        snapshot directory. This does not attach the cache to evaluation.
+        """
+    def download_cache(self, n_loops: builtins.int, url: builtins.str, output_path: builtins.str, *, sha256: builtins.str, max_archive_bytes: typing.Optional[builtins.int] = None, max_extracted_bytes: typing.Optional[builtins.int] = None, max_entries: typing.Optional[builtins.int] = None, max_temporary_bytes: typing.Optional[builtins.int] = None, disk_bytes: typing.Optional[builtins.int] = None, timeout_seconds: typing.Optional[builtins.float] = None) -> dict:
+        r"""
+        Explicit HTTP(S) download with a required trusted checksum. Supply the
+        final URL: redirects are refused. Load the published snapshot separately.
+        """
+    def clear_cache(self, n_loops: builtins.int) -> None:
+        r"""
+        Clear only the attached native RAM cache; preserve its read-only files
+        and cumulative counters. No program is loaded for an empty attachment.
+        """
+    def detach_cache(self, n_loops: builtins.int) -> None:
+        r"""
+        Detach persistent backing and clear resident reduction records.
+        The loaded reduction campaign remains available for uncached evaluation.
+        """
+    def cache_statistics(self, n_loops: builtins.int) -> dict:
+        r"""
+        Return aggregate and exact-namespace cache telemetry. Coefficient payload
+        and I/O buffers are separate; neither is a measurement of process RSS.
+        """
+    def evaluate_rustred_symbolic(self, integral_expression: Expression) -> tuple[Expression, builtins.list[Expression], builtins.list[tuple[Expression, builtins.str]]]:
+        r"""
+        Apply the selected five-loop package and retain its symbolic conditions.
+
+        Returns `(value, nonzero_conditions, families)`, where `families` contains
+        `(master_label, full_family_fingerprint)` pairs. Conditions are exact
+        expressions required to be nonzero at generic dimension. No numerical
+        master values are substituted. The ordinary native tensor prepass runs
+        before scalar application, with the same settings as `evaluate`.
+        """
+    def get_constant(self, symbol: ConstantSymbol, prec: builtins.int = 16) -> VakintConstant:
+        r"""
+        Inspect a registered RustRed constant in the active data snapshot.
+
+        Precision shortfalls are returned as structured warnings. No data is downloaded.
+        """
+    def get_master(self, symbol: MasterSymbol, prec: builtins.int = 16) -> VakintMaster:
+        r"""
+        Inspect every available Laurent coefficient and the authenticated master graph.
+
+        The returned object keeps its data snapshot even after this engine loads another release.
+        """
+    def constant_symbols(self) -> builtins.list[ConstantSymbol]:
+        r"""
+        Discover all registered constants in the loaded or vendored RustRed data.
+        """
+    def master_symbols(self) -> builtins.list[MasterSymbol]:
+        r"""
+        Discover qualified master identities, including declared uncomputed terminals.
         """
     def numerical_result_from_expression(self, expr: Expression) -> VakintNumericalResult:
         r"""
@@ -105,7 +562,7 @@ class Vakint:
         expr : Expression
           A Symbolica expression representing a Laurent series in the dimensional regularisation parameter epsilon specified in the vakint engine.
         """
-    def numerical_evaluation(self, evaluated_integral: typing.Any, params: typing.Mapping[builtins.str, builtins.float], externals: typing.Optional[typing.Mapping[builtins.int, tuple[builtins.float, builtins.float, builtins.float, builtins.float]]] = None) -> tuple[VakintNumericalResult, typing.Optional[VakintNumericalResult]]:
+    def numerical_evaluation(self, evaluated_integral: Expression, params: typing.Mapping[str, symbolica.Float | symbolica.ComplexFloat | symbolica.Expression | int | float | complex], externals: typing.Mapping[int, typing.Sequence[symbolica.Float | symbolica.ComplexFloat | symbolica.Expression | int | float | complex]] | None = None) -> tuple[VakintNumericalResult, typing.Optional[VakintNumericalResult]]:
         r"""
         Substitute numerical parameters into an integral already evaluated parametrically by Vakint.
 
@@ -133,10 +590,12 @@ class Vakint:
 
         evaluated_integral : Expression
           A Symbolica expression representing an integral that has been evaluated parametrically by Vakint.
-        params : Dict[str, float]
-          A dictionary mapping parameter names to their numerical values.
-        externals : Optional[Dict[int, Tuple[float, float, float, float]]]
-          An optional dictionary mapping external momentum indices to their numerical 4-vector values.
+        params : Mapping[str, Float | ComplexFloat | Expression | int | float | complex]
+          Native floats retain precision; Python floats/complex values carry 53-bit input precision.
+          Integers and exact expressions are substituted symbolically; inexact expression leaves
+          retain named source errors instead of becoming exact values.
+        externals : Optional[Mapping[int, Sequence[Float | ComplexFloat | Expression | int | float | complex]]]
+          Four components in (time, x, y, z) order. Contractions use tracked arithmetic.
         """
     def numerical_result_to_expression(self, result: VakintNumericalResult) -> Expression:
         r"""
@@ -267,6 +726,40 @@ class Vakint:
         """
 
 @typing.final
+class VakintConstant:
+    r"""
+    Read-only record from Vakint's precision-aware data snapshot.
+    """
+    @property
+    def requested_decimal_precision(self) -> builtins.int: ...
+    @property
+    def symbol(self) -> ConstantSymbol: ...
+    @property
+    def available_precision(self) -> AvailablePrecision: ...
+    @property
+    def numerical_value(self) -> Float: ...
+    @property
+    def precision(self) -> CoefficientPrecision: ...
+    @property
+    def warnings(self) -> builtins.list[PrecisionWarning]: ...
+    @property
+    def provenance(self) -> DataProvenance: ...
+    def __repr__(self) -> builtins.str:
+        r"""
+        Structured terminal representation; respects terminal color settings.
+        """
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render the stored record without numerical reevaluation.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+    def to_expression(self) -> Expression:
+        r"""
+        Encode achieved precision in a native expression; rejects uncertain zeros.
+        """
+
+@typing.final
 class VakintEvaluationMethod:
     r"""
     One configured backend in a `Vakint` instance's evaluation order.
@@ -290,7 +783,7 @@ class VakintEvaluationMethod:
         ```
         """
     @classmethod
-    def new_rustred_method(cls, substitute_masters: typing.Optional[builtins.bool] = None) -> VakintEvaluationMethod:
+    def new_rustred_method(cls, master_mode: builtins.str = 'numerical') -> VakintEvaluationMethod:
         r"""
         Create the opt-in FORM-independent RustRed scalar-integral evaluation method.
 
@@ -304,15 +797,15 @@ class VakintEvaluationMethod:
         ## Examples
         ```python
         rustred_method = VakintEvaluationMethod.new_rustred_method(
-            substitute_masters=True
+            master_mode="numerical"
         )
         ```
 
         Parameters
         ----------
 
-        substitute_masters : Optional[bool]
-           Whether to substitute Vakint's known master evaluations. Default is True.
+        master_mode : str
+           "retain", "symbolic", or "numerical" (default).
         """
     @classmethod
     def new_matad_method(cls, expand_masters: typing.Optional[builtins.bool] = None, susbstitute_masters: typing.Optional[builtins.bool] = None, substitute_hpls: typing.Optional[builtins.bool] = None, direct_numerical_substition: typing.Optional[builtins.bool] = None) -> VakintEvaluationMethod:
@@ -437,7 +930,7 @@ class VakintExpression:
         r"""
         Display through Symbolica's native rich expression printer.
         """
-    def formatted(self, **options: typing.Any) -> FormattedOutput:
+    def formatted(self, **options: typing.Any) -> typing.Any:
         r"""
         Return Symbolica's `FormattedOutput`; keyword options are forwarded unchanged.
         """
@@ -496,22 +989,70 @@ class VakintExpression:
         """
 
 @typing.final
+class VakintMaster:
+    r"""
+    All available coefficients and the authenticated graph of one declared master.
+    """
+    @property
+    def requested_decimal_precision(self) -> builtins.int: ...
+    @property
+    def symbol(self) -> MasterSymbol: ...
+    @property
+    def master_id(self) -> builtins.str: ...
+    @property
+    def family_sha256(self) -> builtins.str: ...
+    @property
+    def loop_count(self) -> builtins.int: ...
+    @property
+    def normalization(self) -> builtins.str: ...
+    @property
+    def provenance(self) -> DataProvenance: ...
+    @property
+    def graph(self) -> FeynmanDiagram: ...
+    @property
+    def coefficients(self) -> builtins.dict[builtins.int, MasterCoefficient]: ...
+    @property
+    def is_computed(self) -> builtins.bool: ...
+    def __repr__(self) -> builtins.str: ...
+    def __str__(self) -> builtins.str: ...
+    def to_html(self) -> builtins.str:
+        r"""
+        Render coefficients and the normal FeynKit graph without reevaluating them.
+        """
+    def _repr_html_(self) -> builtins.str: ...
+
+@typing.final
 class VakintNumericalResult:
     r"""
     Numerical Laurent series in the dimensional-regularization parameter epsilon.
     """
+    @property
+    def coefficients(self) -> builtins.dict[builtins.int, NumericalCoefficient]:
+        r"""
+        Read-only records keyed by epsilon power; absent orders are not fabricated.
+        """
+    @property
+    def requested_decimal_precision(self) -> builtins.int: ...
+    @property
+    def warnings(self) -> builtins.list[PrecisionWarning]: ...
     def to_expression(self, epsilon_symbol: typing.Optional[Expression] = None) -> Expression:
         r"""
-        Return a native Symbolica expression without rounding coefficients to Python floats.
+        Return a Symbolica expression with independently achieved component precision.
 
         The default variable is `vakint::ε`. Use `Vakint.numerical_result_to_expression`
         when the originating engine has a custom epsilon symbol.
+        Raises ValueError for uncertain zeros or components without reliably encodable digits.
+        """
+    def to_html(self) -> builtins.str:
+        r"""
+        Render raw central values, achieved component precision, and warnings.
         """
     def _repr_html_(self) -> builtins.str:
         r"""
-        Display through Symbolica's native rich expression printer.
+        Display remains available even when checked expression conversion fails.
         """
-    def formatted(self, **options: typing.Any) -> FormattedOutput:
+    def __repr__(self) -> builtins.str: ...
+    def formatted(self, **options: typing.Any) -> typing.Any:
         r"""
         Return Symbolica's `FormattedOutput`; keyword options are forwarded unchanged.
         """
@@ -528,16 +1069,13 @@ class VakintNumericalResult:
         ...     (-1, (0.0, -178748.9838377694)),
         ...     (0, (0.0, 321554.1122184795)),
         ... ])
-        >>> str(result)
-        ε^-3 : (0+-11440.5314035461i)
-        ε^-2 : (0+57169.9552189803i)
-        ε^-1 : (0+-178748.983837769i)
-        ε^ 0 : (0+321554.112218480i)
+        >>> "Vakint numerical result" in str(result)
+        True
         ```
         """
     def to_list(self) -> builtins.list[tuple[builtins.int, tuple[builtins.float, builtins.float]]]:
         r"""
-        Convert the numerical result to a native Python list of (epsilon exponent, (real, imag)) tuples.
+        Lossy conversion to Python float tuples; use coefficients to retain precision metadata.
 
         ## Examples
         ```python
@@ -612,3 +1150,16 @@ class VakintNumericalResult:
         max_pull : Optional[float]
            The maximum pull for comparison. Default is 3.0.
         """
+
+def integral_from_diagram(diagram: FeynmanDiagram, family: IntegralFamily, numerator: Expression, *, powers: typing.Sequence[int] | None = None, physical_slots: typing.Optional[typing.Sequence[builtins.int]] = None, parameter_substitutions: typing.Mapping[symbolica.Expression, symbolica.Expression] | None = None, external_momenta: typing.Sequence[Expression] = []) -> VakintExpression:
+    r"""
+    Build a native VakintExpression from a routed, uncut vacuum graph.
+
+    The family must retain the graph's stored loop basis; `physical_slots` maps
+    sorted graph edges to zero-based family indices and defaults to the prefix.
+    Physical powers default to the graph annotations; explicit `powers` override them.
+    Nonpositive physical powers contract edges; auxiliary powers must be nonpositive. Numerators use native
+    Kinematics.scalar_product notation. Spectator order defines numerical vector
+    IDs. Parameter substitutions are simultaneous and must already be reflected
+    in the family's physical denominators. No graph factor is inserted.
+    """
