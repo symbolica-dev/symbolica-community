@@ -99,10 +99,10 @@ linnet-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", b
 # Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.
 feynkit-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "preserve-canonical-numerator-interfaces", default-features = false, features = ["ufo", "linnet-python"] }
 # Embed the IBP bridge in both hosts so it shares their Symbolica atoms.
-rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", rev = "42bae6e0a4031203db71a052975ebab0bd66eeb1", default-features = false, features = ["campaign-api"] }
+rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", rev = "4190f2c6f3158e3fc3cbcb1937e12e5971da9175", default-features = false, features = ["campaign-api"] }
 symbolica = { version = "3.0.1", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
-symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "59bf27b534f19ab4f2616e36edf7729cb27b23bd", default-features = false, features = ["python_api"] }
+symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "b670a9698a4bb2a8dede21abddd87ea956889852", default-features = false, features = ["python_api"] }
 # Tensor bindings split methods across impl blocks on both native and WASM.
 pyo3 = { version = "0.28", features = ["multiple-pymethods"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
@@ -115,7 +115,7 @@ oneloop-python = { optional = true, git = "https://github.com/alphal00p/oneloopm
 # Keep embedded SymJIT caches and generated native evaluators out of wheels.
 oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false }
 # RustRed-enabled Vakint is independently pinned; its assets use the host loader.
-vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "54138ac94736f90180b92b2d0396426a86f28e1f", features = ["feynkit-ingress", "experimental-rustred", "weighted-lowering-diagnostics", "symbolica_community_module"] }
+vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "741ef3417140a6c7ded70222455265e499787100", features = ["feynkit-ingress", "experimental-rustred", "weighted-lowering-diagnostics", "symbolica_community_module", "progress-tui"] }
 
 # All community modules share one Symbolica kernel and numeric owners.
 [patch.crates-io]
