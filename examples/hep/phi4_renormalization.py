@@ -166,7 +166,7 @@ def _(Symbol, coupling, model, particle):
         model.expand_couplings(_tree.numerator_expression().to_expression())
         * _tree.overall_factor_expression(evaluate=True)
         * _tree.numerator_prefactor_expression()
-    )
+    ).to_expression()
     assert tree_amplitude == -Symbol.I * coupling
     return diagrams, options
 
@@ -228,6 +228,8 @@ def _(
             * _diagram.overall_factor_expression(evaluate=True)
             * _diagram.numerator_prefactor_expression()
         )
+        assert _coefficient.is_scalar
+        _coefficient = _coefficient.to_expression()
         assert _coefficient == coupling**2 / 2
         _master_kinematics = Kinematics(
             dimension, momenta=[K(0), P(0)]
@@ -315,6 +317,8 @@ def _(
         * _self_diagram.overall_factor_expression(evaluate=True)
         * _self_diagram.numerator_prefactor_expression()
     )
+    assert _self_numerator.is_scalar
+    _self_numerator = _self_numerator.to_expression()
     assert _self_numerator == coupling / 2
     _self_family = _self_diagram.propagator_family()
     assert len(_self_family.denominators) == 1
@@ -481,6 +485,8 @@ def _(
                 * _diagram.overall_factor_expression(evaluate=True)
                 * _diagram.numerator_prefactor_expression()
             )
+        assert _amplitude.is_scalar
+        _amplitude = _amplitude.to_expression()
         ct_amplitudes[_label] = (
             (
                 _amplitude.replace(mass**2, M)

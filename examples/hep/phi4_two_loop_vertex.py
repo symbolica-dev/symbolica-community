@@ -206,10 +206,12 @@ def _(
                 den(_values[edge_], _values[mom_], _values[mass_], _values[quad_]),
                 tadpole_family.rewrite_numerator(_values[quad_], [ct_coordinate]),
             )
-        _numerator *= (
+        _factor = (
             _diagram.overall_factor_expression(evaluate=True)
             * _diagram.numerator_prefactor_expression()
         )
+        assert _factor.is_scalar
+        _numerator *= _factor.to_expression()
         if _loops:
             _scalar = (
                 (

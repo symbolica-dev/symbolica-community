@@ -137,6 +137,8 @@ def _(
             _diagram.overall_factor_expression(evaluate=True)
             * _diagram.numerator_prefactor_expression()
         )
+        assert _factor.is_scalar
+        _factor = _factor.to_expression()
         _numerator = external_kinematics.apply(_numerator) * _factor
         if _loops:
             _scalar = (
@@ -239,7 +241,7 @@ def _(E, S, TensorReducer, d, mass_squared, p_squared, sp, zero):
     averaged_taylor = (
         _shifted_line.series(_scaling, 0, 2).to_expression().replace(_scaling, E("1"))
     )
-    averaged_taylor = TensorReducer(d, integrated=[_qc]).reduce(averaged_taylor)
+    averaged_taylor = TensorReducer(d, integrated=[_qc]).reduce(averaged_taylor).to_expression()
     averaged_taylor = (
         averaged_taylor.replace(_dot(_qc, _qc), formal_denominator + mass_squared)
         .replace(_dot(_pc, _pc), p_squared)
@@ -441,6 +443,8 @@ def _(
             _diagram.overall_factor_expression(evaluate=True)
             * _diagram.numerator_prefactor_expression()
         )
+        assert _factor.is_scalar
+        _factor = _factor.to_expression()
         _raw_family = _diagram.propagator_family(kinematics=Kinematics(d))
         _raw = _factor * _numerator / (Symbol.I * model_coupling**2)
         for _propagator in _raw_family.denominators:

@@ -154,18 +154,16 @@ def _(
     def leading_soft_amplitude(_diagram, _outgoing):
         """Expand one generated amplitude at leading soft order and project its spinor endpoints."""
         _numerator = model.expand_couplings(
-            _diagram.numerator_expression(in_lmb=True).to_expression()
+            _diagram.numerator_expression(in_lmb=True).rename_indices(
+                {
+                    Symbols.half_edge()(_half.id, 1): ports[_half.edge.external_index]
+                    for _half in _diagram.half_edges
+                    if _half.edge.is_external
+                },
+                intern="indices",
+            )
         ).replace(model.particle("b").mass, zero)
-        for _half in _diagram.half_edges:
-            _edge = _half.edge
-            if _edge.is_external:
-                _numerator = _numerator.replace(
-                    Symbols.half_edge()(_half.id, 1),
-                    ports[_edge.external_index],
-                )
-        _numerator = (
-            TensorExpression(_numerator).with_lorentz_dimension(D).to_expression()
-        )
+        _numerator = _numerator.with_lorentz_dimension(D).to_expression()
         _denominator = (
             _diagram.denominator_expression(dimension=D, in_lmb=True)
             .to_expression()

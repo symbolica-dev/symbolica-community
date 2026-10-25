@@ -200,6 +200,12 @@ def _(
         )
         physical_finite += channel_coefficients[_invariant] / coupling**2 * _branch
     physical_finite = physical_finite.replace(u, -s - t)
+    # Normalize only logarithm arguments after applying the physical u relation.
+    _log_argument = S("log_argument_")
+    physical_finite = physical_finite.replace(
+        log_function(_log_argument),
+        lambda match: log_function(match[_log_argument].expand()),
+    )
     _expected_massless = (
         6
         - log_function(s / mu2)

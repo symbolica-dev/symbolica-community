@@ -91,9 +91,9 @@ python_stubgen = [
 [dependencies]
 symbolica-data = { git = "https://github.com/alphal00p/gammaloop", branch = "preserve-canonical-numerator-interfaces" }
 serde_json = "1"
-fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "c8eae91aa35dd60d6fc56171bac2c61c9eed60b9", default-features = false }
+fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "6ee78897dd43e62efbd4e4994456bff6e948cd73", default-features = false }
 hyperbolica = { optional = true, git = "https://github.com/lcnbr/hyperbolica", rev = "2e6fe4ef9c715d70f937aca53211793727f819b9", default-features = false, features = ["python"] }
-one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", rev = "472350aa5d2e677b6fd4840c82ab9811c0a4ea81", default-features = false }
+one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", rev = "89cc61e0678dd203b1e7edcf88de0c50e0bb0fb7", default-features = false }
 spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "preserve-canonical-numerator-interfaces", default-features = false }
 linnet-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "preserve-canonical-numerator-interfaces", default-features = false }
 # Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.
@@ -102,7 +102,7 @@ feynkit-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", 
 rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", rev = "42bae6e0a4031203db71a052975ebab0bd66eeb1", default-features = false, features = ["campaign-api"] }
 symbolica = { version = "3.0.1", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
-symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "6b6621858f5a337830e67dfd63031bdab1b9266a", default-features = false, features = ["python_api"] }
+symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "59bf27b534f19ab4f2616e36edf7729cb27b23bd", default-features = false, features = ["python_api"] }
 # Tensor bindings split methods across impl blocks on both native and WASM.
 pyo3 = { version = "0.28", features = ["multiple-pymethods"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
@@ -115,7 +115,7 @@ oneloop-python = { optional = true, git = "https://github.com/alphal00p/oneloopm
 # Keep embedded SymJIT caches and generated native evaluators out of wheels.
 oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false }
 # RustRed-enabled Vakint is independently pinned; its assets use the host loader.
-vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "8282f0224b767857ab5044a128839a8bb7f8b0c4", features = ["feynkit-ingress", "experimental-rustred", "weighted-lowering-diagnostics", "symbolica_community_module"] }
+vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "4d8d261d65536722798d725e757fb6937d2b48ea", features = ["feynkit-ingress", "experimental-rustred", "weighted-lowering-diagnostics", "symbolica_community_module"] }
 
 # All community modules share one Symbolica kernel and numeric owners.
 [patch.crates-io]

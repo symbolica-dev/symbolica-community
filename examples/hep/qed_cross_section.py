@@ -245,7 +245,7 @@ def _(
         * qed_diagram.numerator_prefactor_expression()
         * annihilation_trace
         / annihilation_denominator
-    ).together()
+    ).to_expression().together()
     return (qed_squared,)
 
 
@@ -523,6 +523,8 @@ def _(
         .replace(qed_t, 2 * qed_me**2 + 2 * qed_mm**2 - qed_s - qed_u)
         .factor()
     )
+    assert qed_polarized.is_scalar
+    qed_polarized = qed_polarized.to_expression()
     return (qed_polarized,)
 
 

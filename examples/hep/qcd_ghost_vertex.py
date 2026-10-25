@@ -137,26 +137,30 @@ def _(
         _external_ordering = (_raw / _raw.replace(_ordering(_value), one)).replace(
             _ordering(_value), _value
         )
-        weight /= _external_ordering
+        weight = (weight / _external_ordering).to_expression()
         assert weight == one
         # Keep every external Lorentz/color slot open; no polarization or
         # contraction with external momentum can hide an unwanted tensor.
+        _external_indices = {
+            hedge(half.id, 1): [a, b, c][half.edge.external_index]
+            for half in diagram.half_edges
+            if half.edge.is_external
+        }
         numerator = model.expand_couplings(
-            diagram.numerator_expression().to_expression()
+            diagram.numerator_expression().rename_indices(
+                _external_indices, intern="indices"
+            )
         )
-        for half in diagram.half_edges:
-            if half.edge.is_external:
-                numerator = numerator.replace(
-                    hedge(half.id, 1),
-                    [a, b, c][half.edge.external_index],
-                )
+        if loops:
+            numerator = diagram.uv_expansion(mUV, numerator=numerator)
+        numerator = (
+            diagram.momentum_basis().route_expression(numerator).to_expression()
+        )
+        # Color representations are spectators of the momentum-only UV expansion.
         numerator = numerator.replace(
             sp.PortPattern.exact(sp.Representation.coad(8), idx),
             sp.PortPattern.exact(sp.Representation.coad(dA), idx),
         )
-        if loops:
-            numerator = diagram.uv_expansion(mUV, numerator=numerator).to_expression()
-        numerator = diagram.momentum_basis().route_expression(numerator)
         numerator = (
             numerator.replace(
                 sp.PortPattern.exact(sp.Representation.mink(dim), idx),
@@ -178,9 +182,10 @@ def _(
         tensor = (
             TensorExpression(numerator.expand())
             .simplify_algebra(contract="dots", gamma=False, color=True)
-            .to_expression()
         )
-        scalar = family.rewrite_numerator(kinematics.apply(reducer.reduce(tensor)), [x])
+        scalar = family.rewrite_numerator(
+            kinematics.apply(reducer.reduce(tensor)).to_expression(), [x]
+        )
         scalar = (weight * scalar).together().expand()
         assert not scalar.matches(K(arguments))
         assert not scalar.matches(hedge(arguments))
@@ -221,7 +226,8 @@ def _(mo):
 @app.cell
 def _(E, Model, S, Symbols, json, sp):
     model = Model.standard_model()
-    spec = json.loads(model.to_json())
+    _canonical_builtin_json = model.to_json()
+    spec = json.loads(_canonical_builtin_json)
     for propagator in spec["propagators"]:
         if propagator["particle"] == "g":
             propagator["numerator"] = (
@@ -242,6 +248,48 @@ def _(E, Model, S, Symbols, json, sp):
                 )
             ).format_plain()
     model = Model.from_json(json.dumps(spec))
+    _reference_base_json = model.to_json()
+    _upstream_reference_spec = json.loads(_reference_base_json)
+    (_uuv1,) = (
+        item for item in _upstream_reference_spec["lorentz_structures"]
+        if item["name"] == "UUV1"
+    )
+    assert _uuv1["spins"] == [-1, -1, 3]
+    _canonical_uuv1 = _uuv1["structure"]
+    assert E(_canonical_uuv1, default_namespace="UFO") == E(
+        "P(idx(1,3),idx(1,2))", default_namespace="UFO"
+    )
+    (_v35,) = (
+        item for item in _upstream_reference_spec["vertex_rules"]
+        if item["name"] == "V_35"
+    )
+    assert (
+        _v35["particles"], _v35["lorentz_structures"], _v35["couplings"]
+    ) == (["ghG", "ghG~", "g"], ["UUV1"], [["GC_10"]])
+    (_gc10,) = (
+        item for item in _upstream_reference_spec["couplings"]
+        if item["name"] == "GC_10"
+    )
+    assert E(_gc10["expression"], default_namespace="UFO") == E(
+        "-G", default_namespace="UFO"
+    )
+    # Use the upstream-UFO reference input declared by this notebook's oracles.
+    _upstream_uuv1 = "P(idx(1,3),idx(1,2))+P(idx(1,3),idx(1,3))"
+    _uuv1["structure"] = _upstream_uuv1
+    _reference_model = Model.from_json(json.dumps(_upstream_reference_spec))
+    _roundtrip = json.loads(_reference_model.to_json())
+    (_roundtrip_uuv1,) = (
+        item for item in _roundtrip["lorentz_structures"]
+        if item["name"] == "UUV1"
+    )
+    assert E(_roundtrip_uuv1["structure"], default_namespace="UFO") == E(
+        _upstream_uuv1, default_namespace="UFO"
+    )
+    _roundtrip_uuv1["structure"] = _canonical_uuv1
+    assert _roundtrip == json.loads(_reference_base_json)
+    assert model.to_json() == _reference_base_json
+    assert Model.standard_model().to_json() == _canonical_builtin_json
+    model = _reference_model
     return (model,)
 
 

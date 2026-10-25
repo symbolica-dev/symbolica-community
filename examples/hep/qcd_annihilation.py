@@ -359,7 +359,7 @@ def _(
         * qcd_diagram.numerator_prefactor_expression()
         * kinematics.apply(routed)
         / denominator
-    ).replace(dA, Nc**2 - 1)
+    ).to_expression().replace(dA, Nc**2 - 1)
     _expected = (
         (Nc**2 - 1)
         * gs**4

@@ -238,7 +238,9 @@ def _(
         # the epsilon expansion.  The complete open tensor is checked before this.
         cg = scalar.expand().coefficient(gmunu)
         cp = scalar.expand().coefficient(ppmunu)
-        assert (scalar - cg * gmunu - cp * ppmunu).expand() == zero
+        _basis_remainder = (scalar - cg * gmunu - cp * ppmunu).expand()
+        assert _basis_remainder.is_zero()
+        assert _basis_remainder.to_expression() == zero
         scalar = cg * Qg + cp * Qpp
         terms = []
         for monomial, coefficient in scalar.expand().coefficient_list(*coordinates):
@@ -768,6 +770,8 @@ def _(S, index, mass, model, one, sp, wave, zero):
         one_loop_diagram.overall_factor_expression(evaluate=True)
         * one_loop_diagram.numerator_prefactor_expression()
     )
+    assert factor.is_scalar
+    factor = factor.to_expression()
     assert factor == -one  # Preserve the native closed-fermion-loop sign.
     fermions = [_edge for _edge in one_loop_diagram.edges if not _edge.is_external]
     assert len(fermions) == 2 and all(

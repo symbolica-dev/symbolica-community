@@ -204,7 +204,7 @@ def _(Expression, FeynmanDiagram):
         return (
             diagram.overall_factor_expression(evaluate=True)
             * diagram.numerator_prefactor_expression()
-        )
+        ).to_expression()
 
     return (diagram_weight,)
 

@@ -263,8 +263,8 @@ def test_tensor_reduction_uses_host_expressions(compose_tensors):
     expected = (
         dot(k_vector, k_vector) * dot(p_vector, p_vector) / dimension
     ).to_expression()
-    assert (reduced - expected).expand() == E("0")
-    assert hep.TensorReducer.feynkit(E("4")).reduce(E("3")) == E("3")
+    assert (reduced.to_expression() - expected).expand() == E("0")
+    assert hep.TensorReducer.feynkit(E("4")).reduce(E("3")).to_expression() == E("3")
 
 
 def test_kinematics_and_error_types():
