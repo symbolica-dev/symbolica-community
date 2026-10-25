@@ -72,7 +72,8 @@ def test_full_rhs_is_not_truncated_at_ten_or_one_hundred_terms():
                      for i in range(105)])
     artifact = Coefficients()
     rhs = support.rule_expressions(artifact, selected, S("I_display_many"))["rhs"]
-    output = rhs.formatted(max_terms=None, max_line_length=None, terms_on_new_line=True)
+    output = rhs.formatted(max_terms=None, max_line_length=None, terms_on_new_line=True,
+                           mathml=False)
     assert len(str(output).splitlines()) == 105
     assert str(output).count("I_display_many(") == 105
     assert "white-space: pre-wrap" in output._repr_html_()
@@ -141,10 +142,40 @@ def test_reduction_display_includes_every_term_and_its_restored_mass(term_count)
     )
     expression, = cell(E=E, integral=integral, mass_squared=mass_squared,
                        reduced_terms=terms, selected_powers=(2, 1, 1, 1, 1, 1))
-    output = str(displayed[0][1])
+    actual_viewer = displayed[0][1].mathml_viewer()
+    expected_viewer = expression.formatted(
+        max_terms=None, max_line_length=None, terms_on_new_line=True,
+    ).mathml_viewer()
+    assert actual_viewer is not None and expected_viewer is not None
+    try:
+        page, expected_page = actual_viewer.page(), expected_viewer.page()
+        covered = 0
+        while True:
+            assert "error" not in page and "error" not in expected_page
+            assert all(page[key] == expected_page[key] for key in (
+                "html", "start", "end", "total", "next", "kind", "unit", "markers",
+            ))
+            assert page["start"] == covered < page["end"] <= page["total"]
+            assert all(not path for path, _ in page["markers"])
+            covered = page["end"]
+            if page["next"] is None:
+                break
+            assert page["next"] == covered
+            field, page = actual_viewer.handle_message({"action": "next"})
+            expected_field, expected_page = expected_viewer.handle_message({"action": "next"})
+            assert field == expected_field == "page"
+        assert covered == page["total"]
+    finally:
+        actual_viewer.close()
+        expected_viewer.close()
+    output = expression.format(
+        max_terms=None, max_line_length=None, terms_on_new_line=True,
+        color_top_level_sum=False, color_builtin_symbols=False, bracket_level_colors=None,
+    )
     if not terms:
         assert expression == 0 and output == "0"
         return
+    assert covered == term_count
     assert len(output.splitlines()) == term_count
     assert output.count("I_reduction_display(") == term_count
     for master, coefficient, mass_power in terms:

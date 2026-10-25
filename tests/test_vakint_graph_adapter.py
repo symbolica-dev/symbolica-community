@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import inspect
+import os
 from collections import UserDict
 
 import pytest
@@ -182,7 +183,7 @@ def test_native_rich_numerical_precision_and_wrapper_ingress_in_single_host():
         vakint.VakintEvaluationMethod,
     ):
         assert cls.__module__ == "symbolica.community.hepkit.vakint"
-    method = vakint.VakintEvaluationMethod.new_rustred_method(substitute_masters=False)
+    method = vakint.VakintEvaluationMethod.new_rustred_method(master_mode="retain")
     engine = vakint.Vakint(
         run_time_decimal_precision=48,
         evaluation_order=[method],
@@ -223,10 +224,47 @@ def test_boolean_noninteger_and_string_powers_refuse(invalid):
         converted(data, powers=powers)
 
 
+
+def test_physical_pinch_preserves_routing_and_retained_powers():
+    model = hep.Model.phi_3_4()
+    dimension, mass_squared = S("d", "vakint::muvsq")
+    substitutions = {model.particle("phi").mass: mass_squared ** (N(1) / 2)}
+    replacements = [Replacement(left, right) for left, right in substitutions.items()]
+    sources = (
+        'digraph sunset { a -> b [id=0, particle="phi", lmb_id=0]; '
+        'a -> b [id=1, particle="phi", lmb_id=1]; '
+        'a -> b [id=2, particle="phi"]; }',
+        'digraph two_tadpoles { a -> a [id=0, particle="phi", lmb_id=0]; '
+        'a -> a [id=1, particle="phi", lmb_id=1]; }',
+    )
+    diagrams = [hep.FeynmanDiagram.from_dot(model, source) for source in sources]
+    families = []
+    for diagram in diagrams:
+        original = diagram.propagator_family(kinematics=hep.Kinematics(dimension))
+        families.append(hep.IntegralFamily(
+            original.loop_momenta, [],
+            [den.replace_multiple(replacements) for den in original.denominators],
+            kinematics=original.kinematics,
+        ))
+    assert len(families[0].loop_momenta) == len(families[1].loop_momenta) == 2
+    assert families[0].loop_momenta == families[1].loop_momenta
+    pinched = vakint.integral_from_diagram(
+        diagrams[0], families[0], N(1), parameter_substitutions=substitutions,
+        powers=[2, 3, 0],
+    )
+    reference = vakint.integral_from_diagram(
+        diagrams[1], families[1], N(1), parameter_substitutions=substitutions,
+        powers=[2, 3],
+    )
+    assert pinched.to_expression() == reference.to_expression()
+
+
 def test_power_and_family_ambiguities_refuse():
     data = h_input()
-    with pytest.raises(ValueError, match="physical powers"):
-        converted(data, powers=[0] + [1] * 8 + [0])
+    pinched = converted(data, powers=[0] + [1] * 8 + [0])
+    assert isinstance(pinched, vakint.VakintExpression)
+    with pytest.raises(ValueError, match="independent vacuum loop"):
+        converted(data, powers=[0] * 10)
     with pytest.raises(ValueError, match="auxiliary powers"):
         converted(data, powers=[1] * 10)
     diagram, family, numerator, substitutions, spectators = data
@@ -299,6 +337,9 @@ def test_h_rank_four_original_32_digit_reference_with_invalid_form():
         tensor_reduction_method="feynkit",
         evaluation_order=[vakint.VakintEvaluationMethod.new_rustred_method()],
         form_exe_path="/this/path/must/not/be/invoked/by-rustred-acceptance",
+    )
+    engine.load_official_external_data(
+        4, local_artifacts_path=os.environ.get("VAKINT_TEST_EXTERNAL_DATA")
     )
     evaluated = engine.evaluate(integral.to_expression())
     vectors = {
