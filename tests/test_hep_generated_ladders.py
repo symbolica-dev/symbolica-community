@@ -5,13 +5,17 @@ from importlib import import_module
 from types import SimpleNamespace
 
 import pytest
-from symbolica import E, Graph, S
+from symbolica import E, Graph, Replacement, S
 from symbolica.community import hepkit as hep
 from symbolica.community import tensor as sp
 
 from examples.hep.generated_ladder_helpers import (
     project_and_split,
     reduce_color,
+)
+from ._generated_ladder_reference import (
+    authored_gluon_color_reference,
+    oriented_gluon_split,
 )
 
 
@@ -44,7 +48,7 @@ def ladder(request, notebook_helpers):
     return quark, values["diagram"]
 
 
-def test_generated_particles_weights_and_color(ladder):
+def test_generated_particles_weights_and_color(ladder, notebook_helpers):
     quark, diagram = ladder
     assert diagram.loop_count == 4
     counts = Counter(edge.particle_name for edge in diagram.internal_edges)
@@ -52,7 +56,12 @@ def test_generated_particles_weights_and_color(ladder):
     assert diagram.overall_factor_expression(evaluate=True) == E(
         "-1" if quark else "1/2"
     )
-    _, color, _ = project_and_split(diagram.numerator_expression(), 4)
+    numerator = diagram.numerator_expression()
+    if quark:
+        _, color, _ = project_and_split(numerator, 4)
+    else:
+        reference, _ = authored_gluon_color_reference(diagram, notebook_helpers["model"])
+        _, color, _ = oriented_gluon_split(numerator, 4, reference)
     coefficient = reduce_color(color)
     assert coefficient == E("-1/54" if quark else "81")
     if quark:
@@ -111,7 +120,7 @@ def test_filter_is_label_independent_and_rejects_crossed_rungs(quark, notebook_h
     assert accept(partial, 0)
 
 
-def test_notebook_projects_and_reduces_selected_ladder_without_splitting(ladder):
+def test_notebook_projects_and_reduces_selected_ladder_without_splitting(ladder, notebook_helpers):
     quark, diagram = ladder
     app = import_module("examples.hep.three_gluon_rung_ladder").app
     cells = list(app._cell_manager.cells())
@@ -140,7 +149,11 @@ def test_notebook_projects_and_reduces_selected_ladder_without_splitting(ladder)
 
     # The previous representation-filtered construction provides an independent
     # projection oracle; the production notebook keeps the tensor together.
-    old_projector, color, spacetime = project_and_split(numerator, dimension)
+    if quark:
+        old_projector, color, spacetime = project_and_split(numerator, dimension)
+    else:
+        reference, _ = authored_gluon_color_reference(diagram, notebook_helpers["model"])
+        old_projector, color, spacetime = oriented_gluon_split(numerator, dimension, reference)
     assert projector.to_expression() == old_projector.to_expression()
     reduce = next(cell for cell in cells if "reduced" in cell.defs)
     _, values = reduce.run(numerator=numerator, projector=projector)
@@ -175,3 +188,38 @@ def test_notebook_projects_and_reduces_selected_ladder_without_splitting(ladder)
     weight = E("-1" if quark else "1/2")
     assert result["weighted_numerator"] == weight * result["polynomial"]
     assert not result["denominators"].contains(model.particle("b").mass)
+
+
+@pytest.mark.parametrize(
+    "permutation",
+    [{2: 4, 4: 2}, {3: 19, 19: 22, 22: 3}],
+    ids=["odd-ring-slot-swap", "even-vertex-slot-cycle"],
+)
+def test_authored_gluon_color_is_invariant_under_internal_relabeling(notebook_helpers, permutation):
+    diagram = notebook_helpers["ladders"]["Gluonic"]
+    numerator = diagram.numerator_expression()
+    reference, slots = authored_gluon_color_reference(diagram, notebook_helpers["model"])
+    mapping = {hedge: permutation.get(hedge, hedge) for hedge in slots}
+    assert set(mapping) == set(mapping.values()) == set(slots)
+    forward = [
+        Replacement(slots[source].to_expression(), slots[target].to_expression())
+        for source, target in mapping.items() if source != target
+    ]
+    inverse = [
+        Replacement(slots[target].to_expression(), slots[source].to_expression())
+        for source, target in mapping.items() if source != target
+    ]
+    renamed = numerator.replace_multiple(forward)
+    renamed_reference = reference.replace_multiple(forward)
+    assert renamed.axes == numerator.axes
+    assert renamed.to_expression() != numerator.to_expression()
+    assert renamed.replace_multiple(inverse).to_expression() == numerator.to_expression()
+    assert renamed_reference.replace_multiple(inverse).to_expression() == reference.to_expression()
+    projector, color, _ = oriented_gluon_split(numerator, 4, reference)
+    renamed_projector, renamed_color, _ = oriented_gluon_split(renamed, 4, renamed_reference)
+    assert reduce_color(color) == E("81")
+    assert reduce_color(renamed_color) == E("81")
+    settings = {"contract": "dots", "color_substitute_cof_dimension_invariants": True}
+    original = (projector * numerator).simplify_algebra(**settings).to_expression()
+    relabeled = (renamed_projector * renamed).simplify_algebra(**settings).to_expression()
+    assert (relabeled - original).expand(via_poly=True) == 0
