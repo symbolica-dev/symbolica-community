@@ -1069,7 +1069,7 @@ dependencies = [
 [[package]]
 name = "dot-parser"
 version = "0.5.1"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "either",
  "pest",
@@ -1319,7 +1319,7 @@ dependencies = [
 [[package]]
 name = "feynkit-amplitude"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "feynkit-graph",
  "feynkit-model",
@@ -1333,7 +1333,7 @@ dependencies = [
 [[package]]
 name = "feynkit-cff"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "bincode",
  "feynkit-graph",
@@ -1349,7 +1349,7 @@ dependencies = [
 [[package]]
 name = "feynkit-generator"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -1369,7 +1369,7 @@ dependencies = [
 [[package]]
 name = "feynkit-graph"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "feynkit-kinematics",
  "feynkit-model",
@@ -1389,7 +1389,7 @@ dependencies = [
 [[package]]
 name = "feynkit-kinematics"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "linnet",
  "numerica",
@@ -1402,7 +1402,7 @@ dependencies = [
 [[package]]
 name = "feynkit-model"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -1419,7 +1419,7 @@ dependencies = [
 [[package]]
 name = "feynkit-py"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "feynkit-amplitude",
  "feynkit-cff",
@@ -1448,7 +1448,7 @@ dependencies = [
 [[package]]
 name = "feynkit-tensor"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "feynkit-graph",
  "idenso",
@@ -1461,7 +1461,7 @@ dependencies = [
 [[package]]
 name = "feynkit-ufo"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "feynkit-model",
  "pyo3",
@@ -1624,7 +1624,7 @@ dependencies = [
 [[package]]
 name = "gammaloop-workspace-hack"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "ahash 0.8.12",
  "arrayvec",
@@ -2073,7 +2073,7 @@ checksum = "3d3067d79b975e8844ca9eb072e16b31c3c1c36928edf9c6789548c524d0d954"
 [[package]]
 name = "idenso"
 version = "0.3.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "ahash 0.8.12",
  "base64",
@@ -2336,7 +2336,7 @@ dependencies = [
 [[package]]
 name = "kurvst"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "ciborium",
  "kurbo",
@@ -2396,7 +2396,7 @@ dependencies = [
 [[package]]
 name = "linnest"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "cgmath",
  "ciborium",
@@ -2420,7 +2420,7 @@ dependencies = [
 [[package]]
 name = "linnet"
 version = "0.17.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "ahash 0.8.12",
  "bincode",
@@ -2450,7 +2450,7 @@ dependencies = [
 [[package]]
 name = "linnet-py"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "ciborium",
  "dot-parser",
@@ -2468,7 +2468,7 @@ dependencies = [
 [[package]]
 name = "linnet-render-py"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "krilla",
  "krilla-svg",
@@ -4279,7 +4279,7 @@ checksum = "02ef091d4e8b981dbaa4cc17789d00b53d5d2c001ae689f14e6093f30c529036"
 [[package]]
 name = "spenso"
 version = "0.6.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "ahash 0.8.12",
  "append-only-vec",
@@ -4327,7 +4327,7 @@ dependencies = [
 [[package]]
 name = "spenso-hep-lib"
 version = "0.1.7"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "ahash 0.8.12",
  "idenso",
@@ -4340,7 +4340,7 @@ dependencies = [
 [[package]]
 name = "spenso-macros"
 version = "0.3.2"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4350,7 +4350,7 @@ dependencies = [
 [[package]]
 name = "spynso3"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "ahash 0.8.12",
  "ciborium",
@@ -4545,7 +4545,7 @@ dependencies = [
 [[package]]
 name = "symbolica-data"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "serde",
  "serde_json",
@@ -4577,7 +4577,7 @@ dependencies = [
 [[package]]
 name = "symbolica-utils"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -4817,7 +4817,7 @@ dependencies = [
 [[package]]
 name = "three-dimensional-reps"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "bincode",
  "bincode-trait-derive",
@@ -5290,7 +5290,7 @@ dependencies = [
 [[package]]
 name = "typst-library"
 version = "0.15.1"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "arrayvec",
  "az",
@@ -5382,7 +5382,7 @@ dependencies = [
 [[package]]
 name = "typst-renderer"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "comemo",
  "serde_json",
@@ -5400,7 +5400,7 @@ dependencies = [
 [[package]]
 name = "typst-svg"
 version = "0.15.1"
-source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#cfad34cca10d707d72ab572924cbb721084f8f9c"
+source = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#9ce69d95ac52586426a23ef7cb6b791c09e4e4f0"
 dependencies = [
  "base64",
  "comemo",
@@ -5734,7 +5734,7 @@ dependencies = [
 [[package]]
 name = "vakint"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?rev=8b0fc7d29f897ef79081e9740b68127ba1b53079#8b0fc7d29f897ef79081e9740b68127ba1b53079"
+source = "git+https://github.com/alphal00p/gammaloop?rev=54138ac94736f90180b92b2d0396426a86f28e1f#54138ac94736f90180b92b2d0396426a86f28e1f"
 dependencies = [
  "ahash 0.8.12",
  "arrayvec",
