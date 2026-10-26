@@ -216,7 +216,7 @@ def _(ShowcaseInput):
     from symbolica import E as _gghh_E, S as _gghh_S, Expression as _gghh_Expression
     from symbolica.community import hepkit as _gghh_hep
     from symbolica.community.tensor import Representation as _gghh_Representation, Tensor as _gghh_Tensor, TensorName as _gghh_TensorName, dot as _gghh_dot
-    from symbolica.community.spenso import TensorExpression as _gghh_TensorExpression
+    from symbolica.community.tensor import TensorExpression as _gghh_TensorExpression
 
 
 
@@ -835,7 +835,7 @@ def _(format_epsilon_label, format_panel):
 
     def sector_expression_viewer(generated, index, coefficient_index):
         """Open only the explicitly selected native coefficient's scoped pager."""
-        from symbolica.community.spenso import TensorExpression
+        from symbolica.community.tensor import TensorExpression
         native_sectors = generated.sectors
         if not 0 <= index < len(native_sectors):
             raise ValueError("Choose an existing generated sector")
@@ -1749,7 +1749,7 @@ def _(
                 self.numerator_viewers["raw"] = raw.paged(page_size=25)
                 items["Raw numerator · native tensor expression"] = mo.as_html(self.numerator_viewers["raw"])
             if simplified is not None:
-                from symbolica.community.spenso import TensorExpression
+                from symbolica.community.tensor import TensorExpression
                 self.numerator_viewers["simplified"] = TensorExpression(simplified).paged(page_size=25)
                 items["Simplified projected numerator · native Symbolica expression"] = mo.as_html(self.numerator_viewers["simplified"])
             self.prepared_owner = prepared

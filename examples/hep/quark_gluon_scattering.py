@@ -151,17 +151,18 @@ def _(
         amplitude = E("0")
         denominators = []
         for diagram in generated.diagrams:
-            numerator = model.expand_couplings(
-                diagram.numerator_expression(in_lmb=True).to_expression()
-            )
             # Align external spin and color ports using the graph's native half-edge IDs.
             # Ghosts have no polarization wavefunctions; these IDs cover them as well.
-            for half in diagram.half_edges:
-                edge = half.edge
-                if edge.is_external:
-                    numerator = sp.TensorExpression(numerator).rename_indices(
-                        {Symbols.half_edge()(half.id, 1): ports[edge.external_index]}
-                    )
+            numerator = model.expand_couplings(
+                diagram.numerator_expression(in_lmb=True).rename_indices(
+                    {
+                        Symbols.half_edge()(half.id, 1): ports[half.edge.external_index]
+                        for half in diagram.half_edges
+                        if half.edge.is_external
+                    },
+                    intern="indices",
+                )
+            )
             denominator = kinematics.apply(
                 diagram.denominator_expression(dimension=4, in_lmb=True)
                 .to_expression()

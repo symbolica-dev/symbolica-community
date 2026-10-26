@@ -531,11 +531,37 @@ def test_independent_numerator_direction_uses_the_full_kinematics():
     ).together() == E("0")
 
 
-@pytest.mark.parametrize("powers", [[], [1], [1, 1, 1], [40, 1], [-(2**31), 1], [2**31 - 1, 1]])
-def test_invalid_powers_raise_value_error(powers):
+@pytest.mark.parametrize("powers", [[], [1], [1, 1, 1]])
+def test_wrong_power_counts_raise_value_error(powers):
     family = scalar_family([E("0")] * 2, [S("powers_test::s")])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="one signed power per shared-family denominator"):
         oneloop.reduce(family, powers)
+
+
+def test_minimum_i32_power_is_rejected_as_a_numerator_exponent():
+    family = scalar_family([E("0")] * 2, [S("powers_test::s")])
+    with pytest.raises(ValueError, match="i32 exponent storage overflow.*negative propagator power"):
+        oneloop.reduce(family, [-(2**31), 1])
+
+
+@pytest.mark.parametrize("power", [-(2**31) - 1, 2**31])
+def test_power_values_outside_native_i32_range_raise_overflow_error(power):
+    family = scalar_family([E("0")] * 2, [S("powers_test::s")])
+    with pytest.raises(OverflowError):
+        oneloop.reduce(family, [power, 1])
+
+
+@pytest.mark.parametrize("power", [33, 2**31 - 1])
+def test_default_reduction_has_no_total_index_ceiling(power):
+    family = scalar_family([E("0")], [])
+    assert oneloop.reduce(family, [power]).to_expression() == E("0")
+
+
+@pytest.mark.parametrize("powers", [[40, 1], [2**31 - 1, 1]])
+def test_explicit_total_index_diagnostic_rejects_before_recurrence(powers):
+    family = scalar_family([E("0")] * 2, [S("powers_test::s")])
+    with pytest.raises(ValueError, match="propagator-index diagnostic.*at most 32"):
+        oneloop.reduce(family, powers, diagnostic_max_total_index=32)
 
 
 def test_nonpositive_propagator_powers_are_numerator_factors():

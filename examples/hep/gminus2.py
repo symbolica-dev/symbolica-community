@@ -174,12 +174,14 @@ def _(a, b, bis, dimension, index, mink, model, mu, sp, wave):
         )
         assert len(_generated.diagrams) == 1
         _diagram = _generated.diagrams[0]
+        _prefactor = _diagram.numerator_prefactor_expression()
+        assert _prefactor.rank == 0
         _operator = (
             model.expand_couplings(
                 _diagram.numerator_expression(in_lmb=True).to_expression()
             )
             * _diagram.overall_factor_expression(evaluate=True)
-            * _diagram.numerator_prefactor_expression()
+            * _prefactor.to_expression()
         )
         for _edge in _diagram.external_edges:
             _representation = mink if _edge.external_index == 1 else bis

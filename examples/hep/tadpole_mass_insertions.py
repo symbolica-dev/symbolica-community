@@ -157,7 +157,7 @@ def _(E, Symbol, higgs, left, metric, model, right, top, vertices, y):
     )
     assert (tree_coupling + Symbol.I * y).expand() == E("0")
     assert yukawa_tree.overall_factor_expression(evaluate=True) == E("1")
-    assert yukawa_tree.numerator_prefactor_expression() == E("1")
+    assert yukawa_tree.numerator_prefactor_expression().to_expression() == E("1")
     return tree_coupling, yukawa_tree
 
 
@@ -191,7 +191,7 @@ def _(E, higgs, model, vertices):
     wick_weight = E("-1")
     assert native_weight == wick_weight
     assert diagram.symmetry_factor == 1
-    assert diagram.numerator_prefactor_expression() == E("1")
+    assert diagram.numerator_prefactor_expression().to_expression() == E("1")
     return diagram, native_weight
 
 
@@ -247,6 +247,8 @@ def _(
     coefficient = (
         trace * native_weight * diagram.numerator_prefactor_expression()
     ).expand()
+    assert coefficient.is_scalar
+    coefficient = coefficient.to_expression()
     assert (coefficient + 4 * Nc * y * m).expand() == E("0")
     return coefficient, trace
 

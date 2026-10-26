@@ -228,7 +228,7 @@ def _(
             model.expand_couplings(_diagram.numerator_expression().to_expression())
             * _diagram.overall_factor_expression(evaluate=True)
             * _diagram.numerator_prefactor_expression()
-        )
+        ).to_expression()
         coefficients[_label] = _coefficient
         if not _loops:
             continue
@@ -542,8 +542,9 @@ def _(
                 * _diagram.overall_factor_expression(evaluate=True)
                 * _diagram.numerator_prefactor_expression()
             )
+        assert _amplitude.is_scalar
         counterterms[_label] = (
-            (_amplitude.replace(mass**2, M) / (Symbol.I * h)).together().expand()
+            (_amplitude.to_expression().replace(mass**2, M) / (Symbol.I * h)).together().expand()
         )
     return counterterms, ct_diagrams
 

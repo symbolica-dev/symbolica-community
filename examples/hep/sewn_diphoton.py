@@ -193,7 +193,7 @@ def _(
             # both labeled final-state assignments for the labeled squared amplitude.
             squared = (
                 total + total.replace_multiple([Replacement(t, u), Replacement(u, t)])
-            ).together()
+            ).to_expression().together()
             target = E("0") if mode.startswith("Ward") else expected
             assert (squared - target).together() == 0, (coordinate_index, mode)
             if not mode.startswith("Ward"):

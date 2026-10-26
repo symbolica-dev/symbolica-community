@@ -407,7 +407,7 @@ def _(
         _factor = (
             _diagram.overall_factor_expression(evaluate=True)
             * _diagram.numerator_prefactor_expression()
-        )
+        ).to_expression()
         assert _factor == (
             external_ordering if _kind in ("quark", "ghost", "vertex") else one
         )
@@ -608,12 +608,14 @@ def _(
     irr_edge_momentum,
     irr_kinematics,
     irr_scaling,
+    gmunu,
     mass,
     mass_,
     mom_,
     mu,
     nu,
     one,
+    ppmunu,
     quad_,
     reducer,
     s,
@@ -627,6 +629,7 @@ def _(
         """Massify primitive propagators, Taylor-expand, and preserve the longitudinal components independently."""
         _diagram, _raw, _ports, _probes, _factor = _record
         _irr_scalars = {}
+        _is_gluon_two_point = _kind in ("gluon_loop", "ghost_loop", "quark_loop", "tadpole")
         if _massless:
             _raw = _raw.replace(mass, zero)
         # Separate every primitive longitudinal 1/q² before changing propagators.
@@ -716,7 +719,7 @@ def _(
                     sp.PortPattern.exact(sp.Representation.mink(D)),
                 )
             )
-            if _kind in ("gluon_loop", "ghost_loop", "quark_loop", "tadpole"):
+            if _is_gluon_two_point:
                 _numerator = _numerator.replace(
                     sp.PortPattern.exact(sp.Representation.mink(D), _ports[0]),
                     sp.PortPattern.exact(sp.Representation.mink(D), mu),
@@ -863,6 +866,19 @@ def _(
                     .together()
                     .expand()
                 )
+                if _is_gluon_two_point:
+                    _algebra = _scalar.to_expression()
+                    _g_coefficient = _algebra.coefficient(gmunu)
+                    _pp_coefficient = _algebra.coefficient(ppmunu)
+                    assert TensorExpression(_g_coefficient).is_scalar
+                    assert TensorExpression(_pp_coefficient).is_scalar
+                    assert (
+                        _algebra - _g_coefficient * gmunu - _pp_coefficient * ppmunu
+                    ).expand() == zero
+                    _scalar = _g_coefficient * gmunu + _pp_coefficient * ppmunu
+                else:
+                    assert _scalar.is_scalar
+                    _scalar = _scalar.to_expression()
                 _irr_scalars[_label] = (
                     _irr_scalars.get(_label, zero) + _scalar
                 ).together()

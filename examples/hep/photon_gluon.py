@@ -130,15 +130,17 @@ def _(
         )
         terms = []
         for diagram in generated.diagrams:
+            # Rename retained native ports before expanding scalar couplings.
             numerator = model.expand_couplings(
-                diagram.numerator_expression(in_lmb=True).to_expression()
+                diagram.numerator_expression(in_lmb=True).rename_indices(
+                    {
+                        Symbols.half_edge()(half.id, 1): ports[half.edge.external_index]
+                        for half in diagram.half_edges
+                        if half.edge.is_external
+                    },
+                    intern="indices",
+                )
             )
-            for half in diagram.half_edges:
-                edge = half.edge
-                if edge.is_external:
-                    numerator = sp.TensorExpression(numerator).rename_indices(
-                        {Symbols.half_edge()(half.id, 1): ports[edge.external_index]}
-                    )
             denominator = kin.apply(
                 diagram.denominator_expression(dimension=4, in_lmb=True)
                 .to_expression()

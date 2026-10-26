@@ -185,6 +185,7 @@ def _(
                     * _numerator
                     / _denominator
                 )
+            _squared = _squared.to_expression()
             _difference = (
                 (_squared - _expected).replace(t, sum(_masses) - s - u).together()
             )

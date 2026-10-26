@@ -398,8 +398,8 @@ def _(
     assert (
         diagram.numerator_prefactor_expression()
         == tree_diagram.numerator_prefactor_expression()
-        == one
     )
+    assert tree_diagram.numerator_prefactor_expression().to_expression() == one
     assert (tree_coupling * external_ordering - Symbol.I * charge).expand() == zero
     return external_ordering, raw_factor
 
@@ -474,6 +474,8 @@ def _(D, P, diagram, gamma, mass, metric, mu, ports, s, sp):
         diagram.overall_factor_expression(evaluate=True)
         * diagram.numerator_prefactor_expression()
     )
+    assert native_factor.is_scalar
+    native_factor = native_factor.to_expression()
     return native_factor, probes
 
 

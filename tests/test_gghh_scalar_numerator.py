@@ -19,9 +19,10 @@ from symbolica import E
 app = runpy.run_path(sys.argv[1], run_name="notebook_check")["app"]
 _, notebook = app.run()
 catalogue = notebook["gghh_catalogue"](progress=None)
-# The exact reported graph has two triple-gluon vertices. Minimal contraction
-# left a closed tensor network: is_scalar passed, but parametrization failed.
-identity = "6586fc41a2a00087ef7be79f59b61224"
+# The witnessed current-model counterpart has two triple-gluon vertices.
+# Minimal contraction left a closed tensor network: is_scalar passed, but
+# parametrization failed.
+identity = "a9e6965720cd4b9ea5df45dd9033d5f5"
 diagram = catalogue.selected(identity)
 assert diagram.loop_count == 2
 assert sum(catalogue.model.vertex_rule(vertex.interaction).particles == ["g", "g", "g"]

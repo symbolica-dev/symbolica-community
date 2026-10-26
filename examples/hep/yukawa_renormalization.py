@@ -424,6 +424,10 @@ def _(Model, copy, json):
     specification["parameters"] += [
         _p for _p in _standard["parameters"] if _p["name"] == "Me"
     ]
+    specification["parameters"] += [
+        _p for _p in _standard["parameters"]
+        if _p["name"] in ("muQ", "muLe", "mue", "minus_mue")
+    ]
     _parameter = copy.deepcopy(specification["parameters"][2])
     _parameter.update(name="g", lhacode=[3])
     specification["parameters"].append(_parameter)

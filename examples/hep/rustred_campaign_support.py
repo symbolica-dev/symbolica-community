@@ -511,6 +511,9 @@ def evaluate_h_numerator(integral, temporary_directory):
         form_exe_path="/this/path/must/not/be/invoked/by-rustred-notebook",
         temporary_directory=str(temporary_directory),
     )
+    data_started = monotonic()
+    external_data = engine.load_official_external_data(4)
+    data_loading_seconds = monotonic() - data_started
     started = monotonic()
     evaluated = engine.evaluate(integral.to_expression())
     symbolic_seconds = monotonic() - started
@@ -526,7 +529,7 @@ def evaluate_h_numerator(integral, temporary_directory):
         (-3, "1.862208677723707446525921998109e-8"),
         (-2, "8.865577059648962609058045604434e-8"),
         (-1, "4.064224364096375531168559391726e-7"),
-        (0, "7.705260630861442737917312763495e-6"),
+        (0, "1.849727263972748627996238788187829600708e-6"),
     )
     epsilon = S("vakint::ε")
     expected = sum((N(Float(value, decimal_digits=32)) * epsilon ** power
@@ -537,11 +540,12 @@ def evaluate_h_numerator(integral, temporary_directory):
     return {"evaluated": evaluated, "result": result, "error": error,
             "reference": reference, "metrics": {
                 "reference_matches": matches, "comparison": detail,
+                "data_loading_seconds": data_loading_seconds, "external_data": external_data,
                 "symbolic_seconds": symbolic_seconds, "numerical_seconds": numerical_seconds,
                 "decimal_digits": 32, "relative_threshold": 1e-30,
                 "mass_squared": 3, "mu_squared": 5, "normalization": "MSbar",
                 "form_requested": False, "generated_candidate_files_used": False,
-                "backend": "Vakint shipped RustRed assets + FeynKit tensor reduction",
+                "backend": "Vakint loaded 1L–4L RustRed data + FeynKit tensor reduction",
                 "external_vectors": vectors}}
 
 

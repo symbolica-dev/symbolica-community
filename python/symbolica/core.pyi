@@ -18,12 +18,12 @@ from __future__ import annotations
 
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Callable, Iterator, Literal, Sequence, overload
-
-import typing
+from typing import Any, Callable, Iterator, Literal, Protocol, Sequence, overload
 
 import numpy as np
 import numpy.typing as npt
+
+import typing
 
 _ExpressionProductT_co = typing.TypeVar("_ExpressionProductT_co", covariant=True)
 
@@ -2113,6 +2113,8 @@ class PrintMode(Enum):
     """Print using Sympy notation."""
     Typst = 5
     """Print using Typst notation."""
+    MathML = 6
+    """Print a bounded MathML fragment; custom printers return MathML fragments."""
 
 class RootLocation(Enum):
     """Proven location of an isolated root relative to the coordinate axes."""
@@ -2182,6 +2184,61 @@ class Citation:
         """Display an HTML report, with description and reasons as escaped text."""
     def _repr_pretty_(self, pretty: Any, cycle: bool) -> None: ...
 
+class MathMLMarker:
+    """An omission with an absolute source path and first omitted item offset."""
+    path: Sequence[int]
+    label: str
+    start: int
+    def __init__(self, path: Sequence[int], label: str, start: int = 0) -> None: ...
+    @staticmethod
+    def marker(index: int) -> str:
+        """Return MathML for the numbered marker at this index in page.markers."""
+        ...
+
+class MathMLPage:
+    """Bounded MathML and metadata for the half-open range [start, end)."""
+    html: str
+    start: int
+    end: int
+    total: int
+    kind: str
+    unit: str
+    markers: Sequence[MathMLMarker]
+    def __init__(self, html: str, start: int, end: int, total: int,
+                 kind: str = "Expression", unit: str = "items",
+                 markers: Sequence[MathMLMarker] | None = None) -> None: ...
+
+class MathMLPageSource(Protocol):
+    def page(self, path: list[int], start: int, size: int, layout: int = 0,
+             expansions: Sequence[tuple[list[int], int]] = ()) -> MathMLPage:
+        """Render one bounded page. Paths are absolute; expansion paths are relative to path."""
+        ...
+
+class MathMLViewer:
+    """Shared streaming MathML viewer for Python and PyO3 expression providers.
+
+    Reuses popup pagination, inspection/back, keyboard zoom and notebook display.
+    Responsive layouts and in-place expansion are optional source capabilities.
+    """
+    def __init__(self, source: MathMLPageSource, page_size: int = 25, *,
+                 layout_count: int = 1, supports_expansion: bool = False) -> None: ...
+    def close(self) -> None:
+        """Release the retained source, widget and cached pages."""
+        ...
+    def page(self) -> dict[str, Any]:
+        """Return a bounded page and responsive layouts without widget dependencies."""
+        ...
+    def handle_message(self, message: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+        """Process a frontend request; return (field, payload), or None."""
+        ...
+    @staticmethod
+    def javascript() -> str:
+        """Return the pager ES module with a dependency-free mount() export."""
+        ...
+    def _repr_html_(self) -> str: ...
+    def _repr_mimebundle_(self, include: list[str] | None = None,
+                         exclude: list[str] | None = None) -> dict[str, Any]: ...
+
 class FormattedOutput:
     """A formatted string with rich notebook display representations."""
 
@@ -2198,6 +2255,15 @@ class FormattedOutput:
 
     def format_plain(self) -> str:
         """Convert the formatted output into plain text."""
+
+    def mathml_viewer(self) -> MathMLViewer | None:
+        """Return the underlying viewer without importing notebook packages."""
+
+    def _display_(self) -> Any:
+        """Return rich output for marimo notebooks."""
+
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> dict[str, Any]:
+        """Return rich notebook output, including a widget when paginated."""
 
     def _repr_html_(self) -> str | None:
         """Convert the formatted output into an HTML representation."""
@@ -2889,6 +2955,15 @@ class Expression:
         Get the number of bytes that this expression takes up in memory.
         """
 
+    def _display_(self) -> Any:
+        """Return rich output for marimo notebooks."""
+
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> dict[str, Any]:
+        """Return native MathML with optional live zoom and pagination."""
+
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a bounded viewer without importing notebook or widget packages."""
+
     def _repr_html_(self) -> str:
         """
         Convert the expression into an HTML representation.
@@ -2936,7 +3011,7 @@ class Expression:
         symmetric_representation_for_finite_field: bool = False,
         explicit_rational_polynomial: bool = False,
         number_thousands_separator: str | None = None,
-        multiplication_operator: str = "*",
+        multiplication_operator: str = "·",
         double_star_for_exponentiation: bool = False,
         function_brackets: tuple[str, str] = ("(", ")"),
         num_exp_as_superscript: bool = True,
@@ -2964,6 +3039,9 @@ class Expression:
         >>> print(E('x^2 + f(x)').format(PrintMode.Mathematica))
 
         yields `x^2 + f[x]`
+
+        mode=PrintMode.MathML returns a bounded fragment for embedding inside
+        <math>. Use formatted(mode=PrintMode.MathML) for notebook display.
 
         Parameters
         ----------
@@ -3045,7 +3123,7 @@ class Expression:
         symmetric_representation_for_finite_field: bool = False,
         explicit_rational_polynomial: bool = False,
         number_thousands_separator: str | None = None,
-        multiplication_operator: str = "*",
+        multiplication_operator: str = "·",
         double_star_for_exponentiation: bool = False,
         function_brackets: tuple[str, str] = ("(", ")"),
         num_exp_as_superscript: bool = True,
@@ -3054,9 +3132,20 @@ class Expression:
         hide_namespace: str | None = None,
         include_attributes: bool = False,
         custom_print_mode: dict[str, int | str | dict[str | int, Any]] | None = None,
+        *,
+        mathml: bool = True,
+        page_size: int = 25,
     ) -> FormattedOutput:
         """
-        Convert the expression into a rich display object, with tunable settings.
+        Display native MathML with bounded pagination. Use mathml=False for the
+        highlighted text view. Install symbolica[notebook] for zoom and live navigation.
+        page_size (1–500) sets the initial preview and popup page size. Nested detail adapts
+        to the available width. Paged output uses a short text
+        summary; max_terms controls the legacy text view and small expressions.
+        Custom printers receive PrintMode.MathML and return bounded MathML fragments,
+        or None for the standard renderer. Fragments are atomic for paging;
+        callback implementations must bound their own work. Text-layout options
+        apply to the text view. Explicit mode=PrintMode.MathML also selects MathML.
 
         Parameters
         ----------
@@ -3247,6 +3336,59 @@ class Expression:
             The symbol-data key to retrieve. Omit it to return all stored data.
         """
 
+    def check_zero(
+        self,
+        *,
+        finite_field_samples: int = 5,
+        numerical_samples: int = 5,
+        max_precision: int = 1024,
+        exact_fallback: bool = True,
+        treat_floats_as_exact: bool = False,
+    ) -> bool | None:
+        """
+        Test whether the expression is identically zero wherever it is defined.
+
+        Returns True when zero is established, False when the expression is found
+        to be nonzero, and None when the test cannot decide. Use `is True` when
+        proof of zero is required. This tests an identity: `S('x')` returns False
+        even though it vanishes at x = 0. Small values are never treated as zero
+        using a numerical tolerance.
+
+        Numerical nonzero results are heuristic; set numerical_samples=0 to
+        disable them. Calls to user-defined functions without evaluation info
+        are assumed independent unless identical, which can give false nonzero
+        results for identities involving those functions.
+
+        Parameters
+        ----------
+        finite_field_samples: int, optional
+            Maximum finite-field samples (default: 5). Zero disables this stage;
+            values above five have no additional effect.
+        numerical_samples: int, optional
+            Maximum numerical sample points (default: 5). Zero disables this stage.
+        max_precision: int, optional
+            Maximum numerical working precision in binary bits (default: 1024).
+            Values below 128 restrict numerical testing to machine precision.
+        exact_fallback: bool, optional
+            Allow more expensive symbolic checks (default: True). Disable this
+            to limit work, accepting more inconclusive results.
+        treat_floats_as_exact: bool, optional
+            Interpret finite floating coefficients as their exact stored values
+            (default: False), including in function arguments and exponents.
+            This ignores their rounding uncertainty and cannot recover lost accuracy.
+
+        Examples
+        --------
+        >>> E('(x+1)^2-x^2-2*x-1').check_zero()
+        True
+        >>> E('sin(x)^2+cos(x)^2-1').check_zero()
+        True
+        >>> E('x').check_zero()
+        False
+        >>> E('log(2)+log(3)-log(6)').check_zero() is None
+        True
+        """
+
     def is_scalar(self) -> bool | None:
         """
         Check if the expression is a scalar. Symbols must have the scalar attribute.
@@ -3401,6 +3543,7 @@ class Expression:
         Expression or extension result
             The scalar product, or the extension's multiplication result.
         """
+
 
     def __rmul__(
         self, other: Expression | int | float | complex | Float | ComplexFloat | Decimal
@@ -5403,6 +5546,7 @@ class Expression:
         max_horner_scheme_variables: int = 500,
         max_common_pair_cache_entries: int = 1000000,
         max_common_pair_distance: int = 100,
+        horner_use_cpe: bool = False,
     ) -> Evaluator:
         """
         Create an evaluator that can evaluate (nested) expressions in an optimized fashion.
@@ -5444,7 +5588,7 @@ class Expression:
         iterations: int, optional
             The number of Horner schemes to try.
         cpe_iterations: int | None, optional
-            The number of CPE iterations to perform. The number if unbounded if `None`.
+            The maximum number of common-pair elimination iterations. If `None`, continue until no more pairs are eliminated.
         n_cores: int, optional
             The number of CPU cores used for the optimization.
         verbose: bool, optional
@@ -5466,6 +5610,10 @@ class Expression:
             The maximum number of entries in the common pair cache.
         max_common_pair_distance: int, optional
             The maximum distance between common pairs. Used when clearing cache entries.
+        horner_use_cpe: bool, optional
+            If `False` (the default), rank Horner candidates using common-subexpression elimination only.
+            If `True`, also run common-pair elimination for each candidate; this can improve the selected scheme but is more expensive.
+            The selected scheme receives final common-pair elimination in either mode, controlled by `cpe_iterations`.
         """
 
     @classmethod
@@ -5486,6 +5634,7 @@ class Expression:
         max_horner_scheme_variables: int = 500,
         max_common_pair_cache_entries: int = 1000000,
         max_common_pair_distance: int = 100,
+        horner_use_cpe: bool = False,
     ) -> Evaluator:
         """
         Create an evaluator that can jointly evaluate (nested) expressions in an optimized fashion.
@@ -5510,9 +5659,9 @@ class Expression:
         functions: Sequence[FunctionDefinition]
             Function definitions available to the evaluator.
         iterations: int, optional
-            The number of optimization passes to run.
+            The number of Horner schemes to try.
         cpe_iterations: int | None, optional
-            The number of common subexpression elimination iterations to perform.
+            The maximum number of common-pair elimination iterations. If `None`, continue until no more pairs are eliminated.
         n_cores: int, optional
             The number of CPU cores used for parallel optimization.
         verbose: bool, optional
@@ -5533,6 +5682,10 @@ class Expression:
             The maximum number of common-subexpression pairs to cache.
         max_common_pair_distance: int, optional
             The maximum distance between factors when searching for common pairs.
+        horner_use_cpe: bool, optional
+            If `False` (the default), rank Horner candidates using common-subexpression elimination only.
+            If `True`, also run common-pair elimination for each candidate; this can improve the selected scheme but is more expensive.
+            The selected scheme receives final common-pair elimination in either mode, controlled by `cpe_iterations`.
         """
 
     def canonize_tensors(
@@ -7275,6 +7428,12 @@ class Series:
         Convert the series into an HTML representation.
         """
 
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a native pager without importing notebook or widget packages."""
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+    def _display_(self) -> Any:
+        """Display native MathML with paging in marimo."""
     def _repr_latex_(self) -> str:
         """
         Convert the series into a LaTeX representation.
@@ -7424,9 +7583,14 @@ class Series:
         hide_namespace: str | None = None,
         include_attributes: bool = False,
         custom_print_mode: dict[str, int | str | dict[str | int, Any]] | None = None,
+        *,
+        mathml: bool = True,
+        page_size: int = 25,
     ) -> FormattedOutput:
         """
         Convert the series into a rich display object, with tunable settings.
+        Native MathML is used by default; mathml=False restores highlighted text.
+        str(...) continues to return plain text.
 
         Parameters
         ----------
@@ -7903,6 +8067,12 @@ class Polynomial:
         Convert the polynomial into an HTML representation.
         """
 
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a native pager without importing notebook or widget packages."""
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+    def _display_(self) -> Any:
+        """Display native MathML with paging in marimo."""
     def _repr_latex_(self) -> str:
         """
         Convert the polynomial into a LaTeX representation.
@@ -8042,9 +8212,14 @@ class Polynomial:
         hide_namespace: str | None = None,
         include_attributes: bool = False,
         custom_print_mode: dict[str, int | str | dict[str | int, Any]] | None = None,
+        *,
+        mathml: bool = True,
+        page_size: int = 25,
     ) -> FormattedOutput:
         """
         Convert the polynomial into a rich display object, with tunable settings.
+        Native MathML is used by default; mathml=False restores highlighted text.
+        str(...) continues to return plain text.
 
         Parameters
         ----------
@@ -8834,6 +9009,12 @@ class NumberFieldPolynomial:
         Convert the polynomial into an HTML representation.
         """
 
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a native pager without importing notebook or widget packages."""
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+    def _display_(self) -> Any:
+        """Display native MathML with paging in marimo."""
     def _repr_latex_(self) -> str:
         """
         Convert the polynomial into a LaTeX representation.
@@ -9499,6 +9680,12 @@ class FiniteFieldPolynomial:
         Convert the polynomial into an HTML representation.
         """
 
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a native pager without importing notebook or widget packages."""
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+    def _display_(self) -> Any:
+        """Display native MathML with paging in marimo."""
     def _repr_latex_(self) -> str:
         """
         Convert the polynomial into a LaTeX representation.
@@ -10187,6 +10374,12 @@ class RationalPolynomial:
         Convert the rational polynomial into an HTML representation.
         """
 
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a native pager without importing notebook or widget packages."""
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+    def _display_(self) -> Any:
+        """Display native MathML with paging in marimo."""
     def _repr_latex_(self) -> str:
         """
         Convert the rational polynomial into a LaTeX representation.
@@ -10497,6 +10690,12 @@ class FiniteFieldRationalPolynomial:
         Convert the rational polynomial into an HTML representation.
         """
 
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a native pager without importing notebook or widget packages."""
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+    def _display_(self) -> Any:
+        """Display native MathML with paging in marimo."""
     def _repr_latex_(self) -> str:
         """
         Convert the rational polynomial into a LaTeX representation.
@@ -10934,9 +11133,16 @@ class Matrix:
         """
 
     def _repr_html_(self) -> str:
-        """
-        Convert the matrix into an HTML representation.
-        """
+        """Render bounded native MathML cells in a matrix layout."""
+
+    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
+        """Create a pager for complete matrix rows and individual entry terms."""
+
+    def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> Any:
+        """Prefer the shared MathML pager in notebooks."""
+
+    def _display_(self) -> Any:
+        """Display a matrix with the shared pager in marimo."""
 
     def _repr_latex_(self) -> str:
         """
@@ -11626,7 +11832,8 @@ class Evaluator:
     def evaluate(self, inputs: npt.ArrayLike) -> npt.NDArray[np.float64]:
         """
         Evaluate the expression for multiple inputs and return the result.
-        For best performance, use `numpy` arrays instead of lists.
+        For best performance, use NumPy arrays for input; results are returned as
+        NumPy arrays when NumPy is installed and as nested Python lists otherwise.
 
         On the first call, the expression is JIT compiled using SymJIT.
 
@@ -11681,8 +11888,9 @@ class Evaluator:
     def evaluate_complex(self, inputs: npt.ArrayLike) -> npt.NDArray[np.complex128]:
         """
         Evaluate the expression for multiple inputs and return the result.
-        For best performance, use `numpy` arrays and `np.complex128` instead of lists and
-        `complex`.
+        For best performance, use NumPy arrays with dtype `np.complex128` for input;
+        results are returned as NumPy arrays when NumPy is installed and as nested
+        Python lists otherwise.
 
         On the first call, the expression is JIT compiled using SymJIT.
 
@@ -11762,6 +11970,8 @@ class CompiledRealEvaluator:
     def evaluate(self, inputs: npt.ArrayLike) -> npt.NDArray[np.float64]:
         """
         Evaluate the expression for multiple inputs and return the result.
+        For best performance, use NumPy arrays for input; results are returned as
+        NumPy arrays when NumPy is installed and as nested Python lists otherwise.
 
         Parameters
         ----------
@@ -11794,6 +12004,8 @@ class CompiledComplexEvaluator:
     def evaluate(self, inputs: npt.ArrayLike) -> npt.NDArray[np.complex128]:
         """
         Evaluate the expression for multiple inputs and return the result.
+        For best performance, use NumPy arrays for input; results are returned as
+        NumPy arrays when NumPy is installed and as nested Python lists otherwise.
 
         Parameters
         ----------
@@ -11826,6 +12038,8 @@ class CompiledSimdRealEvaluator:
     def evaluate(self, inputs: npt.ArrayLike) -> npt.NDArray[np.float64]:
         """
         Evaluate the expression for multiple inputs and return the result.
+        For best performance, use NumPy arrays for input; results are returned as
+        NumPy arrays when NumPy is installed and as nested Python lists otherwise.
 
         Parameters
         ----------
@@ -11858,6 +12072,8 @@ class CompiledSimdComplexEvaluator:
     def evaluate(self, inputs: npt.ArrayLike) -> npt.NDArray[np.complex128]:
         """
         Evaluate the expression for multiple inputs and return the result.
+        For best performance, use NumPy arrays for input; results are returned as
+        NumPy arrays when NumPy is installed and as nested Python lists otherwise.
 
         Parameters
         ----------
@@ -11896,6 +12112,8 @@ class CompiledCudaRealEvaluator:
     def evaluate(self, inputs: npt.ArrayLike) -> npt.NDArray[np.float64]:
         """
         Evaluate the expression for multiple inputs and return the result.
+        For best performance, use NumPy arrays for input; results are returned as
+        NumPy arrays when NumPy is installed and as nested Python lists otherwise.
 
         Parameters
         ----------
@@ -11934,6 +12152,8 @@ class CompiledCudaComplexEvaluator:
     def evaluate(self, inputs: npt.ArrayLike) -> npt.NDArray[np.complex128]:
         """
         Evaluate the expression for multiple inputs and return the result.
+        For best performance, use NumPy arrays for input; results are returned as
+        NumPy arrays when NumPy is installed and as nested Python lists otherwise.
 
         Parameters
         ----------
@@ -12809,8 +13029,11 @@ def get_citations() -> list[Citation]:
     """Return cumulative references for Symbolica and the community features used."""
     ...
 
-# External resource transport supplied by the Community host.
 def _set_data_directories(directories: list[str]) -> None: ...
+
 def _data_manifest() -> str: ...
+
 def _install_data_asset(name: str, payload: bytes) -> None: ...
+
 def _read_data_asset(name: str) -> bytes: ...
+

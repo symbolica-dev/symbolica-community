@@ -4,7 +4,7 @@ import random
 
 import pytest
 from symbolica import E, Expression, S
-from symbolica.community.spenso import (
+from symbolica.community.tensor import (
     ExecutionMode,
     Representation,
     Slot,
@@ -13,7 +13,7 @@ from symbolica.community.spenso import (
     TensorLibrary,
     TensorNetwork,
 )
-from symbolica.community.spenso import TensorName as N
+from symbolica.community.tensor import TensorName as N
 
 
 class TestNotebookBasics:

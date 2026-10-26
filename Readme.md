@@ -80,3 +80,10 @@ For a complete introduction to Symbolica, see the
 Ask questions and discuss Symbolica on [Zulip](https://reform.zulipchat.com).
 For contributions, see the [contribution guidelines](Contributing.md).
 For local WASM builds, see the [build guide](docs/local-wasm-build.md).
+
+Historical `data.read("vakint/…")` names remain available as raw-data
+compatibility aliases. Call `await data.prepare(name)` for the specific data
+needed; the immutable public source and checksum are declared in
+`python/symbolica/data_compatibility.json`. Only font resources are installed by
+default. Legacy reduction packs are never loaded by native reductions; current
+Vakint/RustRed data uses the validated external-data loader.

@@ -37,20 +37,32 @@ def build(metadata, output, version, check_catalog=False):
                 raise ValueError(f"Invalid asset name: {name}")
             source_package = packages[entry.get("package", package["name"])]
             source_root = Path(source_package["manifest_path"]).parent
-            content = (source_root / entry["path"]).read_bytes()
-            if name in payloads:
+            if any(record["name"] == name for record in records):
                 raise ValueError(f"Duplicate asset name: {name}")
-            payloads[name] = content
+            compatibility = manifest.get("compatibility_only", False)
+            if compatibility:
+                # Authenticate these declared raw bytes only when explicitly
+                # requested; historical reduction packs never enter a wheel.
+                content = None
+            else:
+                content = (source_root / entry["path"]).read_bytes()
+                payloads[name] = content
             record = {
                 "name": name,
                 "description": entry["description"],
-                "sha256": hashlib.sha256(content).hexdigest(),
-                "size": len(content),
+                "sha256": entry["sha256"] if compatibility else hashlib.sha256(content).hexdigest(),
+                "size": entry["size"] if compatibility else len(content),
                 "consumer": package["id"],
-                "source": source_package["id"],
-                "source_path": entry["path"],
+                "source": manifest["source"] if compatibility else source_package["id"],
+                "source_path": entry["source_path"] if compatibility else entry["path"],
             }
-            if name.endswith(".gz"):
+            if compatibility:
+                record["compatibility_only"] = True
+                record["url"] = manifest["remote_base_url"] + entry["source_path"]
+                for field in ("compression", "expanded_size"):
+                    if field in entry:
+                        record[field] = entry[field]
+            elif name.endswith(".gz"):
                 expanded = gzip.decompress(content)
                 record.update(compression="gzip", expanded_size=len(expanded))
             records.append(record)
@@ -103,7 +115,10 @@ def build(metadata, output, version, check_catalog=False):
         ("symbolica-fonts", "fonts", "render/fonts/"),
         ("symbolica-vakint-data", "vakint-data", "vakint/"),
     ]:
-        selected = [record for record in records if record["name"].startswith(prefix)]
+        selected = [
+            record for record in records
+            if record["name"].startswith(prefix) and record["name"] in payloads
+        ]
         if selected:
             wheels.append(
                 write_bundle(

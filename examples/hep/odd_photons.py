@@ -301,13 +301,14 @@ def _(mo):
 @app.cell
 def _(D, E, K, TensorReducer, count, mapping, sp, traces):
     if count == 1:
-        assert (mapping.apply(traces[0]) + traces[0]).expand() == E("0")
+        assert (mapping.apply(traces[0]) + traces[0]).expand().to_expression() == E("0")
         vacuum = TensorReducer(
             D, integrated=[K(0, sp.PortPattern.exact(sp.Representation.mink(D)))]
         )
         residual = vacuum.reduce(traces[0]).expand()
     else:
         residual = (traces[0] + mapping.apply(traces[1])).expand()
+    residual = residual.to_expression()
     assert residual == E("0")
     return (residual,)
 

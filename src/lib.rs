@@ -1,14 +1,12 @@
 use pyo3::{
-    Bound, PyResult,
-    exceptions::PyRuntimeError,
-    pymodule,
+    Bound, PyResult, pymodule,
     types::{PyModule, PyModuleMethods},
     wrap_pyfunction,
 };
 use symbolica::{
     api::python::{
-        Citation, PythonIntegrationFunctions, PythonIntegrationStep, create_symbolica_module,
-        set_python_integration_functions,
+        Citation, ExtensionImplementation, PYTHON_INTEGRATION, PythonIntegrationFunctions,
+        PythonIntegrationStep, create_symbolica_module,
     },
     atom::{Atom, Symbol},
 };
@@ -87,13 +85,18 @@ fn integrate_with_steps(
     (explanation.result, overview, steps)
 }
 
+static INTEGRATION: ExtensionImplementation<PythonIntegrationFunctions> =
+    ExtensionImplementation::new(
+        "symbolica-integrate",
+        PythonIntegrationFunctions {
+            integrate,
+            integrate_with_steps,
+        },
+    );
+
 #[pymodule]
 fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    set_python_integration_functions(PythonIntegrationFunctions {
-        integrate,
-        integrate_with_steps,
-    })
-    .map_err(PyRuntimeError::new_err)?;
+    PYTHON_INTEGRATION.register(&INTEGRATION)?;
     create_symbolica_module(m)?;
     m.add_function(wrap_pyfunction!(data::_set_data_directories, m)?)?;
     m.add_function(wrap_pyfunction!(data::_data_manifest, m)?)?;
@@ -102,7 +105,7 @@ fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(citations::get_citations, m)?)?;
     #[cfg(feature = "community")]
     {
-        register_module!(m, linnet_render_py::GraphModule);
+        register_module!(m, linnet_py::GraphModule);
         register_module!(m, spynso3::SpensoModule);
         register_module!(m, hepkit::HepKitModule);
         #[cfg(not(target_arch = "wasm32"))]
