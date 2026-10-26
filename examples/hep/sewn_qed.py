@@ -162,12 +162,12 @@ def _(
                     TensorExpression(_numerator.expand())
                     .simplify_algebra(contract="dots", gamma=True, epsilon=True)
                     .expand()
-                    .to_expression()
                 )
+                assert _numerator.is_scalar
                 _numerator = _kin.apply(
-                    _diagram.loop_momentum_basis.route_expression(_numerator).replace(
-                        K(0, index), _orientation * k1(index)
-                    )
+                    _diagram.loop_momentum_basis.route_expression(
+                        _numerator.to_expression()
+                    ).replace(K(0, index), _orientation * k1(index))
                 )
                 _denominator = _diagram.denominator_expression(
                     edge_powers={_edge.id: 0 for _edge in _cut.edges},
@@ -179,9 +179,11 @@ def _(
                         Symbols.denominator()(a, b, c, inverse), inverse
                     ).replace(K(0, index), _orientation * k1(index))
                 )
+                _prefactor = _diagram.numerator_prefactor_expression()
+                assert _prefactor.is_scalar
                 _squared += (
                     _diagram.overall_factor_expression(evaluate=True)
-                    * _diagram.numerator_prefactor_expression()
+                    * _prefactor.to_expression()
                     * _numerator
                     / _denominator
                 )

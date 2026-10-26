@@ -24,9 +24,9 @@ def _(mo):
     is an explicit analytic input, in the $i/(16\pi^2)$ loop measure.
     We use $D=4-2\epsilon$ and $a_4=g_s^2/(16\pi^2)$.
 
-    The model keeps the upstream UFO rule $P_2+P_3=-P_1$ with all vertex
-    momenta incoming. The loop result is normalized against the generated
-    tree tensor, including its sign and the ghost momentum convention.
+    The model uses the antighost derivative $P_2$ in the ordered UFO vertex
+    $(c,\bar c,A)$, with all momenta incoming. The loop result is normalized
+    against the generated tree tensor, including its sign and the ghost momentum convention.
     The two diagrams give $C_A\xi/(8\epsilon)$ and
     $3C_A\xi/(8\epsilon)$ times the tree and $a_4$.
     """)
@@ -95,6 +95,7 @@ def _(
     M,
     P,
     S,
+    Symbols,
     TensorExpression,
     a,
     arguments,
@@ -103,7 +104,6 @@ def _(
     color,
     dA,
     den,
-    dim,
     ed,
     family,
     gs,
@@ -123,9 +123,11 @@ def _(
 ):
     def project_ghost_diagram(diagram, particle_name, loops):
         """Preserve the open ghost-gluon tensor while projecting one diagram."""
+        prefactor = diagram.numerator_prefactor_expression()
+        assert prefactor.is_scalar
         weight = (
             diagram.overall_factor_expression(evaluate=True)
-            * diagram.numerator_prefactor_expression()
+            * prefactor.to_expression()
         )
         # Compare amputated ghost kernels in canonical field order.
         # Preserve all internal-loop and graph symmetry factors.
@@ -141,15 +143,20 @@ def _(
         assert weight == one
         # Keep every external Lorentz/color slot open; no polarization or
         # contraction with external momentum can hide an unwanted tensor.
-        numerator = model.expand_couplings(
-            diagram.numerator_expression().to_expression()
+        numerator = (
+            TensorExpression(
+                model.expand_couplings(diagram.numerator_expression().to_expression())
+            )
+            .rename_indices(
+                {
+                    hedge(half.id, 1): [a, b, c][half.edge.external_index]
+                    for half in diagram.half_edges
+                    if half.edge.is_external
+                },
+                intern="indices",
+            )
+            .to_expression()
         )
-        for half in diagram.half_edges:
-            if half.edge.is_external:
-                numerator = numerator.replace(
-                    hedge(half.id, 1),
-                    [a, b, c][half.edge.external_index],
-                )
         numerator = numerator.replace(
             sp.PortPattern.exact(sp.Representation.coad(8), idx),
             sp.PortPattern.exact(sp.Representation.coad(dA), idx),
@@ -158,14 +165,10 @@ def _(
             numerator = diagram.uv_expansion(mUV, numerator=numerator).to_expression()
         numerator = diagram.momentum_basis().route_expression(numerator)
         numerator = (
-            numerator.replace(
-                sp.PortPattern.exact(sp.Representation.mink(dim), idx),
-                sp.PortPattern.exact(sp.Representation.mink(D), idx),
-            )
-            .replace(
-                sp.PortPattern.exact(sp.Representation.mink(dim)),
-                sp.PortPattern.exact(sp.Representation.mink(D)),
-            )
+            TensorExpression(numerator)
+            .with_lorentz_dimension(D)
+            .replace(Symbols.dimension(), D)
+            .to_expression()
             .replace(mUV**2, M)
         )
         for match in list(numerator.match(den(ed, mom, ms, quad))):
@@ -186,7 +189,10 @@ def _(
         assert not scalar.matches(hedge(arguments))
         if not loops:
             expected_momentum = P(0, sp.PortPattern.exact(sp.Representation.mink(D), b))
-            if particle_name == "ghG~":
+            # The derivative acts on the ordered UFO antighost leg: its
+            # all-incoming momentum is -(P0-P1) for ghG and P0 for ghG~.
+            # The color permutation then gives -gs times the momentum below.
+            if particle_name == "ghG":
                 expected_momentum -= P(
                     1, sp.PortPattern.exact(sp.Representation.mink(D), b)
                 )

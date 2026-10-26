@@ -210,6 +210,8 @@ def _(
             _diagram.overall_factor_expression(evaluate=True)
             * _diagram.numerator_prefactor_expression()
         )
+        assert _numerator.is_scalar
+        _numerator = _numerator.to_expression()
         if _loops:
             _scalar = (
                 (
@@ -333,6 +335,8 @@ def _(
             .together()
             .expand()
         )
+        assert _scalar.is_scalar
+        _scalar = _scalar.to_expression()
         for _monomial, _coefficient in _scalar.coefficient_list(*coordinates):
             _powers = [
                 -int((_monomial.derivative(_x) * _x / _monomial).together())

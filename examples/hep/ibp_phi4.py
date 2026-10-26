@@ -133,9 +133,11 @@ def _(
                 den(_values[edge_], _values[mom_], _values[mass_], _values[quad_]),
                 tadpole_family.rewrite_numerator(_values[quad_], [ct_coordinate]),
             )
+        _prefactor = _diagram.numerator_prefactor_expression()
+        assert _prefactor.is_scalar
         _factor = (
             _diagram.overall_factor_expression(evaluate=True)
-            * _diagram.numerator_prefactor_expression()
+            * _prefactor.to_expression()
         )
         _numerator = external_kinematics.apply(_numerator) * _factor
         if _loops:
@@ -240,8 +242,10 @@ def _(E, S, TensorReducer, d, mass_squared, p_squared, sp, zero):
         _shifted_line.series(_scaling, 0, 2).to_expression().replace(_scaling, E("1"))
     )
     averaged_taylor = TensorReducer(d, integrated=[_qc]).reduce(averaged_taylor)
+    assert averaged_taylor.is_scalar
     averaged_taylor = (
-        averaged_taylor.replace(_dot(_qc, _qc), formal_denominator + mass_squared)
+        averaged_taylor.to_expression()
+        .replace(_dot(_qc, _qc), formal_denominator + mass_squared)
         .replace(_dot(_pc, _pc), p_squared)
         .expand()
     )
@@ -437,9 +441,11 @@ def _(
         _numerator = model.expand_couplings(
             _diagram.numerator_expression().to_expression()
         )
+        _prefactor = _diagram.numerator_prefactor_expression()
+        assert _prefactor.is_scalar
         _factor = (
             _diagram.overall_factor_expression(evaluate=True)
-            * _diagram.numerator_prefactor_expression()
+            * _prefactor.to_expression()
         )
         _raw_family = _diagram.propagator_family(kinematics=Kinematics(d))
         _raw = _factor * _numerator / (Symbol.I * model_coupling**2)
@@ -466,8 +472,10 @@ def _(
                 den(_values[edge_], _values[mom_], _values[mass_], _values[quad_]),
                 family.rewrite_numerator(_values[quad_], coordinates),
             )
+        _reduced = vacuum_reducer.reduce(_expanded)
+        assert _reduced.is_scalar
         _scalar = family.rewrite_numerator(
-            external_kinematics.apply(vacuum_reducer.reduce(_expanded)), coordinates
+            external_kinematics.apply(_reduced.to_expression()), coordinates
         )
         _scalar = (
             (_scalar * _factor / (Symbol.I * model_coupling**2)).together().expand()

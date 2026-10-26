@@ -2,12 +2,10 @@
 # ruff: noqa: E501, F401
 
 import builtins
+import symbolica
 import typing
-from symbolica.core import Expression, FormattedOutput
 from symbolica.community.hepkit import FeynmanDiagram, IntegralFamily
-
-def integral_from_diagram(diagram: FeynmanDiagram, family: IntegralFamily, numerator: Expression, *, powers: typing.Optional[typing.Sequence[int]] = None, parameter_substitutions: typing.Optional[typing.Mapping[Expression, Expression]] = None, external_momenta: typing.Sequence[Expression] = ()) -> VakintExpression:
-    """Checked scalar-vacuum ingress from the graph's stored routing; no text parsing."""
+from symbolica.core import Expression
 
 @typing.final
 class Vakint:
@@ -437,7 +435,7 @@ class VakintExpression:
         r"""
         Display through Symbolica's native rich expression printer.
         """
-    def formatted(self, **options: typing.Any) -> FormattedOutput:
+    def formatted(self, **options: typing.Any) -> symbolica.FormattedOutput:
         r"""
         Return Symbolica's `FormattedOutput`; keyword options are forwarded unchanged.
         """
@@ -511,7 +509,7 @@ class VakintNumericalResult:
         r"""
         Display through Symbolica's native rich expression printer.
         """
-    def formatted(self, **options: typing.Any) -> FormattedOutput:
+    def formatted(self, **options: typing.Any) -> symbolica.FormattedOutput:
         r"""
         Return Symbolica's `FormattedOutput`; keyword options are forwarded unchanged.
         """
@@ -612,3 +610,14 @@ class VakintNumericalResult:
         max_pull : Optional[float]
            The maximum pull for comparison. Default is 3.0.
         """
+
+def integral_from_diagram(diagram: FeynmanDiagram, family: IntegralFamily, numerator: Expression, *, powers: typing.Sequence[int] | None = None, parameter_substitutions: typing.Mapping[symbolica.Expression, symbolica.Expression] | None = None, external_momenta: typing.Sequence[Expression] = []) -> VakintExpression:
+    r"""
+    Build a native VakintExpression from a routed, uncut vacuum graph.
+
+    The family must retain the ordered physical denominator prefix in its stored
+    loop basis; auxiliary powers must be nonpositive. Numerators use native
+    Kinematics.scalar_product notation. Spectator order defines numerical vector
+    IDs. Parameter substitutions are simultaneous and must already be reflected
+    in the family's physical denominators. No graph factor is inserted.
+    """

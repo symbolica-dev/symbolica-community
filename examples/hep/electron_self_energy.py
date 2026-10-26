@@ -358,12 +358,13 @@ def _(
         sp.PortPattern.exact(sp.Representation.bis(4), tree_ports[2]),
         sp.PortPattern.exact(sp.Representation.mink(D), tree_ports[1]),
     ) / (4 * D)
-    tree_coupling = (
+    _tree_trace = (
         TensorExpression((_tree_num * _tree_probe).expand())
         .simplify_algebra(contract="dots", gamma=True, epsilon=True)
         .expand()
-        .to_expression()
     )
+    assert _tree_trace.is_scalar, "The tree Dirac projection must be scalar"
+    tree_coupling = _tree_trace.to_expression()
     assert (tree_coupling + Symbol.I * charge).expand() == zero
     return (tree_coupling,)
 
@@ -395,11 +396,10 @@ def _(
     assert external_ordering == -one
     assert diagram.overall_factor_expression(evaluate=True) == external_ordering
     assert tree_diagram.overall_factor_expression(evaluate=True) == external_ordering
-    assert (
-        diagram.numerator_prefactor_expression()
-        == tree_diagram.numerator_prefactor_expression()
-        == one
-    )
+    _loop_prefactor = diagram.numerator_prefactor_expression()
+    _tree_prefactor = tree_diagram.numerator_prefactor_expression()
+    assert _loop_prefactor.is_scalar and _tree_prefactor.is_scalar
+    assert _loop_prefactor.to_expression() == _tree_prefactor.to_expression() == one
     assert (tree_coupling * external_ordering - Symbol.I * charge).expand() == zero
     return external_ordering, raw_factor
 
@@ -470,9 +470,11 @@ def _(D, P, diagram, gamma, mass, metric, mu, ports, s, sp):
         )
         / (4 * mass),
     ]
+    _prefactor = diagram.numerator_prefactor_expression()
+    assert _prefactor.is_scalar, "The diagram numerator prefactor must be scalar"
     native_factor = (
         diagram.overall_factor_expression(evaluate=True)
-        * diagram.numerator_prefactor_expression()
+        * _prefactor.to_expression()
     )
     return native_factor, probes
 
@@ -551,12 +553,13 @@ def _(
 ):
     terms_by_structure, targets, traced_coefficients = [], set(), []
     for _projector, _independent in zip(probes, independent_numerators, strict=True):
-        _trace = (
+        _trace_tensor = (
             TensorExpression((numerator * _projector).expand())
             .simplify_algebra(contract="dots", gamma=True, epsilon=True)
             .expand()
-            .to_expression()
         )
+        assert _trace_tensor.is_scalar, "The loop Dirac projection must be scalar"
+        _trace = _trace_tensor.to_expression()
         _scalar = (kinematics.apply(_trace) * native_factor / charge**2).together()
         assert (_scalar - _independent).together() == zero
         traced_coefficients.append(_scalar)

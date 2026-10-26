@@ -137,6 +137,7 @@ def _(
     a,
     b,
     c,
+    hep,
     idx,
     inv,
     k,
@@ -156,15 +157,14 @@ def _(
         _numerator = model.expand_couplings(
             _diagram.numerator_expression(in_lmb=True).to_expression()
         ).replace(model.particle("b").mass, zero)
-        for _half in _diagram.half_edges:
-            _edge = _half.edge
-            if _edge.is_external:
-                _numerator = _numerator.replace(
-                    Symbols.half_edge()(_half.id, 1),
-                    ports[_edge.external_index],
-                )
         _numerator = (
-            TensorExpression(_numerator).with_lorentz_dimension(D).to_expression()
+            TensorExpression(_numerator)
+            .rename_indices({
+                leg.tensor_index: ports[leg.index]
+                for leg in hep.Amplitude.from_diagram(_diagram).legs
+            })
+            .with_lorentz_dimension(D)
+            .to_expression()
         )
         _denominator = (
             _diagram.denominator_expression(dimension=D, in_lmb=True)
@@ -190,10 +190,12 @@ def _(
             .to_expression()
         ).expand()
 
+        _prefactor = _diagram.numerator_prefactor_expression()
+        assert _prefactor.is_scalar
         _amplitude = (
             _numerator
             * _diagram.overall_factor_expression(evaluate=True)
-            * _diagram.numerator_prefactor_expression()
+            * _prefactor.to_expression()
             / _denominator
         )
         _leading = _amplitude.series(

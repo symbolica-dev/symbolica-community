@@ -133,6 +133,9 @@ def check_graph(label, packages, nodes, root, *, community, native):
             label, "algebra source differs from the host declaration", name, source, declared,
         )
     assert algebra["numerica"] == algebra["graphica"], (label, "numeric revisions differ", algebra)
+    assert algebra["symbolica"] == algebra["numerica"], (
+        label, "kernel and numeric revisions differ", algebra,
+    )
     source = algebra["numerica"]
     assert source and re.fullmatch(
         r"git\+https://github.com/symbolica-dev/symbolica\?branch=community#[0-9a-f]{40}",
@@ -194,6 +197,12 @@ def check_graph(label, packages, nodes, root, *, community, native):
         if not native:
             assert "wasm" in nodes[bridge["id"]]["features"], "RustRed WASM API disabled"
         if native:
+            masters = singleton(packages, "oneloop")
+            bindings = singleton(packages, "oneloop-python")
+            assert masters["source"] == bindings["source"], (
+                label, "OneLoop bindings and reducers must share one native owner",
+                masters["source"], bindings["source"],
+            )
             vakint = singleton(packages, "vakint")
             assert owner(vakint) != hepkit_owner, "Vakint must retain its separate owner revision"
             if vakint["source"] is not None:

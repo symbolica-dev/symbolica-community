@@ -116,7 +116,7 @@ def _(D, P, TensorExpression, contraction_settings, lorentz, p2, sp):
         P_T = (g_mu_nu - p_mu p_nu/p^2) / (D-1).
         Thus P_T . [(p^2 g_mu_nu - p_mu p_nu) Pi] = p^2 Pi.
         """
-        if numerator == 0:
+        if numerator.is_zero():
             return numerator
         mu, nu = [
             slot for slot in numerator.structure.slots() if slot.representation == lorentz
@@ -131,7 +131,7 @@ def _(D, P, TensorExpression, contraction_settings, lorentz, p2, sp):
         numerator: TensorExpression, projector: TensorExpression
     ) -> TensorExpression:
         """Contract every named external slot with its matching projector slot."""
-        if numerator == 0:
+        if numerator.is_zero():
             return numerator
         if set(numerator.list_dangling()) != set(projector.list_dangling()):
             raise ValueError(
@@ -156,9 +156,12 @@ def _(D, P, TensorExpression, contraction_settings, lorentz, p2, sp):
 def _(Expression, FeynmanDiagram):
     def diagram_weight(diagram: FeynmanDiagram) -> Expression:
         """Evaluate native graph factors, including the closed-ghost-loop sign once."""
+        prefactor = diagram.numerator_prefactor_expression()
+        if not prefactor.is_scalar:
+            raise ValueError("The diagram numerator prefactor must be scalar")
         return (
             diagram.overall_factor_expression(evaluate=True)
-            * diagram.numerator_prefactor_expression()
+            * prefactor.to_expression()
         )
 
     return (diagram_weight,)

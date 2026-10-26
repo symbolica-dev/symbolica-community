@@ -264,7 +264,7 @@ def _(
             sp.PortPattern.exact(sp.Representation.coad(dA), index_pattern),
         )
     )
-    contracted = (
+    _contracted = (
         TensorExpression(_generic.expand())
         .simplify_algebra(
             contract="dots",
@@ -274,9 +274,9 @@ def _(
             epsilon=True,
         )
         .expand()
-        .to_expression()
     )
-    assert TensorExpression(contracted).is_scalar
+    assert _contracted.is_scalar
+    contracted = _contracted.to_expression()
     return Nc, contracted, dA
 
 
@@ -354,9 +354,11 @@ def _(
     t,
     u,
 ):
+    _prefactor = qcd_diagram.numerator_prefactor_expression()
+    assert _prefactor.is_scalar
     qcd_squared = (
         qcd_diagram.overall_factor_expression(evaluate=True)
-        * qcd_diagram.numerator_prefactor_expression()
+        * _prefactor.to_expression()
         * kinematics.apply(routed)
         / denominator
     ).replace(dA, Nc**2 - 1)

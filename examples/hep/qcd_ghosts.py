@@ -98,22 +98,26 @@ def _(
             )
             # Align external spin and color ports using the graph's native half-edge IDs.
             # Ghosts have no polarization wavefunctions; these IDs cover them as well.
-            for _half in _diagram.half_edges:
-                _edge = _half.edge
-                if _edge.is_external:
-                    _numerator = sp.TensorExpression(_numerator).rename_indices(
-                        {Symbols.half_edge()(_half.id, 1): _ports[_edge.external_index]}
-                    )
+            _numerator = sp.TensorExpression(_numerator).rename_indices(
+                {
+                    Symbols.half_edge()(_half.id, 1): _ports[_half.edge.external_index]
+                    for _half in _diagram.half_edges
+                    if _half.edge.is_external
+                },
+                intern="indices",
+            )
             _denominator = kinematics.apply(
                 _diagram.denominator_expression(dimension=4, in_lmb=True)
                 .to_expression()
                 .replace(Symbols.denominator()(_a, _b, _c, _inverse), _inverse)
             ).expand()
             _denominators.append(_denominator)
+            _prefactor = _diagram.numerator_prefactor_expression()
+            assert _prefactor.is_scalar
             _amplitude += (
                 _numerator
                 * _diagram.overall_factor_expression(evaluate=True)
-                * _diagram.numerator_prefactor_expression()
+                * _prefactor.to_expression()
                 / _denominator
             )
         assert all(
@@ -246,10 +250,13 @@ def _(
             .contract()
             .to_dots()
             .expand()
-            .to_expression()
         )
-        assert TensorExpression(_scalar).is_scalar
-        _squared = kinematics.apply(_scalar).replace(s, 2 * mass**2 - t - u).together()
+        assert _scalar.is_scalar
+        _squared = (
+            kinematics.apply(_scalar.to_expression())
+            .replace(s, 2 * mass**2 - t - u)
+            .together()
+        )
 
         print("Finished channel", _outgoing, flush=True)
 

@@ -230,10 +230,17 @@ def _(
             .expand()
             .to_expression()
         )
-        scalar = source_family.rewrite_numerator(
-            kinematics.apply(reducer.reduce(traced)), coordinates
+        # The projector is linear. Reduce the expanded monomials individually
+        # so the native reducer need not collect this sum as one tensor block.
+        scalar = sum(
+            (source_family.rewrite_numerator(
+                kinematics.apply(reducer.reduce(term)), coordinates
+            ) for term in traced.terms()),
+            zero,
         )
-        scalar *= factor * diagram.numerator_prefactor_expression()
+        prefactor = diagram.numerator_prefactor_expression()
+        assert prefactor.is_scalar
+        scalar *= factor * prefactor.to_expression()
         # Scalar basis labels avoid differentiating symbolic-D tensor slots during
         # the epsilon expansion.  The complete open tensor is checked before this.
         cg = scalar.expand().coefficient(gmunu)
@@ -768,6 +775,8 @@ def _(S, index, mass, model, one, sp, wave, zero):
         one_loop_diagram.overall_factor_expression(evaluate=True)
         * one_loop_diagram.numerator_prefactor_expression()
     )
+    assert factor.is_scalar
+    factor = factor.to_expression()
     assert factor == -one  # Preserve the native closed-fermion-loop sign.
     fermions = [_edge for _edge in one_loop_diagram.edges if not _edge.is_external]
     assert len(fermions) == 2 and all(

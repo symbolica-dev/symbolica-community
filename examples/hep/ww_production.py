@@ -39,7 +39,7 @@ def _():
     from symbolica.community import tensor as sp
     import marimo as mo
     import numpy as np
-    from symbolica import E, S, Symbol
+    from symbolica import E, S, Symbol, T
     from symbolica import set_namespace as _set_namespace
     from symbolica.community.hepkit import Kinematics, Model
     from symbolica.community.graph import RenderSettings
@@ -53,6 +53,7 @@ def _():
         RenderSettings,
         S,
         Symbol,
+        T,
         TensorExpression,
         hep,
         mo,
@@ -341,6 +342,8 @@ def _(mo):
 def _(
     H,
     P,
+    S,
+    T,
     TensorExpression,
     a,
     adjoints,
@@ -352,6 +355,7 @@ def _(
     mz,
     operators,
     s,
+    sp,
     spins,
     sw,
     t,
@@ -360,6 +364,8 @@ def _(
 ):
     squared = zero
     pair_results = {}
+    _epsilon = sp.TensorName("spenso::epsilon").to_expression()
+    _epsilon_arguments = S("epsilon_arguments___")
     for _left, _left_operator in operators.items():
         for _right, _right_adjoint in adjoints.items():
             _paired = _left_operator * _right_adjoint * spins
@@ -386,6 +392,12 @@ def _(
             )
             _conserved = TensorExpression(_result).undo_dots().to_expression()
             _conserved = _conserved.replace(P(3, a), P(0, a) + P(1, a) - P(2, a))
+            # Distribute the conserved momentum through the multilinear epsilon
+            # before using antisymmetry to remove repeated momenta.
+            _conserved = _conserved.replace(
+                _epsilon(_epsilon_arguments),
+                _epsilon(_epsilon_arguments).hold(T().linearize(None)),
+            )
             _result = (
                 TensorExpression(_conserved)
                 .simplify_algebra(

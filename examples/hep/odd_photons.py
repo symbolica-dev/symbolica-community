@@ -277,13 +277,16 @@ def _(
             TensorExpression(numerator.expand())
             .simplify_algebra(contract="dots", gamma=True, epsilon=True)
             .expand()
-            .to_expression()
         )
-        assert TensorExpression(tensor).is_scalar
+        assert tensor.is_scalar
+        _prefactor = diagram.numerator_prefactor_expression()
+        assert _prefactor.is_scalar
         trace = (
-            kinematics.apply(diagram.momentum_basis().route_expression(tensor))
+            kinematics.apply(
+                diagram.momentum_basis().route_expression(tensor.to_expression())
+            )
             * diagram.overall_factor_expression(evaluate=True)
-            * diagram.numerator_prefactor_expression()
+            * _prefactor.to_expression()
         ).expand()
         assert trace != E("0")
         traces.append(trace)

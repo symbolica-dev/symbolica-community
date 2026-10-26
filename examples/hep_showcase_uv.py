@@ -201,9 +201,12 @@ def _(D, P, TensorExpression, dot, p2, sp):
 def _(Expression, FeynmanDiagram):
     def diagram_weight(diagram: FeynmanDiagram) -> Expression:
         """Evaluate native graph factors, including the closed-ghost-loop sign once."""
+        prefactor = diagram.numerator_prefactor_expression()
+        if not prefactor.is_scalar:
+            raise ValueError("The diagram numerator prefactor must be scalar")
         return (
             diagram.overall_factor_expression(evaluate=True)
-            * diagram.numerator_prefactor_expression()
+            * prefactor.to_expression()
         )
 
     return (diagram_weight,)
