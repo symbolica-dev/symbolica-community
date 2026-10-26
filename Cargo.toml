@@ -115,7 +115,7 @@ oneloop-python = { optional = true, git = "https://github.com/alphal00p/oneloopm
 # Keep embedded SymJIT caches and generated native evaluators out of wheels.
 oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false }
 # RustRed-enabled Vakint is independently pinned; its assets use the host loader.
-vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "741ef3417140a6c7ded70222455265e499787100", features = ["feynkit-ingress", "experimental-rustred", "weighted-lowering-diagnostics", "symbolica_community_module", "progress-tui"] }
+vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "9c095d462f62fea61551581a7bca17d54fe04c7f", features = ["feynkit-ingress", "experimental-rustred", "weighted-lowering-diagnostics", "symbolica_community_module", "progress-tui"] }
 
 # All community modules share one Symbolica kernel and numeric owners.
 [patch.crates-io]

@@ -6288,7 +6288,7 @@ dependencies = [
 [[package]]
 name = "vakint"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?rev=741ef3417140a6c7ded70222455265e499787100#741ef3417140a6c7ded70222455265e499787100"
+source = "git+https://github.com/alphal00p/gammaloop?rev=9c095d462f62fea61551581a7bca17d54fe04c7f#9c095d462f62fea61551581a7bca17d54fe04c7f"
 dependencies = [
  "ahash 0.8.12",
  "arrayvec",
