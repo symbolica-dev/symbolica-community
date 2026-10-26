@@ -1,21 +1,75 @@
-"""Check normal Python multiplication with explicit tensor-result narrowing."""
+"""Check reflected arithmetic without casts or runtime narrowing."""
 
-from typing_extensions import assert_type
-
-from symbolica import Expression, S
+from symbolica import Expression, HeldExpression, Matrix, S, Series
 from symbolica.community.hepkit import FeynmanDiagram, Model
-from symbolica.community.tensor import TensorExpression, TensorStructure
+from symbolica.community.tensor import (
+    Tensor,
+    TensorExpression,
+    TensorNetwork,
+    TensorStructure,
+)
+from typing_extensions import assert_type
 
 
 def products(
     scalar: Expression, tensor: TensorExpression
 ) -> tuple[TensorExpression, TensorExpression, Expression, Expression]:
     product = scalar * tensor
-    # ty conservatively admits Expression subclasses with different dispatch:
-    # https://github.com/astral-sh/ruff/pull/26474
-    assert isinstance(product, TensorExpression)
-    # A direct method call bypasses Python's reflected-operator dispatch.
+    assert_type(product, TensorExpression)
+    # Direct dunder calls are outside the reflected-operator typing workaround.
     return product, tensor * scalar, scalar * scalar, scalar.__mul__(tensor)
+
+
+def arithmetic(scalar: Expression, tensor: TensorExpression) -> None:
+    assert_type(scalar + tensor, TensorExpression)
+    assert_type(scalar - tensor, TensorExpression)
+    assert_type(scalar * tensor, TensorExpression)
+    assert_type(scalar / tensor, TensorExpression)
+    assert_type(scalar**tensor, TensorExpression)
+    assert_type(tensor + scalar, TensorExpression)
+    assert_type(tensor - scalar, TensorExpression)
+    assert_type(tensor * scalar, TensorExpression)
+    assert_type(tensor / scalar, TensorExpression)
+    assert_type(tensor**scalar, TensorExpression)
+    assert_type(scalar + scalar, Expression)
+    assert_type(scalar - scalar, Expression)
+    assert_type(scalar * scalar, Expression)
+    assert_type(scalar / scalar, Expression)
+    assert_type(scalar**scalar, Expression)
+    assert_type(scalar + 2, Expression)
+    assert_type(scalar - 2, Expression)
+    assert_type(scalar * 2, Expression)
+    assert_type(scalar / 2, Expression)
+    assert_type(scalar**2, Expression)
+
+
+def other_reflected_operands(
+    scalar: Expression,
+    tensor: Tensor,
+    network: TensorNetwork,
+    held: HeldExpression,
+    series: Series,
+    matrix: Matrix,
+) -> None:
+    assert_type(scalar + tensor, TensorNetwork)
+    assert_type(scalar - tensor, TensorNetwork)
+    assert_type(scalar * tensor, TensorNetwork)
+    assert_type(scalar / tensor, TensorNetwork)
+    assert_type(scalar + network, TensorNetwork)
+    assert_type(scalar - network, TensorNetwork)
+    assert_type(scalar * network, TensorNetwork)
+    assert_type(scalar / network, TensorNetwork)
+    assert_type(scalar + held, HeldExpression)
+    assert_type(scalar - held, HeldExpression)
+    assert_type(scalar * held, HeldExpression)
+    assert_type(scalar / held, HeldExpression)
+    assert_type(scalar**held, HeldExpression)
+    assert_type(scalar + series, Series)
+    assert_type(scalar - series, Series)
+    assert_type(scalar * series, Series)
+    assert_type(scalar / series, Series)
+    assert_type(scalar * matrix, Matrix)
+    assert_type(scalar @ matrix, Matrix)
 
 
 class ReflectedProduct:
@@ -32,7 +86,6 @@ def diagram_numerator(model: Model, diagram: FeynmanDiagram) -> None:
     raw = diagram.numerator_expression(in_lmb=True)
     assert_type(raw * graph_weight, TensorExpression)
     weighted = graph_weight * raw
-    assert isinstance(weighted, TensorExpression)
     assert_type(weighted, TensorExpression)
     massless = model.expand_couplings(raw * graph_weight)
     reflected = model.expand_couplings(weighted)

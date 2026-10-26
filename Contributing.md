@@ -6,6 +6,32 @@ Symbolica is open to contributions from the community, which can be submitted vi
 - Please sign our Contributor License Agreement (CLA). You will be prompted to sign one when you submit a PR. We cannot accept code without a signed CLA. Make sure you author all contributed Git commits with email address associated with your CLA signature.
 
 
+## Community core stub
+
+Community's `python/symbolica/core.pyi` refines `Expression`'s `+`, `-`, `*`, `/`,
+and `**` operators using local protocols for Python's reflected methods. Their
+generic result is bounded by `Expression`, preserving subclass results such as
+`TensorExpression` without importing optional Community modules. The same stub
+therefore works in core-only builds. These overloads avoid casts or assertions
+in user code. This is a typing approximation: explicit dunder calls bypass
+reflected dispatch, and sibling `Expression` subclasses can also return plain
+expressions.
+It does not change runtime behavior or add an extension protocol.
+
+After refreshing the upstream core declarations, preserve Community's citation
+and resource-transport declarations and restore the arithmetic refinements with:
+
+```sh
+python .github/scripts/check_core_stub.py --fix python/symbolica/core.pyi
+python .github/scripts/check_core_stub.py --canonical /path/to/symbolica/symbolica.pyi python/symbolica/core.pyi
+```
+
+The normal stub generator preserves this file. Test and publish CI check the
+source and built wheels for all five overloads and their bounded protocols.
+Typing checks exercise both operand orders, existing scalar results, and an
+isolated package containing only the core stub. Canonical comparison permits
+only the explicitly checked Community additions.
+
 ## Symbolica Individual Contributor License Agreement
 
 In order to clarify the intellectual property license granted with Contributions from any person or entity, Ruijl Research (CHE-330.486.212) must have a Contributor License Agreement ("CLA") on file that has been signed by each Contributor, indicating agreement to the license terms below. This license is for your protection as a Contributor as well as the protection of Ruijl Research; it does not change your rights to use your own Contributions for any other purpose.

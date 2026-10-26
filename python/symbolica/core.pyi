@@ -19,6 +19,7 @@ from __future__ import annotations
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Callable, Iterator, Literal, Protocol, Sequence, overload
+from typing import TypeVar as _TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -2458,6 +2459,24 @@ class Symbol:
     def get(_cls, name: str) -> Expression | None:
         """Returns the variable with the given name, if it exists."""
 
+# Result types for Expression subclasses with standard reflected operators.
+_ArithmeticT_co = _TypeVar("_ArithmeticT_co", bound="Expression", covariant=True)
+
+class _SupportsRAdd(Protocol[_ArithmeticT_co]):
+    def __radd__(self, left: Expression, /) -> _ArithmeticT_co: ...
+
+class _SupportsRSub(Protocol[_ArithmeticT_co]):
+    def __rsub__(self, left: Expression, /) -> _ArithmeticT_co: ...
+
+class _SupportsRMul(Protocol[_ArithmeticT_co]):
+    def __rmul__(self, left: Expression, /) -> _ArithmeticT_co: ...
+
+class _SupportsRTrueDiv(Protocol[_ArithmeticT_co]):
+    def __rtruediv__(self, left: Expression, /) -> _ArithmeticT_co: ...
+
+class _SupportsRPow(Protocol[_ArithmeticT_co]):
+    def __rpow__(self, left: Expression, /) -> _ArithmeticT_co: ...
+
 class Expression:
     """
     A Symbolica expression.
@@ -3465,6 +3484,13 @@ class Expression:
         >>> print(e.is_constant())  # True
         """
 
+    # Community typing approximation for normal reflected arithmetic.
+    # Direct dunder calls and sibling Expression subclasses can return Expression.
+    # Keep all five overloads in sync with check_core_stub.py.
+    @overload
+    def __add__(self, other: _SupportsRAdd[_ArithmeticT_co]) -> _ArithmeticT_co: ...
+
+    @overload
     def __add__(
         self, other: Expression | int | float | complex | Float | ComplexFloat | Decimal
     ) -> Expression:
@@ -3489,6 +3515,10 @@ class Expression:
             The other operand to combine or compare with.
         """
 
+    @overload
+    def __sub__(self, other: _SupportsRSub[_ArithmeticT_co]) -> _ArithmeticT_co: ...
+
+    @overload
     def __sub__(
         self, other: Expression | int | float | complex | Float | ComplexFloat | Decimal
     ) -> Expression:
@@ -3513,6 +3543,10 @@ class Expression:
             The other operand to combine or compare with.
         """
 
+    @overload
+    def __mul__(self, other: _SupportsRMul[_ArithmeticT_co]) -> _ArithmeticT_co: ...
+
+    @overload
     def __mul__(
         self, other: Expression | int | float | complex | Float | ComplexFloat | Decimal
     ) -> Expression:
@@ -3537,6 +3571,10 @@ class Expression:
             The other operand to combine or compare with.
         """
 
+    @overload
+    def __truediv__(self, other: _SupportsRTrueDiv[_ArithmeticT_co]) -> _ArithmeticT_co: ...
+
+    @overload
     def __truediv__(
         self, other: Expression | int | float | complex | Float | ComplexFloat | Decimal
     ) -> Expression:
@@ -3561,6 +3599,10 @@ class Expression:
             The other operand to combine or compare with.
         """
 
+    @overload
+    def __pow__(self, exp: _SupportsRPow[_ArithmeticT_co]) -> _ArithmeticT_co: ...
+
+    @overload
     def __pow__(self, exp: Expression | int | float | complex | Float | ComplexFloat | Decimal) -> Expression:
         """
         Take `self` to power `exp`, returning the result.
