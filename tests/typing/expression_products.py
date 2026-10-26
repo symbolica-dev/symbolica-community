@@ -1,4 +1,4 @@
-"""Mixed expression products retain the extension's declared return type."""
+"""Check normal Python multiplication with explicit tensor-result narrowing."""
 
 from typing_extensions import assert_type
 
@@ -9,28 +9,33 @@ from symbolica.community.tensor import TensorExpression, TensorStructure
 
 def products(
     scalar: Expression, tensor: TensorExpression
-) -> tuple[TensorExpression, TensorExpression, Expression, TensorExpression]:
-    return scalar * tensor, tensor * scalar, scalar * scalar, scalar.__mul__(tensor)
+) -> tuple[TensorExpression, TensorExpression, Expression, Expression]:
+    product = scalar * tensor
+    # ty conservatively admits Expression subclasses with different dispatch:
+    # https://github.com/astral-sh/ruff/pull/26474
+    assert isinstance(product, TensorExpression)
+    # A direct method call bypasses Python's reflected-operator dispatch.
+    return product, tensor * scalar, scalar * scalar, scalar.__mul__(tensor)
 
 
-class TaggedProduct:
-    def __symbolica_rmul__(self, left: Expression) -> tuple[Expression, str]:
+class ReflectedProduct:
+    def __rmul__(self, left: Expression) -> tuple[Expression, str]:
         return left, "product"
 
 
-def tagged_products(
-    scalar: Expression, tensor: TensorExpression
-) -> tuple[tuple[Expression, str], tuple[Expression, str]]:
-    return scalar * TaggedProduct(), tensor * TaggedProduct()
+def reflected_product(scalar: Expression) -> tuple[Expression, str]:
+    return scalar * ReflectedProduct()
 
 
 def diagram_numerator(model: Model, diagram: FeynmanDiagram) -> None:
     graph_weight = diagram.overall_factor_expression(evaluate=True)
     raw = diagram.numerator_expression(in_lmb=True)
     assert_type(raw * graph_weight, TensorExpression)
-    assert_type(graph_weight * raw, TensorExpression)
+    weighted = graph_weight * raw
+    assert isinstance(weighted, TensorExpression)
+    assert_type(weighted, TensorExpression)
     massless = model.expand_couplings(raw * graph_weight)
-    reflected = model.expand_couplings(graph_weight * raw)
+    reflected = model.expand_couplings(weighted)
     assert_type(massless, TensorExpression)
     assert_type(reflected, TensorExpression)
     numerator = massless.with_lorentz_dimension(S("D")).collect_factors()
