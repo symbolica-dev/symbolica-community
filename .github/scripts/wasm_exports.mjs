@@ -11,6 +11,10 @@ const allowedExports = new Set([
 const inventoryConstructors = [
   /^_ZN(?:9symbolica(?:14transcendental|5state)|19symbolica_integrate|6idenso|6spenso9shadowing|17feynkit_generator)1_6__CTOR17h[0-9a-f]{16}E$/,
   /^_RNvNv(?:Cs[0-9A-Za-z]+_(?:6idenso|19symbolica_integrate|17feynkit_generator)|NtCs[0-9A-Za-z]+_(?:6spenso9shadowing|9symbolica(?:14transcendental|5state)))1__6___CTOR$/,
+  // Symbolica's projections and HPL modules register their own built-ins.
+  /^_ZN9symbolica14transcendental(?:11projections|16harmonic_polylog(?:12endpoint_one)?)1_6__CTOR17h[0-9a-f]{16}E$/,
+  /^_RNvNvNtNtCs[0-9A-Za-z]+_9symbolica14transcendental(?:11projections|16harmonic_polylog)1__6___CTOR$/,
+  /^_RNvNvNtNtNtCs[0-9A-Za-z]+_9symbolica14transcendental16harmonic_polylog12endpoint_one1__6___CTOR$/,
   /^_RNvNv(?:Cs[0-9A-Za-z]+_13feynkit_graph|NtCs[0-9A-Za-z]+_11feynkit_cff7symbols)1__6___CTOR$/,
   /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_11hyperbolica(?:7symbols|6python)[0-9A-Za-z_]*1__6___CTOR$/,
   /^_ZN11hyperbolica7symbols1_6__CTOR17h[0-9a-f]{16}E$/,
