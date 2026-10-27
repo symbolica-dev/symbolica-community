@@ -79,4 +79,5 @@ For a complete introduction to Symbolica, see the
 
 Ask questions and discuss Symbolica on [Zulip](https://reform.zulipchat.com).
 For contributions, see the [contribution guidelines](Contributing.md).
+For independent extension development, see the [extension author guide](docs/writing-extensions.md).
 For local WASM builds, see the [build guide](docs/local-wasm-build.md).
