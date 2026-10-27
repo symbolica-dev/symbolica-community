@@ -88,7 +88,7 @@ python_stubgen = [
 [dependencies]
 symbolica-data = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
 serde_json = "1"
-fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "28c5a86c14f4f11bb75c78e56bd12814b7e1c130", default-features = false }
+fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "3d1c81520a971f1833725e2228b477a1cec8f44a", default-features = false }
 hyperbolica = { optional = true, git = "https://github.com/lcnbr/hyperbolica", rev = "2e6fe4ef9c715d70f937aca53211793727f819b9", default-features = false, features = ["python"] }
 one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", rev = "c9613cf07831eab53a12a1c85242eb026f9697a5", default-features = false }
 spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
