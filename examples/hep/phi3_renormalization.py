@@ -224,10 +224,13 @@ def _(
         assert len(_generated.diagrams) == 1
         _diagram = _generated.diagrams[0]
         diagrams[_label] = _diagram
+        _numerator = _diagram.numerator_expression()
+        _prefactor = _diagram.numerator_prefactor_expression()
+        assert _numerator.is_scalar and _prefactor.is_scalar
         _coefficient = (
-            model.expand_couplings(_diagram.numerator_expression().to_expression())
+            model.expand_couplings(_numerator.to_expression())
             * _diagram.overall_factor_expression(evaluate=True)
-            * _diagram.numerator_prefactor_expression()
+            * _prefactor.to_expression()
         )
         coefficients[_label] = _coefficient
         if not _loops:
@@ -535,12 +538,16 @@ def _(
         _amplitude = zero
         for _diagram in _generated.diagrams:
             _numerator = ct_model.expand_couplings(_diagram.numerator_expression())
-            _numerator = _numerator.contract().to_dots().expand().to_expression()
-            _numerator = _diagram.momentum_basis().route_expression(_numerator)
+            _numerator = _numerator.contract().to_dots().expand()
+            _prefactor = _diagram.numerator_prefactor_expression()
+            assert _numerator.is_scalar and _prefactor.is_scalar
+            _numerator = _diagram.momentum_basis().route_expression(
+                _numerator.to_expression()
+            )
             _amplitude += (
                 _self_kinematics.apply(_numerator)
                 * _diagram.overall_factor_expression(evaluate=True)
-                * _diagram.numerator_prefactor_expression()
+                * _prefactor.to_expression()
             )
         counterterms[_label] = (
             (_amplitude.replace(mass**2, M) / (Symbol.I * h)).together().expand()

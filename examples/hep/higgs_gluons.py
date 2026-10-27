@@ -121,7 +121,10 @@ def _(
     def triangle_integrals(orientation, diagram):
         """Project one fermion-loop orientation and map it to the common triangle family."""
         assert diagram.overall_factor_expression(evaluate=True) == E("-1")
-        assert diagram.numerator_prefactor_expression() == E("1")
+        prefactor = diagram.numerator_prefactor_expression()
+        assert prefactor.is_scalar
+        prefactor = prefactor.to_expression()
+        assert prefactor == E("1")
         numerator = model.expand_couplings(
             diagram.numerator_expression(in_lmb=True).to_expression()
         ).replace(model.parameter("yt").symbol * E("1/2").sqrt(), y)
@@ -182,7 +185,7 @@ def _(
         trace = (
             trace
             * diagram.overall_factor_expression(evaluate=True)
-            * diagram.numerator_prefactor_expression()
+            * prefactor
         ).expand()
         assert (trace.coefficient(color) * color - trace).expand() == E("0")
         # Chirality makes the complete trace vanish at zero quark mass, even
@@ -344,7 +347,9 @@ def _(E, S, Symbol, metric, model, y):
         yukawa_tree.numerator_expression().to_expression()
     ).replace(model.parameter("yt").symbol * E("1/2").sqrt(), y)
     assert yukawa_tree.overall_factor_expression(evaluate=True) == E("1")
-    assert yukawa_tree.numerator_prefactor_expression() == E("1")
+    _yukawa_prefactor = yukawa_tree.numerator_prefactor_expression()
+    assert _yukawa_prefactor.is_scalar
+    assert _yukawa_prefactor.to_expression() == E("1")
     # Strip only the generated spin/color identity to establish the tree phase.
     identities = S("left_", "right_")
     yukawa_tree_coupling = yukawa_tree_kernel.replace(metric(*identities), E("1"))

@@ -13,7 +13,13 @@ import pytest
     [
         (
             "symbolica.community.graph",
-            {"DiagramRender", "LayoutSettings", "Stroke", "RenderSettings"},
+            {
+                "DiagramView",
+                "DiagramRender",
+                "LayoutSettings",
+                "Stroke",
+                "RenderSettings",
+            },
         ),
         (
             "symbolica.community.hep.integration",
@@ -149,7 +155,13 @@ def test_graph_presentation_types_are_shared_by_both_renderers():
     from symbolica import E
     from symbolica.community import graph, hepkit, tensor
 
-    for name in ("DiagramRender", "LayoutSettings", "Stroke", "RenderSettings"):
+    for name in (
+        "DiagramView",
+        "DiagramRender",
+        "LayoutSettings",
+        "Stroke",
+        "RenderSettings",
+    ):
         assert getattr(graph, name).__module__ == "symbolica.community.graph"
 
     layout = graph.LayoutSettings(impred_steps=1)
@@ -158,14 +170,17 @@ def test_graph_presentation_types_are_shared_by_both_renderers():
         layouts=layout, drawing=graph.DrawOptions(edge_stroke=stroke)
     )
     drawing = tensor.TensorNetwork(E("1")).render(config=settings)
-    assert isinstance(drawing, graph.DiagramRender)
+    assert isinstance(drawing, graph.DiagramView)
+    assert isinstance(drawing.snapshot(), graph.DiagramRender)
     diagram = (
         hepkit.Model.phi4()
         .process(["phi", "phi"], ["phi", "phi"])
         .generate_diagrams(progress=None)
         .diagrams[0]
     )
-    assert isinstance(diagram.render(config=settings), graph.DiagramRender)
+    diagram_drawing = diagram.render(config=settings)
+    assert isinstance(diagram_drawing, graph.DiagramView)
+    assert isinstance(diagram_drawing.snapshot(), graph.DiagramRender)
 
 
 def test_ibp_campaign_api_survives_stub_regeneration():

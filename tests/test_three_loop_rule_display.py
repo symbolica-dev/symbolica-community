@@ -54,7 +54,7 @@ def test_rule_expression_binds_parameters_indices_fixed_powers_and_guards():
     assert shown["excluded"] == [[c0, c1], []]
     assert artifact.calls == [0, 1]  # Decode repeated RHS/guard coefficients once.
     output = str(shown["rhs"].formatted(max_terms=None, max_line_length=None,
-                                        terms_on_new_line=True))
+                                        terms_on_new_line=True, mathml=False))
     assert len(output.splitlines()) == 2
     assert "display_dimension" in output and "c_0" not in output
 
@@ -63,7 +63,7 @@ def test_zero_rhs_remains_zero_without_coefficient_fetches():
     artifact = Coefficients()
     shown = support.rule_expressions(artifact, rule([]), S("I_display_zero"))
     assert shown["rhs"] == 0
-    assert str(shown["rhs"].formatted(terms_on_new_line=True)) == "0"
+    assert str(shown["rhs"].formatted(terms_on_new_line=True, mathml=False)) == "0"
     assert artifact.calls == []
 
 
@@ -72,7 +72,8 @@ def test_full_rhs_is_not_truncated_at_ten_or_one_hundred_terms():
                      for i in range(105)])
     artifact = Coefficients()
     rhs = support.rule_expressions(artifact, selected, S("I_display_many"))["rhs"]
-    output = rhs.formatted(max_terms=None, max_line_length=None, terms_on_new_line=True)
+    output = rhs.formatted(max_terms=None, max_line_length=None,
+                           terms_on_new_line=True, mathml=False)
     assert len(str(output).splitlines()) == 105
     assert str(output).count("I_display_many(") == 105
     assert "white-space: pre-wrap" in output._repr_html_()
@@ -93,7 +94,7 @@ def test_real_generated_k6_rule_displays_all_terms():
     expressions = support.rule_expressions(artifact, selected, S("I_k6_display"),
                                            [(S("rustred::d"), S("d"))])
     output = str(expressions["rhs"].formatted(max_terms=None, max_line_length=None,
-                                              terms_on_new_line=True))
+                                              terms_on_new_line=True, mathml=False))
     assert len(output.splitlines()) == len(selected["rhs"])
     assert output.count("I_k6_display(") == len(selected["rhs"])
     assert "n_0" in output and "rustred::" not in output

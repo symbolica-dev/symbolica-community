@@ -1,7 +1,8 @@
-"""Check the generated ladders' topology, graph weights and quark color algebra."""
+"""Check the generated ladders' topology, graph weights and color algebra."""
 
 from collections import Counter
 from importlib import import_module
+from itertools import combinations, permutations
 from types import SimpleNamespace
 
 import pytest
@@ -13,6 +14,90 @@ from examples.hep.generated_ladder_helpers import (
     project_and_split,
     reduce_color,
 )
+
+
+def explicit_gluon_color(tensor):
+    """Contract the actual port ordering with exact Gell-Mann SU(3) f values."""
+    import numpy as np
+
+    assert tensor.is_scalar
+    # Store 2*f as A+B*sqrt(3). The table follows [lambda_a, lambda_b]
+    # = 2*i*f_abc*lambda_c, with tr(lambda_a*lambda_b) = 2*delta_ab.
+    rational_f = np.zeros((8, 8, 8), dtype=np.int64)
+    radical_f = np.zeros_like(rational_f)
+    entries = [
+        ((1, 2, 3), 2, 0),
+        ((1, 4, 7), 1, 0),
+        ((1, 5, 6), -1, 0),
+        ((2, 4, 6), 1, 0),
+        ((2, 5, 7), 1, 0),
+        ((3, 4, 5), 1, 0),
+        ((3, 6, 7), -1, 0),
+        ((4, 5, 8), 0, 1),
+        ((6, 7, 8), 0, 1),
+    ]
+    for labels, rational, radical in entries:
+        for order in permutations(range(3)):
+            sign = (-1) ** sum(
+                order[i] > order[j] for i in range(3) for j in range(i + 1, 3)
+            )
+            index = tuple(labels[i] - 1 for i in order)
+            rational_f[index], radical_f[index] = sign * rational, sign * radical
+
+    # Each adjoint metric identifies two index labels without a sign.
+    parent = {}
+
+    def find(index):
+        parent.setdefault(index, index)
+        if parent[index] != index:
+            parent[index] = find(parent[index])
+        return parent[index]
+
+    f_head = sp.TensorName.color_f().to_expression().get_name()
+    g_head = sp.TensorName.g().to_expression().get_name()
+    adjoint = sp.Representation.coad(8)
+    factors, metrics = [], 0
+    for factor in tensor.to_expression():
+        head, indices = factor.get_name(), tuple(factor)
+        assert head in (f_head, g_head)
+        assert all(index == adjoint(index[1]).to_expression() for index in indices)
+        if head == g_head:
+            assert len(indices) == 2
+            parent[find(indices[0])] = find(indices[1])
+            metrics += 1
+        else:
+            factors.append(indices)
+    assert len(factors) == 8 and metrics == 12
+    labels = [tuple(find(index) for index in indices) for indices in factors]
+    assert all(len(set(indices)) == 3 for indices in labels)
+    assert set(Counter(index for indices in labels for index in indices).values()) == {2}
+    tensors = [(indices, rational_f, radical_f) for indices in labels]
+    while len(tensors) > 1:
+        i, j = min(
+            combinations(range(len(tensors)), 2),
+            key=lambda pair: len(set(tensors[pair[0]][0]) ^ set(tensors[pair[1]][0])),
+        )
+        left, a, b = tensors[i]
+        right, c, d = tensors[j]
+        shared = set(left) & set(right)
+        axes = (
+            [left.index(index) for index in shared],
+            [right.index(index) for index in shared],
+        )
+        remaining = tuple(index for index in left + right if index not in shared)
+        assert len(remaining) <= 4
+        rational = np.tensordot(a, c, axes) + 3 * np.tensordot(b, d, axes)
+        radical = np.tensordot(a, d, axes) + np.tensordot(b, c, axes)
+        tensors.pop(j)
+        tensors.pop(i)
+        tensors.append((remaining, rational, radical))
+    indices, rational, radical = tensors[0]
+    assert not indices and int(radical) == 0
+    # Eight factors and twelve summed indices bound every intermediate by
+    # 2**8 * 8**12 = 2**44, safely within the exact int64 arithmetic above.
+    scale = 2 ** len(factors)
+    assert int(rational) % scale == 0
+    return int(rational) // scale
 
 
 @pytest.fixture(scope="module")
@@ -54,8 +139,14 @@ def test_generated_particles_weights_and_color(ladder):
     )
     _, color, _ = project_and_split(diagram.numerator_expression(), 4)
     coefficient = reduce_color(color)
-    assert coefficient == E("-1/54" if quark else "81")
-    if quark:
+    if not quark:
+        # Antisymmetric port canonicalization can move a minus sign from color
+        # into spacetime. Check the actual signed contraction independently.
+        explicit_coefficient = explicit_gluon_color(color)
+        assert explicit_coefficient**2 == 81**2
+        assert coefficient == E(str(explicit_coefficient))
+    else:
+        assert coefficient == E("-1/54")
         # Independent explicit Fierz contractions, with no native color identities.
         # Sum_a T^a_ij T^a_kl = (delta_il delta_kj - delta_ij delta_kl/3)/2.
         a, i, j, k, l = S(*(f"ladder_test::{n}_" for n in ("a", "i", "j", "k", "l")))
@@ -148,7 +239,7 @@ def test_notebook_projects_and_reduces_selected_ladder_without_splitting(ladder)
     dot_numerator = values["dot_numerator"]
     assert reduced.reduction_status == sp.ReductionStatus.Complete
     assert reduced.rank == 0
-    color_factor = E("-1/54" if quark else "81")
+    color_factor = E("-1/54") if quark else E(str(explicit_gluon_color(color)))
     expected = (
         color_factor
         * spacetime.simplify_algebra(

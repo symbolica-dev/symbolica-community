@@ -25,6 +25,9 @@ jobs:
               with:
                   python-version: ${{ matrix.python-version }}
 
+            - name: Check core citations and reflected arithmetic stubs in source
+              run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi
+
             - name: Install LLVM Mach-O linker
               if: runner.os == 'macOS'
               run: |
@@ -54,7 +57,7 @@ jobs:
                   python -m pip install "tomli>=2.0.1; python_version < '3.11'"
                   python .github/scripts/check_integration_package.py dist/*.whl
 
-            - name: Check core citation stub in source and wheel
+            - name: Check core citations and reflected arithmetic stubs in source and wheel
               run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/*.whl
 
             - name: Build resource wheels
@@ -69,7 +72,7 @@ jobs:
                   pip install pytest pytest-cov ty numpy matplotlib scipy "marimo>=0.25.1,<0.26" "docstring-to-markdown>=0.17,<1" "tomli>=2.0.1; python_version < '3.11'"
 
             - name: Check public community import types
-              run: ty check --python-version 3.10 tests/typing/community_layout.py tests/typing/expression_products.py tests/typing/integration.py tests/typing/loop_integration.py tests/typing/scoped_reductions.py tests/typing/tensor_evaluation.py
+              run: ty check --python-version 3.10 tests/typing/community_layout.py tests/typing/core_arithmetic.py tests/typing/expression_products.py tests/typing/integration.py tests/typing/loop_integration.py tests/typing/scoped_reductions.py tests/typing/tensor_evaluation.py
 
             - name: Run tests once (with coverage on Linux)
               env:

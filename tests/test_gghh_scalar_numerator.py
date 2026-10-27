@@ -21,7 +21,9 @@ _, notebook = app.run()
 catalogue = notebook["gghh_catalogue"](progress=None)
 # The exact reported graph has two triple-gluon vertices. Minimal contraction
 # left a closed tensor network: is_scalar passed, but parametrization failed.
-identity = "6586fc41a2a00087ef7be79f59b61224"
+# The ID includes the model fingerprint, now canonicalized independently of
+# symbol registration order; this is the same graph as the former 6586fc41... ID.
+identity = "a9e6965720cd4b9ea5df45dd9033d5f5"
 diagram = catalogue.selected(identity)
 assert diagram.loop_count == 2
 assert sum(catalogue.model.vertex_rule(vertex.interaction).particles == ["g", "g", "g"]

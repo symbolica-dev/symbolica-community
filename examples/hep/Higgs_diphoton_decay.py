@@ -111,7 +111,8 @@ def _(E, Replacement, S, hep, oneloop, tensor):
         rules = []
         # Massive triangles are UV/IR finite; the logarithmic bubble residue is
         # independent of its masses and invariant. Specialize these pole-only calls
-        # before formula construction to avoid opening unused triangle branches.
+        # before formula construction. Keep unused finite triangle formulas
+        # shared and materialize only the selected pole coefficient.
         assumptions = [Replacement(invariant, E("1")), Replacement(mass, E("2"))]
         for reduction in reductions:
             for _, master in reduction.terms:
@@ -120,8 +121,8 @@ def _(E, Replacement, S, hep, oneloop, tensor):
                 for position, power in ((1, -1), (2, -2)):
                     assert master.kind in ("bubble", "triangle")
                     residue = oneloop.get_expression(
-                        call.replace_multiple(assumptions), coefficient=power
-                    )
+                        call.replace_multiple(assumptions), coefficient=power, shared=True
+                    ).to_expression()
                     rules.append(Replacement(coefficients[position], residue))
         return rules
 

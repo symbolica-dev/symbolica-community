@@ -242,7 +242,7 @@ def _(
     )
     qed_squared = (
         qed_diagram.overall_factor_expression(evaluate=True)
-        * qed_diagram.numerator_prefactor_expression()
+        * qed_diagram.numerator_prefactor_expression().to_expression()
         * annihilation_trace
         / annihilation_denominator
     ).together()
@@ -516,7 +516,7 @@ def _(
     qed_polarized = (
         (
             qed_diagram.overall_factor_expression(evaluate=True)
-            * qed_diagram.numerator_prefactor_expression()
+            * qed_diagram.numerator_prefactor_expression().to_expression()
             * chiral_trace
             / _denominator
         )

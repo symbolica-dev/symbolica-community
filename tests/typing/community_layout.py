@@ -17,9 +17,12 @@ expression: tensor.TensorExpression = tensor.TensorExpression(E("1"))
 scalar: Expression = expression.to_expression()
 layout: graph.LayoutSettings = graph.LayoutSettings(impred_steps=1)
 stroke: graph.Stroke = graph.Stroke(thickness=1)
-tensor_drawing: graph.DiagramRender = tensor.TensorNetwork(E("1")).render(
-    config=graph.RenderSettings(layouts=layout, drawing=graph.DrawOptions(edge_stroke=stroke))
+tensor_drawing: graph.DiagramView = tensor.TensorNetwork(E("1")).render(
+    config=graph.RenderSettings(
+        layouts=layout, drawing=graph.DrawOptions(edge_stroke=stroke)
+    )
 )
+tensor_snapshot: graph.DiagramRender = tensor_drawing.snapshot()
 legacy_tensor_type: type[tensor.TensorExpression] = LegacyTensorExpression
 legacy_vakint_type: type[Vakint] = LegacyVakint
 vakint_type: type[Vakint] = hep.vakint.Vakint

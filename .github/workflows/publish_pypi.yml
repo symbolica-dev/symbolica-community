@@ -175,7 +175,7 @@ jobs:
           pattern: wheels-*
           merge-multiple: true
 
-      - name: Check core citation stub in source and wheels
+      - name: Check core citations and reflected arithmetic stubs in source and wheels
         run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/symbolica-*.whl
 
       - name: Check distribution sizes

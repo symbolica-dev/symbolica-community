@@ -421,8 +421,12 @@ def _(Model, copy, json):
     specification["propagators"] += [
         _p for _p in _standard["propagators"] if _p["particle"] in _fermion_names
     ]
+    # Imported electron metadata also references its chemical potentials and
+    # their charge/lepton-number parameters, whose vacuum defaults are zero.
     specification["parameters"] += [
-        _p for _p in _standard["parameters"] if _p["name"] == "Me"
+        _p
+        for _p in _standard["parameters"]
+        if _p["name"] in {"Me", "mue", "minus_mue", "muQ", "muLe"}
     ]
     _parameter = copy.deepcopy(specification["parameters"][2])
     _parameter.update(name="g", lhacode=[3])

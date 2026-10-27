@@ -157,7 +157,9 @@ def _(E, Symbol, higgs, left, metric, model, right, top, vertices, y):
     )
     assert (tree_coupling + Symbol.I * y).expand() == E("0")
     assert yukawa_tree.overall_factor_expression(evaluate=True) == E("1")
-    assert yukawa_tree.numerator_prefactor_expression() == E("1")
+    _prefactor = yukawa_tree.numerator_prefactor_expression()
+    assert _prefactor.is_scalar
+    assert _prefactor.to_expression() == E("1")
     return tree_coupling, yukawa_tree
 
 
@@ -191,7 +193,9 @@ def _(E, higgs, model, vertices):
     wick_weight = E("-1")
     assert native_weight == wick_weight
     assert diagram.symmetry_factor == 1
-    assert diagram.numerator_prefactor_expression() == E("1")
+    _prefactor = diagram.numerator_prefactor_expression()
+    assert _prefactor.is_scalar
+    assert _prefactor.to_expression() == E("1")
     return diagram, native_weight
 
 
@@ -231,7 +235,7 @@ def _(
             sp.PortPattern.exact(sp.Representation.mink(D), index),
         )
     )
-    trace = (
+    _trace_tensor = (
         TensorExpression(_numerator.expand())
         .simplify_algebra(
             contract="dots",
@@ -241,12 +245,13 @@ def _(
             color_substitute_cof_dimension_invariants=True,
         )
         .expand()
-        .to_expression()
     )
+    assert _trace_tensor.is_scalar
+    trace = _trace_tensor.to_expression()
     assert (trace - 4 * Nc * y * m).expand() == E("0")
-    coefficient = (
-        trace * native_weight * diagram.numerator_prefactor_expression()
-    ).expand()
+    _prefactor = diagram.numerator_prefactor_expression()
+    assert _prefactor.is_scalar
+    coefficient = (trace * native_weight * _prefactor.to_expression()).expand()
     assert (coefficient + 4 * Nc * y * m).expand() == E("0")
     return coefficient, trace
 

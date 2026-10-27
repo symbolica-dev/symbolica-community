@@ -181,7 +181,7 @@ def _(
             )
         _factor = (
             _diagram.overall_factor_expression(evaluate=True)
-            * _diagram.numerator_prefactor_expression()
+            * _diagram.numerator_prefactor_expression().to_expression()
         )
         if _kind == "electron":
             _raw = _diagram.overall_factor_expression()
@@ -282,7 +282,7 @@ def _(
         coefficients = {}
         assert len(_diagram.internal_edges) == 0
         assert _diagram.symmetry_factor == one
-        assert _diagram.numerator_prefactor_expression() == one
+        assert _diagram.numerator_prefactor_expression().to_expression() == one
         _factor = _diagram.overall_factor_expression(evaluate=True)
         assert _factor == (one if _kind == "photon" else external_ordering)
         _ports = {}
@@ -492,7 +492,7 @@ def _(
         massless_components[_kind] = _components
         _factor = (
             _diagram.overall_factor_expression(evaluate=True)
-            * _diagram.numerator_prefactor_expression()
+            * _diagram.numerator_prefactor_expression().to_expression()
         )
         if _kind == "electron_p":
             assert _factor == external_ordering

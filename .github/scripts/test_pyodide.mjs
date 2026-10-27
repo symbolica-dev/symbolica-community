@@ -125,13 +125,14 @@ import numpy
 await pyodide.runPythonAsync(`
 import symbolica.community.tensor as tensor_module
 from symbolica.community import graph as graph_module, hepkit as hepkit_module
-for name in ("DiagramRender", "LayoutSettings", "Stroke"):
+for name in ("DiagramView", "DiagramRender", "LayoutSettings", "Stroke"):
     shared_type = getattr(graph_module, name)
     assert shared_type.__module__ == "symbolica.community.graph"
 # Current FeynKit keeps generic drawing types in their graph owner; physics
 # presentation is configured separately through HEPKit's DiagramStyle.
 rendered = hepkit_module.Model.phi3().process(["phi"], ["phi"]).render()
-assert type(rendered) is graph_module.DiagramRender
+assert type(rendered) is graph_module.DiagramView
+assert type(rendered.snapshot()) is graph_module.DiagramRender
 from symbolica.community.tensor import Representation, Tensor, TensorExpression, TensorLibrary, TensorName, TensorNetwork, dot
 metric = TensorExpression(E("g(bis(4,1),bis(4,1))", default_namespace="spenso"))
 assert metric.simplify_algebra(contract="dots").to_expression() == E("4")
@@ -152,12 +153,13 @@ preview_original = preview_value.to_expression()
 preview = preview_value.paged()
 widget = preview._get_widget()
 preview._on_message(widget, {"action": "attach", "view": "wasm-smoke"}, [])
-assert widget.page["connected"] == "wasm-smoke"
+assert "error" not in widget.page
+assert widget.page["start"] == 0 and widget.page["end"] == 25
 first_html = widget.page["html"]
 assert "<math" in first_html and "Page rendering failed" not in first_html
 assert len(first_html.encode()) <= 256 * 1024
-preview._on_message(widget, {"action": "next", "request": "next"}, [])
-assert widget.page["start"] == 25 and widget.page["request"] == "next"
+preview._on_message(widget, {"action": "next"}, [])
+assert "error" not in widget.page and widget.page["start"] == 25
 assert "<math" in widget.page["html"]
 preview._on_message(widget, {"action": "previous"}, [])
 assert widget.page["start"] == 0 and widget.page["html"] == first_html

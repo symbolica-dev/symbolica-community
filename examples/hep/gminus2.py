@@ -175,9 +175,7 @@ def _(a, b, bis, dimension, index, mink, model, mu, sp, wave):
         assert len(_generated.diagrams) == 1
         _diagram = _generated.diagrams[0]
         _operator = (
-            model.expand_couplings(
-                _diagram.numerator_expression(in_lmb=True).to_expression()
-            )
+            model.expand_couplings(_diagram.numerator_expression(in_lmb=True))
             * _diagram.overall_factor_expression(evaluate=True)
             * _diagram.numerator_prefactor_expression()
         )
@@ -191,18 +189,10 @@ def _(a, b, bis, dimension, index, mink, model, mu, sp, wave):
             )
             assert len(_matches) == 1
             _port = dict(_matches[0])[index]
-            _operator = _operator.replace(
-                sp.PortPattern.exact(_representation(4), _port),
-                sp.PortPattern.exact(
-                    _representation(4), {0: b, 1: mu, 2: a}[_edge.external_index]
-                ),
+            _operator = _operator.rename_indices(
+                {_representation(4)(_port): {0: b, 1: mu, 2: a}[_edge.external_index]}
             )
-        operators.append(
-            _operator.replace(
-                sp.PortPattern.exact(sp.Representation.mink(4), index),
-                sp.PortPattern.exact(sp.Representation.mink(dimension), index),
-            )
-        )
+        operators.append(_operator.with_lorentz_dimension(dimension))
         diagrams.append(_diagram)
     return diagrams, operators
 
@@ -220,16 +210,28 @@ def _(mo):
 @app.cell
 def _(E, Symbol, a, b, charge, dimension, gamma, mu, operators, sp):
     # Normalize to the generated tree vertex, including its external fermion sign.
+    # Closing its spinor indices gives Tr(gamma_mu gamma^mu) = 4D.
     # A scalar loop contributes i/(16*pi^2) in the OneLOop convention below.
-    tree_coupling = (
+    _tree_trace = (
         operators[0]
-        / gamma(
+        * gamma(
+            sp.PortPattern.exact(sp.Representation.bis(4), b),
+            sp.PortPattern.exact(sp.Representation.bis(4), a),
+            sp.PortPattern.exact(sp.Representation.mink(dimension), mu),
+        )
+    ).simplify_algebra()
+    assert _tree_trace.is_scalar
+    tree_coupling = (_tree_trace.to_expression() / (4 * dimension)).together()
+    assert (tree_coupling - Symbol.I * charge).expand() == E("0")
+    assert (
+        operators[0]
+        - tree_coupling
+        * gamma(
             sp.PortPattern.exact(sp.Representation.bis(4), a),
             sp.PortPattern.exact(sp.Representation.bis(4), b),
             sp.PortPattern.exact(sp.Representation.mink(dimension), mu),
         )
-    ).together()
-    assert (tree_coupling - Symbol.I * charge).expand() == E("0")
+    ).expand().is_zero()
     vertex = (Symbol.I * operators[1] / (tree_coupling * charge**2)).expand()
     return (vertex,)
 
@@ -243,26 +245,14 @@ def _(mo):
 
 
 @app.cell
-def _(P, a, b, c, d, dimension, index, model, slot, sp):
+def _(P, TensorExpression, a, b, c, d, dimension, model, slot):
     particle = model.particle("e-")
-    incoming = particle.spin_sum(P(0), b, c)
-    outgoing = particle.spin_sum(P(2), d, a).replace(
+    incoming = TensorExpression(particle.spin_sum(P(0), b, c))
+    outgoing = TensorExpression(particle.spin_sum(P(2), d, a)).replace(
         P(2, slot), P(0, slot) - P(1, slot)
     )
-    incoming = incoming.replace(
-        sp.PortPattern.exact(sp.Representation.mink(4), index),
-        sp.PortPattern.exact(sp.Representation.mink(dimension), index),
-    ).replace(
-        sp.PortPattern.exact(sp.Representation.mink(4)),
-        sp.PortPattern.exact(sp.Representation.mink(dimension)),
-    )
-    outgoing = outgoing.replace(
-        sp.PortPattern.exact(sp.Representation.mink(4), index),
-        sp.PortPattern.exact(sp.Representation.mink(dimension), index),
-    ).replace(
-        sp.PortPattern.exact(sp.Representation.mink(4)),
-        sp.PortPattern.exact(sp.Representation.mink(dimension)),
-    )
+    incoming = incoming.with_lorentz_dimension(dimension)
+    outgoing = outgoing.with_lorentz_dimension(dimension)
     return incoming, outgoing
 
 
@@ -327,9 +317,9 @@ def _(TensorExpression, basis, incoming, kinematics, outgoing, probes, vertex):
                 TensorExpression((_operator * incoming * _probe * outgoing).expand())
                 .simplify_algebra(contract="dots", gamma=True, epsilon=True)
                 .expand()
-                .to_expression()
             )
-            traces.append(kinematics.apply(_trace).expand())
+            assert _trace.is_scalar
+            traces.append(kinematics.apply(_trace.to_expression()).expand())
     return (traces,)
 
 

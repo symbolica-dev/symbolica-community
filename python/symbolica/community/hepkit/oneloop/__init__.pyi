@@ -5,7 +5,7 @@ or evaluate a primitive directly with a0(), b0(), c0() or d0(). Coefficient
 tuples are ordered (finite, 1/eps, 1/eps^2); all masses and scales are squared.
 """
 from decimal import Decimal
-from typing import Literal, Sequence, TypeVar
+from typing import Literal, Sequence, TypeVar, overload
 from symbolica.core import Expression, Replacement, Evaluator as SymbolicaEvaluator
 
 class DecimalComplex:
@@ -572,14 +572,89 @@ def compile_native(expressions: Sequence[Expression | int | float | complex], pa
     parameters : sequence[Expression]
         Ordered independent symbols receiving numerical values.
     """
-def get_expression(master: Expression, *, coefficient: Literal[0, -1, -2] | None = None, max_nodes: int = 1_000_000, max_depth: int = 512) -> Expression | tuple[Expression, Expression, Expression]:
+class SharedExpression:
+    r"""
+    A complete expression with transparent common-subexpression bindings.
+
+    Examples
+    --------
+    >>> from symbolica import S
+    >>> from symbolica.community.hepkit import oneloop
+    >>> m2 = S("oneloop_shared_mass_squared")
+    >>> shared = oneloop.get_expression(oneloop.A0(m2, 1), coefficient=-1, shared=True)
+    >>> assert isinstance(shared, oneloop.SharedExpression)
+    """
+    @property
+    def root(self) -> Expression:
+        r"""
+        Root expression, referring to any retained aliases.
+
+        Examples
+        --------
+        >>> assert shared.root == m2
+        """
+    @property
+    def definitions(self) -> list[tuple[Expression, Expression]]:
+        r"""
+        Alias expressions paired with their complete defining expressions.
+
+        Examples
+        --------
+        >>> assert shared.definitions == []
+        """
+    @property
+    def byte_size(self) -> int:
+        r"""
+        Native byte size of the root and retained definitions.
+
+        Examples
+        --------
+        >>> assert shared.byte_size > 0
+        """
+    @property
+    def num_definitions(self) -> int:
+        r"""
+        Number of retained common-subexpression definitions.
+
+        Examples
+        --------
+        >>> assert shared.num_definitions == 0
+        """
+    def to_expression(self, *, max_nodes: int = 100_000_000, max_depth: int = 4096) -> Expression:
+        r"""
+        Substitute every binding, subject to explicit expansion limits.
+
+        Examples
+        --------
+        >>> assert shared.to_expression() == m2
+
+        Parameters
+        ----------
+        max_nodes : int, optional
+            Materialization budget; default 100_000_000.
+        max_depth : int, optional
+            Expansion nesting limit; default 4096.
+        """
+    def __repr__(self) -> str:
+        r"""
+        Describe the root, retained definitions and native byte size.
+
+        Examples
+        --------
+        >>> assert repr(shared).startswith("SharedExpression(")
+        """
+
+@overload
+def get_expression(master: Expression, *, coefficient: Literal[0, -1, -2], max_nodes: int = 10_000_000, max_depth: int = 512, branch_rules: Sequence[Replacement] | None = None, shared: Literal[False] = False) -> Expression:
     r"""
     Expand a complete master call into symbolic Laurent-coefficient formulas.
 
     Without ``coefficient`` return (finite, simple_pole, double_pole). With tag
     0, -1 or -2 return that coefficient only. Piecewise branches remain explicit
     until their conditions can be decided. ``max_nodes`` and ``max_depth`` bound
-    formula expansion and raise an error when exceeded.
+    formula expansion and raise an error when exceeded. ``shared=True`` retains
+    transparent common-subexpression bindings in ``SharedExpression`` objects;
+    call ``to_expression()`` to materialize a selected coefficient.
 
     Examples
     --------
@@ -596,18 +671,169 @@ def get_expression(master: Expression, *, coefficient: Literal[0, -1, -2] | None
     coefficient : {0, -1, -2} or None, optional
         Laurent power to select; None returns all three coefficients.
     max_nodes : int, optional
-        Expression expansion budget; default 1_000_000.
+        Expression expansion budget; default 10_000_000.
     max_depth : int, optional
         Expansion nesting limit; default 512.
+    branch_rules : sequence[Replacement] or None, optional
+        Probe values select conditions before discarded branches are expanded;
+        they do not replace values in the returned bodies.
+    shared : bool, optional
+        Keep common subexpressions shared; cannot be combined with branch_rules.
     """
-_Expressions = TypeVar("_Expressions", Expression, list[Expression], tuple[Expression, ...])
-def select_branch(expression: _Expressions, replacement_rules: Sequence[Replacement]) -> _Expressions:
+@overload
+def get_expression(master: Expression, *, coefficient: None = None, max_nodes: int = 10_000_000, max_depth: int = 512, branch_rules: Sequence[Replacement] | None = None, shared: Literal[False] = False) -> tuple[Expression, Expression, Expression]:
+    r"""
+    Expand a complete master call into symbolic Laurent-coefficient formulas.
+
+    Without ``coefficient`` return (finite, simple_pole, double_pole). With tag
+    0, -1 or -2 return that coefficient only. Piecewise branches remain explicit
+    until their conditions can be decided. ``max_nodes`` and ``max_depth`` bound
+    formula expansion and raise an error when exceeded. ``shared=True`` retains
+    transparent common-subexpression bindings in ``SharedExpression`` objects;
+    call ``to_expression()`` to materialize a selected coefficient.
+
+    Examples
+    --------
+    >>> from symbolica import S, E
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
+    >>> m2 = S("m2")
+    >>> pole = oneloop.get_expression(oneloop.A0(m2, 1), coefficient=-1)
+
+    Parameters
+    ----------
+    master : Expression
+        Untagged primitive master call with physical arguments and squared scale.
+    coefficient : {0, -1, -2} or None, optional
+        Laurent power to select; None returns all three coefficients.
+    max_nodes : int, optional
+        Expression expansion budget; default 10_000_000.
+    max_depth : int, optional
+        Expansion nesting limit; default 512.
+    branch_rules : sequence[Replacement] or None, optional
+        Probe values select conditions before discarded branches are expanded;
+        they do not replace values in the returned bodies.
+    shared : bool, optional
+        Keep common subexpressions shared; cannot be combined with branch_rules.
+    """
+@overload
+def get_expression(master: Expression, *, coefficient: Literal[0, -1, -2], max_nodes: int = 10_000_000, max_depth: int = 512, branch_rules: None = None, shared: Literal[True]) -> SharedExpression:
+    r"""
+    Expand a complete master call into symbolic Laurent-coefficient formulas.
+
+    Without ``coefficient`` return (finite, simple_pole, double_pole). With tag
+    0, -1 or -2 return that coefficient only. Piecewise branches remain explicit
+    until their conditions can be decided. ``max_nodes`` and ``max_depth`` bound
+    formula expansion and raise an error when exceeded. ``shared=True`` retains
+    transparent common-subexpression bindings in ``SharedExpression`` objects;
+    call ``to_expression()`` to materialize a selected coefficient.
+
+    Examples
+    --------
+    >>> from symbolica import S, E
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
+    >>> m2 = S("m2")
+    >>> pole = oneloop.get_expression(oneloop.A0(m2, 1), coefficient=-1)
+
+    Parameters
+    ----------
+    master : Expression
+        Untagged primitive master call with physical arguments and squared scale.
+    coefficient : {0, -1, -2} or None, optional
+        Laurent power to select; None returns all three coefficients.
+    max_nodes : int, optional
+        Expression expansion budget; default 10_000_000.
+    max_depth : int, optional
+        Expansion nesting limit; default 512.
+    branch_rules : sequence[Replacement] or None, optional
+        Probe values select conditions before discarded branches are expanded;
+        they do not replace values in the returned bodies.
+    shared : bool, optional
+        Keep common subexpressions shared; cannot be combined with branch_rules.
+    """
+@overload
+def get_expression(master: Expression, *, coefficient: None = None, max_nodes: int = 10_000_000, max_depth: int = 512, branch_rules: None = None, shared: Literal[True]) -> tuple[SharedExpression, SharedExpression, SharedExpression]:
+    r"""
+    Expand a complete master call into symbolic Laurent-coefficient formulas.
+
+    Without ``coefficient`` return (finite, simple_pole, double_pole). With tag
+    0, -1 or -2 return that coefficient only. Piecewise branches remain explicit
+    until their conditions can be decided. ``max_nodes`` and ``max_depth`` bound
+    formula expansion and raise an error when exceeded. ``shared=True`` retains
+    transparent common-subexpression bindings in ``SharedExpression`` objects;
+    call ``to_expression()`` to materialize a selected coefficient.
+
+    Examples
+    --------
+    >>> from symbolica import S, E
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
+    >>> m2 = S("m2")
+    >>> pole = oneloop.get_expression(oneloop.A0(m2, 1), coefficient=-1)
+
+    Parameters
+    ----------
+    master : Expression
+        Untagged primitive master call with physical arguments and squared scale.
+    coefficient : {0, -1, -2} or None, optional
+        Laurent power to select; None returns all three coefficients.
+    max_nodes : int, optional
+        Expression expansion budget; default 10_000_000.
+    max_depth : int, optional
+        Expansion nesting limit; default 512.
+    branch_rules : sequence[Replacement] or None, optional
+        Probe values select conditions before discarded branches are expanded;
+        they do not replace values in the returned bodies.
+    shared : bool, optional
+        Keep common subexpressions shared; cannot be combined with branch_rules.
+    """
+@overload
+def get_expression(master: Expression, *, coefficient: Literal[0, -1, -2] | None = None, max_nodes: int = 10_000_000, max_depth: int = 512, branch_rules: Sequence[Replacement] | None = None, shared: bool = False) -> Expression | SharedExpression | tuple[Expression, Expression, Expression] | tuple[SharedExpression, SharedExpression, SharedExpression]:
+    r"""
+    Expand a complete master call into symbolic Laurent-coefficient formulas.
+
+    Without ``coefficient`` return (finite, simple_pole, double_pole). With tag
+    0, -1 or -2 return that coefficient only. Piecewise branches remain explicit
+    until their conditions can be decided. ``max_nodes`` and ``max_depth`` bound
+    formula expansion and raise an error when exceeded. ``shared=True`` retains
+    transparent common-subexpression bindings in ``SharedExpression`` objects;
+    call ``to_expression()`` to materialize a selected coefficient.
+
+    Examples
+    --------
+    >>> from symbolica import S, E
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
+    >>> m2 = S("m2")
+    >>> pole = oneloop.get_expression(oneloop.A0(m2, 1), coefficient=-1)
+
+    Parameters
+    ----------
+    master : Expression
+        Untagged primitive master call with physical arguments and squared scale.
+    coefficient : {0, -1, -2} or None, optional
+        Laurent power to select; None returns all three coefficients.
+    max_nodes : int, optional
+        Expression expansion budget; default 10_000_000.
+    max_depth : int, optional
+        Expansion nesting limit; default 512.
+    branch_rules : sequence[Replacement] or None, optional
+        Probe values select conditions before discarded branches are expanded;
+        they do not replace values in the returned bodies.
+    shared : bool, optional
+        Keep common subexpressions shared; cannot be combined with branch_rules.
+    """
+_ExpressionInput = TypeVar("_ExpressionInput", bound=Expression | SharedExpression)
+@overload
+def select_branch(expression: Expression | SharedExpression, replacement_rules: Sequence[Replacement], *, max_nodes: int = 100_000_000, max_depth: int = 4096) -> Expression:
     r"""
     Resolve piecewise conditions using replacements, preserving symbolic branch values.
 
     Replacements act only in conditions, not in the selected result expressions.
     Unresolved predicates remain symbolic. Input may be one expression or a list
-    or tuple; the returned container has the same shape.
+    or tuple; the returned container has the same shape. Shared inputs are
+    materialized into ordinary expressions after selecting their branches.
 
     Examples
     --------
@@ -622,10 +848,78 @@ def select_branch(expression: _Expressions, replacement_rules: Sequence[Replacem
 
     Parameters
     ----------
-    expression : Expression, list[Expression] or tuple[Expression, ...]
-        Piecewise formula or collection to inspect.
+    expression : Expression, SharedExpression, list or tuple
+        Piecewise formula or collection of ordinary/shared formulas to inspect.
     replacement_rules : sequence[Replacement]
         Kinematic assumptions used only to decide branch conditions.
+    max_nodes : int, optional
+        Shared-expression expansion budget; default 100_000_000.
+    max_depth : int, optional
+        Shared-expression expansion nesting limit; default 4096.
+    """
+@overload
+def select_branch(expression: list[_ExpressionInput], replacement_rules: Sequence[Replacement], *, max_nodes: int = 100_000_000, max_depth: int = 4096) -> list[Expression]:
+    r"""
+    Resolve piecewise conditions using replacements, preserving symbolic branch values.
+
+    Replacements act only in conditions, not in the selected result expressions.
+    Unresolved predicates remain symbolic. Input may be one expression or a list
+    or tuple; the returned container has the same shape. Shared inputs are
+    materialized into ordinary expressions after selecting their branches.
+
+    Examples
+    --------
+    >>> from symbolica import S, E
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
+    >>> from symbolica import Replacement
+    >>> m2 = S("m2")
+    >>> expressions = oneloop.get_expression(oneloop.A0(m2, 1))
+    >>> selected = oneloop.select_branch(expressions, [Replacement(m2, E("1"))])
+    >>> assert len(selected) == 3
+
+    Parameters
+    ----------
+    expression : Expression, SharedExpression, list or tuple
+        Piecewise formula or collection of ordinary/shared formulas to inspect.
+    replacement_rules : sequence[Replacement]
+        Kinematic assumptions used only to decide branch conditions.
+    max_nodes : int, optional
+        Shared-expression expansion budget; default 100_000_000.
+    max_depth : int, optional
+        Shared-expression expansion nesting limit; default 4096.
+    """
+@overload
+def select_branch(expression: tuple[_ExpressionInput, ...], replacement_rules: Sequence[Replacement], *, max_nodes: int = 100_000_000, max_depth: int = 4096) -> tuple[Expression, ...]:
+    r"""
+    Resolve piecewise conditions using replacements, preserving symbolic branch values.
+
+    Replacements act only in conditions, not in the selected result expressions.
+    Unresolved predicates remain symbolic. Input may be one expression or a list
+    or tuple; the returned container has the same shape. Shared inputs are
+    materialized into ordinary expressions after selecting their branches.
+
+    Examples
+    --------
+    >>> from symbolica import S, E
+    >>> from symbolica.community import hepkit as hep
+    >>> from symbolica.community.hepkit import oneloop
+    >>> from symbolica import Replacement
+    >>> m2 = S("m2")
+    >>> expressions = oneloop.get_expression(oneloop.A0(m2, 1))
+    >>> selected = oneloop.select_branch(expressions, [Replacement(m2, E("1"))])
+    >>> assert len(selected) == 3
+
+    Parameters
+    ----------
+    expression : Expression, SharedExpression, list or tuple
+        Piecewise formula or collection of ordinary/shared formulas to inspect.
+    replacement_rules : sequence[Replacement]
+        Kinematic assumptions used only to decide branch conditions.
+    max_nodes : int, optional
+        Shared-expression expansion budget; default 100_000_000.
+    max_depth : int, optional
+        Shared-expression expansion nesting limit; default 4096.
     """
 
 # This file is automatically generated by pyo3_stub_gen

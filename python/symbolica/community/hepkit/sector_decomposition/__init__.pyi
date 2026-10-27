@@ -5,6 +5,7 @@ import builtins
 import collections.abc
 import symbolica
 import symbolica.community.hepkit
+import symbolica.community.tensor
 import typing
 from symbolica.community.hepkit import FeynmanDiagram, Kinematics
 from symbolica.core import Expression
@@ -654,7 +655,7 @@ class Integral:
     def dimension(self) -> Expression: ...
     @property
     def powers(self) -> builtins.list[tuple[builtins.int, builtins.int]]: ...
-    def generate(self, max_order: int = 0, *, coefficient_expansion: str = 'full_expression', mode: str = 'symbolic', subtraction: str = 'taylor', observer: typing.Optional[typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
+    def generate(self, max_order: int = 0, *, coefficient_expansion: str = 'full_expression', mode: str = 'symbolic', subtraction: str = 'taylor', max_process_rss_bytes: typing.Optional[int] = None, max_elapsed_seconds: typing.Optional[float] = None, observer: typing.Optional[typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
         r"""
         Generate native sectors without compilation or numerical integration.
 
@@ -662,7 +663,7 @@ class Integral:
         None disables it. Callables receive all snapshots, observer first.
         None/True continues, False cancels; original exceptions propagate.
         """
-    def generation_session(self, max_order: int = 0, *, coefficient_expansion: str = 'coefficient_series', mode: str = 'symbolic', subtraction: str = 'taylor', compilation_settings: typing.Optional[symbolica.community.hepkit.sector_decomposition.CompilationSettings] = None, runtime_parameters: typing.Optional[list[symbolica.Expression]] = None) -> symbolica.community.hepkit.sector_decomposition.GenerationSession:
+    def generation_session(self, max_order: int = 0, *, coefficient_expansion: str = 'coefficient_series', mode: str = 'symbolic', subtraction: str = 'taylor', max_process_rss_bytes: typing.Optional[int] = None, max_elapsed_seconds: typing.Optional[float] = None, compilation_settings: typing.Optional[symbolica.community.hepkit.sector_decomposition.CompilationSettings] = None, runtime_parameters: typing.Optional[list[symbolica.Expression]] = None) -> symbolica.community.hepkit.sector_decomposition.GenerationSession:
         r"""
         Create retained caller-stepped generation and compilation; construction performs no symbolic work.
         """
@@ -1039,7 +1040,7 @@ class VectorEstimate:
         Delegate convergence to the native full-production and vector tolerance check.
         """
 
-def sector_decompose(input: typing.Union[symbolica.community.hepkit.FeynmanDiagram, symbolica.community.hepkit.IntegralFamily], *, regulator: symbolica.Expression, kinematics: typing.Optional[symbolica.community.hepkit.Kinematics] = None, dimension: typing.Optional[symbolica.Expression] = None, powers: typing.Optional[typing.Union[collections.abc.Mapping[int, int], collections.abc.Sequence[int]]] = None, numerator: typing.Optional[symbolica.Expression] = None, scalar_values: typing.Optional[dict[symbolica.Expression, symbolica.Expression]] = None, auxiliary_momenta: typing.Optional[collections.abc.Sequence[symbolica.Expression]] = None, measure_multiplier: typing.Optional[symbolica.Expression] = None, runtime_parameters: typing.Optional[list[symbolica.Expression]] = None, model_parameters: str = 'runtime', max_order: int = 0, coefficient_expansion: str = 'full_expression', mode: str = 'symbolic', subtraction: str = 'taylor', observer: typing.Optional[collections.abc.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
+def sector_decompose(input: typing.Union[symbolica.community.hepkit.FeynmanDiagram, symbolica.community.hepkit.IntegralFamily], *, regulator: symbolica.Expression, kinematics: typing.Optional[symbolica.community.hepkit.Kinematics] = None, dimension: typing.Optional[symbolica.Expression] = None, powers: typing.Optional[typing.Union[collections.abc.Mapping[int, int], collections.abc.Sequence[int]]] = None, numerator: typing.Optional[symbolica.Expression] = None, scalar_values: typing.Optional[dict[symbolica.Expression, symbolica.Expression]] = None, auxiliary_momenta: typing.Optional[collections.abc.Sequence[symbolica.Expression]] = None, measure_multiplier: typing.Optional[symbolica.Expression] = None, runtime_parameters: typing.Optional[list[symbolica.Expression]] = None, model_parameters: str = 'runtime', max_order: int = 0, coefficient_expansion: str = 'full_expression', mode: str = 'symbolic', subtraction: str = 'taylor', max_process_rss_bytes: typing.Optional[int] = None, max_elapsed_seconds: typing.Optional[float] = None, observer: typing.Optional[collections.abc.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]]] = None, progress: typing.Union[typing.Literal["auto"], typing.Callable[[symbolica.community.hepkit.sector_decomposition.GenerationSnapshot], typing.Optional[bool]], None] = 'auto') -> symbolica.community.hepkit.sector_decomposition.GeneratedIntegral:
     r"""
     Generate from an existing native diagram or an explicitly weighted family.
 
@@ -1054,7 +1055,7 @@ def sector_decompose(input: typing.Union[symbolica.community.hepkit.FeynmanDiagr
     None/True continues, False cancels; original callback exceptions propagate.
     """
 
-def with_diagram_expressions(diagram: FeynmanDiagram, *, numerator: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, overall_factor: typing.Optional[Expression] = None) -> FeynmanDiagram:
+def with_diagram_expressions(diagram: FeynmanDiagram, *, numerator: symbolica.Expression | symbolica.community.tensor.TensorExpression | None = None, projector: symbolica.Expression | symbolica.community.tensor.TensorExpression | None = None, overall_factor: typing.Optional[Expression] = None) -> FeynmanDiagram:
     r"""
     Copy a complete native diagram, replacing only the supplied expressions.
     Native numerator validation and all graph/model ownership are preserved.

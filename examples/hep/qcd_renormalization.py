@@ -280,7 +280,7 @@ def _(
             )
         _factor = (
             _diagram.overall_factor_expression(evaluate=True)
-            * _diagram.numerator_prefactor_expression()
+            * _diagram.numerator_prefactor_expression().to_expression()
         )
         if _kind in ("quark", "ghost"):
             # Amputated Grassmann two-point kernels omit external ordering.
@@ -344,7 +344,7 @@ def _(
                 .to_expression()
             )
             _scalar = family.rewrite_numerator(
-                kinematics.apply(reducer.reduce(_traced)), [coordinate]
+                kinematics.apply(reducer.reduce(_traced).to_expression()), [coordinate]
             )
             _scalar = (_scalar * _factor).together().expand()
             _terms = []
@@ -406,7 +406,7 @@ def _(
         assert _diagram.symmetry_factor == one
         _factor = (
             _diagram.overall_factor_expression(evaluate=True)
-            * _diagram.numerator_prefactor_expression()
+            * _diagram.numerator_prefactor_expression().to_expression()
         )
         assert _factor == (
             external_ordering if _kind in ("quark", "ghost", "vertex") else one
@@ -849,9 +849,9 @@ def _(
                     _direct += (beyond_uv - one) * _taylor.coefficient(
                         irr_scaling ** (_degree + 1)
                     )
-                _scalar = irr_kinematics.apply(reducer.reduce(_direct)).replace(
-                    vacuum.scalar_product(K(0), K(0)), irr_coordinate
-                )
+                _scalar = irr_kinematics.apply(
+                    reducer.reduce(_direct).to_expression()
+                ).replace(vacuum.scalar_product(K(0), K(0)), irr_coordinate)
                 _scalar = (
                     (
                         _scalar

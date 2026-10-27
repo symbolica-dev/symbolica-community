@@ -367,12 +367,12 @@ def _(
         f"n_{axis} {'> 0' if active else '≤ 0'}" for axis, active in enumerate(_sector["sector"])))]
     _case = [mo.md(f"$n_{item['axis']} = {item['value']}$")
              for item in rule_fixed_conditions(rule_detail)]
-    _case.extend(mo.hstack([equation.formatted(max_terms=None), mo.md("**= 0**")],
+    _case.extend(mo.hstack([equation.formatted(max_terms=None, mathml=False), mo.md("**= 0**")],
                           justify="start") for equation in _expressions["affine"])
     for _number, _branch in enumerate(_expressions["excluded"], 1):
         _conditions.append(mo.md(f"**Excluded branch {_number}:** all expressions below vanish"
                                  if _branch else f"**Excluded branch {_number}:** always true"))
-        _conditions.extend(expr.formatted(max_terms=None) for expr in _branch)
+        _conditions.extend(expr.formatted(max_terms=None, mathml=False) for expr in _branch)
     _conditions.append(mo.md("Any excluded branch forbids the rule; equations within a branch "
         "are joined by **AND**. Denominator poles, source conditions and rule priority "
         "also govern applicability."))
@@ -380,7 +380,9 @@ def _(
         mo.md(f"**Rule {rule_detail['ordinal']} · {len(rule_detail['rhs'])} RHS terms**"),
         *([mo.hstack([mo.md("**Case:**"), *_case], justify="start", wrap=True)] if _case else []),
         mo.hstack([_expressions["target"], mo.md("**=**")], justify="start"),
-        _expressions["rhs"].formatted(max_terms=None, max_line_length=None, terms_on_new_line=True),
+        _expressions["rhs"].formatted(
+            max_terms=None, max_line_length=None, terms_on_new_line=True, mathml=False,
+        ),
         mo.accordion({"Applicability conditions": mo.vstack(_conditions)}),
     ])
     return
@@ -460,7 +462,7 @@ def _(E, integral, mass_squared, reduced_terms, selected_powers):
     mo.vstack([
         mo.hstack([integral(*selected_powers), mo.md("**=**")], justify="start"),
         reduced_expression.formatted(
-            max_terms=None, max_line_length=None, terms_on_new_line=True,
+            max_terms=None, max_line_length=None, terms_on_new_line=True, mathml=False,
         ),
     ])
     return (reduced_expression,)

@@ -4,8 +4,9 @@ from importlib import import_module
 from pathlib import Path
 
 import pytest
-from symbolica import E
+from symbolica import E, Expression
 from symbolica.community.hepkit import Model, SnailFilterOptions
+from symbolica.community.tensor import TensorExpression
 
 
 @pytest.fixture(
@@ -52,6 +53,13 @@ def bubbles(request):
 )
 def test_qcd_loop_weight(diagram_weight, bubbles, particles, factor):
     prefactor, diagrams = bubbles
+    diagram = diagrams[(particles, particles)]
+    native_prefactor = diagram.numerator_prefactor_expression()
+    assert isinstance(native_prefactor, TensorExpression)
+    assert native_prefactor.is_scalar
+    assert native_prefactor.to_expression() == prefactor
     # Each closed Grassmann loop contributes -1; the gluon bubble has
     # a symmetry factor of 1/2. The requested prefactor applies exactly once.
-    assert diagram_weight(diagrams[(particles, particles)]) == E(factor) * prefactor
+    weight = diagram_weight(diagram)
+    assert type(weight) is Expression
+    assert weight == E(factor) * prefactor

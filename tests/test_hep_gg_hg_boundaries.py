@@ -18,7 +18,7 @@ SPEC.loader.exec_module(LOADER)
 
 
 @pytest.fixture(scope="module")
-def systems():
+def systems(higgs_jet_data):
     return {name: numerical.HiggsJetIntegralSystem(name) for name in ("planar", "nonplanar")}
 
 

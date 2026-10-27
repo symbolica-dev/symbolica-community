@@ -89,6 +89,14 @@ def test_numeric_owners_still_require_one_revision():
         CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
 
 
+def test_kernel_and_numeric_owners_require_one_revision():
+    packages, nodes, root = browser_graph()
+    symbolica = next(p for p in packages if p["name"] == "symbolica")
+    symbolica["source"] = CHECK.algebra_sources()["symbolica"] + "#" + "d" * 40
+    with pytest.raises(AssertionError, match="kernel and numeric revisions differ"):
+        CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
+
+
 def test_browser_requires_automatic_evaluation_and_transport():
     packages, nodes, root = browser_graph()
     CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
