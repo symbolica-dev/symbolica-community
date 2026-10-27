@@ -1366,7 +1366,7 @@ checksum = "9f1f227452a390804cdb637b74a86990f2a7d7ba4b7d5693aac9b4dd6defd8d6"
 [[package]]
 name = "fastsecdec"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=6ee78897dd43e62efbd4e4994456bff6e948cd73#6ee78897dd43e62efbd4e4994456bff6e948cd73"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=221966de03b1a52cfb85d3707944d650476b1e76#221966de03b1a52cfb85d3707944d650476b1e76"
 dependencies = [
  "bincode",
  "blake3",
@@ -1389,7 +1389,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=6ee78897dd43e62efbd4e4994456bff6e948cd73#6ee78897dd43e62efbd4e4994456bff6e948cd73"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=221966de03b1a52cfb85d3707944d650476b1e76#221966de03b1a52cfb85d3707944d650476b1e76"
 dependencies = [
  "fastsecdec",
  "fastsecdec-sectors",
@@ -1406,7 +1406,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-qmc"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=6ee78897dd43e62efbd4e4994456bff6e948cd73#6ee78897dd43e62efbd4e4994456bff6e948cd73"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=221966de03b1a52cfb85d3707944d650476b1e76#221966de03b1a52cfb85d3707944d650476b1e76"
 dependencies = [
  "numerica",
  "rand 0.9.4",
@@ -1416,7 +1416,7 @@ dependencies = [
 [[package]]
 name = "fastsecdec-sectors"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/fastSecDec?rev=6ee78897dd43e62efbd4e4994456bff6e948cd73#6ee78897dd43e62efbd4e4994456bff6e948cd73"
+source = "git+https://github.com/alphal00p/fastSecDec?rev=221966de03b1a52cfb85d3707944d650476b1e76#221966de03b1a52cfb85d3707944d650476b1e76"
 dependencies = [
  "numerica",
  "symbolica",
@@ -3152,7 +3152,7 @@ checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 [[package]]
 name = "one-loop-reduce"
 version = "0.1.0"
-source = "git+https://github.com/lcnbr/one-loop-reduce?rev=89cc61e0678dd203b1e7edcf88de0c50e0bb0fb7#89cc61e0678dd203b1e7edcf88de0c50e0bb0fb7"
+source = "git+https://github.com/lcnbr/one-loop-reduce?rev=82569bbd2dfbe36d98c011b8e73ef1e7087f9d55#82569bbd2dfbe36d98c011b8e73ef1e7087f9d55"
 dependencies = [
  "feynkit-graph",
  "feynkit-kinematics",
@@ -3165,7 +3165,7 @@ dependencies = [
 [[package]]
 name = "one-loop-reduce-python"
 version = "0.1.0"
-source = "git+https://github.com/lcnbr/one-loop-reduce?rev=89cc61e0678dd203b1e7edcf88de0c50e0bb0fb7#89cc61e0678dd203b1e7edcf88de0c50e0bb0fb7"
+source = "git+https://github.com/lcnbr/one-loop-reduce?rev=82569bbd2dfbe36d98c011b8e73ef1e7087f9d55#82569bbd2dfbe36d98c011b8e73ef1e7087f9d55"
 dependencies = [
  "feynkit-py",
  "one-loop-reduce",
@@ -4977,7 +4977,7 @@ dependencies = [
 [[package]]
 name = "symbolica-amflow"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/RustFlow?rev=b670a9698a4bb2a8dede21abddd87ea956889852#b670a9698a4bb2a8dede21abddd87ea956889852"
+source = "git+https://github.com/alphal00p/RustFlow?rev=8ea7baf21368a2b044358c230ac664534543a411#8ea7baf21368a2b044358c230ac664534543a411"
 dependencies = [
  "ahash 0.8.12",
  "bincode",

@@ -91,9 +91,9 @@ python_stubgen = [
 [dependencies]
 symbolica-data = { git = "https://github.com/alphal00p/gammaloop", rev = "e90e78ae9b05c2813b462157a83073b0740419f4" }
 serde_json = "1"
-fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "6ee78897dd43e62efbd4e4994456bff6e948cd73", default-features = false }
+fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "221966de03b1a52cfb85d3707944d650476b1e76", default-features = false }
 hyperbolica = { optional = true, git = "https://github.com/lcnbr/hyperbolica", rev = "2e6fe4ef9c715d70f937aca53211793727f819b9", default-features = false, features = ["python"] }
-one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", rev = "89cc61e0678dd203b1e7edcf88de0c50e0bb0fb7", default-features = false }
+one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", rev = "82569bbd2dfbe36d98c011b8e73ef1e7087f9d55", default-features = false }
 spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "e90e78ae9b05c2813b462157a83073b0740419f4", default-features = false }
 linnet-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "e90e78ae9b05c2813b462157a83073b0740419f4", default-features = false }
 # Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.
@@ -102,7 +102,7 @@ feynkit-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", 
 rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", rev = "b209adb1e774242bcbe0417fed223317566561bd", default-features = false, features = ["campaign-api"] }
 symbolica = { version = "3.0.1", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
-symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "b670a9698a4bb2a8dede21abddd87ea956889852", default-features = false, features = ["python_api"] }
+symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "8ea7baf21368a2b044358c230ac664534543a411", default-features = false, features = ["python_api"] }
 # Tensor bindings split methods across impl blocks on both native and WASM.
 pyo3 = { version = "0.28", features = ["multiple-pymethods"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
