@@ -192,11 +192,15 @@ kv, pv = k(space), p(space)
 numerator = (k(space(mu)) * k(space(nu)) * p(space(mu)) * p(space(nu))).to_expression()
 reduced = hep.TensorReducer(D, integrated=[kv.to_expression()]).reduce(numerator)
 expected = (dot(kv, kv) * dot(pv, pv) / D).to_expression()
-assert (reduced - expected).expand() == E("0")
+assert isinstance(reduced, TensorExpression) and reduced.is_scalar
+assert (reduced.to_expression() - expected).expand() == E("0")
 # CPython's wasm32 heap supplies eight-byte alignment. Retain multiple wrappers
 # so inline over-aligned Rust payloads cannot pass by lucky address reuse.
 alignment_reducers = [hep.TensorReducer(D, integrated=[kv.to_expression()]) for _ in range(64)]
-assert all((item.reduce(numerator) - expected).expand() == E("0") for item in alignment_reducers)
+for item in alignment_reducers:
+    aligned = item.reduce(numerator)
+    assert isinstance(aligned, TensorExpression) and aligned.is_scalar
+    assert (aligned.to_expression() - expected).expand() == E("0")
 del alignment_reducers
 assert hep.ThreeMomentum(3.0, 4.0, 0.0).on_shell().components() == (5.0, 3.0, 4.0, 0.0)
 from symbolica.community.hepkit import oneloop
