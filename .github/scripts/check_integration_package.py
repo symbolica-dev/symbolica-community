@@ -160,10 +160,11 @@ def check_graph(label, packages, nodes, root, *, community, native):
         feynkit_source = singleton(packages, "feynkit-py")["source"]
         if feynkit_source is not None:
             assert re.fullmatch(
-                r"git\+https://github.com/alphal00p/gammaloop\?branch=preserve-canonical-numerator-interfaces#[0-9a-f]{40}",
+                r"git\+https://github.com/alphal00p/gammaloop\?rev=(?P<revision>[0-9a-f]{40})#(?P=revision)",
                 feynkit_source,
-            ), (label, "expected upstream FeynKit branch", feynkit_source)
-            assert feynkit_source.startswith(declared_source(root, "feynkit-py") + "#"), (
+            ), (label, "expected immutable consolidated FeynKit revision", feynkit_source)
+            declared = declared_source(root, "feynkit-py")
+            assert feynkit_source == declared + "#" + declared.rsplit("=", 1)[1], (
                 label, "HEPKit source differs from the host declaration", feynkit_source,
             )
         singleton(packages, "hyperbolica")
@@ -197,7 +198,7 @@ def check_graph(label, packages, nodes, root, *, community, native):
             assert "wasm" in nodes[bridge["id"]]["features"], "RustRed WASM API disabled"
         if native:
             vakint = singleton(packages, "vakint")
-            assert owner(vakint) != hepkit_owner, "Vakint must retain its separate owner revision"
+            assert owner(vakint) == hepkit_owner, "Vakint and HEPKit must share the consolidated owner revision"
             if vakint["source"] is not None:
                 declared = declared_source(root, "vakint")
                 assert declared and re.search(r"\?rev=[0-9a-f]{40}$", declared), (

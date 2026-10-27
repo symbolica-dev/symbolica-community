@@ -54,7 +54,7 @@ def test_wasm_graph_retains_host_build_dependencies_and_filters_inactive_names(m
 
 def browser_graph():
     algebra = CHECK.algebra_sources()
-    hepkit = "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces"
+    hepkit = "git+https://github.com/alphal00p/gammaloop?rev=" + "b" * 40
     packages = [package(name, algebra[name] + "#" + algebra[name].rsplit("=", 1)[1]) for name in CHECK.ALGEBRA]
     packages += [package(name, hepkit + "#" + "b" * 40) for name in CHECK.HEPKIT]
     rustred = "git+https://github.com/alphal00p/rustred?branch=main"
@@ -168,3 +168,55 @@ def test_kernel_requires_the_same_immutable_numeric_revision():
     symbolica["source"] = CHECK.algebra_sources()["symbolica"] + "#" + "d" * 40
     with pytest.raises(AssertionError, match="kernel and numeric revisions differ"):
         CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
+
+
+def native_graph():
+    packages, nodes, root = browser_graph()
+    source = next(p for p in packages if p["name"] == "feynkit-py")["source"]
+    packages += [package("vakint", source), package("oneloop"), package("oneloop-python")]
+    nodes.update({p["id"]: {"features": []} for p in packages if p["id"] not in nodes})
+    root["dependencies"].append({"name": "vakint", "source": source.rsplit("#", 1)[0]})
+    return packages, nodes, root
+
+
+def test_native_vakint_uses_the_same_consolidated_owner_revision():
+    packages, nodes, root = native_graph()
+    CHECK.check_graph("native", packages, nodes, root, community=True, native=True)
+    next(p for p in packages if p["name"] == "vakint")["source"] = (
+        "git+https://github.com/alphal00p/gammaloop?rev=" + "d" * 40 + "#" + "d" * 40
+    )
+    with pytest.raises(AssertionError, match="Vakint and HEPKit must share"):
+        CHECK.check_graph("native", packages, nodes, root, community=True, native=True)
+
+
+@pytest.mark.parametrize("declared", [
+    "git+https://github.com/alphal00p/gammaloop?rev=" + "d" * 40,
+    "git+https://github.com/alphal00p/gammaloop?branch=main",
+])
+def test_consolidated_feynkit_requires_its_exact_immutable_host_pin(declared):
+    packages, nodes, root = browser_graph()
+    next(d for d in root["dependencies"] if d["name"] == "feynkit-py")["source"] = declared
+    with pytest.raises(AssertionError, match="HEPKit source differs"):
+        CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
+
+
+@pytest.mark.parametrize("source", [
+    "git+https://github.com/alphal00p/gammaloop?branch=preserve-canonical-numerator-interfaces#" + "b" * 40,
+    "git+https://github.com/alphal00p/gammaloop?rev=" + "b" * 40 + "#" + "d" * 40,
+])
+def test_consolidated_feynkit_rejects_mutable_or_mismatched_revisions(source):
+    packages, nodes, root = browser_graph()
+    for p in packages:
+        if p["name"] in CHECK.HEPKIT:
+            p["source"] = source
+    with pytest.raises(AssertionError, match="immutable consolidated FeynKit"):
+        CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
+
+
+def test_native_vakint_still_requires_its_exact_host_pin():
+    packages, nodes, root = native_graph()
+    next(d for d in root["dependencies"] if d["name"] == "vakint")["source"] = (
+        "git+https://github.com/alphal00p/gammaloop?rev=" + "d" * 40
+    )
+    with pytest.raises(AssertionError, match="Vakint resolved outside its declared pin"):
+        CHECK.check_graph("native", packages, nodes, root, community=True, native=True)
