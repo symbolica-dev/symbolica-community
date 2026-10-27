@@ -18,7 +18,7 @@ HEPKIT = (
     "feynkit-amplitude", "feynkit-cff", "feynkit-generator", "feynkit-graph",
     "feynkit-kinematics", "feynkit-model", "feynkit-py", "feynkit-tensor",
     "feynkit-ufo", "linnet", "spenso", "spenso-macros", "spenso-hep-lib",
-    "idenso", "spynso3", "symbolica-utils",
+    "idenso", "spynso3", "symbolica-utils", "symbolica-notation",
 )
 OPTIONAL_HEPKIT = (
     "gammaloop-workspace-hack", "linnest", "linnet-render-py", "typst-renderer",

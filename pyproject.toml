@@ -26,8 +26,8 @@ classifiers = [
 numpy = ["numpy"]
 notebook-display = [
     "anywidget>=0.9,<1; python_version >= '3.9'",
-    # Native tensor paging runs Typst in a worker with a hard rendering timeout.
-    # Browser paging uses the embedded compiler instead.
+    # Tensor SVG exports and outlined graph labels use optional typst-py.
+    # Notebook display and paging use direct MathML in native and browser builds.
     "typst>=0.15,<0.16; sys_platform != 'emscripten' and sys_platform != 'wasi'",
 ]
 
