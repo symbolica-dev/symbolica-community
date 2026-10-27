@@ -1,8 +1,8 @@
 # Building the WASM wheel locally
 
 WASM wheels are built locally rather than in GitHub Actions. The commands below
-build the complete Community package for Pyodide 314.x (Python 3.14), including
-the matching fonts and Vakint data wheels used by the validation suite.
+build either the core package or the complete Community package for Pyodide
+314.x (Python 3.14), including the matching resource wheels used by validation.
 
 ## Prerequisites
 
@@ -43,6 +43,7 @@ WASM_OUTDIR="dist/wasm-local-$(date +%Y%m%d-%H%M%S)"
 export CARGO_BUILD_JOBS=2
 
 WASM_RUST_PROFILE=release-performance \
+WASM_FEATURES=wasm \
 WASM_OPT_LEVEL=-O0 \
 WASM_OPT_DEDUPLICATE_FUNCTIONS=1 \
 WASM_SKIP_TESTS=1 \
@@ -54,6 +55,14 @@ python scripts/build_data_bundle.py --out "$WASM_OUTDIR" --check-catalog
 This uses the committed lockfile, Rust optimization level 3 with ThinLTO,
 minimal Binaryen processing, and duplicate-function elimination. Tests are
 deferred until the resource wheels and final compression are ready.
+
+For a core-only build, use a separate fresh output directory and set
+`WASM_FEATURES=wasm-core` in the build command. This compiles the kernel and
+symbolic integration without Community extensions, then removes Community
+Python packages and examples from the wheel and regenerates its `RECORD`.
+Core stubs, the resource loader, and resource requirements are preserved.
+The two variants have the same package name, version, and wheel filename;
+keep them in separate directories and install one variant per interpreter.
 
 Preserve the Deflate wheel before recompressing the direct-download copy:
 
@@ -76,6 +85,12 @@ The validation installs the final Zstd wheel and both data wheels with
 WASM export list. If configured, it uses `SYMBOLICA_LICENSE_KEY` or
 `SYMBOLICA_LICENSE` from the environment. Validation receipts are written into
 the output directory.
+
+When validating a core-only wheel, prefix each Node command with
+`SYMBOLICA_EXPECT_COMMUNITY=0`. The core checks exercise algebra and symbolic
+integration and require Community packages to be absent from both the archive
+and the installed interpreter. Build the resource wheels in the core output
+directory too, as above; the validation runner uses the same resource setup.
 
 To validate the preserved Deflate wheel too, copy the resource wheels beside it
 and run the same suite:
