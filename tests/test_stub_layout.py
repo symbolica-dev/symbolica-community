@@ -48,6 +48,8 @@ import pytest
         (
             "symbolica.community.hepkit.vakint",
             {
+                "CacheFileIdentity",
+                "CacheFileOptions",
                 "Vakint",
                 "VakintExpression",
                 "VakintEvaluationMethod",
