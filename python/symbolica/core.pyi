@@ -2215,7 +2215,8 @@ class MathMLViewer:
     Responsive layouts and in-place expansion are optional source capabilities.
     """
     def __init__(self, source: MathMLPageSource, page_size: int = 25, *,
-                 layout_count: int = 1, supports_expansion: bool = False) -> None: ...
+                 layout_count: int = 1, supports_expansion: bool = False,
+                 _automatic_product_preview: bool = False) -> None: ...
     def close(self) -> None:
         """Release the retained source, widget and cached pages."""
         ...
@@ -2973,8 +2974,12 @@ class Expression:
     def _repr_mimebundle_(self, include: list[str] | None = None, exclude: list[str] | None = None) -> dict[str, Any]:
         """Return native MathML with optional live zoom and pagination."""
 
-    def mathml_viewer(self, page_size: int = 25) -> MathMLViewer:
-        """Create a bounded viewer without importing notebook or widget packages."""
+    def mathml_viewer(self, page_size: int | None = None) -> MathMLViewer:
+        """Create a bounded viewer without importing notebook or widget packages.
+
+        None permits a small complete product to extend the initial 25-factor
+        preview within the output budget. An explicit size remains the maximum.
+        """
 
     def _repr_html_(self) -> str:
         """
