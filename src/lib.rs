@@ -96,6 +96,9 @@ static INTEGRATION: ExtensionImplementation<PythonIntegrationFunctions> =
 
 #[pymodule]
 fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    // Match Symbolica's standalone host and preserve a logger already installed
+    // by the embedding application. Python configures handlers and verbosity.
+    let _ = pyo3_log::try_init();
     PYTHON_INTEGRATION.register(&INTEGRATION)?;
     create_symbolica_module(m)?;
     m.add_function(wrap_pyfunction!(data::_set_data_directories, m)?)?;
