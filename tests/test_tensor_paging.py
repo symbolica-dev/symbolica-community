@@ -177,12 +177,12 @@ def test_renderer_failure_does_not_fall_back_to_full_output():
 
 
 def test_page_budget_shrinks_and_rejects_invalid_navigation():
-    # Enough work per term must exhaust the initial preview budget before its
-    # requested 25 terms. Explicit larger pages use a larger bounded budget.
+    # Enough work per term must exhaust the 64 KiB initial preview budget
+    # before its requested 25 terms. Explicit pages use a larger bounded budget.
     value = TensorExpression(
         E(
             "+".join(
-                f"page_budget::f({','.join(f'a{i}_{j}' for j in range(64))})"
+                f"page_budget::f({','.join(f'a{i}_{j}' for j in range(256))})"
                 for i in range(1001)
             )
         )
