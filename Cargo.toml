@@ -9,7 +9,7 @@ name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.96"
-version = "3.0.9"
+version = "3.0.10"
 exclude = ["dist", "reports/**"]
 
 # Keep this host independent when checked out inside another Rust workspace.
