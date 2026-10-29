@@ -2977,8 +2977,8 @@ class Expression:
     def mathml_viewer(self, page_size: int | None = None) -> MathMLViewer:
         """Create a bounded viewer without importing notebook or widget packages.
 
-        None permits a small complete product to extend the initial 25-factor
-        preview within the output budget. An explicit size remains the maximum.
+        None permits a compact product to extend the initial 25-factor preview
+        within the output budget. An explicit size remains the maximum.
         """
 
     def _repr_html_(self) -> str:
