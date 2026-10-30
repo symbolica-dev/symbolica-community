@@ -488,10 +488,11 @@ def test_dot_product_power_keeps_compact_tensor_notation():
     value = dot(left, right) ** 2
     page = value.paged().page()
     assert_page(page)
-    # Dot operands are vector labels; the exponent applies to their contraction.
+    # Feynkit treats contractions as atomic, without extra parentheses. Both
+    # vector labels must remain in the power's base, with one scalar exponent.
     powers = math_nodes(page["html"], "msup")
     assert len(powers) == 1
     base, exponent = powers[0]
-    assert "".join(base.itertext()) == "(k·p)"
+    assert "".join(base.itertext()) == "k·p"
     assert "".join(exponent.itertext()) == "2"
     assert not math_nodes(page["html"], "mmultiscripts")

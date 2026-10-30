@@ -9,7 +9,7 @@ name = "symbolica_community"
 readme = "Readme.md"
 repository = "https://github.com/benruijl/symbolica-community"
 rust-version = "1.96"
-version = "3.0.10"
+version = "3.0.3"
 exclude = ["dist", "reports/**"]
 
 # Keep this host independent when checked out inside another Rust workspace.
@@ -97,9 +97,9 @@ linnet-render-py = { optional = true, git = "https://github.com/alphal00p/gammal
 feynkit-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false, features = ["ufo"] }
 # Embed the IBP bridge in both hosts so it shares their Symbolica atoms.
 rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", branch = "main", default-features = false, features = ["campaign-api"] }
-symbolica = { version = "3.0.1", default-features = false, features = ["python_export"] }
+symbolica = { version = "3.0.2", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.2", default-features = false, features = ["compressed-step-metadata"] }
-symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "f7a361e05004061a02559a8e1496e7a25f7d8cda", default-features = false, features = ["python_api"] }
+symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "0cd246ecba3e2cca587a1b207b9dbc26c77e81ea", default-features = false, features = ["python_api"] }
 # Tensor bindings split methods across impl blocks on both native and WASM.
 pyo3 = { version = "0.28", features = ["multiple-pymethods"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [

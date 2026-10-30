@@ -1648,7 +1648,7 @@ dependencies = [
 [[package]]
 name = "graphica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#ab057bbc0afc6eaef1e054f584fbfebaa0b766cf"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#43e7eacdd8a26d2687a75523bbd6eab20f27552b"
 dependencies = [
  "ahash 0.8.12",
  "dyn-clone",
@@ -2415,7 +2415,7 @@ dependencies = [
 [[package]]
 name = "numerica"
 version = "3.0.2"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#ab057bbc0afc6eaef1e054f584fbfebaa0b766cf"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#43e7eacdd8a26d2687a75523bbd6eab20f27552b"
 dependencies = [
  "ahash 0.8.12",
  "astro-float",
@@ -3918,8 +3918,8 @@ dependencies = [
 
 [[package]]
 name = "symbolica"
-version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#ab057bbc0afc6eaef1e054f584fbfebaa0b766cf"
+version = "3.0.2"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#43e7eacdd8a26d2687a75523bbd6eab20f27552b"
 dependencies = [
  "ahash 0.8.12",
  "append-only-vec",
@@ -3960,7 +3960,7 @@ dependencies = [
 [[package]]
 name = "symbolica-amflow"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/RustFlow?rev=f7a361e05004061a02559a8e1496e7a25f7d8cda#f7a361e05004061a02559a8e1496e7a25f7d8cda"
+source = "git+https://github.com/alphal00p/RustFlow?rev=0cd246ecba3e2cca587a1b207b9dbc26c77e81ea#0cd246ecba3e2cca587a1b207b9dbc26c77e81ea"
 dependencies = [
  "ahash 0.8.12",
  "bincode",
@@ -4042,7 +4042,7 @@ dependencies = [
 
 [[package]]
 name = "symbolica_community"
-version = "3.0.10"
+version = "3.0.3"
 dependencies = [
  "fastsecdec-python",
  "feynkit-py",
