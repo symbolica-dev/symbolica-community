@@ -15,13 +15,13 @@ def polynomial(n=301):
     return E("+".join(f"{i + 1}*page_test::x^{i}" for i in range(n)))
 
 
-def assert_page(page):
+def assert_page(page, *, max_nodes=10_000):
     assert "error" not in page, page
     assert "Page rendering failed" not in page["html"], page["html"]
     assert len(page["html"].encode()) <= 256 * 1024
     math = re.findall(r"<math\b.*?</math>", page["html"], re.DOTALL)
     assert math
-    assert sum(sum(1 for _ in ET.fromstring(m).iter()) for m in math) <= 10_000
+    assert sum(sum(1 for _ in ET.fromstring(m).iter()) for m in math) <= max_nodes
 
 
 def action(pager, name, **parameters):
@@ -177,19 +177,21 @@ def test_renderer_failure_does_not_fall_back_to_full_output():
 
 
 def test_page_budget_shrinks_and_rejects_invalid_navigation():
-    # Exercise the native MathML budget instead of mocking the removed compiler.
+    # Enough work per term must exhaust the 64 KiB initial preview budget
+    # before its requested 25 terms. Explicit pages use a larger bounded budget.
     value = TensorExpression(
         E(
             "+".join(
-                f"page_budget::f({','.join(f'a{i}_{j}' for j in range(8))})"
+                f"page_budget::f({','.join(f'a{i}_{j}' for j in range(256))})"
                 for i in range(1001)
             )
         )
     )
-    pager = value.paged(page_size=500)
+    original = value.to_expression()
+    pager = value.paged()
     page = pager.page()
     assert_page(page)
-    assert 0 < page["end"] < 500 and page["total"] == 1001
+    assert 0 < page["end"] < 25 and page["total"] == 1001
     for layout in page["layouts"]:
         assert_page(layout)
     for message in (
@@ -200,20 +202,59 @@ def test_page_budget_shrinks_and_rejects_invalid_navigation():
         assert field == "page" and failed["error"]
         assert failed["html"] == page["html"]
     assert pager.page()["html"] == page["html"]
+    following = action(pager, "next")
+    assert_page(following)
+    assert following["start"] == page["end"]
+    assert 0 < following["end"] - following["start"] < 25
+    assert action(pager, "previous")["html"] == page["html"]
+    assert value.to_expression() == original
+    pager.close()
 
 
-def test_shared_page_cache_reuses_three_pages_and_evicts_older_pages():
-    source = TensorPageSource(TensorExpression(polynomial()))
-    pager = MathMLViewer(source, page_size=25)
+def test_explicit_large_page_uses_a_larger_bounded_budget():
+    value = TensorExpression(
+        E(
+            "+".join(
+                f"page_large_budget::f({','.join(f'a{i}_{j}' for j in range(8))})"
+                for i in range(1001)
+            )
+        )
+    )
+    original = value.to_expression()
+    pager = value.paged()
     first = pager.page()
-    for _ in range(3):
-        action(pager, "next")
-    assert source.calls == [0, 25, 50, 75]
-    action(pager, "previous")
-    action(pager, "previous")
-    assert source.calls == [0, 25, 50, 75]
+    assert_page(first)
+    assert first["end"] == 25
+    larger = action(pager, "size", value=500)
+    assert (larger["start"], larger["end"], larger["total"]) == (0, 500, 1001)
+    # The 256 KiB transport ceiling still applies. For this eight-argument
+    # fixture, also bound MathML structure by 32 elements per displayed term.
+    for layout in [larger, *larger["layouts"]]:
+        assert_page(layout, max_nodes=500 * 32 + 16)
+    assert action(pager, "size", value=25)["html"] == first["html"]
+    assert value.to_expression() == original
+    pager.close()
+
+
+def test_shared_page_cache_reuses_24_renders_and_evicts_the_oldest():
+    source = TensorPageSource(TensorExpression(polynomial(651)))
+    # One layout makes each requested page exactly one cache entry. These short
+    # pages stay below the separate 2 MiB bound, isolating the entry limit.
+    pager = MathMLViewer(source, page_size=25, layout_count=1)
+    first = pager.page()
+    pages = [first]
+    for _ in range(24):
+        pages.append(action(pager, "next"))
+    assert sum(len(json.dumps(page).encode()) for page in pages) < 1024 * 1024
+    starts = list(range(0, 601, 25))
+    assert source.calls == starts
+    for _ in range(23):
+        action(pager, "previous")
+    assert source.calls == starts
     assert action(pager, "previous")["html"] == first["html"]
-    assert source.calls == [0, 25, 50, 75, 0]
+    assert source.calls == [*starts, 0]
+    assert action(pager, "next")["start"] == 25
+    assert source.calls == [*starts, 0]
     pager.close()
 
 
@@ -343,8 +384,18 @@ def test_three_rung_ladder_pages_keep_factorization_and_budgets():
     assert_page(outline)
     assert outline["kind"] == "Product"
     layout, target = sum_marker(outline)
-    action(pager, "open", value=target, layout=layout)
-    end = 0
+    selected = next(
+        candidate
+        for candidate in [outline, *outline["layouts"]]
+        if candidate["layout"] == layout
+    )
+    end = next(
+        start
+        for (path, _), start in zip(selected["markers"], selected["marker_starts"])
+        if path == target
+    )
+    child = action(pager, "open", value=target, layout=layout)
+    assert child["start"] == end
     for _ in range(8):
         page = pager.page()
         assert_page(page)
@@ -394,7 +445,8 @@ def test_one_render_oversized_term_becomes_an_inspectable_placeholder():
     child = action(pager, "open", value=page["markers"][0][0])
     assert_page(child)
     assert child["unit"] == "arguments" and child["total"] == 3000
-    assert child["end"] <= 25
+    assert child["start"] == page["marker_starts"][0]
+    assert 0 < child["end"] - child["start"] <= 25
     assert action(pager, "back")["html"] == page["html"]
     assert value.to_expression() == original
 
@@ -436,10 +488,11 @@ def test_dot_product_power_keeps_compact_tensor_notation():
     value = dot(left, right) ** 2
     page = value.paged().page()
     assert_page(page)
-    # Dot operands are vector labels; the exponent applies to their contraction.
+    # Feynkit treats contractions as atomic, without extra parentheses. Both
+    # vector labels must remain in the power's base, with one scalar exponent.
     powers = math_nodes(page["html"], "msup")
     assert len(powers) == 1
     base, exponent = powers[0]
-    assert "".join(base.itertext()) == "(k·p)"
+    assert "".join(base.itertext()) == "k·p"
     assert "".join(exponent.itertext()) == "2"
     assert not math_nodes(page["html"], "mmultiscripts")

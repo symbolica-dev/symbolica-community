@@ -78,6 +78,7 @@ def test_widget_replaces_pages_rejects_stale_replies_and_disposes():
             # requests carry IDs; ordinary page messages no longer need them.
             page.locator(".math-content button.omission").click()
             first_preview = reply_to_latest("preview")
+            assert first_preview[1]["start"] == viewer.page()["marker_starts"][0]
             popup = page.locator(".preview")
             assert popup.get_attribute("aria-busy") is None
             popup_next = page.locator(".preview-next")
@@ -92,7 +93,7 @@ def test_widget_replaces_pages_rejects_stale_replies_and_disposes():
             assert popup.get_attribute("aria-busy") == "true"
             assert page.locator(".preview-math").inner_html() == before
             current_preview = reply_to_latest("preview")
-            assert current_preview[1]["start"] == 25
+            assert current_preview[1]["start"] == first_preview[1]["end"]
             after = page.locator(".preview-math").inner_html()
             assert after != before
             page.evaluate("response=>setResponse(response)", stale)

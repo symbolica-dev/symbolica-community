@@ -10423,6 +10423,54 @@ class SquaredAmplitude:
 
         >>> print(squared)
         """
+    def paged(self, page_size: typing.Optional[builtins.int] = None, *, settings: typing.Optional[DisplaySettings] = None, notation_source: typing.Optional[builtins.str] = None) -> typing.Any:
+        r"""
+        Explore the current tensor expression with the interactive notebook pager.
+
+        Examples
+        --------
+        Using the setup in the ``SquaredAmplitude`` class example:
+
+        >>> viewer = squared.paged()
+        >>> first_page = viewer.page()
+
+        Parameters
+        ----------
+        page_size : int, optional
+            None uses automatic previews: compact products may be shown completely,
+            with 25 entries per page otherwise. An explicit size sets the maximum
+            entries per page, between 1 and 500. Rendering budgets may show fewer.
+        settings : DisplaySettings, optional
+            Tensor notation, index labels, and presentation preferences.
+        notation_source : str, optional
+            Unsupported by the direct MathML pager, as for TensorExpression.paged().
+        """
+    def _display_(self) -> typing.Any:
+        r"""
+        Present the current tensor expression with its interactive notebook display.
+
+        Examples
+        --------
+        Using the setup in the ``SquaredAmplitude`` class example:
+
+        >>> presentation = squared._display_()
+        """
+    def _repr_mimebundle_(self, include: typing.Optional[typing.Sequence[builtins.str]] = None, exclude: typing.Optional[typing.Sequence[builtins.str]] = None) -> typing.Any:
+        r"""
+        Return the tensor expression's static and optional live representations.
+
+        Examples
+        --------
+        Using the setup in the ``SquaredAmplitude`` class example:
+
+        >>> bundle = squared._repr_mimebundle_(include=["text/html"])
+        >>> html = bundle["text/html"]
+
+        Parameters
+        ----------
+        include, exclude : list[str], optional
+            MIME types to include or exclude from the returned representations.
+        """
     def _repr_html_(self) -> typing.Any:
         r"""
         Render the current tensor expression with Spenso's printer.
