@@ -147,7 +147,11 @@ def write_bundle(payloads, records, output, version, distribution, bundle):
     files[f"{info}/METADATA"] = (
         f"Metadata-Version: 2.3\nName: {distribution}\nVersion: {version}\n"
         f"Summary: External {bundle} resources for Symbolica\n"
-        "Requires-Python: >=3.9\nLicense: See bundled third-party notices\n\n"
+        "Requires-Python: >=3.9\nLicense: See bundled third-party notices\n"
+        "Description-Content-Type: text/plain\n\n"
+        f"This package provides external {bundle} resources for Symbolica {version}.\n"
+        "Install the matching Symbolica release to use these resources.\n"
+        "Third-party license notices are included in the distribution.\n"
     ).encode()
     files[f"{info}/WHEEL"] = (
         # Place portable data beside the native package even when Python's
